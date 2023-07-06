@@ -211,8 +211,8 @@ export type RealmEventName = "change" | "schema" | "beforenotify";
 
 /**
  * Asserts the event passed as string is a valid RealmEvent value.
- * @throws {@link TypeAssertionError} If an unexpected name is passed via {@link name}.
- * @param name The name of the event.
+ * @throws A {@link TypeAssertionError} if an unexpected name is passed via {@link name}.
+ * @param name - The name of the event.
  * @internal
  */
 function assertRealmEvent(name: RealmEventName): asserts name is RealmEvent {
@@ -275,7 +275,7 @@ export class Realm {
 
   /**
    * Sets the log level.
-   * @param level The log level to be used by the logger. The default value is `info`.
+   * @param level - The log level to be used by the logger. The default value is `info`.
    * @note The log level can be changed during the lifetime of the application.
    * @since v12.0.0
    */
@@ -286,7 +286,7 @@ export class Realm {
 
   /**
    * Sets the logger callback.
-   * @param loggerCallback The callback invoked by the logger. The default callback uses `console.log`, `console.warn` and `console.error`, depending on the level of the message.
+   * @param loggerCallback - The callback invoked by the logger. The default callback uses `console.log`, `console.warn` and `console.error`, depending on the level of the message.
    * @note The logger callback needs to be setup before opening the first realm.
    * @since v12.0.0
    */
@@ -323,8 +323,8 @@ export class Realm {
 
   /**
    * Delete the Realm file for the given configuration.
-   * @param config The configuration for the Realm
-   * @throws an {@link Error} If anything in the provided {@link config} is invalid.
+   * @param config - The configuration for the Realm being deleted.
+   * @throws An {@link Error} if anything in the provided {@link config} is invalid.
    */
   public static deleteFile(config: Configuration): void {
     validateConfiguration(config);
@@ -338,8 +338,8 @@ export class Realm {
 
   /**
    * Checks if the Realm already exists on disk.
-   * @param arg The configuration for the Realm or the path to it.
-   * @throws an {@link Error} If anything in the provided {@link config} is invalid.
+   * @param arg - The configuration for the Realm or the path to it.
+   * @throws An {@link Error} if anything in the provided {@link config} is invalid.
    * @returns `true` if the Realm exists on the device, `false` if not.
    */
   public static exists(arg: Configuration | string = {}): boolean {
@@ -354,9 +354,9 @@ export class Realm {
    * synchronized before it is available.
    * In the case of query-based sync, {@link Configuration.scheme | config.schema} is required. An exception will be
    * thrown if {@link Configuration.scheme | config.schema} is not defined.
-   * @param arg The configuration for the Realm or the path to it.
+   * @param arg - The configuration for the Realm or the path to it.
    * @returns A promise that will be resolved with the Realm instance when it's available.
-   * @throws an {@link Error} If anything in the provided {@link arg} is invalid.
+   * @throws An {@link Error} if anything in the provided {@link arg} is invalid.
    */
   public static open(arg: Configuration | string = {}): ProgressRealmPromise {
     const config = typeof arg === "string" ? { path: arg } : arg;
@@ -365,12 +365,10 @@ export class Realm {
 
   /**
    * Get the current schema version of the Realm at the given path.
-   * @param path The path to the file where the
-   *   Realm database is stored.
-   * @param encryptionKey Required only when
-   *   accessing encrypted Realms.
-   * @throws an {@link Error} If passing an invalid or non-matching encryption key.
-   * @returns Version of the schema, or `-1` if no Realm exists at {@link path}.
+   * @param path - The path to the file where the Realm database is stored.
+   * @param encryptionKey - Required only when accessing encrypted Realms.
+   * @throws An {@link Error} if passing an invalid or non-matching encryption key.
+   * @returns Version of the schema as an integer, or `-1` if no Realm exists at {@link path}.
    */
   public static schemaVersion(path: string, encryptionKey?: ArrayBuffer | ArrayBufferView): number {
     const config: Configuration = { path };
@@ -387,7 +385,7 @@ export class Realm {
    * and all required fields have the default value for the given data type, either the value
    * set by the default property in the schema or the default value for the datatype if the schema
    * doesn't specify one, i.e. 0, false and "".
-   * @param objectSchema Schema describing the object that should be created.
+   * @param objectSchema - Schema describing the object that should be created.
    */
   public static createTemplateObject<T extends Record<string, unknown>>(objectSchema: ObjectSchema): T {
     validateObjectSchema(objectSchema);
@@ -441,8 +439,8 @@ export class Realm {
    * overwritten, so this can safely be called multiple times.
    *
    * This should be called before opening the Realm, in order to move the bundled Realm
-   * files into a place where they can be written to, for example:
-   *
+   * files into a place where they can be written to.
+   * @example
    * ```
    * // Given a bundled file, example.realm, this will copy example.realm (and any other .realm files)
    * // from the app bundle into the app's documents directory. If the file already exists, it will
@@ -608,14 +606,14 @@ export class Realm {
 
   /**
    * Create a new {@link Realm} instance, at the default path.
-   * @throws an {@link Error} When an incompatible synced Realm is opened.
+   * @throws An {@link Error} when an incompatible synced Realm is opened.
    */
   constructor();
   /**
    * Create a new {@link Realm} instance at the provided {@link path}.
-   * @param path Required when first creating the Realm.
-   * @throws an {@link Error} If the Realm cannot be opened at the provided {@link path}.
-   * @throws an {@link Error} When an incompatible synced Realm is opened.
+   * @param path - Required when first creating the Realm.
+   * @throws An {@link Error} if the Realm cannot be opened at the provided {@link path}.
+   * @throws An {@link Error} when an incompatible synced Realm is opened.
    */
   constructor(path: string);
   /**
@@ -628,9 +626,9 @@ export class Realm {
    * migrated to use the new schema.
    * In the case of query-based sync, {@link Configuration.schema | config.schema} is required. An exception will be
    * thrown if {@link Configuration.schema | config.schema} is not defined.
-   * @param config Required when first creating the Realm.
-   * @throws an {@link Error} If anything in the provided {@link config} is invalid.
-   * @throws an {@link Error} When an incompatible synced Realm is opened.
+   * @param config - Required when first creating the Realm.
+   * @throws An {@link Error} if anything in the provided {@link config} is invalid.
+   * @throws An {@link Error} when an incompatible synced Realm is opened.
    */
   constructor(config: Configuration);
   /** @internal */
@@ -701,6 +699,7 @@ export class Realm {
 
   /**
    * Indicates if this Realm contains any objects.
+   * @returns `true` if empty, `false` otherwise.
    * @readonly
    * @since 1.10.0
    */
@@ -710,6 +709,7 @@ export class Realm {
 
   /**
    * The path to the file where this Realm is stored.
+   * @returns A string containing the path to the file where this Realm is stored.
    * @readonly
    * @since 0.12.0
    */
@@ -719,6 +719,7 @@ export class Realm {
 
   /**
    * Indicates if this Realm was opened as read-only.
+   * @returns `true` if this Realm is read-only, `false` otherwise.
    * @readonly
    * @since 0.12.0
    */
@@ -728,6 +729,7 @@ export class Realm {
 
   /**
    * Indicates if this Realm was opened in-memory.
+   * @returns `true` if this Realm is in-memory, `false` otherwise.
    * @readonly
    */
   get isInMemory(): boolean {
@@ -736,6 +738,7 @@ export class Realm {
 
   /**
    * A normalized representation of the schema provided in the {@link Configuration} when this Realm was constructed.
+   * @returns An array of {@link CanonicalObjectSchema} describing all objects in this Realm.
    * @readonly
    * @since 0.12.0
    */
@@ -756,6 +759,7 @@ export class Realm {
 
   /**
    * The current schema version of the Realm.
+   * @returns The schema version of this Realm, as a `number`.
    * @readonly
    * @since 0.12.0
    */
@@ -765,6 +769,7 @@ export class Realm {
 
   /**
    * Indicates if this Realm is in a write transaction.
+   * @returns `true` if in a write transaction, `false` otherwise.
    * @readonly
    * @since 1.10.3
    */
@@ -775,6 +780,7 @@ export class Realm {
 
   /**
    * Indicates if this Realm has been closed.
+   * @returns `true` if closed, `false` otherwise.
    * @readonly
    * @since 2.1.0
    */
@@ -785,7 +791,8 @@ export class Realm {
 
   /**
    * The latest set of flexible sync subscriptions.
-   * @throws an {@link Error} If flexible sync is not enabled for this app.
+   * @returns A {@link SubscriptionSet} object.
+   * @throws An {@link Error} if flexible sync is not enabled for this app.
    */
   get subscriptions(): SubscriptionSet {
     const { syncConfig } = this.internal.config;
@@ -819,19 +826,10 @@ export class Realm {
   /**
    * Create a new {@link RealmObject} of the given type and with the specified properties. For objects marked asymmetric,
    * `undefined` is returned. The API for asymmetric objects is subject to changes in the future.
-   * @param type The type of Realm object to create.
-   * @param values Property values for all required properties without a
-   *   default value.
-   * @param mode Optional update mode. It can be one of the following values
-   *     - UpdateMode.Never: Objects are only created. If an existing object exists, an exception is thrown. This is the
-   *       default value.
-   *     - UpdateMode.All: If an existing object is found, all properties provided will be updated, any other properties will
-   *       remain unchanged.
-   *     - UpdateMode.Modified: If an existing object exists, only properties where the value has actually changed will be
-   *       updated. This improves notifications and server side performance but also have implications for how changes
-   *       across devices are merged. For most use cases, the behavior will match the intuitive behavior of how
-   *       changes should be merged, but if updating an entire object is considered an atomic operation, this mode
-   *       should not be used.
+   * @param type - The type of Realm object to create.
+   * @param values - Property values for all required properties without a
+   * default value.
+   * @param mode Optional update mode. The default is `UpdateMode.Never`.
    * @returns A {@link RealmObject} or `undefined` if the object is asymmetric.
    */
   create<T = DefaultObject>(
@@ -848,7 +846,7 @@ export class Realm {
     type: string | Constructor<T>,
     values: DefaultObject,
     mode: UpdateMode | boolean = UpdateMode.Never,
-  ) {
+  ): RealmObject<DefaultObject, never> | undefined {
     // Supporting a boolean overload for mode
     if (mode === true) {
       mode = UpdateMode.All;
@@ -871,6 +869,7 @@ export class Realm {
 
   /**
    * Deletes the provided Realm object, or each one inside the provided collection.
+   * @param subject - The Realm object to delete, or a collection containing multiple Realm objects to delete.
    */
   delete(subject: AnyRealmObject | AnyRealmObject[] | List | Results): void {
     assert.inTransaction(this, "Can only delete objects within a transaction.");
@@ -905,7 +904,7 @@ export class Realm {
   /**
    * Deletes a Realm model, including all of its objects.
    * If called outside a migration function, {@link schema} and {@link schemaVersion} are updated.
-   * @param name The model name
+   * @param name - The model name.
    */
   deleteModel(name: string): void {
     assert.inTransaction(this, "Can only delete objects within a transaction.");
@@ -935,10 +934,10 @@ export class Realm {
 
   /**
    * Searches for a Realm object by its primary key.
-   * @param type The type of Realm object to search for.
-   * @param primaryKey The primary key value of the object to search for.
-   * @throws an {@link Error} If type passed into this method is invalid, or if the object type did
-   *  not have a {@link primaryKey} specified in the schema, or if it was marked asymmetric.
+   * @param type - The type of Realm object to search for.
+   * @param primaryKey - The primary key value of the object to search for.
+   * @throws An {@link Error} if type passed into this method is invalid, or if the object type did
+   * not have a {@link primaryKey} specified in the schema, or if it was marked asymmetric.
    * @returns A {@link RealmObject} or `null` if no object is found.
    * @since 0.14.0
    */
@@ -975,9 +974,9 @@ export class Realm {
 
   /**
    * Returns all objects of the given {@link type} in the Realm.
-   * @param type The type of Realm object to search for.
-   * @param objectKey The object key of the Realm object to search for.
-   * @throws an {@link Error} If type passed into this method is invalid or if the type is marked embedded or asymmetric.
+   * @param type - The type of Realm object to search for.
+   * @param objectKey - The object key of the Realm object to search for.
+   * @throws An {@link Error} if type passed into this method is invalid or if the type is marked embedded or asymmetric.
    * @returns A {@link RealmObject} or `undefined` if the object key is not found.
    * @internal
    */
@@ -1010,8 +1009,8 @@ export class Realm {
 
   /**
    * Returns all objects of the given {@link type} in the Realm.
-   * @param type The type of Realm objects to retrieve.
-   * @throws an {@link Error} If type passed into this method is invalid or if the type is marked embedded or asymmetric.
+   * @param type - The type of Realm objects to retrieve.
+   * @throws An {@link Error} if type passed into this method is invalid or if the type is marked embedded or asymmetric.
    * @returns Results that will live-update as objects are created, modified, and destroyed.
    */
   objects<T = DefaultObject>(type: string): Results<RealmObject<T> & T>;
@@ -1040,11 +1039,14 @@ export class Realm {
 
   /**
    * Add a listener {@link callback} for the specified {@link eventName}.
-   * @param eventName The name of event that should cause the callback to be called.
-   * @param callback Function to be called when a change event occurs.
-   *   Each callback will only be called once per event, regardless of the number of times
-   *   it was added.
-   * @throws an {@link Error} If an invalid event {@link eventName} is supplied, if Realm is closed or if {@link callback} is not a function.
+   * @param eventName - The name of event that should cause the callback to be called.
+   * @param callback - Function to be called when a change event occurs.
+   * Each callback will only be called once per event, regardless of the number of times
+   * it was added.
+   * @param callback.realm - The Realm in which the change event occurred.
+   * @param callback.name - The name of the event that occurred.
+   * @param callback.schema - The schema of the Realm file when the event occurred.
+   * @throws An {@link Error} if an invalid event {@link eventName} is supplied, if Realm is closed or if {@link callback} is not a function.
    */
   addListener(eventName: RealmEventName, callback: RealmListenerCallback): void {
     assert.open(this);
@@ -1062,8 +1064,8 @@ export class Realm {
 
   /**
    * Remove the listener {@link callback} for the specified event {@link eventName}.
-   * @param eventName The event name.
-   * @param callback Function that was previously added as a listener for this event through the {@link addListener} method.
+   * @param eventName - The event name.
+   * @param callback - Function that was previously added as a listener for this event through the {@link addListener} method.
    * @throws an {@link Error} If an invalid event {@link eventName} is supplied, if Realm is closed or if {@link callback} is not a function.
    */
   removeListener(eventName: RealmEventName, callback: RealmListenerCallback): void {
@@ -1083,8 +1085,8 @@ export class Realm {
 
   /**
    * Remove all event listeners (restricted to the event {@link eventName}, if provided).
-   * @param eventName The name of the event whose listeners should be removed.
-   * @throws an {@link Error} When invalid event {@link eventName} is supplied
+   * @param eventName - The name of the event whose listeners should be removed.
+   * @throws An {@link Error} when invalid event {@link eventName} is supplied.
    */
   removeAllListeners(eventName?: RealmEventName): void {
     assert.open(this);
@@ -1115,6 +1117,7 @@ export class Realm {
    * be called instead of {@link commitTransaction} and the exception will be re-thrown to the caller of {@link write}.
    *
    * Nested transactions (calling {@link write} within {@link write}) is not possible.
+   * @param callback - Function to be called inside a write transaction.
    * @returns Returned value from the callback.
    */
   write<T>(callback: () => T): T {
@@ -1136,7 +1139,7 @@ export class Realm {
    * When doing a transaction, it is highly recommended to do error handling.
    * If you don't handle errors, your data might become inconsistent. Error handling
    * will often involve canceling the transaction.
-   * @throws an {@link Error} If already in write transaction
+   * @throws An {@link Error} if already in write transaction
    * @see {@link cancelTransaction}
    * @see {@link commitTransaction}
    * @example
@@ -1200,9 +1203,9 @@ export class Realm {
    *
    * Note that if this method is called from within a write transaction, the current data is written,
    * not the data from the point when the previous write transaction was committed.
-   * @param config Realm configuration that describes the output realm.
+   * @param config - Realm configuration that describes the output realm.
    */
-  writeCopyTo(config: Configuration) {
+  writeCopyTo(config: Configuration): void {
     assert.outTransaction(this, "Can only convert Realms outside a transaction.");
     validateConfiguration(config);
     const { bindingConfig } = Realm.transformConfig(config);
@@ -1235,9 +1238,7 @@ export class Realm {
     //       callback and not here.
   }
 
-  /**
-   * @internal
-   */
+  /** @internal */
   public getClassHelpers<T>(
     arg: string | binding.TableKey | RealmObject<T> | Constructor<RealmObject<T>>,
   ): ClassHelpers {
@@ -1259,7 +1260,7 @@ export class Realm {
 }
 
 /**
- * @param objectSchema The schema of the object.
+ * @param objectSchema - The schema of the object.
  * @returns `true` if the object is marked for asymmetric sync, otherwise `false`.
  */
 function isAsymmetric(objectSchema: binding.ObjectSchema): boolean {
@@ -1267,7 +1268,7 @@ function isAsymmetric(objectSchema: binding.ObjectSchema): boolean {
 }
 
 /**
- * @param objectSchema The schema of the object.
+ * @param objectSchema - The schema of the object.
  * @returns `true` if the object is marked as embedded, otherwise `false`.
  */
 function isEmbedded(objectSchema: binding.ObjectSchema): boolean {

@@ -132,8 +132,8 @@ const PROXY_HANDLER: ProxyHandler<BaseSubscriptionSet> = {
  * Array API, e.g. `[...realm.subscriptions][0]`.
  */
 export abstract class BaseSubscriptionSet {
-  /**@internal */
-  protected constructor(/**@internal */ protected internal: binding.SyncSubscriptionSet) {
+  /** @internal */
+  protected constructor(/** @internal */ protected internal: binding.SyncSubscriptionSet) {
     Object.defineProperty(this, "internal", {
       enumerable: false,
       configurable: false,
@@ -146,6 +146,7 @@ export abstract class BaseSubscriptionSet {
 
   /**
    * Whether there are no subscriptions in the set.
+   * @returns `true` if there are no subscriptions in the set, `false` otherwise.
    */
   get isEmpty(): boolean {
     return this.internal.size === 0;
@@ -154,13 +155,14 @@ export abstract class BaseSubscriptionSet {
   /**
    * The version of the SubscriptionSet. This is incremented every time a
    * {@link SubscriptionSet.update} is applied.
+   * @returns The version of the {@link SubscriptionSet}.
    */
   get version(): number {
     return Number(this.internal.version);
   }
 
   /**
-   * The state of the SubscriptionSet.
+   * @returns The state of the SubscriptionSet.
    */
   get state(): SubscriptionSetState {
     const state = this.internal.state;
@@ -182,15 +184,16 @@ export abstract class BaseSubscriptionSet {
   }
 
   /**
-   * If `state` is {@link SubscriptionSetState.Error}, this will be a `string` representing
-   * why the SubscriptionSet is in an error state. It will be `null` if there is no error.
+   * If `state` is {@link SubscriptionSetState.Error}, this will be a string representing
+   * why the {@link SubscriptionSet} is in an error state. It will be `null` if there is no error.
+   * @returns A string representing the error, or `null` if there is no error.
    */
   get error(): string | null {
     return this.state === SubscriptionSetState.Error ? this.internal.errorStr : null;
   }
 
   /**
-   * The number of subscriptions in the set.
+   * @returns The number of subscriptions in the set.
    */
   get length(): number {
     return this.internal.size;
@@ -198,7 +201,7 @@ export abstract class BaseSubscriptionSet {
 
   /**
    * Find a subscription by name.
-   * @param name The name to search for.
+   * @param name - The name to search for.
    * @returns The named subscription, or `null` if the subscription is not found.
    */
   findByName(name: string): Subscription | null {
@@ -210,7 +213,7 @@ export abstract class BaseSubscriptionSet {
 
   /**
    * Find a subscription by query. Will match both named and unnamed subscriptions.
-   * @param query The query to search for, represented as a {@link Results} instance,
+   * @param query - The query to search for, represented as a {@link Results} instance,
    *  e.g. `Realm.objects("Cat").filtered("age > 10")`.
    * @returns The subscription with the specified query, or `null` if the subscription is not found.
    */

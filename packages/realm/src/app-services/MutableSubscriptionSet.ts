@@ -87,11 +87,11 @@ export class MutableSubscriptionSet extends BaseSubscriptionSet {
   // rather than `(this.internal as binding.MutableSyncSubscriptionSet).someOwnMember`.
   // (`this.internal = internal` cannot be used in the constructor due to the proxy
   // handler in BaseSubscriptionSet making it non-writable.)
-  /**@internal */
+  /** @internal */
   protected declare internal: binding.MutableSyncSubscriptionSet;
 
-  /**@internal */
-  constructor(/**@internal */ internal: binding.MutableSyncSubscriptionSet) {
+  /** @internal */
+  constructor(/** @internal */ internal: binding.MutableSyncSubscriptionSet) {
     super(internal);
   }
 
@@ -101,9 +101,9 @@ export class MutableSubscriptionSet extends BaseSubscriptionSet {
    *
    * A query is represented by a {@link Results} instance returned from {@link Realm.objects},
    * for example: `mutableSubs.add(realm.objects("Cat").filtered("age > 10"));`.
-   * @param query A {@link Results} instance representing the query to subscribe to.
-   * @param options An optional {@link SubscriptionOptions} object containing options to
-   *  use when adding this subscription (e.g. to give the subscription a name).
+   * @param query - A {@link Results} instance representing the query to subscribe to.
+   * @param options - An optional {@link SubscriptionOptions} object containing options to
+   * use when adding this subscription (e.g. to give the subscription a name).
    * @returns A `Subscription` instance for the new subscription.
    */
   add(query: AnyResults, options?: SubscriptionOptions): Subscription {
@@ -142,7 +142,7 @@ export class MutableSubscriptionSet extends BaseSubscriptionSet {
 
   /**
    * Remove a subscription with the given query from the SubscriptionSet.
-   * @param query A {@link Results} instance representing the query to remove a subscription to.
+   * @param query - A {@link Results} instance representing the query to remove a subscription to.
    * @returns `true` if the subscription was removed, `false` if it was not found.
    */
   remove(query: AnyResults): boolean {
@@ -153,7 +153,7 @@ export class MutableSubscriptionSet extends BaseSubscriptionSet {
 
   /**
    * Remove a subscription with the given name from the SubscriptionSet.
-   * @param name The name of the subscription to remove.
+   * @param name - The name of the subscription to remove.
    * @returns `true` if the subscription was removed, `false` if it was not found.
    */
   removeByName(name: string): boolean {
@@ -164,7 +164,7 @@ export class MutableSubscriptionSet extends BaseSubscriptionSet {
 
   /**
    * Remove the specified subscription from the SubscriptionSet.
-   * @param subscription The {@link Subscription} instance to remove.
+   * @param subscription - The {@link Subscription} instance to remove.
    * @returns `true` if the subscription was removed, `false` if it was not found.
    */
   removeSubscription(subscription: Subscription): boolean {
@@ -175,7 +175,7 @@ export class MutableSubscriptionSet extends BaseSubscriptionSet {
 
   /**
    * Remove all subscriptions for the specified object type from the SubscriptionSet.
-   * @param objectType The string name of the object type to remove all subscriptions for.
+   * @param objectType - The string name of the object type to remove all subscriptions for.
    * @returns The number of subscriptions removed.
    */
   removeByObjectType(objectType: string): number {

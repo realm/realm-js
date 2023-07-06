@@ -25,13 +25,14 @@ import { BSON, SubscriptionSet, binding } from "../internal";
  * in a {@link SubscriptionSet.update} callback.
  */
 export class Subscription {
-  /**@internal */
-  constructor(/**@internal */ public internal: binding.SyncSubscription) {
+  /** @internal */
+  constructor(/** @internal */ public internal: binding.SyncSubscription) {
     this.internal = internal;
   }
 
   /**
    * The ObjectId of the subscription.
+   * @returns The ObjectId of the subscription.
    */
   get id(): BSON.ObjectId {
     return this.internal.id;
@@ -39,6 +40,7 @@ export class Subscription {
 
   /**
    * The date when this subscription was created.
+   * @returns The date when this subscription was created.
    */
   get createdAt(): Date {
     return this.internal.createdAt.toDate();
@@ -46,6 +48,7 @@ export class Subscription {
 
   /**
    * The date when this subscription was last updated.
+   * @returns The date when this subscription was last updated.
    */
   get updatedAt(): Date {
     return this.internal.updatedAt.toDate();
@@ -54,6 +57,7 @@ export class Subscription {
   /**
    * The name given to this subscription when it was created.
    * If no name was set, this will be `null`.
+   * @returns The name of the subscription or `null` if unnamed.
    */
   get name(): string | null {
     const result = this.internal.name;
@@ -62,6 +66,7 @@ export class Subscription {
 
   /**
    * The type of objects the subscription refers to.
+   * @returns The type of objects the subscription refers to.
    */
   get objectType(): string {
     return this.internal.objectClassName;
@@ -70,6 +75,7 @@ export class Subscription {
   /**
    * The string representation of the query the subscription was created with.
    * If no filter or sort was specified, this will be `"TRUEPREDICATE"`.
+   * @returns The string representation of the query the subscription was created with.
    */
   get queryString(): string {
     return this.internal.queryString;

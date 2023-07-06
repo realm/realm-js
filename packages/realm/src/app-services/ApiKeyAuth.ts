@@ -92,7 +92,7 @@ export class ApiKeyAuth {
 
   /**
    * Deletes an API key associated with the current user.
-   * @param keyId the id of the API key to delete
+   * @param keyId the ID of the API key to delete
    */
   async delete(keyId: string) {
     await this.internal.deleteApiKey(new BSON.ObjectId(keyId), this.user);
@@ -100,7 +100,7 @@ export class ApiKeyAuth {
 
   /**
    * Enables an API key associated with the current user.
-   * @param keyId the id of the API key to enable
+   * @param keyId the ID of the API key to enable
    */
   async enable(keyId: string) {
     await this.internal.enableApiKey(new BSON.ObjectId(keyId), this.user);
@@ -108,7 +108,7 @@ export class ApiKeyAuth {
 
   /**
    * Disable an API key associated with the current user.
-   * @param keyId the id of the API key to disable
+   * @param keyId the ID of the API key to disable
    */
   async disable(keyId: string) {
     await this.internal.disableApiKey(new BSON.ObjectId(keyId), this.user);

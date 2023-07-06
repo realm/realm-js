@@ -184,7 +184,7 @@ export type SSLVerifyObject = {
    */
   pemCertificate: string;
   /**
-   * The result of OpenSSL's preverification of the certificate. If `true`,
+   * The result of OpenSSL's pre-verification of the certificate. If `true`,
    * the certificate has been accepted and will generally be safe to trust.
    * If `false`, it has been rejected and the user should do an independent
    * validation step.

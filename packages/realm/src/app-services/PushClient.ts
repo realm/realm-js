@@ -34,16 +34,18 @@ export class PushClient {
 
   /**
    * Register this device with the user.
-   * @param token A Firebase Cloud Messaging (FCM) token, retrieved via the firebase SDK.
+   * @param token - A Firebase Cloud Messaging (FCM) token, retrieved via the firebase SDK.
+   * @returns A promise that resolves once the device has been registered.
    */
-  async register(token: string) {
+  async register(token: string): Promise<void> {
     await this.internal.registerDevice(token, this.user);
   }
 
   /**
    * Deregister this device with the user, to disable sending messages to this device.
+   * @returns A promise that resolves once the device has been deregistered.
    */
-  async deregister() {
+  async deregister(): Promise<void> {
     await this.internal.deregisterDevice(this.user);
   }
 }

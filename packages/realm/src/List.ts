@@ -72,7 +72,11 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
     });
   }
 
-  isValid() {
+  /**
+   * Checks if this collection has not been deleted and is part of a valid Realm.
+   * @returns `true` if the collection can be safely accessed.
+   */
+  isValid(): boolean {
     return this.internal.isValid;
   }
 
@@ -82,7 +86,7 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
    * @param value The value
    * @internal
    */
-  public set(index: number, value: unknown) {
+  public set(index: number, value: unknown): void {
     const {
       realm,
       internal,
@@ -94,10 +98,16 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
     internal.setAny(index, toBinding(value, isEmbedded ? () => [internal.insertEmbedded(index), true] : undefined));
   }
 
+  /**
+   * @returns The number of values in the list.
+   */
   get length(): number {
     return this.internal.size;
   }
 
+  /**
+   * @throws An {@link Error} as the length property cannot be assigned.
+   */
   set length(value: number) {
     throw new Error("Cannot assign to read only property 'length'");
   }
@@ -123,12 +133,11 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
 
   /**
    * Add one or more values to the _end_ of the list.
-   * @param items Values to add to the list.
-   * @throws {TypeError} If a `value` is not of a type which can be stored in
-   *   the list, or if an object being added to the list does not match the {@link ObjectSchema} for the list.
-   * @throws an {@link AssertionError} If not inside a write transaction.
-   * @returns A number equal to the new length of
-   *          the list after adding the values.
+   * @param items - Values to add to the list.
+   * @throws A {TypeError} if a value is not of a type which can be stored in
+   * the list, or if an object being added to the list does not match the {@link ObjectSchema} for the list.
+   * @throws An {@link AssertionError} if not inside a write transaction.
+   * @returns The new length of the list after adding the values.
    */
   push(...items: T[]): number {
     assert.inTransaction(this.realm);
@@ -152,8 +161,8 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
 
   /**
    * Remove the **first** value from the list and return it.
-   * @throws an {@link AssertionError} If not inside a write transaction.
-   * @returns The first value or undefined if the list is empty.
+   * @throws An {@link AssertionError} if not inside a write transaction.
+   * @returns The first value or `undefined` if the list is empty.
    */
   shift(): T | undefined {
     assert.inTransaction(this.realm);
@@ -170,11 +179,11 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
 
   /**
    * Add one or more values to the _beginning_ of the list.
-   * @param items Values to add to the list.
-   * @throws {TypeError} If a `value` is not of a type which can be stored in
+   * @param items - Values to add to the list.
+   * @throws A {TypeError} if a value is not of a type which can be stored in
    * the list, or if an object being added to the list does not match the {@link ObjectSchema} for the list.
-   * @throws an {@link AssertionError} If not inside a write transaction.
-   * @returns The new {@link length} of the list after adding the values.
+   * @throws An {@link AssertionError} if not inside a write transaction.
+   * @returns The new length of the list after adding the values.
    */
   unshift(...items: T[]): number {
     assert.inTransaction(this.realm);
@@ -195,45 +204,44 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
   }
 
   /**
-   * TODO
    * Changes the contents of the list by removing value and/or inserting new value.
    * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/splice Array.prototype.splice}
-   * @param start The start index. If greater than the length of the list,
-   *   the start index will be set to the length instead. If negative, then the start index
-   *   will be counted from the end of the list (e.g. `list.length - index`).
-   * @param deleteCount The number of values to remove from the list.
-   *   If not provided, then all values from the start index through the end of
-   *   the list will be removed.
+   * @param start - The start index. If greater than the length of the list,
+   * the start index will be set to the length instead. If negative, then the start index
+   * will be counted from the end of the list (e.g. `list.length - index`).
+   * @param deleteCount - The number of values to remove from the list.
+   * If not provided, then all values from the start index through the end of
+   * the list will be removed.
    * @returns An array containing the value that were removed from the list. The
-   *   array is empty if no value were removed.
+   * array is empty if no value were removed.
    */
   splice(start: number, deleteCount?: number): T[];
   /**
    * Changes the contents of the list by removing value and/or inserting new value.
    * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/splice Array.prototype.splice}
-   * @param start The start index. If greater than the length of the list,
-   *   the start index will be set to the length instead. If negative, then the start index
-   *   will be counted from the end of the list (e.g. `list.length - index`).
-   * @param deleteCount The number of values to remove from the list.
-   *   If not provided, then all values from the start index through the end of
-   *   the list will be removed.
-   * @param items Values to insert into the list starting at `index`.
+   * @param start - The start index. If greater than the length of the list,
+   * the start index will be set to the length instead. If negative, then the start index
+   * will be counted from the end of the list (e.g. `list.length - index`).
+   * @param deleteCount - The number of values to remove from the list.
+   * If not provided, then all values from the start index through the end of
+   * the list will be removed.
+   * @param items - Values to insert into the list starting at `index`.
    * @returns An array containing the value that were removed from the list. The
-   *   array is empty if no value were removed.
+   * array is empty if no value were removed.
    */
   splice(start: number, deleteCount: number, ...items: T[]): T[];
   /**
    * Changes the contents of the list by removing value and/or inserting new value.
    * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/splice Array.prototype.splice}
-   * @param start The start index. If greater than the length of the list,
-   *   the start index will be set to the length instead. If negative, then the start index
-   *   will be counted from the end of the list (e.g. `list.length - index`).
-   * @param deleteCount The number of values to remove from the list.
-   *   If not provided, then all values from the start index through the end of
-   *   the list will be removed.
-   * @param items Values to insert into the list starting at `index`.
+   * @param start - The start index. If greater than the length of the list,
+   * the start index will be set to the length instead. If negative, then the start index
+   * will be counted from the end of the list (e.g. `list.length - index`).
+   * @param deleteCount - The number of values to remove from the list.
+   * If not provided, then all values from the start index through the end of
+   * the list will be removed.
+   * @param items - Values to insert into the list starting at `index`.
    * @returns An array containing the value that were removed from the list. The
-   *   array is empty if no value were removed.
+   * array is empty if no value were removed.
    */
   splice(start: number, deleteCount?: number, ...items: T[]): T[] {
     // Comments in the code below is copied from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/splice
@@ -280,11 +288,11 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
 
   /**
    * Removes the element of the list at the specified index.
-   * @param index The index of the element to remove.
-   * @throws an {@link AssertionError} If not inside a write transaction or the input index is less than 0
-   * or greater than the size of the list.
+   * @param index - The index of the element to remove.
+   * @throws An {@link AssertionError} if not inside a write transaction or the input index is less than 0
+   * or greater than or equal to the size of the list.
    */
-  remove(index: number) {
+  remove(index: number): void {
     assert.inTransaction(this.realm);
     assert.number(index, "index");
 
@@ -296,12 +304,12 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
 
   /**
    * Moves one element of the list from one index to another.
-   * @param from The index of the element to move.
-   * @param to The destination index of the element.
-   * @throws an {@link AssertionError} If not inside a write transaction or if any of the input indexes
-   * is less than 0 or greater than the size of the list.
+   * @param from - The index of the element to move.
+   * @param to - The destination index of the element.
+   * @throws An {@link AssertionError} if not inside a write transaction or if any of the input indexes
+   * is less than 0 or greater than or equal to the size of the list.
    */
-  move(from: number, to: number) {
+  move(from: number, to: number): void {
     assert.inTransaction(this.realm);
     assert.number(from, "from");
     assert.number(to, "to");
@@ -315,12 +323,12 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
 
   /**
    * Swaps the positions of the elements of the list at two indexes.
-   * @param index1 The index of the first element.
-   * @param index2 The index of the second element.
-   * @throws an {@link AssertionError} If not inside a write transaction or if any of the input indexes
-   * is less than 0 or greater than the size of the list.
+   * @param index1 - The index of the first element.
+   * @param index2 - The index of the second element.
+   * @throws An {@link AssertionError} if not inside a write transaction or if any of the input indexes
+   * is less than 0 or greater than or equal to the size of the list.
    */
-  swap(index1: number, index2: number) {
+  swap(index1: number, index2: number): void {
     assert.inTransaction(this.realm);
     assert.number(index1, "index1");
     assert.number(index2, "index2");

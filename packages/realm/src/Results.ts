@@ -36,6 +36,7 @@ import {
  * snapshot()}, however, will **not** live update
  * (and listener callbacks added through addListener()
  * will thus never be called).
+ * @see https://www.mongodb.com/docs/realm/sdk/react-native/model-data/data-types/collections/
  */
 export class Results<T = unknown> extends OrderedCollection<T> {
   /**
@@ -82,16 +83,19 @@ export class Results<T = unknown> extends OrderedCollection<T> {
     throw new Error("Cannot assign to read only property 'length'");
   }
 
+  /*
+   * @returns A string representation of the query and sorting bound to the results.
+   */
   description(): string {
     return binding.Helpers.getResultsDescription(this.internal);
   }
 
   /**
    * Bulk update objects in the collection.
-   * @param propertyName The name of the property.
-   * @param value The updated property value.
-   * @throws an {@link Error} If no property with the name exists.
-   * @since 2.0.0-rc20
+   * @param propertyName - The name of the property.
+   * @param value - The updated property value.
+   * @throws An {@link Error} if no property with the name exists.
+   * @since 2.0.0
    */
   update(propertyName: keyof Unmanaged<T>, value: Unmanaged<T>[typeof propertyName]): void {
     const {
@@ -114,7 +118,7 @@ export class Results<T = unknown> extends OrderedCollection<T> {
   /**
    * Add this query result to the set of active subscriptions. The query will be joined
    * via an `OR` operator with any existing queries for the same type.
-   * @param options Options to use when adding this subscription (e.g. a name or wait behavior).
+   * @param options - Options to use when adding this subscription (e.g. a name or wait behavior).
    * @returns A promise that resolves to this {@link Results} instance.
    * @experimental This API is experimental and may change or be removed.
    */
@@ -156,10 +160,18 @@ export class Results<T = unknown> extends OrderedCollection<T> {
     });
   }
 
+  /**
+   * Checks if this results collection has not been deleted and is part of a valid Realm.
+   * @returns `true` if the collection can be safely accessed.
+   */
   isValid(): boolean {
     return this.internal.isValid;
   }
 
+  /**
+   * Checks if this collection result is empty.
+   * @returns `true` if the collection result is empty, `false` if not.
+   */
   isEmpty(): boolean {
     return this.internal.size() === 0;
   }

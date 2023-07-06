@@ -60,21 +60,21 @@ export abstract class Collection<
 
   /**
    * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/keys Array.prototype.keys}
-   * @returns Iterator with all keys in the collection
+   * @returns An iterator with all keys in the collection.
    * @since 0.11.0
    */
   abstract keys(): Iterable<KeyType>;
 
   /**
    * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/keys Array.prototype.keys}
-   * @returns Iterator with all values in the collection
+   * @returns An iterator with all values in the collection.
    * @since 0.11.0
    */
   abstract values(): Iterable<ValueType>;
 
   /**
    * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/entries Array.prototype.keys}
-   * @returns Iterator with all key/value pairs in the collection
+   * @returns An iterator with all key/value pairs in the collection.
    * @since 0.11.0
    */
   abstract entries(): Iterable<EntryType>;
@@ -88,7 +88,7 @@ export abstract class Collection<
    * spread operators, and more.
    * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol/iterator Symbol.iterator}
    *   and the {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#iterable iterable protocol}
-   * @returns Iterable of each value in the collection
+   * @returns An iterable of each value in the collection.
    * @example
    * for (let object of collection) {
    *   // do something with each object
@@ -106,15 +106,16 @@ export abstract class Collection<
 
   /**
    * Add a listener `callback` which will be called when a **live** collection instance changes.
-   * @param callback A function to be called when changes occur.
-   *   The callback function is called with two arguments:
-   *   - `collection`: the collection instance that changed,
-   *   - `changes`: a dictionary with keys `insertions`, `newModifications`, `oldModifications`
-   *      and `deletions`, each containing a list of indices in the collection that were
-   *      inserted, updated or deleted respectively. `deletions` and `oldModifications` are
-   *      indices into the collection before the change happened, while `insertions` and
-   *      `newModifications` are indices into the new version of the collection.
-   * @throws a {@link TypeAssertionError} If `callback` is not a function.
+   * @param callback - A function to be called when changes occur.
+   * @param callback.collection - The collection instance that changed,
+   * @param callback.changes - An object with information about the changes.
+   * @param callback.changes.insertions - The indices in the collection where objects were inserted.
+   * @param callback.changes.newModifications - The indices in the collection where objects were modified.
+   * @param callback.changes.oldModifications - The indices in the collection where objects were modified.
+   * @param callback.changes.deletions - The indices in the collection where objects were deleted.
+   * @note `deletions and `oldModifications` report the indices in the collection before the change happened,
+   * while `insertions` and `newModifications` report the indices into the new version of the collection.
+   * @throws A {@link TypeAssertionError} if `callback` is not a function.
    * @example
    * wines.addListener((collection, changes) => {
    *  // collection === wines
@@ -134,8 +135,8 @@ export abstract class Collection<
 
   /**
    * Remove the listener `callback` from the collection instance.
-   * @param callback Callback function that was previously
-   *   added as a listener through the **addListener** method.
+   * @param callback - Callback function that was previously
+   *   added as a listener through the {@link Collection.addListener} method.
    * @throws a {@link TypeAssertionError} If `callback` is not a function.
    */
   removeListener(callback: ChangeCallbackType): void {
