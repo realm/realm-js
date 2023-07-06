@@ -1,26 +1,18 @@
-# This workflow builds the TypeDoc for relevant and publishes it to https://docs.mongodb.com/realm-sdks/js/
-# It will determine if it's a pre-release or an official release
-# pre-releases are published to /next
-# releases are published to /latest
-# all releases are published to /<version>
+# This workflow builds the realm Typedoc and publishes it to https://docs.mongodb.com/realm-sdks/js/realm-react/latest/.
+# It also uploads them to a versioned directory for archival purposes.
 
-name: Realm React Docs Publish
+name: Realm Docs Publish
 on:
   push:
     tags:
-      - (realm-react|realm-web)?-?v([0-9]+\.[0-9]+\.[0-9]+(-\S+)?)
+      - realm-v[0-9]+\.[0-9]+\.[0-9]+
   workflow_dispatch:
-    inputs:
-      tag:
-        description: manually set the tag for the desired documentation location
-        required: true
-        type: string
 
 env:
   REALM_DISABLE_ANALYTICS: 1
 jobs:
   publish:
-    name: Build & Publish Realm React Docs
+    name: Build & Publish Realm Docs
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -36,7 +28,7 @@ jobs:
       - name: Install root package dependencies
         run: npm ci --ignore-scripts
       - name: Build docs
-        run: cd packages/realm-react && npm run docs
+        run: cd packages/realm && npm run docs
       - name: Set up S3cmd and configure AWS credentials
         uses: s3-actions/s3cmd@v1.1
         with:
@@ -51,6 +43,6 @@ jobs:
       # --no-mime-magic --guess-mime-type flags to work around CSS incorrect MIME type issue
       # (https://stackoverflow.com/questions/53708938/s3cmd-flagging-css-with-wrong-mime-type)
       - name: Upload versioned docs (for archival)
-        run: s3cmd put --recursive --acl-public --no-mime-magic --guess-mime-type docs/ s3://${{ secrets.DOCS_S3_BUCKET_NAME }}/docs/realm-sdks/js/realm-react/${{ steps.package-version.outputs.current-version}}/
+        run: s3cmd put --recursive --acl-public --no-mime-magic --guess-mime-type docs/ s3://${{ secrets.DOCS_S3_BUCKET_NAME }}/docs/realm-sdks/js/${{ steps.package-version.outputs.current-version}}/
       - name: Upload latest docs (to live site)
-        run: s3cmd put --recursive --acl-public --no-mime-magic --guess-mime-type docs/ s3://${{ secrets.DOCS_S3_BUCKET_NAME }}/docs/realm-sdks/js/realm-react/latest/
+        run: s3cmd put --recursive --acl-public --no-mime-magic --guess-mime-type docs/ s3://${{ secrets.DOCS_S3_BUCKET_NAME }}/docs/realm-sdks/js/latest/
