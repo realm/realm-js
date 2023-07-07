@@ -268,7 +268,7 @@
   },
   "peerDependencies": {
     "bson": "^4",
-    "react-native": "^0.71.0"
+    "react-native": ">=0.71.0"
   },
   "peerDependenciesMeta": {
     "react-native": {
