@@ -7,5 +7,4 @@
   "name": "Realm Web",
   "includeVersion": true,
   "sourceLinkTemplate": "https://github.com/realm/realm-js/blob/{gitRevision}/{path}#L{line}",
-  // "favicon": "../../media/favicon.ico"
 }
