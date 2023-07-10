@@ -10,7 +10,7 @@ Build better apps, faster.
 ## Introduction
 Setting up Realm in a React Native application has historically been complex. Re-rendering of components when objects in the database change requires manually adding and removing listeners, which produce a lot of boilerplate code and is error-prone (if listeners properly removed on unmount). This library alleviates that by providing [React hooks](https://reactjs.org/docs/hooks-intro.html) which return Realm data that is state aware. As a consequence, any change to the Realm data will cause components using the hook to re-render.
 
-Documentation for `@realm/react` and Realm can be found at [docs.mongodb.org](https://www.mongodb.com/docs/realm/sdk/react-native/use-realm-react/).
+Documentation for `@realm/react` and Realm can be found at [docs.mongodb.org](https://www.mongodb.com/docs/realm/sdk/react-native).
 ## Installation
 
 This library requires `react-native` >= 0.59 and `realm` >= 11
