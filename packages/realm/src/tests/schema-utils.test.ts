@@ -19,13 +19,16 @@
 import { expect } from "chai";
 import { inspect } from "util";
 
-import { ColKey, PropertyType, Realm, TableKey, TableType } from "../binding";
+import {
+  ObjectSchema as BindingObjectSchema,
+  Property as BindingProperty,
+  PropertyType as BindingPropertyType,
+  ColKey,
+  TableKey,
+  TableType,
+} from "../binding";
 import { CanonicalObjectSchema, CanonicalPropertySchema } from "../schema";
 import { fromBindingObjectSchema, fromBindingPropertySchema } from "../schema/from-binding";
-
-// TODO: Update these once the binding expose proper types
-type BindingObjectSchema = Realm["schema"][0];
-type BindingProperty = Realm["schema"][0]["persistedProperties"][0];
 
 const columnKey = { value: 0n } as unknown as ColKey;
 const tableKey = { value: 0 } as unknown as TableKey;
@@ -36,9 +39,10 @@ describe("schema-utils", () => {
       [
         {
           name: "prop",
-          type: PropertyType.Int,
+          type: BindingPropertyType.Int,
           columnKey,
           isIndexed: false,
+          isFulltextIndexed: false,
           isPrimary: false,
           linkOriginPropertyName: "",
           objectType: "",
@@ -49,9 +53,10 @@ describe("schema-utils", () => {
       [
         {
           name: "prop",
-          type: PropertyType.Int | PropertyType.Nullable,
+          type: BindingPropertyType.Int | BindingPropertyType.Nullable,
           columnKey,
           isIndexed: false,
+          isFulltextIndexed: false,
           isPrimary: false,
           linkOriginPropertyName: "",
           objectType: "",
@@ -62,9 +67,10 @@ describe("schema-utils", () => {
       [
         {
           name: "prop",
-          type: PropertyType.String,
+          type: BindingPropertyType.String,
           columnKey,
           isIndexed: false,
+          isFulltextIndexed: false,
           isPrimary: false,
           linkOriginPropertyName: "",
           objectType: "",
@@ -75,9 +81,10 @@ describe("schema-utils", () => {
       [
         {
           name: "prop",
-          type: PropertyType.String | PropertyType.Nullable,
+          type: BindingPropertyType.String | BindingPropertyType.Nullable,
           columnKey,
           isIndexed: false,
+          isFulltextIndexed: false,
           isPrimary: false,
           linkOriginPropertyName: "",
           objectType: "",
@@ -103,9 +110,10 @@ describe("schema-utils", () => {
           persistedProperties: [
             {
               name: "name",
-              type: PropertyType.String,
+              type: BindingPropertyType.String,
               columnKey,
               isIndexed: false,
+              isFulltextIndexed: false,
               isPrimary: false,
               linkOriginPropertyName: "",
               objectType: "",
@@ -113,10 +121,11 @@ describe("schema-utils", () => {
             },
             {
               name: "friends",
-              type: PropertyType.Object ^ PropertyType.Array,
+              type: BindingPropertyType.Object ^ BindingPropertyType.Array,
               objectType: "Person",
               columnKey,
               isIndexed: false,
+              isFulltextIndexed: false,
               isPrimary: false,
               linkOriginPropertyName: "",
               publicName: "",

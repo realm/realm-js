@@ -18,8 +18,6 @@
 
 import { HelperOptions, PropertyHelpers, binding, createPropertyHelpers } from "./internal";
 
-type BindingObjectSchema = binding.Realm["schema"][0];
-
 class UninitializedPropertyMapError extends Error {
   constructor() {
     super("Property Map was accessed before it got initialized");
@@ -37,7 +35,7 @@ export class PropertyMap {
   private nameByColumnKeyString: Map<string, string> = new Map();
   private _names: string[] = [];
 
-  public initialize(objectSchema: BindingObjectSchema, defaults: Record<string, unknown>, options: HelperOptions) {
+  public initialize(objectSchema: binding.ObjectSchema, defaults: Record<string, unknown>, options: HelperOptions) {
     const { name: objectSchemaName, persistedProperties, computedProperties } = objectSchema;
     this.objectSchemaName = objectSchemaName;
     const properties = [...persistedProperties, ...computedProperties];
