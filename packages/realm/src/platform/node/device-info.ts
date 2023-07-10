@@ -17,6 +17,9 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import os from "node:os";
+import path from "node:path";
+import fse from "fs-extra";
+import { createHmac } from "node:crypto";
 
 import { version } from "realm/package.json";
 
@@ -24,6 +27,39 @@ import { inject } from "../device-info";
 
 inject({
   create() {
+
+    /**
+     * Generate a hash value of data using salt.
+     * @returns base64 encoded SHA256 of data
+     */
+    function sha256(data: string): string {
+      const salt = "Realm is great";
+      return createHmac("sha256", Buffer.from(salt)).update(data).digest().toString("base64");
+    }
+
+    /**
+     * Finds the root directory of the project.
+     * @returns the root of the project
+     */
+    function getProjectRoot(): string {
+      let wd = process.env.npm_config_local_prefix;
+      if (!wd) {
+        wd = process.cwd();
+        const index = wd.indexOf("node_modules");
+        wd = index === -1 ? wd : wd.slice(0, index);
+      }
+      return wd;
+    }
+
+    /**
+     * Finds and read package.json
+     * @returns package.json as a JavaScript object
+     */
+    function getPackageJson(packagePath: string): string {
+      const packageJson = path.resolve(packagePath, "package.json");
+      return fse.readJsonSync(packageJson);
+    }
+
     return {
       sdk: "JS",
       sdkVersion: version,
@@ -38,6 +74,8 @@ inject({
 
       frameworkName: typeof process.versions.electron === "string" ? "Electron" : "Node.js",
       frameworkVersion: process.versions.electron || process.version,
+
+      bundleId:,
     };
   },
 });

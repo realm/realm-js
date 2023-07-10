@@ -75,6 +75,8 @@ inject({
 
       frameworkName: "react-native",
       frameworkVersion: getReactNativeVersion(),
+
+      bundleId: "<FIXME>",
     };
   },
 });
