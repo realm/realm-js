@@ -1075,6 +1075,9 @@ export function generate({ rawSpec, spec, file: makeFile }: TemplateContext): vo
 
         extern "C" {
         void realm_jsi_invalidate_caches() {
+            // Clear the default logger, to prevent it from holding on to a pointer that was released
+            realm::util::Logger::set_default_level_threshold(realm::util::Logger::Level::off);
+            realm::util::Logger::set_default_logger(nullptr);
             // Close all cached Realms
             realm::_impl::RealmCoordinator::clear_all_caches();
             // Clear the Object Store App cache, to prevent instances from using a context that was released
