@@ -23,6 +23,7 @@ import {
   Logger,
   MutableSubscriptionSet,
   NumericLogLevel,
+  OpenRealmBehaviorConfiguration,
   OpenRealmBehaviorType,
   OpenRealmTimeOutBehavior,
   PartitionValue,
@@ -175,7 +176,8 @@ export class Sync {
    * If this is the first time you open the Realm, it will be empty while the server data is being downloaded in the background.
    * @deprecated since v12
    */
-  static openLocalRealmBehavior = {
+
+  static openLocalRealmBehavior: Readonly<OpenRealmBehaviorConfiguration> = {
     type: OpenRealmBehaviorType.OpenImmediately,
   };
 
@@ -183,7 +185,7 @@ export class Sync {
    * The default behavior settings if you want to wait for downloading a synchronized Realm to complete before opening it.
    * @deprecated since v12
    */
-  static downloadBeforeOpenBehavior = {
+  static downloadBeforeOpenBehavior: Readonly<OpenRealmBehaviorConfiguration> = {
     type: OpenRealmBehaviorType.DownloadBeforeOpen,
     timeOut: 30 * 1000,
     timeOutBehavior: OpenRealmTimeOutBehavior.ThrowException,
