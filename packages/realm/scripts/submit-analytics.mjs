@@ -104,9 +104,8 @@ function getProjectRoot() {
  */
 function getPackageJson(packagePath) {
   const packageJson = path.resolve(packagePath, "package.json");
-  const buffer = fs.readFileSync(packageJson);
-  const asJson = JSON.parse(buffer);
-  return asJson;
+  const buffer = fs.readFileSync(packageJson, "utf-8");
+  return JSON.parse(buffer);
 }
 
 /**
