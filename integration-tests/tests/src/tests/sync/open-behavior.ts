@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 import { expect } from "chai";
-import Realm, { BSON } from "realm";
+import Realm, { BSON, OpenRealmBehaviorType, OpenRealmTimeOutBehavior } from "realm";
 import { generatePartition, randomVerifiableEmail } from "../../utils/generators";
 import { importAppBefore } from "../../hooks";
 import { sleep } from "../../utils/sleep";
@@ -33,7 +33,7 @@ const DogForSyncSchema = {
   },
 };
 
-async function getRegisteredEmailPassCredentials(app: Realm.App) {
+async function getRegisteredEmailPassCredentials(app: Realm.App<any, any>) {
   if (!app) {
     throw new Error("No app supplied to 'getRegisteredEmailPassCredentials'");
   }
@@ -52,8 +52,11 @@ describe("OpenBehaviour", function () {
   afterEach(() => Realm.clearTestState());
 
   it("static references are defined", () => {
-    expect(Realm.App.Sync.openLocalRealmBehavior).to.not.be.undefined;
-    expect(Realm.App.Sync.downloadBeforeOpenBehavior).to.not.be.undefined;
+    expect(Realm.App.Sync.openLocalRealmBehavior.type).to.equal(OpenRealmBehaviorType.OpenImmediately);
+
+    expect(Realm.App.Sync.downloadBeforeOpenBehavior.type).to.equal(OpenRealmBehaviorType.DownloadBeforeOpen);
+    expect(Realm.App.Sync.downloadBeforeOpenBehavior.timeOut).to.equal(30000);
+    expect(Realm.App.Sync.downloadBeforeOpenBehavior.timeOutBehavior).to.equal(OpenRealmTimeOutBehavior.ThrowException);
   });
 
   it("open synced realm with localRealmBehaviour", async function (this: AppContext) {

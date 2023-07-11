@@ -52,7 +52,11 @@ function determineBehavior(config: Configuration, realmExists: boolean): OpenBeh
       }
       return { openBehavior: type, timeOut, timeOutBehavior };
     } else {
-      return { openBehavior: OpenRealmBehaviorType.DownloadBeforeOpen }; // Default is downloadBeforeOpen
+      return {
+        openBehavior: OpenRealmBehaviorType.DownloadBeforeOpen,
+        timeOut: 30 * 1000,
+        timeOutBehavior: OpenRealmTimeOutBehavior.ThrowException,
+      };
     }
   }
 }

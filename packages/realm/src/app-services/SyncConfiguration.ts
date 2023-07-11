@@ -220,11 +220,23 @@ export type BaseSyncConfiguration = {
   user: AnyUser;
   /**
    * Whether to create a new file and sync in background or wait for the file to be synced.
+   * @default
+   * {
+   *   type: OpenRealmBehaviorType.DownloadBeforeOpen,
+   *   timeOut: 30 * 1000,
+   *   timeOutBehavior: OpenRealmTimeOutBehavior.ThrowException,
+   * }
    */
   newRealmFileBehavior?: OpenRealmBehaviorConfiguration;
   /**
    * Whether to open existing file and sync in background or wait for the sync of the file to complete and then open.
    * If not set, the Realm will be downloaded before opened.
+   * @default
+   * {
+   *   type: OpenRealmBehaviorType.DownloadBeforeOpen,
+   *   timeOut: 30 * 1000,
+   *   timeOutBehavior: OpenRealmTimeOutBehavior.ThrowException,
+   * }
    */
   existingRealmFileBehavior?: OpenRealmBehaviorConfiguration;
   /**
