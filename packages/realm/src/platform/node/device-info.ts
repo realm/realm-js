@@ -27,7 +27,6 @@ import { inject } from "../device-info";
 
 inject({
   create() {
-
     /**
      * Generate a hash value of data using salt.
      * @returns base64 encoded SHA256 of data
@@ -55,10 +54,13 @@ inject({
      * Finds and read package.json
      * @returns package.json as a JavaScript object
      */
-    function getPackageJson(packagePath: string): string {
+    function getPackageJson(packagePath: string) {
       const packageJson = path.resolve(packagePath, "package.json");
       return fse.readJsonSync(packageJson);
     }
+
+    const packageJson = getPackageJson(getProjectRoot());
+    const bundleId = sha256(packageJson.name as string);
 
     return {
       sdk: "JS",
@@ -75,7 +77,7 @@ inject({
       frameworkName: typeof process.versions.electron === "string" ? "Electron" : "Node.js",
       frameworkVersion: process.versions.electron || process.version,
 
-      bundleId:,
+      bundleId,
     };
   },
 });
