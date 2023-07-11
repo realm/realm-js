@@ -52,7 +52,6 @@ import { createHmac } from "node:crypto";
 import { Buffer } from "node:buffer";
 
 import machineId from "node-machine-id";
-import fse from "fs-extra";
 
 import createDebug from "debug";
 export const debug = createDebug("realm:submit-analytics");
@@ -105,7 +104,9 @@ function getProjectRoot() {
  */
 function getPackageJson(packagePath) {
   const packageJson = path.resolve(packagePath, "package.json");
-  return fse.readJsonSync(packageJson);
+  const buffer = fs.readFileSync(packageJson);
+  const asJson = JSON.parse(buffer);
+  return asJson;
 }
 
 /**
@@ -127,8 +128,7 @@ function isAnalyticsDisabled() {
 }
 
 function getRealmVersion() {
-  const packageJsonPath = path.resolve(__dirname, "../package.json");
-  const packageJson = fse.readJsonSync(packageJsonPath);
+  const packageJson = getPackageJson(__dirname);
   return packageJson["version"];
 }
 
@@ -139,7 +139,7 @@ function getRealmVersion() {
  */
 function getRealmCoreVersion() {
   const dependenciesListPath = path.resolve(__dirname, "../dependencies.list");
-  const dependenciesList = fse
+  const dependenciesList = fs
     .readFileSync(dependenciesListPath)
     .toString()
     .split("\n")

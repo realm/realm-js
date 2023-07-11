@@ -19,6 +19,7 @@
 <!-- * Either mention core version or upgrade -->
 <!-- * Using Realm Core vX.Y.Z -->
 <!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
+* Installation failed due to missing dependency (`fs-extra`), and the post-install script has been refactored to use `fs` instead.
 
 ## 12.0.0-rc.1 (2023-06-30)
 
