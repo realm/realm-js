@@ -41,7 +41,7 @@ type OpenBehavior = {
 function determineBehavior(config: Configuration, realmExists: boolean): OpenBehavior {
   const { sync, openSyncedRealmLocally } = config;
   if (!sync || openSyncedRealmLocally) {
-    return { openBehavior: Realm.App.Sync.defaultLocalOpenRealmConfiguration.type };
+    return { openBehavior: OpenRealmBehaviorType.OpenImmediately };
   } else {
     const configProperty = realmExists ? "existingRealmFileBehavior" : "newRealmFileBehavior";
     const configBehavior = sync[configProperty];
@@ -52,8 +52,11 @@ function determineBehavior(config: Configuration, realmExists: boolean): OpenBeh
       }
       return { openBehavior: type, timeOut, timeOutBehavior };
     } else {
-      const { type, timeOut, timeOutBehavior } = Realm.App.Sync.defaultSyncOpenRealmConfiguration;
-      return { openBehavior: type, timeOut, timeOutBehavior };
+      return {
+        openBehavior: OpenRealmBehaviorType.DownloadBeforeOpen,
+        timeOut: 30 * 1000,
+        timeOutBehavior: OpenRealmTimeOutBehavior.ThrowException,
+      };
     }
   }
 }
