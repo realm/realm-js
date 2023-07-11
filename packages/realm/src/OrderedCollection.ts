@@ -748,4 +748,12 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
       return DEFAULT_COLUMN_KEY;
     }
   }
+
+  /**
+   * This symbol was required for implementing ReadOnlyArray, but we don't need
+   * it for anything.  It's just here to make TypeScript happy.
+   * For more reading see:
+   * @see (https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol/unscopables)
+   */
+  readonly [Symbol.unscopables] = {};
 }
