@@ -19,6 +19,9 @@
 import { Platform } from "react-native";
 
 import { version } from "realm/package.json";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import { REALM_ANONYMIZED_BUNDLE_ID } from "realm/realm_constants.json";
 
 import { inject } from "../device-info";
 import { JsPlatformHelpers } from "../../binding";
@@ -76,7 +79,7 @@ inject({
       frameworkName: "react-native",
       frameworkVersion: getReactNativeVersion(),
 
-      bundleId: "<FIXME>",
+      bundleId: REALM_ANONYMIZED_BUNDLE_ID,
     };
   },
 });

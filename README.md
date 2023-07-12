@@ -143,7 +143,10 @@ Currently the following information is reported:
  * If a JavaScript framework (currently React Native and Electron) is used and its version.
  * Which JavaScript engine is being used.
  * Node.js version number.
- * An anonymous machine identifier and hashed application path to aggregate the other information on.
+ * TypeScript version if used.
+ * An anonymous machine identifier and hashed application name to aggregate the other information on.
+
+Moreover, we unconditionally writes a file of various constants which we might use at runtime.
 
 ## Code of Conduct
 
