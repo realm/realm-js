@@ -127,7 +127,8 @@ function isAnalyticsDisabled() {
 }
 
 function getRealmVersion() {
-  const packageJson = getPackageJson(__dirname);
+  const packageJsonPath = path.resolve(__dirname, "..", "package.json");
+  const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf-8"));
   return packageJson["version"];
 }
 
