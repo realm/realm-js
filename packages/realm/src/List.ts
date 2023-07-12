@@ -91,7 +91,10 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
     } = this;
     assert.inTransaction(realm);
     // TODO: Consider a more performant way to determine if the list is embedded
-    internal.setAny(index, toBinding(value, isEmbedded ? () => [internal.insertEmbedded(index), true] : undefined));
+    internal.setAny(
+      index,
+      toBinding(value, isEmbedded ? { createObj: () => [internal.insertEmbedded(index), true] } : undefined),
+    );
   }
 
   get length(): number {
@@ -142,7 +145,7 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
       const index = start + offset;
       if (isEmbedded) {
         // Simply transforming to binding will insert the embedded object
-        toBinding(item, () => [internal.insertEmbedded(index), true]);
+        toBinding(item, { createObj: () => [internal.insertEmbedded(index), true] });
       } else {
         internal.insertAny(index, toBinding(item));
       }
@@ -186,7 +189,7 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
     for (const [index, item] of items.entries()) {
       if (isEmbedded) {
         // Simply transforming to binding will insert the embedded object
-        toBinding(item, () => [internal.insertEmbedded(index), true]);
+        toBinding(item, { createObj: () => [internal.insertEmbedded(index), true] });
       } else {
         internal.insertAny(index, toBinding(item));
       }
@@ -270,7 +273,7 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
       const index = start + offset;
       if (isEmbedded) {
         // Simply transforming to binding will insert the embedded object
-        toBinding(item, () => [internal.insertEmbedded(index), true]);
+        toBinding(item, { createObj: () => [internal.insertEmbedded(index), true] });
       } else {
         internal.insertAny(index, toBinding(item));
       }

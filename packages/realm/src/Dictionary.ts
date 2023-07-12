@@ -57,7 +57,7 @@ const PROXY_HANDLER: ProxyHandler<Dictionary> = {
     if (typeof prop === "string") {
       const internal = target[INTERNAL];
       const toBinding = target[HELPERS].toBinding;
-      internal.insertAny(prop, toBinding(value, undefined));
+      internal.insertAny(prop, toBinding(value));
       return true;
     } else {
       assert(typeof prop !== "symbol", "Symbols cannot be used as keys of a dictionary");
@@ -280,7 +280,7 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
     const toBinding = this[HELPERS].toBinding;
 
     for (const [key, val] of Object.entries(elements)) {
-      internal.insertAny(key, toBinding(val, undefined));
+      internal.insertAny(key, toBinding(val));
     }
     return this;
   }

@@ -78,7 +78,7 @@ export class RealmSet<T = unknown> extends OrderedCollection<T, [T, T]> {
    */
   delete(value: T): boolean {
     assert.inTransaction(this.realm);
-    const [, success] = this.internal.removeAny(this.helpers.toBinding(value, undefined));
+    const [, success] = this.internal.removeAny(this.helpers.toBinding(value));
     return success;
   }
 
@@ -92,7 +92,7 @@ export class RealmSet<T = unknown> extends OrderedCollection<T, [T, T]> {
    */
   add(value: T): this {
     assert.inTransaction(this.realm);
-    this.internal.insertAny(this.helpers.toBinding(value, undefined));
+    this.internal.insertAny(this.helpers.toBinding(value));
     return this;
   }
 

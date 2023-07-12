@@ -605,8 +605,6 @@ export class Realm {
   private changeListeners = new RealmListeners(this, RealmEvent.Change);
   private beforeNotifyListeners = new RealmListeners(this, RealmEvent.BeforeNotify);
   private schemaListeners = new RealmListeners(this, RealmEvent.Schema);
-  /** @internal */
-  public currentUpdateMode: UpdateMode | undefined;
 
   /**
    * Create a new {@link Realm} instance, at the default path.
@@ -868,9 +866,7 @@ export class Realm {
     }
     this.internal.verifyOpen();
     const helpers = this.classes.getHelpers(type);
-    this.currentUpdateMode = mode;
     const realmObject = RealmObject.create(this, values, mode, { helpers });
-    this.currentUpdateMode = undefined;
 
     return isAsymmetric(helpers.objectSchema) ? undefined : realmObject;
   }
@@ -960,7 +956,7 @@ export class Realm {
       throw new Error("You cannot query an asymmetric object.");
     }
     const table = binding.Helpers.getTable(this.internal, objectSchema.tableKey);
-    const value = properties.get(objectSchema.primaryKey).toBinding(primaryKey, undefined);
+    const value = properties.get(objectSchema.primaryKey).toBinding(primaryKey);
     try {
       const objKey = table.findPrimaryKey(value);
       if (binding.isEmptyObjKey(objKey)) {

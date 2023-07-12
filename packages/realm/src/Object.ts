@@ -237,7 +237,6 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
         typeof primaryKeyValue !== "undefined" && primaryKeyValue !== null
           ? primaryKeyValue
           : primaryKeyHelpers.default,
-        undefined,
       );
       const result = binding.Helpers.getOrCreateObjectWithPrimaryKey(table, pk);
       const [, created] = result;

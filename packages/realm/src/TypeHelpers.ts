@@ -72,7 +72,7 @@ export function toArrayBuffer(value: unknown, stringToBase64 = true) {
 
 /** @internal */
 export type TypeHelpers<T = unknown> = {
-  toBinding(value: T, createObj?: ObjCreator): binding.MixedArg;
+  toBinding(value: T, options?: { createObj?: ObjCreator; updateMode?: UpdateMode }): binding.MixedArg;
   fromBinding(value: unknown): T;
 };
 
@@ -249,7 +249,7 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => Type
     const helpers = getClassHelpers(objectType);
     const { wrapObject } = helpers;
     return {
-      toBinding: nullPassthrough((value, createObj) => {
+      toBinding: nullPassthrough((value, options) => {
         if (
           value instanceof RealmObject &&
           value.constructor.name === objectType &&
@@ -261,9 +261,9 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => Type
           assert.object(value, name);
           // Use the update mode if set; otherwise, the object is assumed to be an
           // unmanaged object that the user wants to create.
-          const createdObject = RealmObject.create(realm, value, realm.currentUpdateMode ?? UpdateMode.Never, {
+          const createdObject = RealmObject.create(realm, value, options?.updateMode ?? UpdateMode.Never, {
             helpers,
-            createObj,
+            createObj: options?.createObj,
           });
           return createdObject[INTERNAL];
         }
