@@ -103,9 +103,9 @@ function getProjectRoot() {
  * @returns package.json as a JavaScript object
  */
 function getPackageJson(packagePath) {
-  const packageJson = path.resolve(packagePath, "package.json");
-  const buffer = fs.readFileSync(packageJson, "utf-8");
-  return JSON.parse(buffer);
+  const packageJsonPath = path.resolve(packagePath, "package.json");
+  const packageJson = fs.readFileSync(packageJsonPath, "utf-8");
+  return JSON.parse(packageJson);
 }
 
 /**
