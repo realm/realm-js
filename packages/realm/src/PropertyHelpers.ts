@@ -214,7 +214,8 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
                 if (embedded) {
                   itemToBinding(value, { createObj: () => [internal.insertEmbedded(index), true] });
                 } else {
-                  bindingValues.push(itemToBinding(value));
+                  console.log("In PropertyHelpers ([binding.PropertyType.Array] setter)");
+                  bindingValues.push(itemToBinding(value)); // Need to pass update mode
                 }
               } catch (err) {
                 if (err instanceof TypeAssertionError) {

@@ -588,6 +588,8 @@ describe("Realm.Object", () => {
       });
 
       it("can be updated recursively", function (this: Mocha.Context & RealmContext) {
+        console.log("\n==== WRITE TRANSACTION: CREATE OBJECTS ====\n");
+
         // Create two mutual friends
         const { alice, bob } = this.realm.write(() => {
           const alice = this.realm.create(PersonWithId, {
@@ -605,6 +607,8 @@ describe("Realm.Object", () => {
           bob.friends.push(alice);
           return { alice, bob };
         });
+
+        console.log("\n==== WRITE TRANSACTION: CREATE W/ UPDATE MODE ALL ====\n");
 
         // Now update them
         this.realm.write(() => {
@@ -625,6 +629,10 @@ describe("Realm.Object", () => {
           );
         });
       });
+
+      // TODO: Add tests:
+      // * Child objects should also exist in a Dictionary and Set.
+      // * Child objects should also be embedded.
     });
   });
 
