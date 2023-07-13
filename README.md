@@ -146,7 +146,7 @@ Currently the following information is reported:
  * TypeScript version if used.
  * An anonymous machine identifier and hashed application name to aggregate the other information on.
 
-Moreover, we unconditionally writes a file of various constants which we might use at runtime.
+Moreover, we unconditionally write various constants to a file which we might use at runtime.
 
 ## Code of Conduct
 
