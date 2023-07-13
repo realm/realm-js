@@ -183,6 +183,18 @@ const TestObjectSchema = {
   },
 };
 
+const CollectionSchema: Realm.ObjectSchema = {
+  name: "CollectionObject",
+  primaryKey: "_id",
+  properties: {
+    _id: "objectId",
+    name: "string",
+    list: "CollectionObject[]",
+    dictionary: "CollectionObject{}",
+    set: "CollectionObject<>",
+  },
+};
+
 const AllTypesSchema = {
   name: "AllTypesObject",
   properties: {
@@ -283,6 +295,14 @@ interface ITestObject {
 }
 interface INonPersistentTestObject extends ITestObject {
   ignored: boolean;
+}
+
+interface ICollectionObject {
+  _id: Realm.BSON.ObjectId;
+  name: string;
+  list: Realm.List<ICollectionObject>;
+  dictionary: Realm.Dictionary<ICollectionObject>;
+  set: Realm.Set<ICollectionObject>;
 }
 
 interface IAllTypes {
@@ -517,7 +537,7 @@ describe("Realm.Object", () => {
     });
 
     describe("with primary key", () => {
-      openRealmBeforeEach({ schema: [PersonWithId] });
+      openRealmBeforeEach({ schema: [PersonWithId, CollectionSchema] });
       it("can be fetched with objectForPrimaryKey", function (this: Mocha.Context & RealmContext) {
         const _id = new Realm.BSON.ObjectId();
 
@@ -587,52 +607,112 @@ describe("Realm.Object", () => {
         expect(persons.length).equals(1);
       });
 
-      it("can be updated recursively", function (this: Mocha.Context & RealmContext) {
-        console.log("\n==== WRITE TRANSACTION: CREATE OBJECTS ====\n");
+      describe("applying 'UpdateMode' recursively", () => {
+        let aliceId: Realm.BSON.ObjectId;
+        let bobId: Realm.BSON.ObjectId;
+        let maxId: Realm.BSON.ObjectId;
 
-        // Create two mutual friends
-        const { alice, bob } = this.realm.write(() => {
-          const alice = this.realm.create(PersonWithId, {
-            _id: new Realm.BSON.ObjectId(),
-            name: "Alice",
-            age: 32,
+        beforeEach(function (this: RealmContext & Mocha.Context) {
+          aliceId = new Realm.BSON.ObjectId();
+          bobId = new Realm.BSON.ObjectId();
+          maxId = new Realm.BSON.ObjectId();
+
+          // Create two mutual friends (Alice and Bob) and one
+          // that will be added as a friend later (Max).
+          this.realm.write(() => {
+            const alice = this.realm.create<ICollectionObject>(CollectionSchema.name, {
+              _id: aliceId,
+              name: "Alice",
+            });
+            const bob = this.realm.create<ICollectionObject>(CollectionSchema.name, {
+              _id: bobId,
+              name: "Bob",
+            });
+            const max = this.realm.create<ICollectionObject>(CollectionSchema.name, {
+              _id: maxId,
+              name: "Max",
+            });
+            // Make them mutual friends.
+            alice.list.push(bob);
+            bob.list.push(alice);
           });
-          const bob = this.realm.create(PersonWithId, {
-            _id: new Realm.BSON.ObjectId(),
-            name: "Bob",
-            age: 42,
-          });
-          // Make them mutual friends
-          alice.friends.push(bob);
-          bob.friends.push(alice);
-          return { alice, bob };
         });
 
-        console.log("\n==== WRITE TRANSACTION: CREATE W/ UPDATE MODE ALL ====\n");
+        it("can be updated recursively in lists", function (this: Mocha.Context & RealmContext) {
+          this.realm.write(() => {
+            this.realm.create(
+              CollectionSchema.name,
+              {
+                _id: aliceId,
+                name: "UpdatedAlice",
+                list: [
+                  {
+                    _id: bobId,
+                    name: "UpdatedBob",
+                    list: [
+                      {
+                        _id: maxId,
+                        name: "UpdatedMax",
+                      },
+                    ],
+                  },
+                ],
+              },
+              Realm.UpdateMode.All,
+            );
+          });
+        });
 
-        // Now update them
-        this.realm.write(() => {
-          this.realm.create(
-            PersonWithId,
-            {
-              _id: alice._id,
-              age: 33,
-              friends: [
-                {
-                  _id: bob._id,
-                  age: 43,
-                  name: "Bobby",
+        it("can be updated recursively in dictionaries", function (this: Mocha.Context & RealmContext) {
+          this.realm.write(() => {
+            this.realm.create(
+              CollectionSchema.name,
+              {
+                _id: aliceId,
+                name: "UpdatedAlice",
+                dictionary: {
+                  bob: {
+                    _id: bobId,
+                    name: "UpdatedBob",
+                    dictionary: {
+                      max: {
+                        _id: maxId,
+                        name: "UpdatedMax",
+                      },
+                    },
+                  },
                 },
-              ],
-            },
-            Realm.UpdateMode.All,
-          );
+              },
+              Realm.UpdateMode.All,
+            );
+          });
+        });
+
+        it("can be updated recursively in sets", function (this: Mocha.Context & RealmContext) {
+          this.realm.write(() => {
+            this.realm.create(
+              CollectionSchema.name,
+              {
+                _id: aliceId,
+                name: "UpdatedAlice",
+                set: [
+                  {
+                    _id: bobId,
+                    name: "UpdatedBob",
+                    set: [
+                      {
+                        _id: maxId,
+                        name: "UpdatedMax",
+                      },
+                    ],
+                  },
+                ],
+              },
+              Realm.UpdateMode.All,
+            );
+          });
         });
       });
-
-      // TODO: Add tests:
-      // * Child objects should also exist in a Dictionary and Set.
-      // * Child objects should also be embedded.
     });
   });
 
