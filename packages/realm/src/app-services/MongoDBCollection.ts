@@ -122,7 +122,7 @@ export type UpdateOptions = {
  */
 export type Document<IdType = unknown> = {
   /**
-   * The id of the document.
+   * The ID of the document.
    */
   _id: IdType;
 };
@@ -137,7 +137,7 @@ export type NewDocument<T extends Document> = Omit<T, "_id"> & Partial<Pick<T, "
  */
 export type InsertOneResult<IdType> = {
   /**
-   * The id of the inserted document
+   * The ID of the inserted document
    */
   readonly insertedId: IdType;
 };
@@ -147,7 +147,7 @@ export type InsertOneResult<IdType> = {
  */
 export type InsertManyResult<IdType> = {
   /**
-   * The ids of the inserted documents
+   * The IDs of the inserted documents
    */
   readonly insertedIds: IdType[];
 };
@@ -267,7 +267,7 @@ export type ChangeEventId = unknown;
  * shard key for the document. The _id field is not repeated if it is already a part of the shard key.
  */
 export type DocumentKey<IdType> = {
-  /** The id of the document. */
+  /** The ID of the document. */
   _id: IdType;
 } & Record<string, unknown>;
 
@@ -275,7 +275,7 @@ export type DocumentKey<IdType> = {
  * A base change event containing the properties which apply across operation types.
  */
 export type BaseChangeEvent<T extends OperationType> = {
-  /** The id of the change event. */
+  /** The ID of the change event. */
   _id: ChangeEventId;
   /** The type of operation which was performed on the document. */
   operationType: T;
@@ -395,9 +395,9 @@ export type ChangeEvent<T extends Document> =
 export class MongoDBCollection<T extends Document> {
   private functions: DefaultFunctionsFactory;
 
-  /**@internal */
+  /** @internal */
   constructor(
-    /**@internal */ private user: User<unknown, unknown, unknown>,
+    /** @internal */ private user: User<unknown, unknown, unknown>,
     public readonly serviceName: string,
     public readonly databaseName: string,
     private readonly collectionName: string,
@@ -414,9 +414,9 @@ export class MongoDBCollection<T extends Document> {
 
   /**
    * Finds the documents which match the provided query.
-   * @param filter An optional filter applied to narrow down the results.
-   * @param options Additional options to apply.
-   * @returns The documents.
+   * @param filter - An optional filter applied to narrow down the results.
+   * @param options - Additional options to apply.
+   * @returns A promise that resolves to the found documents.
    */
   find(filter: Filter = {}, options: FindOptions = {}): Promise<T[]> {
     return this.functions.find({
@@ -431,9 +431,9 @@ export class MongoDBCollection<T extends Document> {
 
   /**
    * Finds a document which matches the provided filter.
-   * @param filter A filter applied to narrow down the result.
-   * @param options Additional options to apply.
-   * @returns The document.
+   * @param filter - A filter applied to narrow down the result.
+   * @param options - Additional options to apply.
+   * @returns A promise that resolves to the found document.
    */
   findOne(filter: Filter = {}, options: FindOneOptions = {}): Promise<T | null> {
     return this.functions.findOne({
@@ -447,10 +447,10 @@ export class MongoDBCollection<T extends Document> {
 
   /**
    * Finds a document which matches the provided query and performs the desired update to individual fields.
-   * @param filter A filter applied to narrow down the result.
-   * @param update The new values for the document.
-   * @param options Additional options to apply.
-   * @returns The document found before updating it.
+   * @param filter - A filter applied to narrow down the result.
+   * @param update - The new values for the document.
+   * @param options - Additional options to apply.
+   * @returns A promise that resolves to the found document before applying the update.
    */
   findOneAndUpdate(filter: Filter, update: Update, options: FindOneAndModifyOptions = {}): Promise<T | null> {
     return this.functions.findOneAndUpdate({
@@ -467,10 +467,10 @@ export class MongoDBCollection<T extends Document> {
 
   /**
    * Finds a document which matches the provided filter and replaces it with a new document.
-   * @param filter A filter applied to narrow down the result.
-   * @param replacement The new replacing document.
-   * @param options Additional options to apply.
-   * @returns The document found before replacing it.
+   * @param filter - A filter applied to narrow down the result.
+   * @param replacement - The new replacing document.
+   * @param options - Additional options to apply.
+   * @returns A promise that resolves to the found document found before replacement.
    */
   findOneAndReplace(filter: Filter, replacement: unknown, options: FindOneAndModifyOptions = {}): Promise<T | null> {
     return this.functions.findOneAndReplace({
@@ -487,9 +487,9 @@ export class MongoDBCollection<T extends Document> {
 
   /**
    * Finds a document which matches the provided filter and deletes it
-   * @param filter A filter applied to narrow down the result.
-   * @param options Additional options to apply.
-   * @returns The document found before deleting it.
+   * @param filter - A filter applied to narrow down the result.
+   * @param options - Additional options to apply.
+   * @returns A promise that resolves to the found document before deletion.
    */
   findOneAndDelete(filter: Filter = {}, options: FindOneOptions = {}): Promise<T | null> {
     return this.functions.findOneAndDelete({
@@ -503,8 +503,8 @@ export class MongoDBCollection<T extends Document> {
 
   /**
    * Runs an aggregation framework pipeline against this collection.
-   * @param pipeline An array of aggregation pipeline stages.
-   * @returns The result.
+   * @param pipeline - An array of aggregation pipeline stages.
+   * @returns A promise that resolves to the aggregation result.
    */
   aggregate(pipeline: AggregatePipelineStage[]): Promise<unknown> {
     return this.functions.aggregate({
@@ -523,6 +523,9 @@ export class MongoDBCollection<T extends Document> {
    *  - On a sharded cluster, the resulting count will not correctly filter out
    *    {@link https://www.mongodb.com/docs/manual/reference/glossary/#std-term-orphaned-document orphaned documents}.
    *  - After an unclean shutdown or file copy based initial sync, the count may be incorrect.
+   * @param filter - An optional filter applied to narrow down the results.
+   * @param options - Additional options to apply.
+   * @returns A promise that resolves to the number of documents matching the filter.
    */
   count(filter: Filter = {}, options: CountOptions = {}): Promise<number> {
     return this.functions.count({
@@ -536,8 +539,8 @@ export class MongoDBCollection<T extends Document> {
   /**
    * Inserts a single document into the collection.
    * Note: If the document is missing an _id, one will be generated for it by the server.
-   * @param document The document.
-   * @returns The result.
+   * @param document - The document to insert.
+   * @returns A promise that resolves an object containing the inserted object ID (`insertedId`).
    */
   insertOne(document: NewDocument<T>): Promise<InsertOneResult<T["_id"]>> {
     return this.functions.insertOne({
@@ -550,8 +553,8 @@ export class MongoDBCollection<T extends Document> {
   /**
    * Inserts an array of documents into the collection.
    * If any values are missing identifiers, they will be generated by the server.
-   * @param documents The array of documents.
-   * @returns The result.
+   * @param documents - The array of documents to insert.
+   * @returns A promise that resolves to an object containing an array of IDs inserted (`insertedIds`).
    */
   insertMany(documents: NewDocument<T>[]): Promise<InsertManyResult<T["_id"]>> {
     return this.functions.insertMany({
@@ -563,8 +566,8 @@ export class MongoDBCollection<T extends Document> {
 
   /**
    * Deletes a single matching document from the collection.
-   * @param filter A filter applied to narrow down the result.
-   * @returns The result.
+   * @param filter - A filter applied to narrow down the result.
+   * @returns A promise that resolves to an object containing the number of deleted documents (`deletedCount`).
    */
   deleteOne(filter: Filter = {}): Promise<DeleteResult> {
     return this.functions.deleteOne({
@@ -576,9 +579,9 @@ export class MongoDBCollection<T extends Document> {
 
   /**
    * Deletes multiple documents.
-   * @param filter A filter applied to narrow down the result. If omitted, it defaults
+   * @param filter - A filter applied to narrow down the result. If omitted, it defaults
    *  to `{}` which deletes all documents in the collection.
-   * @returns The result.
+   * @returns A promise that resolves to an object containing the number of deleted documents (`deletedCount`).
    */
   deleteMany(filter: Filter = {}): Promise<DeleteResult> {
     return this.functions.deleteMany({
@@ -590,10 +593,17 @@ export class MongoDBCollection<T extends Document> {
 
   /**
    * Updates a single document matching the provided filter in this collection.
-   * @param filter A filter applied to narrow down the result.
-   * @param update The new values for the document.
-   * @param options Additional options to apply.
-   * @returns The result.
+   * @param filter - A filter applied to narrow down the result.
+   * @param update - The new values for the document.
+   * @param options - Additional options to apply.
+   * @returns A promise that resolves to an object containing:
+   * ```
+   * {
+   *  matchedCount: number;
+   *  modifiedCount: number;
+   *  upsertedId: IdType | undefined;
+   * }
+   * ```
    */
   updateOne(filter: Filter, update: Update, options: UpdateOptions = {}): Promise<UpdateResult<T["_id"]>> {
     return this.functions.updateOne({
@@ -608,10 +618,17 @@ export class MongoDBCollection<T extends Document> {
 
   /**
    * Updates multiple documents matching the provided filter in this collection.
-   * @param filter A filter applied to narrow down the result.
-   * @param update The new values for the documents.
-   * @param options Additional options to apply.
-   * @returns The result.
+   * @param filter - A filter applied to narrow down the result.
+   * @param update - The new values for the documents.
+   * @param options - Additional options to apply.
+   * @returns A promise that resolves to an object containing:
+   * ```
+   * {
+   *  matchedCount: number;
+   *  modifiedCount: number;
+   *  upsertedId: IdType | undefined;
+   * }
+   * ```
    */
   updateMany(filter: Filter, update: Update, options: UpdateOptions = {}): Promise<UpdateResult<T["_id"]>> {
     return this.functions.updateMany({
@@ -634,8 +651,9 @@ export class MongoDBCollection<T extends Document> {
    *
    * 1. Polyfills for `fetch` and `ReadableStream`: https://www.npmjs.com/package/react-native-polyfill-globals
    * 2. Babel plugin enabling async generator syntax: https://npmjs.com/package/@babel/plugin-proposal-async-generator-functions
-   * @param options.filter A filter for which change events you want to watch.
-   * @param options.ids A list of document ids for which change events you want to watch.
+   * @param options.filter - A filter for which change events you want to watch.
+   * @param options.ids - A list of document IDs for which change events you want to watch.
+   * @returns An async generator of change events.
    * @see https://docs.mongodb.com/manual/reference/change-events/
    */
   watch(): AsyncGenerator<ChangeEvent<T>>;

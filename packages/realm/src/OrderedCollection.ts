@@ -108,8 +108,9 @@ const PROXY_HANDLER: ProxyHandler<OrderedCollection> = {
 /**
  * An {@link OrderedCollection} is a homogenous sequence of values of any of the types
  * that can be stored as properties of Realm objects. It can be
- * accessed in any of the ways that a normal Javascript Array can, including
+ * accessed in any of the ways that a normal JavaScript Array can, including
  * subscripting, enumerating with `for-of` and so on.
+ * @see {@link https://mdn.io/Array | Array}
  */
 export abstract class OrderedCollection<T = unknown, EntryType extends [unknown, unknown] = [number, T]>
   extends Collection<number, T, EntryType, T, CollectionChangeCallback<T, EntryType>>
@@ -185,9 +186,9 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
   private declare mixedToBinding: (value: unknown) => binding.MixedArg;
 
   /**
-   * Get an element of the ordered collection by index
-   * @param index The index
-   * @returns The element
+   * Get an element of the ordered collection by index.
+   * @param index - The index.
+   * @returns The element.
    * @internal
    */
   public get(index: number): T {
@@ -195,9 +196,9 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
   }
 
   /**
-   * Set an element of the ordered collection by index
-   * @param index The index
-   * @param value The value
+   * Set an element of the ordered collection by index.
+   * @param index - The index.
+   * @param value - The value.
    * @internal
    */
   public set(index: number, value: T): void;
@@ -212,9 +213,7 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
    * @returns An array of plain objects.
    */
   toJSON(): Array<DefaultObject>;
-  /**
-   * @internal
-   */
+  /** @internal */
   toJSON(_?: string, cache = new JSONCacheMap()): Array<DefaultObject> {
     return this.map((item, index) => {
       if (item instanceof RealmObject) {
@@ -226,9 +225,10 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
   }
 
   /**
-   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/keys}
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/keys | Array.prototype.keys()}
+   * @returns An iterator with all keys in the collection.
    */
-  *keys() {
+  *keys(): Generator<number> {
     const size = this.results.size();
     for (let i = 0; i < size; i++) {
       yield i;
@@ -236,9 +236,10 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
   }
 
   /**
-   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/values}
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/values} | Array.prototype.values()}
+   * @returns An iterator with all values in the collection.
    */
-  *values() {
+  *values(): Generator<T> {
     const snapshot = this.results.snapshot();
     const { get, fromBinding } = this.helpers;
     for (const i of this.keys()) {
@@ -247,9 +248,10 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
   }
 
   /**
-   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/entries}
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/entries | Array.prototype.entries()}
+   * @returns An iterator with all key/value pairs in the collection.
    */
-  *entries() {
+  *entries(): Generator<EntryType> {
     const { get, fromBinding } = this.helpers;
     const snapshot = this.results.snapshot();
     const size = snapshot.size();
@@ -261,7 +263,7 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
   readonly [n: number]: T;
 
   /**
-   * The number of values.
+   * @returns The number of values.
    */
   get length(): number {
     return this.results.size();
@@ -276,6 +278,7 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
 
   /**
    * Name of the type of items.
+   * @returns The name of the type of values.
    */
   get type(): PropertyType {
     return getTypeName(this.results.type & ~binding.PropertyType.Flags, undefined);
@@ -283,8 +286,8 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
 
   /**
    * Whether `null` is a valid value for the collection.
+   * @returns Whether `null` is a valid value for the collection.
    * @readonly
-   * @since 2.0.0
    */
   get optional(): boolean {
     return !!(this.results.type & binding.PropertyType.Nullable);
@@ -293,42 +296,57 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
   /* eslint-disable @typescript-eslint/no-explicit-any -- We've copied these from the lib types */
 
   /**
-   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/toString Array.prototype.toString}
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/toString | Array.prototype.toString()}
+   * @returns A string representation of the collection.
    */
   toString(): string {
     return [...this].toString();
   }
   /**
-   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/toLocaleString Array.prototype.toLocaleString}
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/toLocaleString | Array.prototype.toLocaleString()}
+   * @returns A localized string representation of the collection.
    */
   toLocaleString(): string {
     return [...this].toLocaleString();
   }
   /**
-   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/concat Array.prototype.concat}
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/concat | Array.prototype.concat()}
+   * @param items - Arrays and/or values to concatenate into a new array.
+   * @returns A new array with the results of calling a provided function on every element in this array.
    */
   concat(...items: ConcatArray<T>[]): T[];
   /**
-   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/concat Array.prototype.concat}
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/concat | Array.prototype.concat()}
+   * @param items - Arrays and/or values to concatenate into a new array.
+   * @returns A new array with the results of calling a provided function on every element in this array.
    */
   concat(...items: (T | ConcatArray<T>)[]): T[];
   concat(...items: any[]): T[] {
     return [...this].concat(...items);
   }
   /**
-   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/join Array.prototype.join}
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/join | Array.prototype.join()}
+   * @params separator - A string used to separate one element of the collection from the next in the resulting String.
+   * @returns A string representing the elements of the collection.
    */
   join(separator?: string): string {
     return [...this].join(separator);
   }
   /**
-   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/slice Array.prototype.slice}
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/slice | Array.prototype.slice()}
+   * @params start - Zero-based index at which to begin extraction.
+   * @params end - Zero-based index at which to end extraction. It extracts up to but not including `end`.
+   * @returns A new array containing the elements between the start and end indices.
    */
   slice(start?: number, end?: number): T[] {
     return [...this].slice(start, end);
   }
   /**
-   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/indexOf Array.prototype.indexOf}
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/indexOf | Array.prototype.indexOf()}
+   * @params searchElement - Element to locate in the collection.
+   * @params fromIndex - The collection index at which to begin the search. If omitted, the search starts at index 0.
+   * @note `fromIndex` is currently not supported. So all searches start at index 0.
+   * @returns The first index at which a given element can be found in the collection, or -1 if it is not present.
    */
   indexOf(searchElement: T, fromIndex?: number): number {
     assert(typeof fromIndex === "undefined", "The second fromIndex argument is not yet supported");
@@ -340,67 +358,132 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
     }
   }
   /**
-   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/lastIndexOf Array.prototype.lastIndexOf}
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/lastIndexOf | Array.prototype.lastIndexOf()}
+   * @params searchElement - Element to locate in the collection.
+   * @params fromIndex - The collection index at which to begin the search. If omitted, the search starts at the last index.
+   * @returns The last index at which a given element can be found in the collection, or -1 if it is not present. The collection is searched backwards, starting at `fromIndex`.
    */
   lastIndexOf(searchElement: T, fromIndex?: number): number {
     return [...this].lastIndexOf(searchElement, fromIndex);
   }
   /**
-   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/every Array.prototype.every}
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/every | Array.prototype.every()}
+   * @params predicate - A function to test for each element.
+   * @params predicate.value - The current element being processed in the collection.
+   * @params predicate.index - The index of the current element being processed in the collection.
+   * @params predicate.array - The collection `every` was called upon.
+   * @params thisArg - An object to which the `this` keyword can refer in the predicate function. If `thisArg` is omitted, `undefined` is used as the `this` value.
+   * @returns `true` if the callback function returns a truthy value for every collection element; otherwise, `false`.
    */
   every<S extends T>(
     predicate: (value: T, index: number, array: readonly T[]) => value is S,
     thisArg?: any,
   ): this is readonly S[];
   /**
-   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/every Array.prototype.every}
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/every | Array.prototype.every()}
+   * @params predicate - A function to test for each element.
+   * @params predicate.value - The current element being processed in the collection.
+   * @params predicate.index - The index of the current element being processed in the collection.
+   * @params predicate.array - The collection `every` was called upon.
+   * @params thisArg - An object to which the `this` keyword can refer in the predicate function. If `thisArg` is omitted, `undefined` is used as the `this` value.
+   * @returns `true` if the callback function returns a truthy value for every collection element; otherwise, `false`.
    */
   every(predicate: (value: T, index: number, array: readonly T[]) => unknown, thisArg?: any): boolean;
   every(predicate: any, thisArg?: any): boolean {
     return [...this].every(predicate, thisArg);
   }
   /**
-   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/some Array.prototype.some}
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/some | Array.prototype.some()}
+   * @params predicate - A function to test for each element.
+   * @params predicate.value - The current element being processed in the collection.
+   * @params predicate.index - The index of the current element being processed in the collection.
+   * @params predicate.array - The collection `every` was called upon.
+   * @params thisArg - An object to which the `this` keyword can refer in the predicate function. If `thisArg` is omitted, `undefined` is used as the `this` value.
+   * @returns `true` if the callback function returns a truthy value for any collection element; otherwise, `false`.
    */
   some(predicate: (value: T, index: number, array: readonly T[]) => unknown, thisArg?: any): boolean {
     return [...this].some(predicate, thisArg);
   }
   /**
-   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/forEach Array.prototype.forEach}
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/forEach | Array.prototype.forEach()}
+   * @params callbackfn - A function that accepts up to three arguments. `forEach` calls the callbackfn function one time for each element in the collection.
+   * @params callbackfn.value - The current element being processed in the collection.
+   * @params callbackfn.index - The index of the current element being processed in the collection.
+   * @params callbackfn.array - The collection `forEach` was called upon.
+   * @params thisArg - An object to which the `this` keyword can refer in the `callbackfn` function. If `thisArg` is omitted, `undefined` is used as the `this` value.
    */
   forEach(callbackfn: (value: T, index: number, array: readonly T[]) => void, thisArg?: any): void {
     return [...this].forEach(callbackfn, thisArg);
   }
   /**
-   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map Array.prototype.map}
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map | Array.prototype.map()}
+   * @params callbackfn - A function that accepts up to three arguments. The `map` method calls the `callbackfn` function one time for each element in the collection.
+   * @params callbackfn.value - The current element being processed in the collection.
+   * @params callbackfn.index - The index of the current element being processed in the collection.
+   * @params callbackfn.array - The collection `map` was called upon.
+   * @params thisArg - An object to which the `this` keyword can refer in the `callbackfn` function. If `thisArg` is omitted, `undefined` is used as the `this` value.
+   * @returns A new array containing the results of calling the `callbackfn` function on each element in the collection.
    */
   map<U>(callbackfn: (value: T, index: number, array: readonly T[]) => U, thisArg?: any): U[] {
     return [...this].map(callbackfn, thisArg);
   }
   /**
-   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter Array.prototype.filter}
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter | Array.prototype.filter()}
+   * @params predicate - A function that accepts up to three arguments. The `filter` method calls the `predicate` function one time for each element in the collection.
+   * @params predicate.value - The current element being processed in the collection.
+   * @params predicate.index - The index of the current element being processed in the collection.
+   * @params predicate.array - The collection `filter` was called upon.
+   * @params thisArg - An object to which the `this` keyword can refer in the `predicate` function. If `thisArg` is omitted, `undefined` is used as the `this` value.
+   * @returns A new array containing the elements of the collection for which the `predicate` function returned `true`.
    */
   filter<S extends T>(predicate: (value: T, index: number, array: readonly T[]) => value is S, thisArg?: any): S[];
   /**
-   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter Array.prototype.filter}
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter | Array.prototype.filter()}
+   * @params predicate - A function that accepts up to three arguments. The `filter` method calls the `predicate` function one time for each element in the collection.
+   * @params predicate.value - The current element being processed in the collection.
+   * @params predicate.index - The index of the current element being processed in the collection.
+   * @params predicate.array - The collection `filter` was called upon.
+   * @params thisArg - An object to which the `this` keyword can refer in the `predicate` function. If `thisArg` is omitted, `undefined` is used as the `this` value.
+   * @returns A new array containing the elements of the collection for which the `predicate` function returned `true`.
    */
   filter(predicate: (value: T, index: number, array: readonly T[]) => unknown, thisArg?: any): T[];
   filter<S extends T>(predicate: any, thisArg?: any): T[] | S[] {
     return [...this].filter(predicate, thisArg);
   }
   /**
-   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/reduce Array.prototype.reduce}
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/reduce | Array.prototype.reduce()}
+   * @params callbackfn - A function that accepts up to four arguments. The `reduce` method calls the `callbackfn` function one time for each element in the collection.
+   * @params callbackfn.previousValue - The value previously returned in the last invocation of the `callbackfn` function, or `initialValue`, if supplied. (See below.)
+   * @params callbackfn.currentValue - The current element being processed in the collection.
+   * @params callbackfn.currentIndex - The index of the current element being processed in the collection.
+   * @params callbackfn.array - The collection `reduce` was called upon.
+   * @params initialValue - If `initialValue` is specified, it is used as the initial value to start the accumulation. The first call to the `callbackfn` function provides this value as an argument instead of an element value.
+   * @returns The value that results from the reduction.
    */
   reduce(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: readonly T[]) => T): T;
   /**
-   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/reduce Array.prototype.reduce}
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/reduce | Array.prototype.reduce()}
+   * @params callbackfn - A function that accepts up to four arguments. The `reduce` method calls the `callbackfn` function one time for each element in the collection.
+   * @params callbackfn.previousValue - The value previously returned in the last invocation of the `callbackfn` function, or `initialValue`, if supplied. (See below.)
+   * @params callbackfn.currentValue - The current element being processed in the collection.
+   * @params callbackfn.currentIndex - The index of the current element being processed in the collection.
+   * @params callbackfn.array - The collection `reduce` was called upon.
+   * @params initialValue - If `initialValue` is specified, it is used as the initial value to start the accumulation. The first call to the `callbackfn` function provides this value as an argument instead of an element value.
+   * @returns The value that results from the reduction.
    */
   reduce(
     callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: readonly T[]) => T,
     initialValue: T,
   ): T;
   /**
-   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/reduce Array.prototype.reduce}
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/reduce | Array.prototype.reduce()}
+   * @params callbackfn - A function that accepts up to four arguments. The `reduce` method calls the `callbackfn` function one time for each element in the collection.
+   * @params callbackfn.previousValue - The value previously returned in the last invocation of the `callbackfn` function, or `initialValue`, if supplied. (See below.)
+   * @params callbackfn.currentValue - The current element being processed in the collection.
+   * @params callbackfn.currentIndex - The index of the current element being processed in the collection.
+   * @params callbackfn.array - The collection `reduce` was called upon.
+   * @params initialValue - If `initialValue` is specified, it is used as the initial value to start the accumulation. The first call to the `callbackfn` function provides this value as an argument instead of an element value.
+   * @returns The value that results from the reduction.
    */
   reduce<U>(
     callbackfn: (previousValue: U, currentValue: T, currentIndex: number, array: readonly T[]) => U,
@@ -410,18 +493,39 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
     return [...this].reduce(callbackfn, initialValue);
   }
   /**
-   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/reduceRight Array.prototype.reduceRight}
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/reduceRight | Array.prototype.reduceRight()}
+   * @params callbackfn - A function that accepts up to four arguments. The `reduceRight` method calls the `callbackfn` function one time for each element in the collection.
+   * @params callbackfn.previousValue - The value previously returned in the last invocation of the `callbackfn` function, or `initialValue`, if supplied. (See below.)
+   * @params callbackfn.currentValue - The current element being processed in the collection.
+   * @params callbackfn.currentIndex - The index of the current element being processed in the collection.
+   * @params callbackfn.array - The collection `reduceRight` was called upon.
+   * @params initialValue - If `initialValue` is specified, it is used as the initial value to start the accumulation. The first call to the `callbackfn` function provides this value as an argument instead of an element value.
+   * @returns The value that results from the reduction.
    */
   reduceRight(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: readonly T[]) => T): T;
   /**
-   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/reduceRight Array.prototype.reduceRight}
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/reduceRight | Array.prototype.reduceRight()}
+   * @params callbackfn - A function that accepts up to four arguments. The `reduceRight` method calls the `callbackfn` function one time for each element in the collection.
+   * @params callbackfn.previousValue - The value previously returned in the last invocation of the `callbackfn` function, or `initialValue`, if supplied. (See below.)
+   * @params callbackfn.currentValue - The current element being processed in the collection.
+   * @params callbackfn.currentIndex - The index of the current element being processed in the collection.
+   * @params callbackfn.array - The collection `reduceRight` was called upon.
+   * @params initialValue - If `initialValue` is specified, it is used as the initial value to start the accumulation. The first call to the `callbackfn` function provides this value as an argument instead of an element value.
+   * @returns The value that results from the reduction.
    */
   reduceRight(
     callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: readonly T[]) => T,
     initialValue: T,
   ): T;
   /**
-   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/reduceRight Array.prototype.reduceRight}
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/reduceRight | Array.prototype.reduceRight()}
+   * @params callbackfn - A function that accepts up to four arguments. The `reduceRight` method calls the `callbackfn` function one time for each element in the collection.
+   * @params callbackfn.previousValue - The value previously returned in the last invocation of the `callbackfn` function, or `initialValue`, if supplied. (See below.)
+   * @params callbackfn.currentValue - The current element being processed in the collection.
+   * @params callbackfn.currentIndex - The index of the current element being processed in the collection.
+   * @params callbackfn.array - The collection `reduceRight` was called upon.
+   * @params initialValue - If `initialValue` is specified, it is used as the initial value to start the accumulation. The first call to the `callbackfn` function provides this value as an argument instead of an element value.
+   * @returns The value that results from the reduction.
    */
   reduceRight<U>(
     callbackfn: (previousValue: U, currentValue: T, currentIndex: number, array: readonly T[]) => U,
@@ -432,34 +536,62 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
   }
 
   /**
-   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/find Array.prototype.find}
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/find | Array.prototype.find()}
+   * @params predicate - A function that accepts up to three arguments. The `find` method calls the `predicate` function one time for each element in the collection.
+   * @params predicate.value - The value of the element.
+   * @params predicate.index - The index of the element.
+   * @params predicate.obj - The object being traversed.
+   * @params thisArg - An object to which the `this` keyword can refer in the `predicate` function. If `thisArg` is omitted, `undefined` is used as the `this` value.
+   * @returns The value of the first element in the array that satisfies the provided testing function. Otherwise, `undefined` is returned.
    */
   find<S extends T>(
     predicate: (this: void, value: T, index: number, obj: T[]) => value is S,
     thisArg?: any,
   ): S | undefined;
   /**
-   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/find Array.prototype.find}
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/find | Array.prototype.find()}
+   * @params predicate - A function that accepts up to three arguments. The `find` method calls the `predicate` function one time for each element in the collection.
+   * @params predicate.value - The value of the element.
+   * @params predicate.index - The index of the element.
+   * @params predicate.obj - The object being traversed.
+   * @params thisArg - An object to which the `this` keyword can refer in the `predicate` function. If `thisArg` is omitted, `undefined` is used as the `this` value.
+   * @returns The value of the first element in the array that satisfies the provided testing function. Otherwise, `undefined` is returned.
    */
   find<T>(predicate: (value: T, index: number, obj: T[]) => unknown, thisArg?: any): T | undefined;
   find(predicate: (value: T, index: number, obj: T[]) => boolean, thisArg?: any): T | undefined {
     return [...this].find(predicate, thisArg);
   }
   /**
-   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/findIndex Array.prototype.findIndex}
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/findIndex | Array.prototype.findIndex()}
+   * @params predicate - A function that accepts up to three arguments. The `findIndex` method calls the `predicate` function one time for each element in the collection.
+   * @params predicate.value - The value of the element.
+   * @params predicate.index - The index of the element.
+   * @params predicate.obj - The object being traversed.
+   * @params thisArg - An object to which the `this` keyword can refer in the `predicate` function. If `thisArg` is omitted, `undefined` is used as the `this` value.
+   * @returns The index of the first element in the array that satisfies the provided testing function. Otherwise, -1 is returned.
    */
   findIndex(predicate: (value: T, index: number, obj: readonly T[]) => unknown, thisArg?: any): number {
     return [...this].findIndex(predicate, thisArg);
   }
   // TODO: Implement support for RealmObjects, by comparing their #objectKey values
   /**
-   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/includes Array.prototype.includes}
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/includes | Array.prototype.includes()}
+   * @params searchElement - The element to search for.
+   * @params fromIndex - The position in this array at which to begin searching for `searchElement`. A negative value searches from the index of array.length + fromIndex by asc.
+   * @note `fromIndex` is currently not supported. So all searches start at index 0.
+   * @returns `true` if the `searchElement` is found in the array; otherwise, `false`.
    */
   includes(searchElement: T, fromIndex?: number): boolean {
     return this.indexOf(searchElement, fromIndex) !== -1;
   }
   /**
-   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/flatMap Array.prototype.flatMap}
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/flatMap | Array.prototype.flatMap()}
+   * @params callback - Function that produces an element of the new Array, taking three arguments:
+   * @params callback.currentValue - The current element being processed in the array.
+   * @params callback.index - The index of the current element being processed in the array.
+   * @params callback.array - The array `flatMap` was called upon.
+   * @params thisArg - Value to use as this when executing callback.
+   * @returns A new array with each element being the result of the callback function and flattened to a depth of 1.
    */
   flatMap<U, This = undefined>(
     callback: (this: This, value: T, index: number, array: T[]) => U | readonly U[],
@@ -468,27 +600,38 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
     return [...this].flatMap(callback, thisArg);
   }
   /**
-   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/flat Array.prototype.flat}
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/flat | Array.prototype.flat()}
+   * @params depth - The depth level specifying how deep a nested array structure should be flattened. Defaults to 1.
+   * @returns A new array with the sub-array elements concatenated into it.
    */
   flat<A, D extends number = 1>(this: A, depth?: D): FlatArray<A, D>[];
   flat<D extends number = 1>(): FlatArray<this, D>[] {
     throw new Error("Method not implemented.");
   }
   /**
-   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/at Array.prototype.at}
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/at | Array.prototype.at()}
+   * @params index - The index of the element to return from the array. If the index is a negative number, the element at `array.length + index` is returned.
+   * @returns The element at the given index in the array; `undefined` if there is no element at the given index.
    */
-  at(index: number) {
+  at(index: number): T | undefined {
     return [...this].at(index);
   }
 
   /* eslint-enable @typescript-eslint/no-explicit-any */
 
+  /**
+   * @returns An iterator that iterates over all the values in the collection.
+   */
   [Symbol.iterator](): IterableIterator<T> {
     return this.values();
   }
 
   // Other methods
 
+  // TODO: Implement this method
+  /**
+   * @returns A string describing the filters applied to this collection.
+   */
   description(): string {
     throw new Error("Method not implemented.");
   }
@@ -496,7 +639,6 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
   /**
    * Checks if this collection is empty.
    * @returns `true` if the collection is empty, `false` if not.
-   * @since 2.7.0
    */
   isEmpty(): boolean {
     return this.results.size() === 0;
@@ -509,10 +651,9 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
    *
    * Only supported for int, float, double and date properties. `null` values
    * are ignored entirely by this method and will not be returned.
-   * @param property For a collection of objects, the property to take the minimum of.
-   * @throws a {@link TypeAssertionError} If no property with the name exists or if property is not numeric/date.
+   * @param property - For a collection of objects, the property to take the minimum of.
+   * @throws A {@link TypeAssertionError} if no property with the name exists or if property is not numeric/date.
    * @returns The minimum value.
-   * @since 1.12.1
    */
   min(property?: string): number | Date | undefined {
     const columnKey = this.getPropertyColumnKey(property);
@@ -537,10 +678,9 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
    *
    * Only supported for int, float, double and date properties. `null` values
    * are ignored entirely by this method and will not be returned.
-   * @param property For a collection of objects, the property to take the maximum of.
-   * @throws an {@link Error} If no property with the name exists or if property is not numeric/date.
+   * @param property - For a collection of objects, the property to take the maximum of.
+   * @throws An {@link Error} if no property with the name exists or if property is not numeric/date.
    * @returns The maximum value.
-   * @since 1.12.1
    */
   max(property?: string): number | Date | undefined {
     const columnKey = this.getPropertyColumnKey(property);
@@ -565,10 +705,9 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
    *
    * Only supported for int, float and double properties. `null` values are
    * ignored entirely by this method.
-   * @param property For a collection of objects, the property to take the sum of.
-   * @throws an {@link Error} If no property with the name exists or if property is not numeric.
+   * @param property - For a collection of objects, the property to take the sum of.
+   * @throws An {@link Error} if no property with the name exists or if property is not numeric.
    * @returns The sum.
-   * @since 1.12.1
    */
   sum(property?: string): number {
     const columnKey = this.getPropertyColumnKey(property);
@@ -591,10 +730,9 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
    *
    * Only supported for int, float and double properties. `null` values are
    * ignored entirely by this method and will not be factored into the average.
-   * @param property For a collection of objects, the property to take the average of.
-   * @throws an {@link Error} If no property with the name exists or if property is not numeric.
+   * @param property - For a collection of objects, the property to take the average of.
+   * @throws An {@link Error} if no property with the name exists or if property is not numeric.
    * @returns The sum.
-   * @since 1.12.1
    */
   avg(property?: string): number | undefined {
     const columnKey = this.getPropertyColumnKey(property);
@@ -612,13 +750,12 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
 
   /**
    * Returns new {@link Results} that represent this collection being filtered by the provided query.
-   * @param queryString Query used to filter objects from the collection.
-   * @param args Each subsequent argument is used by the placeholders
-   *   (e.g. `$0`, `$1`, `$2`, …) in the query.
-   * @throws an {@link Error} If the query or any other argument passed into this method is invalid.
+   * @param queryString - Query used to filter objects from the collection.
+   * @param args - Each subsequent argument is used by the placeholders
+   * (e.g. `$0`, `$1`, `$2`, …) in the query.
+   * @throws An {@link Error} if the query or any other argument passed into this method is invalid.
    * @returns Results filtered according to the provided query.
-   *
-   * This is currently only supported for collections of Realm Objects.
+   * @note This is currently only supported for collections of Realm Objects.
    * @example
    * let merlots = wines.filtered('variety == "Merlot" && vintage <= $0', maxYear);
    */
@@ -647,9 +784,9 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
    * Collections of other types sort on the values themselves rather than
    * properties of the values, and so no property name or sort descriptors
    * should be supplied.
-   * @param reverse Sort in descending order rather than ascended.
-   *   May not be supplied if `descriptor` is an array of sort descriptors.
-   * @throws an {@link Error} If a specified property does not exist.
+   * @param reverse - Sort in descending order rather than ascended.
+   * It may not be applied if `descriptor` is an array of sort descriptors.
+   * @throws An {@link Error} if a specified property does not exist.
    * @returns Results sorted according to the arguments passed in.
    */
   sorted(reverse?: boolean): Results<T>;
@@ -667,8 +804,8 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
    * Collections of other types sort on the values themselves rather than
    * properties of the values, and so no property name or sort descriptors
    * should be supplied.
-   * @param descriptor The property name(s) to sort the collection on.
-   * @throws an {@link Error} If a specified property does not exist.
+   * @param descriptor - The property name(s) to sort the collection on.
+   * @throws An {@link Error} if a specified property does not exist.
    * @returns Results sorted according to the arguments passed in.
    */
   sorted(descriptor: SortDescriptor[]): Results<T>;
@@ -686,8 +823,8 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
    * Collections of other types sort on the values themselves rather than
    * properties of the values, and so no property name or sort descriptors
    * should be supplied.
-   * @param descriptor The property name(s) to sort the collection on.
-   * @throws an {@link Error} If a specified property does not exist.
+   * @param descriptor - The property name(s) to sort the collection on.
+   * @throws An {@link Error} if a specified property does not exist.
    * @returns Results sorted according to the arguments passed in.
    */
   sorted(descriptor: string, reverse?: boolean): Results<T>;

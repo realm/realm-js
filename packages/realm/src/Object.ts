@@ -40,9 +40,27 @@ import {
   getTypeName,
 } from "./internal";
 
+/**
+ * The update mode to use when creating an object that already exists.
+ */
 export enum UpdateMode {
+  /**
+   * Objects are only created. If an existing object exists, an exception is thrown.
+   */
   Never = "never",
+  /**
+   * If an existing object exists, only properties where the value has actually
+   * changed will be updated. This improves notifications and server side
+   * performance but also have implications for how changes across devices are
+   * merged. For most use cases, the behavior will match the intuitive behavior
+   * of how changes should be merged, but if updating an entire object is
+   * considered an atomic operation, this mode should not be used.
+   */
   Modified = "modified",
+  /**
+   * If an existing object is found, all properties provided will be updated,
+   * any other properties will remain unchanged.
+   */
   All = "all",
 }
 
@@ -90,16 +108,38 @@ const PROXY_HANDLER: ProxyHandler<RealmObject<any>> = {
 /**
  * Base class for a Realm Object.
  * @example
- * To define a class `Person` which requires the `name` and `age` properties to be
- * specified when it is being constructed, using the Realm Babel plugin to allow
- * Typescript-only model definitions (otherwise it would require a `static` schema):
+ * To define a class `Person` with required `name` and `age`
+ * properties, define a `static schema`:
+ * ```
+ * class Person extends Realm.Object<Person> {
+ *   _id!: Realm.BSON.ObjectId;
+ *   name!: string;
+ *   age!: number;
+ *   static schema: Realm.ObjectSchema = {
+ *     name: "Person",
+ *     primaryKey: "_id",
+ *     properties: {
+ *       _id: "objectId",
+ *       name: "string",
+ *       age: "int",
+ *     },
+ *   };
+ * }
+ * ```
+ * @example
+ * If using the [@realm/babel-plugin](https://www.npmjs.com/package/@realm/babel-plugin):
+ * To define a class `Person` with required `name` and `age` properties, they would
+ * need to be specified in the type argument when it is being constructed to allow
+ * Typescript-only model definitions:
  * ```
  * class Person extends Realm.Object<Person, "name" | "age"> {
  *   _id = new Realm.Types.ObjectId();
- *   name: string;
+ *   name: Realm.Types.String;
  *   age: Realm.Types.Int;
+ *   static primaryKey = "_id";
  * }
  * ```
+ * @see {@link ObjectSchema}
  * @typeParam `T` - The type of this class (e.g. if your class is `Person`,
  * `T` should also be `Person` - this duplication is required due to how
  * TypeScript works)
@@ -118,17 +158,17 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
   public static allowValuesArrays = false;
 
   /**
-   * Optionally specify the primary key of the schema when using @realm/babel-plugin.
+   * Optionally specify the primary key of the schema when using [@realm/babel-plugin](https://www.npmjs.com/package/@realm/babel-plugin).
    */
   static primaryKey?: string;
 
   /**
-   * Optionally specify that the schema is an embedded schema when using @realm/babel-plugin.
+   * Optionally specify that the schema is an embedded schema when using [@realm/babel-plugin](https://www.npmjs.com/package/@realm/babel-plugin).
    */
   static embedded?: boolean;
 
   /**
-   * Optionally specify that the schema should sync unidirectionally if using flexible sync when using @realm/babel-plugin.
+   * Optionally specify that the schema should sync unidirectionally if using flexible sync when using [@realm/babel-plugin](https://www.npmjs.com/package/@realm/babel-plugin).
    */
   static asymmetric?: boolean;
 
@@ -256,11 +296,7 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
    * Create a wrapper for accessing an object from the database
    * @internal
    */
-  public static createWrapper<T = DefaultObject>(
-    realm: Realm,
-    internal: binding.Obj,
-    constructor: Constructor,
-  ): RealmObject<T> & T {
+  public static createWrapper<T = DefaultObject>(internal: binding.Obj, constructor: Constructor): RealmObject<T> & T {
     const result = Object.create(constructor.prototype);
     result[INTERNAL] = internal;
     // Initializing INTERNAL_LISTENERS here rather than letting it just be implicitly undefined since JS engines
@@ -273,8 +309,8 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
 
   /**
    * Create a `RealmObject` wrapping an `Obj` from the binding.
-   * @param realm The Realm managing the object.
-   * @param values The values of the object's properties at creation.
+   * @param realm - The Realm managing the object.
+   * @param values - The values of the object's properties at creation.
    */
   public constructor(realm: Realm, values: Unmanaged<T, RequiredProperties>) {
     return realm.create(this.constructor as RealmObjectConstructor, values) as unknown as this;
@@ -366,7 +402,6 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
   /**
    * Checks if this object has not been deleted and is part of a valid Realm.
    * @returns `true` if the object can be safely accessed, `false` if not.
-   * @since 0.12.0
    */
   isValid(): boolean {
     return this[INTERNAL] && this[INTERNAL].isValid;
@@ -374,8 +409,7 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
 
   /**
    * The schema for the type this object belongs to.
-   * @returns The schema that describes this object.
-   * @since 1.8.1
+   * @returns The {@link CanonicalObjectSchema} that describes this object.
    */
   objectSchema(): CanonicalObjectSchema<T> {
     return this[REALM].getClassHelpers(this).canonicalObjectSchema as CanonicalObjectSchema<T>;
@@ -383,11 +417,10 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
 
   /**
    * Returns all the objects that link to this object in the specified relationship.
-   * @param objectType The type of the objects that link to this object's type.
-   * @param propertyName The name of the property that references objects of this object's type.
-   * @throws an {@link AssertionError} If the relationship is not valid.
-   * @returns The objects that link to this object.
-   * @since 1.9.0
+   * @param objectType - The type of the objects that link to this object's type.
+   * @param propertyName - The name of the property that references objects of this object's type.
+   * @throws An {@link AssertionError} if the relationship is not valid.
+   * @returns The {@link Results} that link to this object.
    */
   linkingObjects<T = DefaultObject>(objectType: string, propertyName: string): Results<RealmObject<T> & T>;
   linkingObjects<T extends AnyRealmObject>(objectType: Constructor<T>, propertyName: string): Results<T>;
@@ -412,7 +445,6 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
   /**
    * Returns the total count of incoming links to this object
    * @returns The number of links to this object.
-   * @since 2.6.0
    */
   linkingObjectsCount(): number {
     return this[INTERNAL].getBacklinkCount();
@@ -435,13 +467,12 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
 
   /**
    * Add a listener `callback` which will be called when a **live** object instance changes.
-   * @param callback A function to be called when changes occur.
-   *   The callback function is called with two arguments:
-   *   - `obj`: the object that changed,
-   *   - `changes`: a dictionary with keys `deleted`, and `changedProperties`. `deleted` is true
-   *       if the object has been deleted. `changesProperties` is an array of properties that have changed
-   *       their value.
-   * @throws a {@link TypeAssertionError} If `callback` is not a function.
+   * @param callback - A function to be called when changes occur.
+   * @param callback.obj - The object that changed.
+   * @param callback.changes - A dictionary with information about the changes.
+   * @param callback.changes.deleted - Is `true` if the object has been deleted.
+   * @param callback.changes.changedProperties  - An array of properties that have changed their value.
+   * @throws A {@link TypeAssertionError} if `callback` is not a function.
    * @example
    * wine.addListener((obj, changes) => {
    *  // obj === wine
@@ -453,7 +484,6 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
    * })
    * @note Adding the listener is an asynchronous operation, so the callback is invoked the first time to notify the caller when the listener has been added.
    * Thus, when the callback is invoked the first time it will contain empty array for `changes.changedProperties`.
-   * @since 2.23.0
    */
   addListener(callback: ObjectChangeCallback<T>): void {
     assert.function(callback);
@@ -464,10 +494,9 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
   }
 
   /**
-   * Remove the listener `callback`
-   * @throws a {@link TypeAssertionError} If `callback` is not a function.
+   * Remove the listener `callback` from this object.
+   * @throws A {@link TypeAssertionError} if `callback` is not a function.
    * @param callback A function previously added as listener
-   * @since 2.23.0
    */
   removeListener(callback: ObjectChangeCallback<T>): void {
     assert.function(callback);
@@ -476,20 +505,18 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
   }
 
   /**
-   * Remove all listeners.
-   * @since 2.23.0
+   * Remove all listeners from this object.
    */
-  removeAllListeners(this: RealmObject<T> & T): void {
+  removeAllListeners(): void {
     // Note: if the INTERNAL_LISTENERS field hasn't been initialized, then we have no listeners to remove.
     this[INTERNAL_LISTENERS]?.removeAllListeners();
   }
 
   /**
    * Get underlying type of a property value.
-   * @param propertyName The name of the property to retrieve the type of.
-   * @throws an {@link Error} If property does not exist.
+   * @param propertyName - The name of the property to retrieve the type of.
+   * @throws An {@link Error} if property does not exist.
    * @returns Underlying type of the property value.
-   * @since 10.8.0
    */
   getPropertyType(propertyName: string): string {
     const { properties } = this[REALM].getClassHelpers(this);
@@ -535,6 +562,6 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
   }
 }
 
-//  We like to refer to this as "Realm.Object"
+// We like to refer to this as "Realm.Object"
 // TODO: Determine if we want to revisit this if we're going away from a namespaced API
 Object.defineProperty(RealmObject, "name", { value: "Realm.Object" });

@@ -178,24 +178,26 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
    */
   private declare [INTERNAL]: binding.Dictionary;
 
-  /**
-   * @internal
-   */
+  /** @internal */
   private declare [HELPERS]: TypeHelpers;
 
   /** @ts-expect-error We're exposing methods in the end-users namespace of keys */
   [key: string]: T;
 
-  *[Symbol.iterator]() {
+  /**
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/entries Array.prototype.entries}
+   * @returns An iterator with all entries in the dictionary.
+   */
+  *[Symbol.iterator](): Generator<[string, T]> {
     yield* this.entries();
   }
 
   /**
    * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/keys Array.prototype.keys}
-   * @returns Iterator with all values in the dictionary
-   * @since 0.11.0
+   * @returns An iterator with all values in the dictionary.
+   * @since 10.5.0
    * @ts-expect-error We're exposing methods in the end-users namespace of keys */
-  *keys() {
+  *keys(): Generator<string> {
     const snapshot = this[INTERNAL].keys.snapshot();
     const size = snapshot.size();
     for (let i = 0; i < size; i++) {
@@ -206,11 +208,11 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
   }
 
   /**
-   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/keys Array.prototype.keys}
-   * @returns Iterator with all values in the dictionary
-   * @since 0.11.0
-   * @ts-expect-error We're exposing methods in the end-users namespace of keys */
-  *values() {
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/values Array.prototype.values}
+   * @returns An iterator with all values in the dictionary.
+   * @since 10.5.0
+   * @ts-expect-error We're exposing methods in the end-users namespace of values */
+  *values(): Generator<T> {
     const { fromBinding } = this[HELPERS];
     const snapshot = this[INTERNAL].values.snapshot();
     const size = snapshot.size();
@@ -221,11 +223,11 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
   }
 
   /**
-   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/entries Array.prototype.keys}
-   * @returns Iterator with all key/value pairs in the dictionary
-   * @since 0.11.0
-   * @ts-expect-error We're exposing methods in the end-users namespace of keys */
-  *entries() {
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/entries Array.prototype.entries}
+   * @returns An iterator with all key/value pairs in the dictionary.
+   * @since 10.5.0
+   * @ts-expect-error We're exposing methods in the end-users namespace of entries */
+  *entries(): Generator<[string, T]> {
     const { fromBinding } = this[HELPERS];
     const keys = this[INTERNAL].keys.snapshot();
     const values = this[INTERNAL].values.snapshot();
@@ -266,9 +268,9 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
   set(key: string, value: T): this;
   /**
    * Adds one or more elements with the specified key and value to the dictionary or updates value if key exists.
-   * @param elementsOrKey The element to add or the key of the element to add.
-   * @param value The value of the element to add.
-   * @throws an {@link AssertionError} If not inside a write transaction, if using symbol as keys, or if any value violates type constraints.
+   * @param elementsOrKey - The element to add or the key of the element to add.
+   * @param value - The value of the element to add.
+   * @throws An {@link AssertionError} if not inside a write transaction, if using symbol as keys, or if any value violates type constraints.
    * @returns The dictionary.
    * @since 10.6.0
    */
@@ -288,8 +290,8 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
   /**
    * Removes elements from the dictionary, with the keys provided.
    * This does not throw if the keys are already missing from the dictionary.
-   * @param key The key to be removed.
-   * @throws an {@link AssertionError} If not inside a write transaction.
+   * @param key - The key to be removed.
+   * @throws An {@link AssertionError} if not inside a write transaction.
    * @returns The dictionary
    * @since 10.6.0
    * @ts-expect-error We're exposing methods in the end-users namespace of keys */

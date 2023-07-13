@@ -36,8 +36,8 @@ import {
  * by calling methods on the corresponding {@link MutableSubscriptionSet} instance.
  */
 export class SubscriptionSet extends BaseSubscriptionSet {
-  /**@internal */
-  constructor(/**@internal */ private realm: Realm, internal: binding.SyncSubscriptionSet) {
+  /** @internal */
+  constructor(/** @internal */ private realm: Realm, internal: binding.SyncSubscriptionSet) {
     super(internal);
 
     Object.defineProperty(this, "realm", {
@@ -100,7 +100,7 @@ export class SubscriptionSet extends BaseSubscriptionSet {
     await this.waitForSynchronization();
   }
 
-  /**@internal */
+  /** @internal */
   updateNoWait(callback: (mutableSubscriptions: MutableSubscriptionSet, realm: Realm) => void): void {
     assert.function(callback, "callback");
 

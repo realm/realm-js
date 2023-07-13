@@ -34,9 +34,9 @@ export enum NumericLogLevel {
 
 /**
  * A callback passed to `Realm.App.Sync.setLogger` when instrumenting the Atlas Device Sync client with a custom logger.
- * @param {number} level The level of the log entry between 0 and 8 inclusively.
+ * @param level - The level of the log entry between 0 and 8 inclusively.
  * Use this as an index into `['all', 'trace', 'debug', 'detail', 'info', 'warn', 'error', 'fatal', 'off']` to get the name of the level.
- * @param {string} message The message of the log entry.
+ * @param message - The message of the log entry.
  */
 export type Logger = (level: NumericLogLevel, message: string) => void;
 

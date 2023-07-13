@@ -82,8 +82,8 @@ export type AppConfiguration = {
  */
 export type LocalAppConfiguration = {
   /**
-   * The name / id of the local app.
-   * Note: This should be the name or a bundle id of your app, not the Atlas App Services application.
+   * The name / ID of the local app.
+   * Note: This should be the name or a bundle ID of your app, not the Atlas App Services application.
    */
   name?: string;
 
@@ -111,10 +111,10 @@ export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType 
   private static appByUserId = new Map<string, binding.WeakRef<AnyApp>>();
 
   /**
-   * Get or create a singleton Realm App from an id.
-   * Calling this function multiple times with the same id will return the same instance.
+   * Get or create a singleton Realm App from an ID.
+   * Calling this function multiple times with the same ID will return the same instance.
    * @deprecated Use {@link App.get}.
-   * @param id The Realm App id visible from the Atlas App Services UI or a configuration.
+   * @param id - The Realm App ID visible from the Atlas App Services UI or a configuration.
    * @returns The Realm App instance.
    */
   public static getApp(id: string): App {
@@ -122,9 +122,9 @@ export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType 
   }
 
   /**
-   * Get or create a singleton Realm App from an id.
-   * Calling this function multiple times with the same id will return the same instance.
-   * @param id The Realm App id visible from the Atlas App Services UI or a configuration.
+   * Get or create a singleton Realm App from an ID.
+   * Calling this function multiple times with the same ID will return the same instance.
+   * @param id - The Realm App ID visible from the Atlas App Services UI or a configuration.
    * @returns The Realm App instance.
    */
   public static get(id: string): App {
@@ -178,14 +178,14 @@ export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType 
 
   /**
    * Constructs a new {@link App} instance, used to connect to an Atlas App Services App.
-   * @param id A string app id.
+   * @param id - A string app ID.
    * @throws an {@link Error} If no {@link id} is provided.
    */
   constructor(id: string);
 
   /**
    * Constructs a new {@link App} instance, used to connect to an Atlas App Services App.
-   * @param config The configuration of the app.
+   * @param config - The configuration of the app.
    * @throws an {@link Error} If no {@link AppConfiguration.id | app id} is provided.
    */
   constructor(config: AppConfiguration);
@@ -225,7 +225,7 @@ export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType 
   }
 
   /**
-   * @return The app id.
+   * @returns The app ID.
    */
   public get id(): string {
     return this.internal.config.appId;
@@ -233,14 +233,18 @@ export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType 
 
   /**
    * Log in a user.
+   * @param credentials - A credentials object describing the type of authentication provider and its parameters.
+   * @returns A promise that resolves to the logged in {@link User}.
+   * @throws An {@link Error} if the login failed.
    */
-  public async logIn(credentials: Credentials) {
+  public async logIn(credentials: Credentials): Promise<User<FunctionsFactoryType, CustomDataType>> {
     const userInternal = await this.internal.logInWithCredentials(credentials.internal);
     return User.get(userInternal, this);
   }
 
   /**
    * Perform operations related to the email/password auth provider.
+   * @returns An instance of the email password authentication provider.
    */
   public get emailPasswordAuth(): EmailPasswordAuth {
     // TODO: Add memoization
@@ -250,6 +254,7 @@ export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType 
 
   /**
    * The last user to log in or being switched to.
+   * @returns A {@link User} object representing the currently logged in user. If no user is logged in, `null` is returned.
    */
   public get currentUser(): User<FunctionsFactoryType, CustomDataType> | null {
     const currentUser = this.internal.currentUser;
@@ -257,7 +262,8 @@ export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType 
   }
 
   /**
-   * All authenticated users.
+   * All users that have logged into the device and have not been removed.
+   * @returns A mapping from user ID to user.
    */
   public get allUsers(): Readonly<Record<string, User<FunctionsFactoryType, CustomDataType>>> {
     return Object.fromEntries(this.internal.allUsers.map((user) => [user.identity, User.get(user, this)]));
@@ -266,7 +272,7 @@ export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType 
   /**
    * Switches the current user to the one specified in {@link user}.
    * @throws an {@link Error} if the new user is logged out or removed.
-   * @param user The user to switch to.
+   * @param user - The user to switch to.
    */
   public switchUser(user: AnyUser): void {
     this.internal.switchUser(user.internal);
@@ -276,7 +282,7 @@ export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType 
    * Logs out and removes a user from the client.
    * @returns A promise that resolves once the user has been logged out and removed from the app.
    */
-  public async removeUser(user: AnyUser) {
+  public async removeUser(user: AnyUser): Promise<void> {
     await this.internal.removeUser(user.internal);
   }
 
@@ -285,22 +291,24 @@ export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType 
    * NOTE: This irrecoverably deletes the user from the device as well as the server!
    * @returns A promise that resolves once the user has been deleted.
    */
-  public async deleteUser(user: AnyUser) {
+  public async deleteUser(user: AnyUser): Promise<void> {
     await this.internal.deleteUser(user.internal);
   }
 
   /**
    * Adds a listener that will be fired on various user events.
    * This includes login, logout, switching users, linking users and refreshing custom data.
+   * @param callback - A callback function that will be called when the event occurs.
    */
-  public addListener(callback: AppChangeCallback) {
+  public addListener(callback: AppChangeCallback): void {
     this.listeners.add(callback);
   }
 
   /**
    * Removes an event listener previously added via {@link App.addListener}.
+   * @param callback - The callback to remove.
    */
-  public removeListener(callback: AppChangeCallback) {
+  public removeListener(callback: AppChangeCallback): void {
     this.listeners.remove(callback);
   }
 

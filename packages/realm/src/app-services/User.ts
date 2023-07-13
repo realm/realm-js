@@ -62,7 +62,7 @@ export enum UserState {
  */
 export interface UserIdentity {
   /**
-   * The id of the identity.
+   * The ID of the identity.
    */
   id: string;
 
@@ -126,6 +126,7 @@ export class User<
 
   /**
    * The automatically-generated internal ID of the user.
+   * @returns The user ID as a string.
    */
   get id(): string {
     return this.internal.identity;
@@ -133,6 +134,7 @@ export class User<
 
   /**
    * The provider type used when authenticating the user.
+   * @returns The provider type as an enumerated string.
    */
   get providerType(): ProviderType {
     const type = this.internal.providerType;
@@ -144,7 +146,8 @@ export class User<
   }
 
   /**
-   * The id of the device.
+   * The ID of the device.
+   * @returns The device ID as a string or `null`.
    */
   get deviceId(): string | null {
     return this.internal.deviceId;
@@ -152,6 +155,7 @@ export class User<
 
   /**
    * The state of the user.
+   * @returns The state as an enumerated string.
    */
   get state(): UserState {
     const state = this.internal.state;
@@ -169,6 +173,7 @@ export class User<
 
   /**
    * The logged in state of the user.
+   * @returns `true` if the user is logged in, `false` otherwise.
    */
   get isLoggedIn(): boolean {
     return this.internal.isLoggedIn;
@@ -176,6 +181,7 @@ export class User<
 
   /**
    * The identities of the user at any of the app's authentication providers.
+   * @returns An array of {@link UserIdentity} objects.
    */
   get identities(): UserIdentity[] {
     return this.internal.identities.map((identity) => {
@@ -186,6 +192,7 @@ export class User<
 
   /**
    * The access token used when requesting a new access token.
+   * @returns The access token as a string or `null`.
    */
   get accessToken(): string | null {
     return this.internal.accessToken;
@@ -193,6 +200,7 @@ export class User<
 
   /**
    * The refresh token used when requesting a new access token.
+   * @returns The refresh token as a string or `null`.
    */
   get refreshToken(): string | null {
     return this.internal.refreshToken;
@@ -204,6 +212,7 @@ export class User<
    * For example, you might store a user’s preferred language, date of birth, or their local timezone.
    *
    * If this value has not been configured, it will be empty.
+   * @returns The custom data as an object.
    */
   get customData(): CustomDataType {
     const result = this.internal.customData;
@@ -215,6 +224,7 @@ export class User<
 
   /**
    * A profile containing additional information about the user.
+   * @returns The user profile data as an object.
    */
   get profile(): UserProfileDataType {
     if (!this.cachedProfile) {
@@ -225,6 +235,7 @@ export class User<
 
   /**
    * Use this to call functions defined by the Atlas App Services application, as this user.
+   * @returns A {@link FunctionsFactory} that can be used to call the app's functions.
    */
   get functions(): FunctionsFactoryType {
     return createFactory(this as User, undefined);
@@ -232,6 +243,7 @@ export class User<
 
   /**
    * Perform operations related to the API-key auth provider.
+   * @returns An {@link ApiKeyAuth} object that can be used to manage API keys.
    */
   get apiKeys(): ApiKeyAuth {
     // TODO: Add memoization
@@ -249,17 +261,18 @@ export class User<
 
   /**
    * Link the user with an identity represented by another set of credentials.
-   * @param credentials The credentials to use when linking.
+   * @param credentials - The credentials to use when linking.
+   * @returns A promise that resolves once the user has been linked with the credentials.
    */
-  async linkCredentials(credentials: Credentials) {
+  async linkCredentials(credentials: Credentials): Promise<void> {
     await this.app.internal.linkUser(this.internal, credentials.internal);
   }
 
   /**
    * Call a remote Atlas App Services Function by its name.
-   * Note: Consider using `functions[name]()` instead of calling this method.
-   * @param name Name of the App Services Function.
-   * @param args Arguments passed to the Function.
+   * @note Consider using `functions[name]()` instead of calling this method.
+   * @param name - Name of the App Services Function.
+   * @param args - Arguments passed to the Function.
    * @returns A promise that resolves to the value returned by the Function.
    * @example
    * // These are all equivalent:
@@ -304,7 +317,7 @@ export class User<
 
   /**
    * Refresh the access token and derive custom data from it.
-   * @returns The newly fetched custom data.
+   * @returns A promise that resolves to the refreshed custom data.
    */
   async refreshCustomData(): Promise<CustomDataType> {
     await this.app.internal.refreshCustomData(this.internal);
@@ -314,7 +327,7 @@ export class User<
   /**
    * Use the Push service to enable sending push messages to this user via Firebase Cloud Messaging (FCM).
    * @deprecated https://www.mongodb.com/docs/atlas/app-services/reference/push-notifications/
-   * @returns An service client with methods to register and deregister the device on the user.
+   * @returns A {@link PushClient} with methods to register and deregister the device on the user.
    */
   push(serviceName: string): PushClient {
     const internal = this.app.internal.pushNotificationClient(serviceName);
@@ -322,8 +335,8 @@ export class User<
   }
 
   /**
-   * @param serviceName The name of the MongoDB service to connect to.
-   * @returns A client enabling access to a MongoDB service.
+   * @param serviceName - The name of the MongoDB service to connect to.
+   * @returns A client enabling access to a {@link MongoDB} service.
    * @example
    * let blueWidgets = user.mongoClient("myService")
    *                       .db("myDb")
@@ -354,6 +367,7 @@ export class User<
   /**
    * Adds a listener that will be fired on various user related events.
    * This includes auth token refresh, refresh token refresh, refresh custom user data, and logout.
+   * @param callback - The callback to be fired when the event occurs.
    */
   addListener(callback: UserChangeCallback): void {
     this.listeners.add(callback);
@@ -361,6 +375,7 @@ export class User<
 
   /**
    * Removes an event listener previously added via {@link User.addListener}.
+   * @param callback - The callback to be removed.
    */
   removeListener(callback: UserChangeCallback): void {
     this.listeners.remove(callback);

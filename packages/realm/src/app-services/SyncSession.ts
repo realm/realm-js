@@ -55,8 +55,8 @@ export enum ProgressMode {
 
 export type ProgressNotificationCallback =
   /**
-   * @param transferred The current number of bytes already transferred
-   * @param transferable The total number of transferable bytes (i.e. the number of bytes already transferred plus the number of bytes pending transfer)
+   * @param transferred - The current number of bytes already transferred
+   * @param transferable - The total number of transferable bytes (i.e. the number of bytes already transferred plus the number of bytes pending transfer)
    */
   (transferred: number, transferable: number) => void;
 
@@ -403,12 +403,12 @@ export class SyncSession {
 
   /**
    * Register a progress notification callback on a session object
-   * @param direction The progress direction to register for.
-   * @param mode The progress notification mode to use for the registration.
+   * @param direction - The progress direction to register for.
+   * @param mode - The progress notification mode to use for the registration.
    * Can be either:
    *  - `reportIndefinitely` - the registration will stay active until the callback is unregistered
    *  - `forCurrentlyOutstandingWork` - the registration will be active until only the currently transferable bytes are synced
-   * @param callback Called with the following arguments:
+   * @param callback - Called with the following arguments:
    * 1. `transferred`: The current number of bytes already transferred
    * 2. `transferable`: The total number of transferable bytes (the number of bytes already transferred plus the number of bytes pending transfer)
    */
@@ -418,15 +418,15 @@ export class SyncSession {
   /**
    * Unregister a progress notification callback that was previously registered with {@link addProgressNotification}.
    * Calling the function multiple times with the same callback is ignored.
-   * @param callback A previously registered progress callback
+   * @param callback - A previously registered progress callback.
    */
-  removeProgressNotification(callback: ProgressNotificationCallback) {
+  removeProgressNotification(callback: ProgressNotificationCallback): void {
     PROGRESS_LISTENERS.remove(callback);
   }
   /**
    * Registers a connection notification on the session object. This will be notified about changes to the
    * underlying connection to the Realm Object Server.
-   * @param callback Called with the following arguments:
+   * @param callback - Called with the following arguments:
    * 1. `newState`: The new state of the connection
    * 2. `oldState`: The state the connection transitioned from.
    */
@@ -437,9 +437,9 @@ export class SyncSession {
   /**
    * Unregister a state notification callback that was previously registered with addStateNotification.
    * Calling the function multiple times with the same callback is ignored.
-   * @param callback A previously registered state callback.
+   * @param callback - A previously registered state callback.
    */
-  removeConnectionNotification(callback: ConnectionNotificationCallback) {
+  removeConnectionNotification(callback: ConnectionNotificationCallback): void {
     CONNECTION_LISTENERS.remove(callback);
   }
 
@@ -449,7 +449,7 @@ export class SyncSession {
    * times out, the download will still continue in the background.
    *
    * This method cannot be called before the Realm has been opened.
-   * @param timeoutMs maximum amount of time to wait in milliseconds before the promise will be rejected. If no timeout
+   * @param timeoutMs - maximum amount of time to wait in milliseconds before the promise will be rejected. If no timeout
    * is specified the method will wait forever.
    */
   downloadAllServerChanges(timeoutMs?: number): Promise<void> {
@@ -468,7 +468,7 @@ export class SyncSession {
    * will still continue in the background.
    *
    * This method cannot be called before the Realm has been opened.
-   * @param timeoutMs Maximum amount of time to wait in milliseconds before the promise is rejected. If no timeout is specified the method will wait forever.
+   * @param timeoutMs - Maximum amount of time to wait in milliseconds before the promise is rejected. If no timeout is specified the method will wait forever.
    */
   uploadAllLocalChanges(timeoutMs?: number): Promise<void> {
     return this.withInternal(

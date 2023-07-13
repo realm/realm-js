@@ -34,9 +34,7 @@ import {
   setClassHelpers,
 } from "./internal";
 
-/**
- * @internal
- */
+/** @internal */
 export class ClassMap {
   private mapping: Record<string, Constructor<unknown>>;
   private nameByTableKey: Record<binding.TableKey, string>;
@@ -129,7 +127,7 @@ export class ClassMap {
           properties,
           wrapObject(obj) {
             if (obj.isValid) {
-              return RealmObject.createWrapper(realm, obj, constructor);
+              return RealmObject.createWrapper(obj, constructor);
             } else {
               return null;
             }

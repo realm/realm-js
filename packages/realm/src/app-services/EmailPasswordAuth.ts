@@ -34,7 +34,7 @@ export class EmailPasswordAuth {
   /**
    * Registers a new email identity with the email/password provider,
    * and sends a confirmation email to the provided address.
-   * @param details The new user's email and password details
+   * @param details - The new user's email and password details.
    * @param details.email - The email address of the user to register.
    * @param details.password - The password that the user created for the new username/password identity.
    * @since v10.10.0
@@ -45,7 +45,7 @@ export class EmailPasswordAuth {
 
   /**
    * Confirms an email identity with the email/password provider.
-   * @param details The received token and ID details
+   * @param details - The received token and ID details
    * @param details.token - The confirmation token that was emailed to the user.
    * @param details.tokenId - The confirmation token id that was emailed to the user.
    * @since v10.10.0
@@ -57,7 +57,7 @@ export class EmailPasswordAuth {
   /**
    * Re-sends a confirmation email to a user that has registered but
    * not yet confirmed their email address.
-   * @param details The associated email details
+   * @param details - The associated email details.
    * @param details.email - The email address of the user to re-send a confirmation for.
    * @since v10.10.0
    */
@@ -68,7 +68,7 @@ export class EmailPasswordAuth {
   /**
    * Re-run the custom confirmation function for user that has registered but
    * not yet confirmed their email address.
-   * @param details The associated email details
+   * @param details - The associated email details.
    * @param details.email - The email address of the user to re-run the confirmation for.
    * @since v10.10.0
    */
@@ -78,7 +78,7 @@ export class EmailPasswordAuth {
 
   /**
    * Resets the password of an email identity using the password reset token emailed to a user.
-   * @param details The token and password details for the reset
+   * @param details - The token and password details for the reset.
    * @param details.password - The desired new password.
    * @param details.token - The password reset token that was emailed to the user.
    * @param details.tokenId - The password reset token id that was emailed to the user.
@@ -90,7 +90,7 @@ export class EmailPasswordAuth {
 
   /**
    * Sends an email to the user for resetting the password.
-   * @param details The email details to send the reset to
+   * @param details - The email details to send the reset to.
    * @param details.email - The email address of the user to re-send a confirmation for.
    * @since v10.10.0
    */
@@ -100,7 +100,7 @@ export class EmailPasswordAuth {
 
   /**
    * Call the custom function to reset the password.
-   * @param details The new user's email and password details
+   * @param details - The new user's email and password details.
    * @param details.email - The email address of the user to register.
    * @param details.password - The password that the user created for the new username/password identity.
    * @param args One or more arguments to pass to the function.

@@ -28,9 +28,7 @@ import {
 
 type ObjectWrapper = (obj: binding.Obj) => (RealmObject & DefaultObject) | null;
 
-/**
- * @internal
- */
+/** @internal */
 export type ClassHelpers = {
   constructor: RealmObjectConstructor;
   objectSchema: binding.ObjectSchema;

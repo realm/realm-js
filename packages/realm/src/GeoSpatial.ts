@@ -172,7 +172,7 @@ const earthRadiusMi = 3963.16760121; //earthRadiusKm / 1.609344 (km/mi)
 
 /**
  * Converts the input kilometer value in radians.
- * @param km The kilometers to convert.
+ * @param km - The kilometers to convert.
  * @returns The corresponding number of radians.
  */
 export function kmToRadians(km: number): number {
@@ -181,7 +181,7 @@ export function kmToRadians(km: number): number {
 
 /**
  * Converts the input miles value in radians.
- * @param mi The miles to convert.
+ * @param mi - The miles to convert.
  * @returns The corresponding number of radians.
  */
 export function miToRadians(mi: number): number {
