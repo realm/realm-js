@@ -21,7 +21,7 @@ import { Platform } from "react-native";
 import { version } from "realm/package.json";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import { REALM_ANONYMIZED_BUNDLE_ID } from "realm/realm_constants.json";
+import { REALM_ANONYMIZED_BUNDLE_ID } from "realm/realm-constants.json";
 
 import { inject } from "../device-info";
 import { JsPlatformHelpers } from "../../binding";
