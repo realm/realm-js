@@ -639,8 +639,8 @@ describe("Realm.Object", () => {
         });
 
         it("can be updated recursively in lists", function (this: Mocha.Context & RealmContext) {
-          this.realm.write(() => {
-            this.realm.create(
+          const alice = this.realm.write(() => {
+            return this.realm.create(
               CollectionSchema.name,
               {
                 _id: aliceId,
@@ -661,11 +661,22 @@ describe("Realm.Object", () => {
               Realm.UpdateMode.All,
             );
           });
+
+          expect(alice._id.equals(aliceId)).to.be.true;
+          expect(alice.name).to.equal("UpdatedAlice");
+
+          const bob = alice.list[0];
+          expect(bob._id.equals(bobId)).to.be.true;
+          expect(bob.name).to.equal("UpdatedBob");
+
+          const max = bob.list[0];
+          expect(max._id.equals(maxId)).to.be.true;
+          expect(max.name).to.equal("UpdatedMax");
         });
 
         it("can be updated recursively in dictionaries", function (this: Mocha.Context & RealmContext) {
-          this.realm.write(() => {
-            this.realm.create(
+          const alice = this.realm.write(() => {
+            return this.realm.create(
               CollectionSchema.name,
               {
                 _id: aliceId,
@@ -686,11 +697,22 @@ describe("Realm.Object", () => {
               Realm.UpdateMode.All,
             );
           });
+
+          expect(alice._id.equals(aliceId)).to.be.true;
+          expect(alice.name).to.equal("UpdatedAlice");
+
+          const { bob } = alice.dictionary;
+          expect(bob._id.equals(bobId)).to.be.true;
+          expect(bob.name).to.equal("UpdatedBob");
+
+          const { max } = bob.dictionary;
+          expect(max._id.equals(maxId)).to.be.true;
+          expect(max.name).to.equal("UpdatedMax");
         });
 
         it("can be updated recursively in sets", function (this: Mocha.Context & RealmContext) {
-          this.realm.write(() => {
-            this.realm.create(
+          const alice = this.realm.write(() => {
+            return this.realm.create(
               CollectionSchema.name,
               {
                 _id: aliceId,
@@ -711,6 +733,17 @@ describe("Realm.Object", () => {
               Realm.UpdateMode.All,
             );
           });
+
+          expect(alice._id.equals(aliceId)).to.be.true;
+          expect(alice.name).to.equal("UpdatedAlice");
+
+          const bob = alice.set[0];
+          expect(bob._id.equals(bobId)).to.be.true;
+          expect(bob.name).to.equal("UpdatedBob");
+
+          const max = bob.set[0];
+          expect(max._id.equals(maxId)).to.be.true;
+          expect(max.name).to.equal("UpdatedMax");
         });
       });
     });
