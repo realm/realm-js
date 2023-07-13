@@ -605,6 +605,8 @@ export class Realm {
   private changeListeners = new RealmListeners(this, RealmEvent.Change);
   private beforeNotifyListeners = new RealmListeners(this, RealmEvent.BeforeNotify);
   private schemaListeners = new RealmListeners(this, RealmEvent.Schema);
+  /** @internal */
+  public currentUpdateMode: UpdateMode | undefined;
 
   /**
    * Create a new {@link Realm} instance, at the default path.
@@ -866,7 +868,14 @@ export class Realm {
     }
     this.internal.verifyOpen();
     const helpers = this.classes.getHelpers(type);
-    const realmObject = RealmObject.create(this, values, mode, { helpers });
+
+    this.currentUpdateMode = mode;
+    let realmObject: RealmObject;
+    try {
+      realmObject = RealmObject.create(this, values, mode, { helpers });
+    } finally {
+      this.currentUpdateMode = undefined;
+    }
 
     return isAsymmetric(helpers.objectSchema) ? undefined : realmObject;
   }

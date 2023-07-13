@@ -186,16 +186,9 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
       const propertyValue = values[propertyName];
       if (typeof propertyValue !== "undefined") {
         if (mode !== UpdateMode.Modified || result[propertyName] !== propertyValue) {
-          console.log({ propertyName });
-          console.log({ propertyValue });
-          console.log({ previousValue: result[propertyName] });
-          console.log("Setting previous value (result[propertyName]) to the propertyValue...");
-
           // This will call into the property setter in PropertyHelpers.ts.
-          // (The setter for [binding.PropertyType.Array] in the case of Realm lists.)
+          // (E.g. the setter for [binding.PropertyType.Array] in the case of lists.)
           result[propertyName] = propertyValue;
-
-          console.log("Done!");
         }
       } else {
         if (typeof defaultValue !== "undefined") {
@@ -209,7 +202,6 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
         }
       }
     }
-    console.log("Object_create_END");
     return result as RealmObject;
   }
 
@@ -250,19 +242,14 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
       );
 
       const result = binding.Helpers.getOrCreateObjectWithPrimaryKey(table, pk);
-
-      console.log({ Object_updateMode: mode });
-
       const [, created] = result;
       if (mode === UpdateMode.Never && !created) {
         throw new Error(
           `Attempting to create an object of type '${name}' with an existing primary key value '${primaryKeyValue}'.`,
         );
       }
-      console.log("Object_createObj_END1");
       return result;
     } else {
-      console.log("Object_createObj_END2");
       return [table.createObject(), true];
     }
   }

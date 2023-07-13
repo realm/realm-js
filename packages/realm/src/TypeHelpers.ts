@@ -261,10 +261,8 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => Type
           assert.object(value, name);
           // Use the update mode if set; otherwise, the object is assumed to be an
           // unmanaged object that the user wants to create.
-
-          console.log({ TypeHelpers_updateMode: options?.updateMode });
-
-          const createdObject = RealmObject.create(realm, value, options?.updateMode ?? UpdateMode.Never, {
+          // TODO: Ideally use `options?.updateMode` instead of `realm.currentUpdateMode`.
+          const createdObject = RealmObject.create(realm, value, realm.currentUpdateMode ?? UpdateMode.Never, {
             helpers,
             createObj: options?.createObj,
           });
