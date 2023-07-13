@@ -209,6 +209,9 @@ export const useQuery = defaultContext.useQuery;
  */
 export const useObject = defaultContext.useObject;
 
+/*
+ * @ignore This will end up documenting all of Realm, which is documented elsewhere
+ */
 export { Realm };
 export * from "./AppProvider";
 export { useUser, UserProvider } from "./UserProvider";
