@@ -239,9 +239,9 @@ function normalizePropertySchemaShorthand(info: PropertyInfoUsingShorthand): Can
     }
   }
 
-  if (optionalIsImplicitlyTrue(type, objectType)) {
+  if (isAlwaysOptional(type, objectType)) {
     optional = true;
-  } else if (optionalIsImplicitlyFalse(type, objectType)) {
+  } else if (isNeverOptional(type, objectType)) {
     assert(
       !optional,
       propError(
@@ -302,14 +302,14 @@ function normalizePropertySchemaObject(info: PropertyInfoUsingObject): Canonical
     assert(property === undefined, propError(info, "'property' can only be specified if 'type' is 'linkingObjects'."));
   }
 
-  if (optionalIsImplicitlyTrue(type, objectType)) {
+  if (isAlwaysOptional(type, objectType)) {
     const displayed =
       type === "mixed" || objectType === "mixed"
         ? "'mixed' types"
         : "User-defined types as standalone objects and in dictionaries";
     assert(optional !== false, propError(info, `${displayed} are always optional and cannot be made non-optional.`));
     optional = true;
-  } else if (optionalIsImplicitlyFalse(type, objectType)) {
+  } else if (isNeverOptional(type, objectType)) {
     assert(
       optional !== true,
       propError(info, "User-defined types in lists and sets are always non-optional and cannot be made optional."),
@@ -342,7 +342,7 @@ function normalizePropertySchemaObject(info: PropertyInfoUsingObject): Canonical
 /**
  * Determine whether a property always is implicitly optional (nullable).
  */
-function optionalIsImplicitlyTrue(type: string, objectType: string | undefined): boolean {
+function isAlwaysOptional(type: string, objectType: string | undefined): boolean {
   return (
     type === "mixed" ||
     objectType === "mixed" ||
@@ -354,7 +354,7 @@ function optionalIsImplicitlyTrue(type: string, objectType: string | undefined):
 /**
  * Determine whether a property always is implicitly non-optional (non-nullable).
  */
-function optionalIsImplicitlyFalse(type: string, objectType: string | undefined): boolean {
+function isNeverOptional(type: string, objectType: string | undefined): boolean {
   return (type === "list" || type === "set" || type === "linkingObjects") && isUserDefined(objectType);
 }
 
