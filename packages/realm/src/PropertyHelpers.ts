@@ -100,7 +100,7 @@ function embeddedSet({ typeHelpers: { toBinding }, columnKey }: PropertyOptions)
   return (obj: binding.Obj, value: unknown) => {
     // Asking for the toBinding will create the object and link it to the parent in one operation
     // no need to actually set the value on the `obj`
-    toBinding(value, () => [obj.createAndSetLinkedObject(columnKey), true]);
+    toBinding(value, { createObj: () => [obj.createAndSetLinkedObject(columnKey), true] });
   };
 }
 
@@ -212,9 +212,9 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
             for (const value of values) {
               try {
                 if (embedded) {
-                  itemToBinding(value, () => [internal.insertEmbedded(index), true]);
+                  itemToBinding(value, { createObj: () => [internal.insertEmbedded(index), true] });
                 } else {
-                  bindingValues.push(itemToBinding(value, undefined));
+                  bindingValues.push(itemToBinding(value));
                 }
               } catch (err) {
                 if (err instanceof TypeAssertionError) {
@@ -260,9 +260,9 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
         for (const [k, v] of Object.entries(value)) {
           try {
             if (embedded) {
-              itemHelpers.toBinding(v, () => [internal.insertEmbedded(k), true]);
+              itemHelpers.toBinding(v, { createObj: () => [internal.insertEmbedded(k), true] });
             } else {
-              internal.insertAny(k, itemHelpers.toBinding(v, undefined));
+              internal.insertAny(k, itemHelpers.toBinding(v));
             }
           } catch (err) {
             if (err instanceof TypeAssertionError) {

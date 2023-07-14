@@ -183,6 +183,18 @@ const TestObjectSchema = {
   },
 };
 
+const CollectionSchema: Realm.ObjectSchema = {
+  name: "CollectionObject",
+  primaryKey: "_id",
+  properties: {
+    _id: "objectId",
+    name: "string",
+    list: "CollectionObject[]",
+    dictionary: "CollectionObject{}",
+    set: "CollectionObject<>",
+  },
+};
+
 const AllTypesSchema = {
   name: "AllTypesObject",
   properties: {
@@ -283,6 +295,14 @@ interface ITestObject {
 }
 interface INonPersistentTestObject extends ITestObject {
   ignored: boolean;
+}
+
+interface ICollectionObject {
+  _id: Realm.BSON.ObjectId;
+  name: string;
+  list: Realm.List<ICollectionObject>;
+  dictionary: Realm.Dictionary<ICollectionObject>;
+  set: Realm.Set<ICollectionObject>;
 }
 
 interface IAllTypes {
@@ -517,7 +537,7 @@ describe("Realm.Object", () => {
     });
 
     describe("with primary key", () => {
-      openRealmBeforeEach({ schema: [PersonWithId] });
+      openRealmBeforeEach({ schema: [PersonWithId, CollectionSchema] });
       it("can be fetched with objectForPrimaryKey", function (this: Mocha.Context & RealmContext) {
         const _id = new Realm.BSON.ObjectId();
 
@@ -585,6 +605,146 @@ describe("Realm.Object", () => {
         // Expect only one instance of 'PersonWithId' in db after all updates
         const persons = this.realm.objects(PersonWithId);
         expect(persons.length).equals(1);
+      });
+
+      describe("applying 'UpdateMode' recursively", () => {
+        let aliceId: Realm.BSON.ObjectId;
+        let bobId: Realm.BSON.ObjectId;
+        let maxId: Realm.BSON.ObjectId;
+
+        beforeEach(function (this: RealmContext & Mocha.Context) {
+          aliceId = new Realm.BSON.ObjectId();
+          bobId = new Realm.BSON.ObjectId();
+          maxId = new Realm.BSON.ObjectId();
+
+          // Create two mutual friends (Alice and Bob) and one
+          // that will be added as a friend later (Max).
+          this.realm.write(() => {
+            const alice = this.realm.create<ICollectionObject>(CollectionSchema.name, {
+              _id: aliceId,
+              name: "Alice",
+            });
+            const bob = this.realm.create<ICollectionObject>(CollectionSchema.name, {
+              _id: bobId,
+              name: "Bob",
+            });
+            const max = this.realm.create<ICollectionObject>(CollectionSchema.name, {
+              _id: maxId,
+              name: "Max",
+            });
+            // Make them mutual friends.
+            alice.list.push(bob);
+            bob.list.push(alice);
+          });
+        });
+
+        it("can be updated recursively in lists", function (this: Mocha.Context & RealmContext) {
+          const alice = this.realm.write(() => {
+            return this.realm.create(
+              CollectionSchema.name,
+              {
+                _id: aliceId,
+                name: "UpdatedAlice",
+                list: [
+                  {
+                    _id: bobId,
+                    name: "UpdatedBob",
+                    list: [
+                      {
+                        _id: maxId,
+                        name: "UpdatedMax",
+                      },
+                    ],
+                  },
+                ],
+              },
+              Realm.UpdateMode.All,
+            );
+          });
+
+          expect(alice._id.equals(aliceId)).to.be.true;
+          expect(alice.name).to.equal("UpdatedAlice");
+
+          const bob = alice.list[0];
+          expect(bob._id.equals(bobId)).to.be.true;
+          expect(bob.name).to.equal("UpdatedBob");
+
+          const max = bob.list[0];
+          expect(max._id.equals(maxId)).to.be.true;
+          expect(max.name).to.equal("UpdatedMax");
+        });
+
+        it("can be updated recursively in dictionaries", function (this: Mocha.Context & RealmContext) {
+          const alice = this.realm.write(() => {
+            return this.realm.create(
+              CollectionSchema.name,
+              {
+                _id: aliceId,
+                name: "UpdatedAlice",
+                dictionary: {
+                  bob: {
+                    _id: bobId,
+                    name: "UpdatedBob",
+                    dictionary: {
+                      max: {
+                        _id: maxId,
+                        name: "UpdatedMax",
+                      },
+                    },
+                  },
+                },
+              },
+              Realm.UpdateMode.All,
+            );
+          });
+
+          expect(alice._id.equals(aliceId)).to.be.true;
+          expect(alice.name).to.equal("UpdatedAlice");
+
+          const { bob } = alice.dictionary;
+          expect(bob._id.equals(bobId)).to.be.true;
+          expect(bob.name).to.equal("UpdatedBob");
+
+          const { max } = bob.dictionary;
+          expect(max._id.equals(maxId)).to.be.true;
+          expect(max.name).to.equal("UpdatedMax");
+        });
+
+        it("can be updated recursively in sets", function (this: Mocha.Context & RealmContext) {
+          const alice = this.realm.write(() => {
+            return this.realm.create(
+              CollectionSchema.name,
+              {
+                _id: aliceId,
+                name: "UpdatedAlice",
+                set: [
+                  {
+                    _id: bobId,
+                    name: "UpdatedBob",
+                    set: [
+                      {
+                        _id: maxId,
+                        name: "UpdatedMax",
+                      },
+                    ],
+                  },
+                ],
+              },
+              Realm.UpdateMode.All,
+            );
+          });
+
+          expect(alice._id.equals(aliceId)).to.be.true;
+          expect(alice.name).to.equal("UpdatedAlice");
+
+          const bob = alice.set[0];
+          expect(bob._id.equals(bobId)).to.be.true;
+          expect(bob.name).to.equal("UpdatedBob");
+
+          const max = bob.set[0];
+          expect(max._id.equals(maxId)).to.be.true;
+          expect(max.name).to.equal("UpdatedMax");
+        });
       });
     });
   });

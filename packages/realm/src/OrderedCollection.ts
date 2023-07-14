@@ -354,7 +354,7 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
       assert.instanceOf(searchElement, RealmObject);
       return this.results.indexOfObj(searchElement[INTERNAL]);
     } else {
-      return this.results.indexOf(this.helpers.toBinding(searchElement, undefined));
+      return this.results.indexOf(this.helpers.toBinding(searchElement));
     }
   }
   /**

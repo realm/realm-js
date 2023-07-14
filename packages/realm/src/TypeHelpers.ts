@@ -22,7 +22,6 @@ import {
   Collection,
   GeoBox,
   GeoCircle,
-  GeoPoint,
   GeoPolygon,
   INTERNAL,
   List,
@@ -73,7 +72,7 @@ export function toArrayBuffer(value: unknown, stringToBase64 = true) {
 
 /** @internal */
 export type TypeHelpers<T = unknown> = {
-  toBinding(value: T, createObj?: ObjCreator): binding.MixedArg;
+  toBinding(value: T, options?: { createObj?: ObjCreator; updateMode?: UpdateMode }): binding.MixedArg;
   fromBinding(value: unknown): T;
 };
 
@@ -250,7 +249,7 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => Type
     const helpers = getClassHelpers(objectType);
     const { wrapObject } = helpers;
     return {
-      toBinding: nullPassthrough((value, createObj) => {
+      toBinding: nullPassthrough((value, options) => {
         if (
           value instanceof RealmObject &&
           value.constructor.name === objectType &&
@@ -260,10 +259,12 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => Type
         } else {
           // TODO: Consider exposing a way for calling code to disable object creation
           assert.object(value, name);
-          // Some other object is assumed to be an unmanged object, that the user wants to create
-          const createdObject = RealmObject.create(realm, value, UpdateMode.Never, {
+          // Use the update mode if set; otherwise, the object is assumed to be an
+          // unmanaged object that the user wants to create.
+          // TODO: Ideally use `options?.updateMode` instead of `realm.currentUpdateMode`.
+          const createdObject = RealmObject.create(realm, value, realm.currentUpdateMode ?? UpdateMode.Never, {
             helpers,
-            createObj,
+            createObj: options?.createObj,
           });
           return createdObject[INTERNAL];
         }

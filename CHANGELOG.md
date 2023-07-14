@@ -8,7 +8,8 @@
 
 ### Fixed
 * Fixed updating helpers (the `ClassMap`) used by `Realm` before notifying schema change listeners when the schema is changed during runtime. ([#5574](https://github.com/realm/realm-js/issues/5574))
-* Fix crashes on refresh of the React Native application. ([#5904](https://github.com/realm/realm-js/issues/5904))
+* Fixed crashes on refresh of the React Native application. ([#5904](https://github.com/realm/realm-js/issues/5904))
+* Fixed applying `UpdateMode` recursively to all objects when passed to `Realm.create()`. ([#5933](https://github.com/realm/realm-js/issues/5933))
 
 ### Compatibility
 * React Native >= v0.71.4

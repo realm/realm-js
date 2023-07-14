@@ -226,6 +226,8 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
       const propertyValue = values[propertyName];
       if (typeof propertyValue !== "undefined") {
         if (mode !== UpdateMode.Modified || result[propertyName] !== propertyValue) {
+          // This will call into the property setter in PropertyHelpers.ts.
+          // (E.g. the setter for [binding.PropertyType.Array] in the case of lists.)
           result[propertyName] = propertyValue;
         }
       } else {
@@ -247,7 +249,7 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
    * Create an object in the database and populate its primary key value, if required
    * @internal
    */
-  public static createObj(
+  private static createObj(
     realm: Realm,
     values: DefaultObject,
     mode: UpdateMode,
@@ -277,8 +279,8 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
         typeof primaryKeyValue !== "undefined" && primaryKeyValue !== null
           ? primaryKeyValue
           : primaryKeyHelpers.default,
-        undefined,
       );
+
       const result = binding.Helpers.getOrCreateObjectWithPrimaryKey(table, pk);
       const [, created] = result;
       if (mode === UpdateMode.Never && !created) {
