@@ -370,24 +370,34 @@ function hasCollectionSuffix(input: string): boolean {
  * Assert that shorthand notation is not being used.
  */
 function assertNotUsingShorthand(input: string | undefined, info: PropertyInfo): void {
-  const shorthands: string[] = [];
-
-  if (input && hasCollectionSuffix(input)) {
-    shorthands.push(input.substring(input.length - COLLECTION_SUFFIX_LENGTH));
-    input = input.substring(0, input.length - COLLECTION_SUFFIX_LENGTH);
+  if (!input) {
+    return;
   }
 
-  if (input?.endsWith("?")) {
-    shorthands.push("?");
-  }
-
+  const shorthands = extractShorthands(input);
   assert(
-    !shorthands.length,
+    shorthands.length === 0,
     propError(
       info,
       `Cannot use shorthand '${shorthands.join("' and '")}' in 'type' or 'objectType' when defining property objects.`,
     ),
   );
+}
+
+/**
+ * Extract the shorthand markers used in the input.
+ */
+function extractShorthands(input: string): string[] {
+  const shorthands: string[] = [];
+  if (hasCollectionSuffix(input)) {
+    shorthands.push(input.substring(input.length - COLLECTION_SUFFIX_LENGTH));
+    input = input.substring(0, input.length - COLLECTION_SUFFIX_LENGTH);
+  }
+  if (input.endsWith("?")) {
+    shorthands.push("?");
+  }
+
+  return shorthands;
 }
 
 /**
