@@ -157,6 +157,7 @@ records:
       - device_version
       - framework_name
       - framework_version
+      - bundle_id
 
   AppConfig:
     fields:

@@ -17,8 +17,10 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import os from "node:os";
+import process from "node:process";
 
 import { version } from "realm/package.json";
+import { REALM_ANONYMIZED_BUNDLE_ID } from "realm/realm-constants.json";
 
 import { inject } from "../device-info";
 
@@ -38,6 +40,8 @@ inject({
 
       frameworkName: typeof process.versions.electron === "string" ? "Electron" : "Node.js",
       frameworkVersion: process.versions.electron || process.version,
+
+      bundleId: REALM_ANONYMIZED_BUNDLE_ID,
     };
   },
 });

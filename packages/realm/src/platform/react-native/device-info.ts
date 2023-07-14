@@ -19,6 +19,7 @@
 import { Platform } from "react-native";
 
 import { version } from "realm/package.json";
+import { REALM_ANONYMIZED_BUNDLE_ID } from "realm/realm-constants.json";
 
 import { inject } from "../device-info";
 import { JsPlatformHelpers } from "../../binding";
@@ -75,6 +76,8 @@ inject({
 
       frameworkName: "react-native",
       frameworkVersion: getReactNativeVersion(),
+
+      bundleId: REALM_ANONYMIZED_BUNDLE_ID,
     };
   },
 });

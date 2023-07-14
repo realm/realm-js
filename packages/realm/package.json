@@ -33,9 +33,11 @@
     },
     "./scripts/submit-analytics": "./scripts/submit-analytics.mjs",
     "./react-native.config.js": "./react-native.config.js",
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./realm-constants.json": "./realm-constants.json"
   },
   "files": [
+    "dependencies.list",
     "dist",
     "index.node.js",
     "index.react-native.js",

@@ -148,6 +148,17 @@ function getRealmCoreVersion() {
 }
 
 /**
+ * Save the anonymized bundle ID for later usage at runtime.
+ */
+function saveBundleId(anonymizedBundleId) {
+  const localPath = path.resolve(path.join(getProjectRoot(), "node_modules", "realm"));
+  fs.mkdirSync(localPath, { recursive: true });
+  const realmConstantsFile = path.resolve(path.join(localPath, "realm-constants.json"));
+  const realmConstants = { REALM_ANONYMIZED_BUNDLE_ID: anonymizedBundleId };
+  fs.writeFileSync(realmConstantsFile, JSON.stringify(realmConstants));
+}
+
+/**
  * Determines if `npm` or `yarn` is used.
  * @returns An array with two elements: method and version
  */
@@ -183,6 +194,8 @@ async function collectPlatformData(packagePath = getProjectRoot()) {
   if (packageJson.name) {
     bundleId = packageJson["name"];
   }
+  const anonymizedBundleId = sha256(bundleId);
+  saveBundleId(anonymizedBundleId);
 
   if (packageJson.dependencies && packageJson.dependencies["react-native"]) {
     framework = "react-native";
@@ -262,7 +275,7 @@ async function collectPlatformData(packagePath = getProjectRoot()) {
     "JS Analytics Version": 3,
     distinct_id: identifier,
     "Anonymized Builder Id": sha256(identifier),
-    "Anonymized Bundle Id": sha256(bundleId),
+    "Anonymized Bundle Id": anonymizedBundleId,
     "Realm Version": realmVersion,
     Binding: "Javascript",
     Version: packageJson.version,
