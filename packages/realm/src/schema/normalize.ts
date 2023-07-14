@@ -72,6 +72,8 @@ const COLLECTION_SHORTHAND_TO_NAME: Readonly<Record<string, string>> = {
   "<>": "set",
 };
 
+const COLLECTION_SUFFIX_LENGTH = 2;
+
 function isPrimitive(type: string | undefined): type is PrimitivePropertyTypeName {
   return PRIMITIVE_TYPES.has(type as PrimitivePropertyTypeName);
 }
@@ -182,11 +184,10 @@ function normalizePropertySchemaShorthand(info: PropertyInfoUsingShorthand): Can
   let optional: boolean | undefined;
 
   if (hasCollectionSuffix(propertySchema)) {
-    const suffixLength = 2;
-    const suffix = propertySchema.substring(propertySchema.length - suffixLength);
+    const suffix = propertySchema.substring(propertySchema.length - COLLECTION_SUFFIX_LENGTH);
     type = COLLECTION_SHORTHAND_TO_NAME[suffix];
 
-    propertySchema = propertySchema.substring(0, propertySchema.length - 2);
+    propertySchema = propertySchema.substring(0, propertySchema.length - COLLECTION_SUFFIX_LENGTH);
     assert(propertySchema.length > 0, propError(info, `The element type must be specified (Example: 'int${suffix}')`));
 
     const isNestedCollection = hasCollectionSuffix(propertySchema);
@@ -361,7 +362,7 @@ function optionalIsImplicitlyFalse(type: string, objectType: string | undefined)
  * Determine whether a string ends with a shorthand collection ('[]' or '{}' or '<>').
  */
 function hasCollectionSuffix(input: string): boolean {
-  const end = input.substring(input.length - 2);
+  const end = input.substring(input.length - COLLECTION_SUFFIX_LENGTH);
   return !!COLLECTION_SHORTHAND_TO_NAME[end];
 }
 
@@ -372,8 +373,8 @@ function assertNotUsingShorthand(input: string | undefined, info: PropertyInfo):
   const shorthands: string[] = [];
 
   if (input && hasCollectionSuffix(input)) {
-    shorthands.push(input.substring(input.length - 2));
-    input = input.substring(0, input.length - 2);
+    shorthands.push(input.substring(input.length - COLLECTION_SUFFIX_LENGTH));
+    input = input.substring(0, input.length - COLLECTION_SUFFIX_LENGTH);
   }
 
   if (input?.endsWith("?")) {
