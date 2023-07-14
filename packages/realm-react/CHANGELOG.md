@@ -37,7 +37,7 @@
 ### Enhancements
 * Add authentication hooks, `useAuth` and `useEmailPasswordAuth`
 	[Usage example](https://github.com/realm/realm-js/blob/main/packages/realm-react/README.md#authentication-hooks)
-* Allow `useQuery` to be passed a `query` function where `sorted` and `filtered` methods can be called ([#5471](https://github.com/realm/realm-js/issues/4973)) Thanks for the contribution [@levipro](https://github.com/levipro)!
+* Allow `useQuery` to be passed a `query` function where `sorted` and `filtered` methods can be called ([#5471](https://github.com/realm/realm-js/issues/5471)) Thanks for the contribution [@levipro](https://github.com/levipro)!
 
   Example:
 	```tsx
