@@ -151,7 +151,9 @@ function getRealmCoreVersion() {
  * Save the anonymized bundle ID for later usage at runtime.
  */
 function saveBundleId(anonymizedBundleId) {
-  const realmConstantsFile = path.resolve(path.join(getProjectRoot(), "node_modules", "realm", "realm-constants.json"));
+  const localPath = path.resolve(path.join(getProjectRoot(), "node_modules", "realm"));
+  fs.mkdirSync(localPath, { recursive: true });
+  const realmConstantsFile = path.resolve(path.join(localPath, "realm-constants.json"));
   const realmConstants = { REALM_ANONYMIZED_BUNDLE_ID: anonymizedBundleId };
   fs.writeFileSync(realmConstantsFile, JSON.stringify(realmConstants));
 }
