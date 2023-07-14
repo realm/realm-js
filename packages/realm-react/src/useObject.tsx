@@ -90,6 +90,8 @@ export function createUseObject(useRealm: () => Realm) {
             updatedRef,
           });
           originalObjectRef.current = originalObject;
+          // Update the primaryKeyRef, so we can check if the primaryKey has changed on the next render
+          primaryKeyRef.current = primaryKey;
         }
         return cachedObjectRef.current;
       },
