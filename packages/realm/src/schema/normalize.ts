@@ -72,6 +72,8 @@ const COLLECTION_SHORTHAND_TO_NAME: Readonly<Record<string, string>> = {
   "<>": "set",
 };
 
+const COLLECTION_SUFFIX_LENGTH = "[]".length;
+
 function isPrimitive(type: string | undefined): type is PrimitivePropertyTypeName {
   return PRIMITIVE_TYPES.has(type as PrimitivePropertyTypeName);
 }
@@ -182,11 +184,10 @@ function normalizePropertySchemaShorthand(info: PropertyInfoUsingShorthand): Can
   let optional: boolean | undefined;
 
   if (hasCollectionSuffix(propertySchema)) {
-    const suffixLength = 2;
-    const suffix = propertySchema.substring(propertySchema.length - suffixLength);
+    const suffix = propertySchema.substring(propertySchema.length - COLLECTION_SUFFIX_LENGTH);
     type = COLLECTION_SHORTHAND_TO_NAME[suffix];
 
-    propertySchema = propertySchema.substring(0, propertySchema.length - 2);
+    propertySchema = propertySchema.substring(0, propertySchema.length - COLLECTION_SUFFIX_LENGTH);
     assert(propertySchema.length > 0, propError(info, `The element type must be specified (Example: 'int${suffix}')`));
 
     const isNestedCollection = hasCollectionSuffix(propertySchema);
@@ -238,9 +239,9 @@ function normalizePropertySchemaShorthand(info: PropertyInfoUsingShorthand): Can
     }
   }
 
-  if (optionalIsImplicitlyTrue(type, objectType)) {
+  if (isAlwaysOptional(type, objectType)) {
     optional = true;
-  } else if (optionalIsImplicitlyFalse(type, objectType)) {
+  } else if (isNeverOptional(type, objectType)) {
     assert(
       !optional,
       propError(
@@ -301,14 +302,14 @@ function normalizePropertySchemaObject(info: PropertyInfoUsingObject): Canonical
     assert(property === undefined, propError(info, "'property' can only be specified if 'type' is 'linkingObjects'."));
   }
 
-  if (optionalIsImplicitlyTrue(type, objectType)) {
+  if (isAlwaysOptional(type, objectType)) {
     const displayed =
       type === "mixed" || objectType === "mixed"
         ? "'mixed' types"
         : "User-defined types as standalone objects and in dictionaries";
     assert(optional !== false, propError(info, `${displayed} are always optional and cannot be made non-optional.`));
     optional = true;
-  } else if (optionalIsImplicitlyFalse(type, objectType)) {
+  } else if (isNeverOptional(type, objectType)) {
     assert(
       optional !== true,
       propError(info, "User-defined types in lists and sets are always non-optional and cannot be made optional."),
@@ -341,7 +342,7 @@ function normalizePropertySchemaObject(info: PropertyInfoUsingObject): Canonical
 /**
  * Determine whether a property always is implicitly optional (nullable).
  */
-function optionalIsImplicitlyTrue(type: string, objectType: string | undefined): boolean {
+function isAlwaysOptional(type: string, objectType: string | undefined): boolean {
   return (
     type === "mixed" ||
     objectType === "mixed" ||
@@ -353,7 +354,7 @@ function optionalIsImplicitlyTrue(type: string, objectType: string | undefined):
 /**
  * Determine whether a property always is implicitly non-optional (non-nullable).
  */
-function optionalIsImplicitlyFalse(type: string, objectType: string | undefined): boolean {
+function isNeverOptional(type: string, objectType: string | undefined): boolean {
   return (type === "list" || type === "set" || type === "linkingObjects") && isUserDefined(objectType);
 }
 
@@ -361,32 +362,42 @@ function optionalIsImplicitlyFalse(type: string, objectType: string | undefined)
  * Determine whether a string ends with a shorthand collection ('[]' or '{}' or '<>').
  */
 function hasCollectionSuffix(input: string): boolean {
-  const end = input.substring(input.length - 2);
-  return !!COLLECTION_SHORTHAND_TO_NAME[end];
+  const suffix = input.substring(input.length - COLLECTION_SUFFIX_LENGTH);
+  return !!COLLECTION_SHORTHAND_TO_NAME[suffix];
 }
 
 /**
  * Assert that shorthand notation is not being used.
  */
 function assertNotUsingShorthand(input: string | undefined, info: PropertyInfo): void {
-  const shorthands: string[] = [];
-
-  if (input && hasCollectionSuffix(input)) {
-    shorthands.push(input.substring(input.length - 2));
-    input = input.substring(0, input.length - 2);
+  if (!input) {
+    return;
   }
 
-  if (input?.endsWith("?")) {
-    shorthands.push("?");
-  }
-
+  const shorthands = extractShorthands(input);
   assert(
-    !shorthands.length,
+    shorthands.length === 0,
     propError(
       info,
       `Cannot use shorthand '${shorthands.join("' and '")}' in 'type' or 'objectType' when defining property objects.`,
     ),
   );
+}
+
+/**
+ * Extract the shorthand markers used in the input.
+ */
+function extractShorthands(input: string): string[] {
+  const shorthands: string[] = [];
+  if (hasCollectionSuffix(input)) {
+    shorthands.push(input.substring(input.length - COLLECTION_SUFFIX_LENGTH));
+    input = input.substring(0, input.length - COLLECTION_SUFFIX_LENGTH);
+  }
+  if (input.endsWith("?")) {
+    shorthands.push("?");
+  }
+
+  return shorthands;
 }
 
 /**
