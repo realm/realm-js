@@ -362,8 +362,8 @@ function isNeverOptional(type: string, objectType: string | undefined): boolean 
  * Determine whether a string ends with a shorthand collection ('[]' or '{}' or '<>').
  */
 function hasCollectionSuffix(input: string): boolean {
-  const end = input.substring(input.length - COLLECTION_SUFFIX_LENGTH);
-  return !!COLLECTION_SHORTHAND_TO_NAME[end];
+  const suffix = input.substring(input.length - COLLECTION_SUFFIX_LENGTH);
+  return !!COLLECTION_SHORTHAND_TO_NAME[suffix];
 }
 
 /**
