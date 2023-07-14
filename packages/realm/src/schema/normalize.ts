@@ -72,7 +72,7 @@ const COLLECTION_SHORTHAND_TO_NAME: Readonly<Record<string, string>> = {
   "<>": "set",
 };
 
-const COLLECTION_SUFFIX_LENGTH = 2;
+const COLLECTION_SUFFIX_LENGTH = "[]".length;
 
 function isPrimitive(type: string | undefined): type is PrimitivePropertyTypeName {
   return PRIMITIVE_TYPES.has(type as PrimitivePropertyTypeName);
