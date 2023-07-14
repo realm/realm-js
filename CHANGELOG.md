@@ -1,10 +1,4 @@
-## vNext (TBD)
-
-### Deprecations
-* None
-
-### Enhancements
-* None
+## 12.0.0-rc.2 (2023-07-14)
 
 ### Fixed
 * Fixed updating helpers (the `ClassMap`) used by `Realm` before notifying schema change listeners when the schema is changed during runtime. ([#5574](https://github.com/realm/realm-js/issues/5574))
