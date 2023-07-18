@@ -68,6 +68,64 @@ describe("Set", () => {
         const success2 = this.realm.write(() => set.delete("hello"));
         expect(success2).equals(false);
       });
+      it("is iterable", function (this: RealmContext) {
+        const { set } = this.realm.write(() =>
+          this.realm.create<Item>("Item", { set: ["hello", "world", "foo", "bar"] }),
+        );
+
+        // Create a copy of the values to compare against since the order is not guaranteed
+        const copiedValues = [...set];
+
+        const valuesIter = set.values();
+        expect(valuesIter.next()).deep.equals({ value: copiedValues[0], done: false });
+        expect(valuesIter.next()).deep.equals({ value: copiedValues[1], done: false });
+        expect(valuesIter.next()).deep.equals({ value: copiedValues[2], done: false });
+        expect(valuesIter.next()).deep.equals({ value: copiedValues[3], done: false });
+        expect(valuesIter.next()).deep.equals({ value: undefined, done: true });
+
+        const entriesIter = set.entries();
+        expect(entriesIter.next()).deep.equals({ value: [copiedValues[0], copiedValues[0]], done: false });
+        expect(entriesIter.next()).deep.equals({ value: [copiedValues[1], copiedValues[1]], done: false });
+        expect(entriesIter.next()).deep.equals({ value: [copiedValues[2], copiedValues[2]], done: false });
+        expect(entriesIter.next()).deep.equals({ value: [copiedValues[3], copiedValues[3]], done: false });
+        expect(entriesIter.next()).deep.equals({ value: undefined, done: true });
+
+        // This fails
+        const keysIter = set.keys();
+        expect(keysIter.next()).deep.equals({ value: copiedValues[0], done: false });
+        expect(keysIter.next()).deep.equals({ value: copiedValues[1], done: false });
+        expect(keysIter.next()).deep.equals({ value: copiedValues[2], done: false });
+        expect(keysIter.next()).deep.equals({ value: copiedValues[3], done: false });
+        expect(keysIter.next()).deep.equals({ value: undefined, done: true });
+
+        const forEachValues: string[] = [];
+        set.forEach((value) => forEachValues.push(value as string));
+        expect(forEachValues).deep.equals(copiedValues);
+
+        // This fails
+        const forEachEntries: [string, string][] = [];
+        // @ts-expect-error - The type of the callback is wrong
+        set.forEach((value, key) => forEachEntries.push([key as string, value as string]));
+
+        expect(forEachEntries).deep.equals([
+          [copiedValues[0], copiedValues[0]],
+          [copiedValues[1], copiedValues[1]],
+          [copiedValues[2], copiedValues[2]],
+          [copiedValues[3], copiedValues[3]],
+        ]);
+
+        // This fails
+        const forEachKeys: string[] = [];
+        // @ts-expect-error - The type of the callback is wrong
+        set.forEach((value, key) => forEachKeys.push(key as string));
+        expect(forEachKeys).deep.equals(copiedValues);
+
+        const forInValues: string[] = [];
+        for (const value of set) {
+          forInValues.push(value as string);
+        }
+        expect(forInValues).deep.equals(copiedValues);
+      });
     });
 
     describe("object values", () => {
