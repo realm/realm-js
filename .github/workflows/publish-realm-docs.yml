@@ -1,0 +1,64 @@
+# This workflow builds the TypeDoc for relevant and publishes it to https://docs.mongodb.com/realm-sdks/js/
+# It will determine if it's a pre-release or an official release
+# pre-releases are published to /next
+# releases are published to /latest
+# all releases are published to /<version>
+
+name: Publish Realm Docs
+on:
+  push:
+    tags:
+      - (realm-react|realm-web)?-?v([0-9]+\.[0-9]+\.[0-9]+(-\S+)?)
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: manually set the tag for the desired documentation location
+        required: true
+        type: string
+
+env:
+  REALM_DISABLE_ANALYTICS: 1
+jobs:
+  publish:
+    name: Build & Publish Realm Docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: realm/ci-actions/parse-release-tag@andrew/parse-tag
+        id: parse-release-tag
+        with:
+          release-tag: ${{ github.event.inputs.tag || github.event.ref }}
+      - uses: actions/checkout@v3
+        with:
+          submodules: "recursive"
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          registry-url: https://registry.npmjs.org/
+      - name: Install npm v8
+        run: npm install -g npm@8
+      # Install the root package (--ignore-scripts to avoid downloading or building the native module)
+      - name: Install root package dependencies
+        run: npm ci --ignore-scripts
+      - name: Build docs
+        working-directory: packages/${{ steps.parse-release-tag.outputs.package-name || "realm" }}}
+        run: npm run docs
+      - name: Set up S3cmd and configure AWS credentials
+        uses: s3-actions/s3cmd@v1.1
+        with:
+          provider: aws
+          region: "us-west-1"
+          access_key: ${{ secrets.DOCS_S3_ACCESS_KEY }}
+          secret_key: ${{ secrets.DOCS_S3_SECRET_KEY }}
+      # --no-mime-magic --guess-mime-type flags to work around CSS incorrect MIME type issue
+      # (https://stackoverflow.com/questions/53708938/s3cmd-flagging-css-with-wrong-mime-type)
+      - name: Upload versioned docs (for archival)
+        working-directory: packages/${{ steps.parse-release-tag.outputs.package-name || "realm" }}}
+        run: s3cmd put --recursive --acl-public --no-mime-magic --guess-mime-type docs/ s3://${{ secrets.DOCS_S3_BUCKET_NAME }}/docs/realm-sdks/js/${{ steps.parse-release-tag.outputs.package-name || "realm" }}/${{ steps.parse-release-tag.outputs.package-version}}/
+      - name: Upload prerelase docs
+        if: steps.parse-release-tag.outputs.prerelease == 'true'
+        working-directory: packages/${{ steps.parse-release-tag.outputs.package-name || "realm" }}}
+        run: s3cmd put --recursive --acl-public --no-mime-magic --guess-mime-type docs/ s3://${{ secrets.DOCS_S3_BUCKET_NAME }}/docs/realm-sdks/js/${{ steps.parse-release-tag.outputs.package-name || "realm" }}/next/
+      - name: Upload latest docs (to live site)
+        if: steps.parse-release-tag.outputs.prerelease == 'false'
+        working-directory: packages/${{ steps.parse-release-tag.outputs.package-name || "realm" }}}
+        run: s3cmd put --recursive --acl-public --no-mime-magic --guess-mime-type docs/ s3://${{ secrets.DOCS_S3_BUCKET_NAME }}/docs/realm-sdks/js/${{ steps.parse-release-tag.outputs.package-name }}/latest/
