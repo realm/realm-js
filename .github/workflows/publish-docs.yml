@@ -1,10 +1,11 @@
-# This workflow builds the TypeDoc for relevant and publishes it to https://docs.mongodb.com/realm-sdks/js/
+# This workflow builds the TypeDoc documentation and publishes it to https://docs.mongodb.com/realm-sdks/
 # It will determine if it's a pre-release or an official release
+# and publish to the appropriate location based on package name and version.
 # pre-releases are published to /next
-# releases are published to /latest
+# releases are published to /latest and the base URL
 # all releases are published to /<version>
 
-name: Publish Realm Docs
+name: Publish Docs
 on:
   push:
     tags:
@@ -26,7 +27,7 @@ jobs:
       - uses: realm/ci-actions/parse-release-tag@andrew/parse-tag
         id: parse-release-tag
         with:
-          release-tag: ${{ github.event.inputs.tag || github.event.ref }}
+          release-tag: ${{ github.event.inputs.tag || github.ref_name }}
       - uses: actions/checkout@v3
         with:
           submodules: "recursive"
@@ -40,25 +41,32 @@ jobs:
       - name: Install root package dependencies
         run: npm ci --ignore-scripts
       - name: Build docs
-        working-directory: packages/${{ steps.parse-release-tag.outputs.package-name || "realm" }}}
+        working-directory: packages/${{ steps.parse-release-tag.outputs.package-name }}
         run: npm run docs
-      - name: Set up S3cmd and configure AWS credentials
+      - name: Set up S3 cmd and configure AWS credentials
         uses: s3-actions/s3cmd@v1.1
         with:
           provider: aws
           region: "us-west-1"
           access_key: ${{ secrets.DOCS_S3_ACCESS_KEY }}
           secret_key: ${{ secrets.DOCS_S3_SECRET_KEY }}
+      - name: Set up S3 base URL for packages
+        run: echo "S3_BASE_URL=s3://${{ secrets.DOCS_S3_BUCKET_NAME }}/docs/realm-sdks/js/${{steps.parse-release-tag.outputs.package-name}}" >> $GITHUB_ENV
+      - name: Set up S3 base URL for realm
+        if: steps.parse-release-tag.outputs.package-name == 'realm'
+        run: echo "S3_BASE_URL=s3://${{ secrets.DOCS_S3_BUCKET_NAME }}/docs/realm-sdks/js" >> $GITHUB_ENV
       # --no-mime-magic --guess-mime-type flags to work around CSS incorrect MIME type issue
       # (https://stackoverflow.com/questions/53708938/s3cmd-flagging-css-with-wrong-mime-type)
       - name: Upload versioned docs (for archival)
-        working-directory: packages/${{ steps.parse-release-tag.outputs.package-name || "realm" }}}
-        run: s3cmd put --recursive --acl-public --no-mime-magic --guess-mime-type docs/ s3://${{ secrets.DOCS_S3_BUCKET_NAME }}/docs/realm-sdks/js/${{ steps.parse-release-tag.outputs.package-name || "realm" }}/${{ steps.parse-release-tag.outputs.package-version}}/
-      - name: Upload prerelase docs
+        working-directory: packages/${{ steps.parse-release-tag.outputs.package-name }}
+        run: s3cmd put --recursive --acl-public --no-mime-magic --guess-mime-type docs/ ${{ env.S3_BASE_URL }}/${{ steps.parse-release-tag.outputs.package-version }}/
+      - name: Upload prerelease docs
         if: steps.parse-release-tag.outputs.prerelease == 'true'
-        working-directory: packages/${{ steps.parse-release-tag.outputs.package-name || "realm" }}}
-        run: s3cmd put --recursive --acl-public --no-mime-magic --guess-mime-type docs/ s3://${{ secrets.DOCS_S3_BUCKET_NAME }}/docs/realm-sdks/js/${{ steps.parse-release-tag.outputs.package-name || "realm" }}/next/
+        working-directory: packages/${{ steps.parse-release-tag.outputs.package-name }}
+        run: s3cmd put --recursive --acl-public --no-mime-magic --guess-mime-type docs/ ${{ env.S3_BASE_URL }}/next/
       - name: Upload latest docs (to live site)
         if: steps.parse-release-tag.outputs.prerelease == 'false'
-        working-directory: packages/${{ steps.parse-release-tag.outputs.package-name || "realm" }}}
-        run: s3cmd put --recursive --acl-public --no-mime-magic --guess-mime-type docs/ s3://${{ secrets.DOCS_S3_BUCKET_NAME }}/docs/realm-sdks/js/${{ steps.parse-release-tag.outputs.package-name }}/latest/
+        working-directory: packages/${{ steps.parse-release-tag.outputs.package-name }}
+        run: |
+          s3cmd put --recursive --acl-public --no-mime-magic --guess-mime-type docs/ ${{ env.S3_BASE_URL }}/latest/
+          s3cmd put --recursive --acl-public --no-mime-magic --guess-mime-type docs/ ${{ env.S3_BASE_URL }}/
