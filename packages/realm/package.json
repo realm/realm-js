@@ -175,7 +175,7 @@
       ]
     },
     "build:node:prebuild": {
-      "command": "cross-env prebuild --runtime napi --arch $PREBUILD_ARCH -- --directory bindgen",
+      "command": "cross-env-shell prebuild --runtime napi --arch $PREBUILD_ARCH -- --directory bindgen",
       "env": {
         "PREBUILD_ARCH": {
           "external": true
