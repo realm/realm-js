@@ -269,7 +269,7 @@
     "prebuild-install": "^7.1.1"
   },
   "peerDependencies": {
-    "bson": "^5 || ^4",
+    "bson": "^4 || >= 5.4.0",
     "react-native": ">=0.71.0"
   },
   "peerDependenciesMeta": {
@@ -289,7 +289,7 @@
     "@types/mocha": "^10.0.0",
     "@types/node": "^18.15.10",
     "@types/path-browserify": "^1.0.0",
-    "bson": "^5.3.0",
+    "bson": "^5.4.0",
     "chai": "4.3.6",
     "cmake-js": "6.3.2",
     "cross-env": "^7.0.3",
