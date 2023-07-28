@@ -7,7 +7,7 @@
 * None
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
+* Fix Jest issues when testing against Realm ([#6003](https://github.com/realm/realm-js/issues/6003))
 * None
 
 ### Compatibility
