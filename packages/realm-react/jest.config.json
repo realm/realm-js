@@ -1,7 +1,6 @@
 {
   "verbose": true,
   "preset": "react-native",
-  "resolver": "./custom-resolver.cjs",
   "roots": [
     "<rootDir>/src"
   ],

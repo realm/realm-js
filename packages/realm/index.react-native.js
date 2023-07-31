@@ -19,4 +19,19 @@
 /* eslint-disable @typescript-eslint/no-var-requires -- We're exporting using CJS assignment */
 /* eslint-env commonjs */
 
-module.exports = require("./dist/bundle.react-native").Realm;
+// eslint-disable-next-line no-undef -- In React Native, process is not defined, but in Jest it is
+const isJest = process?.env?.JEST_WORKER_ID !== undefined;
+
+let entryPoint;
+
+if (isJest) {
+  // Define a require function that will load the node bundle
+  // otherwise, metro will preemptively load the node bundle
+  const nodeRequire = require;
+  // Jest is running, use the node bundle
+  entryPoint = nodeRequire("./dist/bundle.node");
+} else {
+  entryPoint = require("./dist/bundle.react-native");
+}
+
+module.exports = entryPoint.Realm;
