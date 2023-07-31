@@ -28,6 +28,22 @@ jobs:
         id: parse-release-tag
         with:
           release-tag: ${{ github.event.inputs.tag || github.ref_name }}
+      - uses: kanga333/variable-mapper@v0.3.0
+        name: Map package to environment variables
+        with:
+          key: ${{steps.parse-release-tag.outputs.package-name}}
+          map: |
+            {
+              "realm-react": {
+                "URL_SLUG": "react"
+              },
+              "realm-web": {
+                "URL_SLUG": "web"
+              },
+              "realm": {
+                "URL_SLUG": "js"
+              }
+            }
       - uses: actions/checkout@v3
         with:
           submodules: "recursive"
@@ -51,10 +67,7 @@ jobs:
           access_key: ${{ secrets.DOCS_S3_ACCESS_KEY }}
           secret_key: ${{ secrets.DOCS_S3_SECRET_KEY }}
       - name: Set up S3 base URL for packages
-        run: echo "S3_BASE_URL=s3://${{ secrets.DOCS_S3_BUCKET_NAME }}/docs/realm-sdks/js/${{steps.parse-release-tag.outputs.package-name}}" >> $GITHUB_ENV
-      - name: Set up S3 base URL for realm
-        if: steps.parse-release-tag.outputs.package-name == 'realm'
-        run: echo "S3_BASE_URL=s3://${{ secrets.DOCS_S3_BUCKET_NAME }}/docs/realm-sdks/js" >> $GITHUB_ENV
+        run: echo "S3_BASE_URL=s3://${{ secrets.DOCS_S3_BUCKET_NAME }}/docs/realm-sdks/${{env.URL_SLUG}}" >> $GITHUB_ENV
       # --no-mime-magic --guess-mime-type flags to work around CSS incorrect MIME type issue
       # (https://stackoverflow.com/questions/53708938/s3cmd-flagging-css-with-wrong-mime-type)
       - name: Upload versioned docs (for archival)
@@ -69,4 +82,3 @@ jobs:
         working-directory: packages/${{ steps.parse-release-tag.outputs.package-name }}
         run: |
           s3cmd put --recursive --acl-public --no-mime-magic --guess-mime-type docs/ ${{ env.S3_BASE_URL }}/latest/
-          s3cmd put --recursive --acl-public --no-mime-magic --guess-mime-type docs/ ${{ env.S3_BASE_URL }}/
