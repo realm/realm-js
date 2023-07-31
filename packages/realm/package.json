@@ -29,6 +29,7 @@
     ".": {
       "types": "./types.d.cts",
       "node": "./index.node.js",
+      "require": "./index.node.js",
       "react-native": "./index.react-native.js"
     },
     "./scripts/submit-analytics": "./scripts/submit-analytics.mjs",
