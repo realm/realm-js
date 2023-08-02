@@ -7,8 +7,8 @@
 * None
 
 ### Fixed
-* Fix Jest issues when testing against Realm ([#6003](https://github.com/realm/realm-js/issues/6003))
-* None
+* Fix Jest issues when testing against Realm. ([#6003](https://github.com/realm/realm-js/issues/6003))
+* Fix Date and ObjectId arguments being empty objects in MongoDB client. ([#6030](https://github.com/realm/realm-js/issues/6030))
 
 ### Compatibility
 * React Native >= v0.71.4
