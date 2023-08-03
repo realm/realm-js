@@ -7,7 +7,8 @@
 * None
 
 ### Fixed
-* Fix Jest issues when testing against Realm ([#6003](https://github.com/realm/realm-js/issues/6003))
+* Fix Jest issues when testing against Realm. ([#6003](https://github.com/realm/realm-js/issues/6003))
+* Fix Date and ObjectId arguments being empty objects in MongoDB client. ([#6030](https://github.com/realm/realm-js/issues/6030))
 * Rare corruption of files on streaming format (often following compact, convert or copying to a new file). ([#6807](https://github.com/realm/realm-core/issues/6807), since realm-core v12.12.0)
 * Trying to search a full-text indexes created as a result of an additive schema change (i.e. applying the differences between the local schema and a synchronized realm's schema) could have resulted in an IllegalOperation error with the error code Column has no fulltext index. (PR [#6823](https://github.com/realm/realm-core/issues/6823), since realm-core v13.2.0).
 * Sync progress for DOWNLOAD messages from server state was updated wrongly. This may have resulted in an extra round-trip to the server. ([#6827](https://github.com/realm/realm-core/issues/6827), since realm-core v12.9.0)

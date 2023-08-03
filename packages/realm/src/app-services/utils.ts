@@ -25,7 +25,8 @@ export function cleanArguments(args: unknown[] | unknown): unknown[] | unknown {
     // Note: `undefined` elements in the array is not removed.
     return args.map(cleanArguments);
   }
-  if (args === null || typeof args !== "object") {
+  // Checking for constructor to allow for `new Date()` and `new ObjectId()` and similar.
+  if (args === null || typeof args !== "object" || args?.constructor !== Object) {
     return args;
   }
   const result: { [key: string]: unknown } = {};

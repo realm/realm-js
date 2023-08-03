@@ -29,9 +29,10 @@ type ChangeEvent<T extends Document> = Realm.Services.MongoDB.ChangeEvent<T>;
 type InsertEvent<T extends Document> = Realm.Services.MongoDB.InsertEvent<T>;
 
 type TestDocument = {
-  _id: number;
+  _id: BSON.ObjectId;
   text?: string;
   isLast?: boolean;
+  date?: Date;
 };
 
 type CollectionContext = { collection: MongoDBCollection<TestDocument> };
@@ -85,18 +86,20 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
   });
 
   describe("MongoDBCollection", function () {
-    const insertedId1 = 1;
-    const insertedId2 = 2;
-    const insertedId3 = 3;
+    const insertedId1 = new BSON.ObjectId();
+    const insertedId2 = new BSON.ObjectId();
+    const insertedId3 = new BSON.ObjectId();
     const insertedText = "Test document";
-    const nonExistentId = 100;
+    const insertedDate = new Date("2020-01-01");
+    const nonExistentId = new BSON.ObjectId();
 
     async function insertThreeDocuments(collection: MongoDBCollection<TestDocument>): Promise<void> {
-      const { insertedIds } = await collection.insertMany([
-        { _id: insertedId1, text: insertedText },
-        { _id: insertedId2, text: insertedText },
-        { _id: insertedId3, text: insertedText },
-      ]);
+      const insertionDocuments = [
+        { _id: insertedId1, text: insertedText, date: insertedDate },
+        { _id: insertedId2, text: insertedText, date: insertedDate },
+        { _id: insertedId3, text: insertedText, date: insertedDate },
+      ];
+      const { insertedIds } = await collection.insertMany(insertionDocuments);
       expect(insertedIds).to.have.length(3);
     }
 
@@ -148,7 +151,7 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
         const docs = await this.collection.find();
         expect(docs).to.have.length(3);
         for (const doc of docs) {
-          expect(doc).to.have.all.keys("_id", "text");
+          expect(doc).to.have.all.keys("_id", "text", "date");
         }
       });
 
@@ -184,14 +187,14 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
         await insertThreeDocuments(this.collection);
 
         const doc = await this.collection.findOne({ _id: insertedId3 });
-        expect(doc).to.deep.equal({ _id: insertedId3, text: insertedText });
+        expect(doc).to.deep.equal({ _id: insertedId3, text: insertedText, date: insertedDate });
       });
 
       it("returns first document using empty filter", async function (this: TestContext) {
         await insertThreeDocuments(this.collection);
 
         const doc = await this.collection.findOne();
-        expect(doc).to.deep.equal({ _id: insertedId1, text: insertedText });
+        expect(doc).to.deep.equal({ _id: insertedId1, text: insertedText, date: insertedDate });
       });
 
       it("returns null when there are no matches", async function (this: TestContext) {
@@ -213,7 +216,7 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
           { $set: { text: updatedText } },
           { returnNewDocument: true },
         );
-        expect(newDoc).to.deep.equal({ _id: insertedId3, text: updatedText });
+        expect(newDoc).to.deep.equal({ _id: insertedId3, text: updatedText, date: insertedDate });
       });
 
       it("returns null when there are no matches", async function (this: TestContext) {
@@ -290,7 +293,7 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
         await insertThreeDocuments(this.collection);
 
         const oldDoc = await this.collection.findOneAndDelete({ _id: insertedId3 });
-        expect(oldDoc).to.deep.equal({ _id: insertedId3, text: insertedText });
+        expect(oldDoc).to.deep.equal({ _id: insertedId3, text: insertedText, date: insertedDate });
 
         await expectToNotFindDoc(this.collection, { _id: insertedId3 }, { expectedCount: 2 });
       });
@@ -299,7 +302,7 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
         await insertThreeDocuments(this.collection);
 
         const oldDoc = await this.collection.findOneAndDelete();
-        expect(oldDoc).to.deep.equal({ _id: insertedId1, text: insertedText });
+        expect(oldDoc).to.deep.equal({ _id: insertedId3, text: insertedText, date: insertedDate });
 
         await expectToNotFindDoc(this.collection, { _id: insertedId1 }, { expectedCount: 2 });
       });
@@ -325,7 +328,7 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
     describe("#insertOne", function () {
       it("inserts document with id", async function (this: TestContext) {
         const result = await this.collection.insertOne({ _id: insertedId1 });
-        expect(result.insertedId).to.equal(insertedId1);
+        expect(result.insertedId).to.deep.equal(insertedId1);
 
         await expectToFindDoc(this.collection, { _id: insertedId1 }, { expectedCount: 1 });
       });
@@ -389,7 +392,11 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
         const result = await this.collection.updateOne({ _id: insertedId3 }, { $set: { text: updatedText } });
         expect(result).to.deep.equal({ matchedCount: 1, modifiedCount: 1 });
 
-        await expectToFindDoc(this.collection, { _id: insertedId3, text: updatedText }, { expectedCount: 3 });
+        await expectToFindDoc(
+          this.collection,
+          { _id: insertedId3, text: updatedText, date: insertedDate },
+          { expectedCount: 3 },
+        );
       });
 
       it("does not update any document when there are no matches", async function (this: TestContext) {
@@ -428,8 +435,16 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
         const result = await this.collection.updateMany({ _id: { $gt: insertedId1 } }, { $set: { text: updatedText } });
         expect(result).to.deep.equal({ matchedCount: 2, modifiedCount: 2 });
 
-        await expectToFindDoc(this.collection, { _id: insertedId2, text: updatedText }, { expectedCount: 3 });
-        await expectToFindDoc(this.collection, { _id: insertedId3, text: updatedText }, { expectedCount: 3 });
+        await expectToFindDoc(
+          this.collection,
+          { _id: insertedId2, text: updatedText, date: insertedDate },
+          { expectedCount: 3 },
+        );
+        await expectToFindDoc(
+          this.collection,
+          { _id: insertedId3, text: updatedText, date: insertedDate },
+          { expectedCount: 3 },
+        );
       });
 
       it("does not update any document when there are no matches", async function (this: TestContext) {
