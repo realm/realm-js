@@ -194,7 +194,7 @@ const expectQueryResultValues = (
     expect(results.map((el) => el[propertyToCompare])).to.deep.equal(
       expectedResults,
       `
-      Expected results not returned from query: ${queryString} ${JSON.stringify(queryArgs)}, 
+      Expected results not returned from query: ${queryString} ${JSON.stringify(queryArgs)},
     `,
     );
   });
@@ -334,7 +334,7 @@ describe("Queries", () => {
           topRight: [85.24, 88.0],
         };
 
-        queryResultsIds = [zero, poiA, poiB, poiC, poiD].map((p) => p.id);
+        queryResultsIds = [zero, poiA, poiB, poiC, poiD, northPole].map((p) => p.id);
 
         expectQueryResultValues(this.realm, PointOfInterest, "id", [
           [queryResultsIds, "location geoWithin $0 SORT(id ASC)", box],
@@ -615,7 +615,7 @@ describe("Queries", () => {
           topRight: [85.24, 88.0],
         };
 
-        queryResultsIds = [zero, poiA, poiB, poiC, poiD].map((p) => p.id);
+        queryResultsIds = [zero, poiA, poiB, poiC, poiD, northPole].map((p) => p.id);
 
         expectQueryResultValues(this.realm, PointOfInterest, "id", [
           [queryResultsIds, "location geoWithin $0 SORT(id ASC)", box],
