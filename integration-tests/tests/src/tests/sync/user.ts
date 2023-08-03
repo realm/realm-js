@@ -102,31 +102,38 @@ describe.skipIf(environment.missingServer, "User", () => {
       const provider = this.app.emailPasswordAuth;
       expect(provider).instanceof(Realm.Auth.EmailPasswordAuth);
     });
+  });
 
-    it("autoverify email password works", async function (this: AppContext & RealmContext) {
-      const validEmail = randomVerifiableEmail();
-      const invalidEmail = randomNonVerifiableEmail();
-      const invalidPassword = "pass"; // too short
-      const validPassword = "password123456";
+  describe("autoverify email password works", () => {
+    const validEmail = randomVerifiableEmail();
+    const invalidEmail = randomNonVerifiableEmail();
+    const invalidPassword = "pass"; // too short
+    const validPassword = "password123456";
 
+    it("for invalid email invalid password", async function (this: AppContext & RealmContext) {
       // invalid email, invalid password
-      let credentials = Realm.Credentials.emailPassword({ email: invalidEmail, password: invalidPassword });
+      const credentials = Realm.Credentials.emailPassword({ email: invalidEmail, password: invalidPassword });
       await expect(this.app.logIn(credentials)).to.be.rejectedWith("invalid username/password"); // this user does not exist yet
       await expect(
         this.app.emailPasswordAuth.registerUser({ email: invalidEmail, password: invalidPassword }),
       ).to.be.rejectedWith("password must be between 6 and 128 characters");
       await expect(this.app.logIn(credentials)).to.be.rejectedWith("invalid username/password"); // this user did not register
+    });
 
+    it("for invalid email valid password", async function (this: AppContext & RealmContext) {
+      console.log("invalid email, valid password", invalidEmail, validPassword);
       // invalid email, valid password
-      credentials = Realm.Credentials.emailPassword({ email: invalidEmail, password: validPassword });
+      const credentials = Realm.Credentials.emailPassword({ email: invalidEmail, password: validPassword });
       await expect(this.app.logIn(credentials)).to.be.rejectedWith("invalid username/password"); // this user does not exist yet
       expect(
         this.app.emailPasswordAuth.registerUser({ email: invalidEmail, password: validPassword }),
       ).to.be.rejectedWith(`failed to confirm user "${invalidEmail}"`);
       await expect(this.app.logIn(credentials)).to.be.rejectedWith("invalid username/password"); // this user did not register
+    });
 
+    it("for valid email invalid password", async function (this: AppContext & RealmContext) {
       // valid email, invalid password
-      credentials = Realm.Credentials.emailPassword({ email: validEmail, password: invalidPassword });
+      const credentials = Realm.Credentials.emailPassword({ email: validEmail, password: invalidPassword });
       await expect(this.app.logIn(credentials)).to.be.rejectedWith("invalid username/password"); // this user does not exist yet
       await expect(
         this.app.emailPasswordAuth.registerUser({ email: validEmail, password: invalidPassword }),
@@ -138,6 +145,17 @@ describe.skipIf(environment.missingServer, "User", () => {
       const validEmail = randomVerifiableEmail();
       const validPassword = "password123456";
 
+      // valid email, valid password
+      const credentials = Realm.Credentials.emailPassword({ email: validEmail, password: validPassword });
+      await expect(this.app.logIn(credentials)).to.be.rejectedWith("invalid username/password"); // this user does not exist yet
+      await this.app.emailPasswordAuth.registerUser({ email: validEmail, password: validPassword });
+      const user = await this.app.logIn(credentials);
+      expectIsUser(user);
+      expectIsSameUser(user, this.app.currentUser);
+      await user.logOut();
+    });
+
+    it("for valid email valid password", async function (this: AppContext & RealmContext) {
       // valid email, valid password
       const credentials = Realm.Credentials.emailPassword({ email: validEmail, password: validPassword });
       await expect(this.app.logIn(credentials)).to.be.rejectedWith("invalid username/password"); // this user does not exist yet
