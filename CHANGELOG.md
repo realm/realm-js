@@ -1,10 +1,4 @@
-## vNext (TBD)
-
-### Deprecations
-* None
-
-### Enhancements
-* None
+## 12.0.0-rc.3 (2023-08-03)
 
 ### Fixed
 * Fix Jest issues when testing against Realm. ([#6003](https://github.com/realm/realm-js/issues/6003))
@@ -20,9 +14,6 @@
 
 ### Internal
 Using Realm Core from v13.15.1 to v13.17.1
-<!-- * Either mention core version or upgrade -->
-<!-- * Using Realm Core vX.Y.Z -->
-<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
 
 ## 12.0.0-rc.2 (2023-07-14)
 
