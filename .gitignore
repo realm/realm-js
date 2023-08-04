@@ -134,3 +134,6 @@ coverage/
 /packages/realm/docs/
 /packages/realm-react/docs/
 /packages/realm-web/docs/
+
+# bundle id file
+/package/realm/realm-constants.json
