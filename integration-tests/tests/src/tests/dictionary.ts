@@ -370,7 +370,9 @@ describe("Dictionary", () => {
         this.realm.delete(item);
         expect(() => {
           JSON.stringify(dict);
-        }).throws("Access to invalidated Dictionary object");
+        }).throws(
+          "Dictionary is no longer valid. Either the parent object was deleted or the containing Realm has been invalidated or closed.",
+        );
       });
     });
 

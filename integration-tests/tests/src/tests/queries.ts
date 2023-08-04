@@ -1690,11 +1690,11 @@ describe("Queries", () => {
       });
 
       //@ts-expect-error Test about to change
-      persons = realm.objects<IPerson>(PersonSchema.name);
+      persons = this.realm.objects<IPerson>(PersonSchema.name);
       //@ts-expect-error Test about to change
-      contacts = realm.objects<IContact>(ContactSchema.name);
+      contacts = this.realm.objects<IContact>(ContactSchema.name);
       //@ts-expect-error Test about to change
-      primitives = realm.objects<IPrimitive>(PrimitiveSchema.name);
+      primitives = this.realm.objects<IPrimitive>(PrimitiveSchema.name);
     });
 
     describe("All objects", () => {
