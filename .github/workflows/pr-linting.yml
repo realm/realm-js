@@ -1,5 +1,8 @@
 name: Linting (Pull Request)
 on: pull_request
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 env:
   REALM_DISABLE_ANALYTICS: 1
 jobs:

@@ -2,7 +2,7 @@ name: Test Coverage
 on: ["push", "pull_request"]
 
 concurrency:
-  group: ${{ github.head_ref || github.run_id }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 env:
@@ -32,7 +32,7 @@ jobs:
 
       - name: Setup Wireit cache
         uses: google/wireit@setup-github-actions-caching/v1
-        
+
       - name: Environment setup
         run: sudo apt-get install ccache ninja-build
 
