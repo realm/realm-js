@@ -30,12 +30,12 @@ export default [
       {
         file: pkg.main,
         format: "cjs",
-        sourceMap: true,
+        sourcemap: true,
       },
       {
         file: pkg.module,
         format: "esm",
-        sourceMap: true,
+        sourcemap: true,
       },
     ],
     plugins: [commonjs(), nodeResolve(), typescript({ noEmitOnError: true })],
