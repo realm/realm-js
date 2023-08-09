@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import commonjs from "@rollup/plugin-commonjs";
 import nodeResolve from "@rollup/plugin-node-resolve";
 import typescript from "@rollup/plugin-typescript";
 import dts from "rollup-plugin-dts";
@@ -28,11 +29,16 @@ export default [
     output: [
       {
         file: pkg.main,
+        format: "cjs",
+        sourceMap: true,
+      },
+      {
+        file: pkg.module,
         format: "esm",
-        sourcemap: true,
+        sourceMap: true,
       },
     ],
-    plugins: [nodeResolve(), typescript({ noEmitOnError: true })],
+    plugins: [commonjs(), nodeResolve(), typescript({ noEmitOnError: true })],
     external: ["realm", "react", "@realm/common", "lodash"],
   },
   {

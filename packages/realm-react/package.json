@@ -3,7 +3,8 @@
   "version": "0.5.1",
   "description": "React specific hooks and implementation helpers for Realm",
   "type": "module",
-  "main": "dist/index.js",
+  "main": "dist/index.cjs.js",
+  "module": "dist/index.es.js",
   "types": "dist/index.d.ts",
   "source": "src/index.tsx",
   "scripts": {
@@ -53,6 +54,7 @@
     "@babel/preset-typescript": "^7.15.0",
     "@babel/runtime": "^7.15.4",
     "@realm/app-importer": "*",
+    "@rollup/plugin-commonjs": "^25.0.3",
     "@rollup/plugin-node-resolve": "^15.0.1",
     "@rollup/plugin-typescript": "^9.0.2",
     "@testing-library/jest-native": "^4.0.13",
