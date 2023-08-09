@@ -7,8 +7,7 @@
 * None
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None
+* Fixed using `@realm/react` in jest tests, by providing a common js distribution. ([#6049](https://github.com/realm/realm-js/issues/6049)
 
 ### Compatibility
 * React Native >= v0.71.4
