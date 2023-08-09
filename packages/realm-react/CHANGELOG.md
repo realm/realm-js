@@ -1,10 +1,4 @@
-## vNext (TBD)
-
-### Deprecations
-* None
-
-### Enhancements
-* None
+## 0.5.2 (2023-08-09)
 
 ### Fixed
 * Fixed using `@realm/react` in jest tests, by providing a common js distribution. ([#6049](https://github.com/realm/realm-js/issues/6049)
