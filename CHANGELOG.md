@@ -1,10 +1,4 @@
-## vNext (TBD)
-
-### Deprecations
-* None
-
-### Enhancements
-* None
+## 11.10.2 (2023-08-09)
 
 ### Fixed
 * Add missing enums for `OpenRealmTimeOutBehavior`.
