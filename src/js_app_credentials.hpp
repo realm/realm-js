@@ -202,7 +202,7 @@ void CredentialsClass<T>::api_key(ContextType ctx, ObjectType this_object, Argum
     arguments.validate_count(1);
     const std::string api_key = Value::validated_to_string(ctx, arguments[0], "user API key");
 
-    auto credentials = realm::app::AppCredentials::user_api_key(api_key);
+    auto credentials = realm::app::AppCredentials::api_key(api_key);
     return_value.set(create_object<T, CredentialsClass<T>>(ctx, new app::AppCredentials(credentials)));
 }
 

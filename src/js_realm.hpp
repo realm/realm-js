@@ -1397,7 +1397,7 @@ void RealmClass<T>::delete_one(ContextType ctx, ObjectType this_object, Argument
 
         realm::TableRef table =
             ObjectStore::table_for_object_type(realm->read_group(), realm_object->get_object_schema().name);
-        table->remove_object(realm_object->obj().get_key());
+        table->remove_object(realm_object->get_obj().get_key());
     }
     else if (Value::is_array(ctx, arg)) {
         uint32_t length = Object::validated_get_length(ctx, arg);
@@ -1416,7 +1416,7 @@ void RealmClass<T>::delete_one(ContextType ctx, ObjectType this_object, Argument
 
             realm::TableRef table =
                 ObjectStore::table_for_object_type(realm->read_group(), realm_object->get_object_schema().name);
-            table->remove_object(realm_object->obj().get_key());
+            table->remove_object(realm_object->get_obj().get_key());
         }
     }
     else if (Object::template is_instance<ResultsClass<T>>(ctx, arg)) {
