@@ -582,7 +582,7 @@ struct Unbox<JSEngine, Obj> {
         if (is_realm_object) {
             auto realm_object = get_internal<JSEngine, RealmObjectClass<JSEngine>>(native_accessor->m_ctx, js_object);
             if (realm_object && realm_object->realm() == current_realm) {
-                return realm_object->obj();
+                return realm_object->get_obj();
             }
             else if (!policy.copy && !policy.update && !policy.create) {
                 throw std::runtime_error("Realm object is from another Realm");
@@ -604,7 +604,7 @@ struct Unbox<JSEngine, Obj> {
         auto child = realm::Object::create<ValueType>(*native_accessor, native_accessor->m_realm,
                                                       *native_accessor->m_object_schema,
                                                       static_cast<ValueType>(js_object), policy, current_row);
-        return child.obj();
+        return child.get_obj();
     }
 };
 

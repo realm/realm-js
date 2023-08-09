@@ -7,7 +7,11 @@
 * None
 
 ### Fixed
-* Add missing enums for `OpenRealmTimeOutBehavior`
+* Add missing enums for `OpenRealmTimeOutBehavior`.
+* Querying with object list arguments does not work. ([realm/realm-core#6688](https://github.com/realm/realm-core/issues/6688), since v10.3.0-rc.1)
+* Searching for objects in Results would not always find the requested item. ([realm/realm-core#6695](https://github.com/realm/realm-core/issues/6695), since v10.0.0)
+* Rare corruption of files on streaming format (often following compact, convert or copying to a new file). ([realm/realm-core#6807](https://github.com/realm/realm-core/pull/6807), since v11.2.0)
+* Sync progress for DOWNLOAD messages from server state was updated wrongly. This may have resulted in an extra round-trip to the server. ([realm/realm-core#6827](https://github.com/realm/realm-core/issues/6827), since v10.22.0)
 
 ### Compatibility
 * React Native >= v0.71.3
@@ -15,9 +19,7 @@
 * File format: generates Realms with format v23 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-<!-- * Either mention core version or upgrade -->
-<!-- * Using Realm Core vX.Y.Z -->
-<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
+* Upgraded Realm Core from v13.14.0 to v13.17.1.
 
 ## 11.10.1 (2023-06-16)
 
@@ -30,9 +32,7 @@
 * File format: generates Realms with format v23 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-<!-- * Either mention core version or upgrade -->
-<!-- * Using Realm Core vX.Y.Z -->
-<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
+* Using Realm Core v13.14.0.
 
 ## 11.10.0 (2023-06-15)
 

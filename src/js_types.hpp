@@ -1003,7 +1003,7 @@ typename realm::Mixed Value<T>::to_mixed(ContextType ctx, std::shared_ptr<Realm>
             throw std::runtime_error(message);
         }
 
-        return Mixed(os_object->obj());
+        return Mixed(os_object->get_obj());
     }
     REALM_UNREACHABLE();
 }
