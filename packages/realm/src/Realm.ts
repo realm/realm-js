@@ -903,6 +903,7 @@ export class Realm {
     } else if (subject instanceof Results) {
       subject.internal.clear();
     } else if (Array.isArray(subject) || Symbol.iterator in subject) {
+      //@ts-expect-error the above check is good enough
       for (const object of subject) {
         assert.instanceOf(object, RealmObject);
         assert.isSameRealm(object[REALM].internal, this.internal, "Can't delete an object from another Realm");
