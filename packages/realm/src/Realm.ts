@@ -1386,6 +1386,7 @@ type MongoDBCollectionType<T extends Document> = MongoDBCollection<T>;
 type MongoDBDatabaseType = MongoDBDatabase;
 type NewDocumentType<T extends Document> = NewDocument<T>;
 type OperationTypeType = OperationType;
+type OrderedCollectionType<T = unknown> = OrderedCollection<T>;
 type RenameEventType = RenameEvent;
 type ReplaceEventType<T extends Document> = ReplaceEvent<T>;
 type UpdateType = Update;
@@ -1465,6 +1466,7 @@ export declare namespace Realm {
     OpenRealmBehaviorConfiguration,
     OpenRealmBehaviorTypeType as OpenRealmBehaviorType,
     OpenRealmTimeOutBehaviorType as OpenRealmTimeOutBehavior,
+    OrderedCollectionType as OrderedCollection,
     PartitionSyncConfiguration,
     PrimaryKey,
     PrimitivePropertyTypeName,

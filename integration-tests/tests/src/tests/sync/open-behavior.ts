@@ -580,7 +580,7 @@ describe("OpenBehaviour", function () {
           _sessionStopPolicy: "immediately",
           newRealmFileBehavior: { type: "foo" },
         },
-      }),
+      } as unknown as Realm.Configuration),
     ).throws;
 
     await expect(() =>
@@ -592,7 +592,7 @@ describe("OpenBehaviour", function () {
           _sessionStopPolicy: "immediately",
           newRealmFileBehavior: { type: OpenRealmBehaviorType.OpenImmediately, timeOutBehavior: "foo" },
         },
-      }),
+      } as unknown as Realm.Configuration),
     ).throws;
 
     await expect(() =>
@@ -604,7 +604,7 @@ describe("OpenBehaviour", function () {
           _sessionStopPolicy: "immediately",
           newRealmFileBehavior: { type: OpenRealmBehaviorType.OpenImmediately, timeOut: "bar" },
         },
-      }),
+      } as unknown as Realm.Configuration),
     ).throws;
   });
 });
