@@ -1,3 +1,85 @@
+## 11.10.2 (2023-08-09)
+
+### Fixed
+* Add missing enums for `OpenRealmTimeOutBehavior`.
+* Querying with object list arguments does not work. ([realm/realm-core#6688](https://github.com/realm/realm-core/issues/6688), since v10.3.0-rc.1)
+* Searching for objects in Results would not always find the requested item. ([realm/realm-core#6695](https://github.com/realm/realm-core/issues/6695), since v10.0.0)
+* Rare corruption of files on streaming format (often following compact, convert or copying to a new file). ([realm/realm-core#6807](https://github.com/realm/realm-core/pull/6807), since v11.2.0)
+* Sync progress for DOWNLOAD messages from server state was updated wrongly. This may have resulted in an extra round-trip to the server. ([realm/realm-core#6827](https://github.com/realm/realm-core/issues/6827), since v10.22.0)
+
+### Compatibility
+* React Native >= v0.71.3
+* Realm Studio v14.0.0.
+* File format: generates Realms with format v23 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
+
+### Internal
+* Upgraded Realm Core from v13.14.0 to v13.17.1.
+
+## 11.10.1 (2023-06-16)
+
+### Fixed
+* Fixed incorrect Linux build (x86_64) for older Linux distributions, and loading the binary will fail with `Error: /lib64/libc.so.6: version 'GLIBC_2.34' not found`.
+
+### Compatibility
+* React Native >= v0.71.3
+* Realm Studio v14.0.0.
+* File format: generates Realms with format v23 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
+
+### Internal
+* Using Realm Core v13.14.0.
+
+## 11.10.0 (2023-06-15)
+
+### Enhancements
+* Support sort/distinct based on values from a dictionary e.g. `TRUEPREDICATE SORT(meta['age'])`. ([realm/realm-core#5311](https://github.com/realm/realm-core/pull/5311))
+
+### Fixed
+* Partition-Based to Flexible Sync Migration for migrating a client app that uses partition based sync to use flexible sync under the hood if the server has been migrated to flexible sync is officially supported with this release. Any clients using an older version of Realm will receive a "switch to flexible sync" error message when trying to sync with the app. ([realm/realm-core#6554](https://github.com/realm/realm-core/issues/6554), since v11.9.0)
+* Calling `snapshot()` on a Realm list of primitive types is not supported and now throws.
+* Fixed a potential crash when opening the realm after failing to download a fresh FLX realm during an automatic client reset. ([realm/realm-core#6494](https://github.com/realm/realm-core/issues/6494), since v10.19.5)
+* Changing parameters for a query after initialization could lead to a crash. ([realm/realm-core#6674](https://github.com/realm/realm-core/pull/6674), since v10.20.0)
+*
+### Compatibility
+* React Native >= v0.71.3
+* Realm Studio v14.0.0.
+* File format: generates Realms with format v23 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
+
+### Internal
+* Upgraded Realm Core from v13.10.1 to v13.14.0. ([#5811](https://github.com/realm/realm-js/issues/5811), [#5833](https://github.com/realm/realm-js/issues/5833), and [#5868](https://github.com/realm/realm-js/issues/5868))
+* Bump sync protocol to v9 to indicate client has fix for client reset error during async open. ([realm/realm-core#6609](https://github.com/realm/realm-core/issues/6609))
+* The sync client's user agent has been changed and has now the form `RealmJS/<sdk version> (<osname> <sysname> <release> <version> <machine>)` where
+  * `sdk version` is the version of Realm JavaScript
+  * `osname` equivalent to `uname -o`
+  * `sysname` equivalent to `uname -s`
+  * `release` equivalent to `uname -r`
+  * `version` equivalent to `uname -v`
+  * `machine` equivalent to `uname -m`
+* Aligning analytics with other Realm SDKs. You can still disable the submission by setting environment variable `REALM_DISABLE_ANALYTICS`, and you can print out what is submitted by setting the environment variable `REALM_PRINT_ANALYTICS`.
+  
+## 11.9.0 (2023-05-11)
+
+### Enhancements
+* Improve performance of equality queries on a non-indexed mixed property by about 30%. ([realm/realm-core#6506](https://github.com/realm/realm-core/issues/6506))
+* PBS to FLX Migration for migrating a client app that uses partition based sync to use flexible sync under the hood if the server has been migrated to flexible sync. ([realm/realm-core#6554](https://github.com/realm/realm-core/issues/6554))
+* New notifiers can now be registered in write transactions until changes have actually been made in the write transaction. This makes it so that new notifications can be registered inside change notifications triggered by beginning a write transaction (unless a previous callback performed writes). ([realm/realm-core#6560](https://github.com/realm/realm-core/p
+ull/6560))
+
+### Fixed
+* If session multiplexing was enabled in the sync client and multiple realms for multiple users were being synchronized, a connection authenticated for the wrong user could have been used, resulting in a `UserMismatch` error from the server. ([realm/realm-core#6320](https://github.com/realm/realm-core/pull/6320), since v10.0.0).
+* If session multiplexing was enabled and an automatic client reset failed, it could cause all sessions to fail with a fatal ProtocolError rather than just the session that failed to client reset. This would mean that no other sync session would be able to be opened for up to an hour without restarting the app. ([realm/realm-core#6320](https://github.com/realm
+/realm-core/pull/6320), since v10.10.0)
+* Performing a query like `{1, 2, 3, ...} IN list` where the array is longer than 8 and all elements are smaller than some values in list, the app would crash. ([realm/realm-core#1183](https://github.com/realm/realm-kotlin/issues/1183), since v10.20.0)
+* Performing a large number of queries without ever performing a write resulted in steadily increasing memory usage, some of which was never fully freed due to an unbounded cache. ([realm/realm-swift#7978](https://github.com/realm/realm-swift/issues/7978), since v10.19.0)
+
+### Compatibility
+* React Native >= v0.71.0
+* Realm Studio v14.0.0.
+* File format: generates Realms with format v23 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
+
+### Internal
+* Upgraded Realm Core from v13.9.0 to v13.10.1. ([#5784](https://github.com/realm/realm-js/issues/5784) and [#5793](https://github.com/realm/realm-js/issues/5793))
+* Bump the sync protocol version to v8. ([realm/realm-core#6549](https://github.com/realm/realm-core/pull/6549))
+
 ## 11.8.0 (2023-04-12)
 NOTE: Since the file format of the Realm auxiliary files have been changed, it is required to use Realm Studio v14.0.0 to open Realm files produced by this release.
 
