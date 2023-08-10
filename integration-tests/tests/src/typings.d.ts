@@ -191,6 +191,9 @@ declare namespace Chai {
 /** Calls the callback on the next tick of the event loop */
 declare function setImmediate(cb: () => void): void;
 
+/** Rough typing of setTimeout to avoid type errors */
+declare function setTimeout(cb: (args: any[]) => void, timeout: number): any;
+
 interface Console {
   error(message?: unknown, ...optionalParams: unknown[]): void;
   log(message?: unknown, ...optionalParams: unknown[]): void;
