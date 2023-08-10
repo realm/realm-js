@@ -16,7 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 import Realm, {
-  ObjectSchema,
   BSON,
   GeoBox,
   GeoCircle,
@@ -29,7 +28,6 @@ import Realm, {
 } from "realm";
 import { expect } from "chai";
 import { openRealmBeforeEach } from "../hooks";
-import { IPerson, PersonSchema } from "../schemas/person-and-dogs";
 import { ContactSchema, IContact } from "../schemas/contact";
 
 interface INullableTypesObject {
@@ -57,7 +55,7 @@ class NullableTypesObject extends Realm.Object implements INullableTypesObject {
   objectIdCol?: Realm.Types.ObjectId;
   uuidCol?: Realm.Types.UUID;
 
-  static schema = {
+  static schema: Realm.ObjectSchema = {
     name: "NullableTypesObject",
     properties: {
       boolCol: "bool?",
@@ -74,16 +72,72 @@ class NullableTypesObject extends Realm.Object implements INullableTypesObject {
   };
 }
 
+export interface IDog {
+  name: string;
+  age: number;
+  owner: IPerson;
+}
+
+export const DogSchema: Realm.ObjectSchema = {
+  name: "Dog",
+  properties: {
+    age: "int",
+    name: "string",
+    owner: "Person",
+  },
+};
+
+export class Dog extends Realm.Object implements IDog {
+  name!: string;
+  age!: number;
+  owner!: Person;
+
+  constructor(realm: Realm, name: string, age: number, owner: Person) {
+    super(realm, { name, age, owner });
+  }
+
+  static schema: Realm.ObjectSchema = DogSchema;
+}
+export interface IPerson {
+  name: string;
+  age: number;
+  friends: Realm.List<IPerson>;
+  dogs: Realm.Results<IDog>;
+}
+
+export const PersonSchema: Realm.ObjectSchema = {
+  name: "Person",
+  primaryKey: "name",
+  properties: {
+    age: "int",
+    name: "string",
+    friends: "Person[]",
+  },
+};
+
+export class Person extends Realm.Object implements IPerson {
+  name!: string;
+  age!: number;
+  friends!: Realm.List<IPerson>;
+  dogs!: Realm.Results<IDog>;
+
+  constructor(realm: Realm, name: string, age: number) {
+    super(realm, { name, age });
+  }
+
+  static schema: Realm.ObjectSchema = PersonSchema;
+}
+
 interface IStory {
   title?: string;
   content?: string;
 }
 
-class Story extends Realm.Object<Story> implements IStory {
+class Story extends Realm.Object implements IStory {
   title?: string;
   content?: string;
 
-  static schema: ObjectSchema = {
+  static schema: Realm.ObjectSchema = {
     name: "Story",
     properties: {
       title: { type: "string" },
@@ -101,7 +155,7 @@ class MyGeoPoint implements CanonicalGeoPoint {
     this.coordinates = [long, lat];
   }
 
-  static schema: ObjectSchema = {
+  static schema: Realm.ObjectSchema = {
     name: "MyGeoPoint",
     embedded: true,
     properties: {
@@ -122,7 +176,7 @@ class PointOfInterest extends Realm.Object implements IPointOfInterest {
   location = new MyGeoPoint(0, 0);
   locations = [new MyGeoPoint(0, 0)];
 
-  static schema: ObjectSchema = {
+  static schema: Realm.ObjectSchema = {
     name: "PointOfInterest",
     properties: {
       id: "int",
@@ -141,11 +195,7 @@ type QueryResultsPair = [ExpectedResults: any[], Query: string, ...QueryArgs: Ar
  * Helper method which runs an array of queries and asserts them to given expected length
  * For example: (r, "Obj", [1, "intCol == 0"]) => querying "intCol == 0" should return 1 elements.
  */
-const expectQueryLength = (
-  realm: Realm,
-  objectSchema: string | Realm.ObjectClass,
-  queryLengthPairs: QueryLengthPair[],
-) => {
+const expectQueryLength = (realm: Realm, objectSchema: Realm.ObjectClass, queryLengthPairs: QueryLengthPair[]) => {
   queryLengthPairs.forEach(([expectedLength, queryString, ...queryArgs]) => {
     const filtered = realm.objects(objectSchema).filtered(queryString, ...queryArgs);
     expect(filtered.length).equal(
@@ -162,7 +212,7 @@ const expectQueryLength = (
  */
 const expectQueryException = (
   realm: Realm,
-  objectSchema: string | Realm.ObjectClass,
+  objectSchema: Realm.ObjectClass,
   queryExceptionPairs: QueryExceptionPair[],
 ) => {
   queryExceptionPairs.forEach(([expectedException, queryString, ...queryArgs]) => {
@@ -183,15 +233,34 @@ const expectQueryException = (
  */
 const expectQueryResultValues = (
   realm: Realm,
-  objectSchema: string | Realm.ObjectClass,
+  objectSchema: Realm.ObjectClass,
   propertyToCompare: string,
   queryResultPairs: QueryResultsPair[],
 ) => {
   queryResultPairs.forEach(([expectedResults, queryString, ...queryArgs]) => {
-    let results = realm.objects<any>(objectSchema);
+    let results = realm.objects(objectSchema);
     results = results.filtered(queryString, ...queryArgs);
     expect(results.length).to.equal(expectedResults.length);
-    expect(results.map((el) => el[propertyToCompare])).to.deep.equal(
+    expect(results.map((el) => (el as any)[propertyToCompare])).to.deep.equal(
+      expectedResults,
+      `
+      Expected results not returned from query: ${queryString} ${JSON.stringify(queryArgs)},
+    `,
+    );
+  });
+};
+
+const expectQueryResultValuesByName = (
+  realm: Realm,
+  objectSchemaName: string,
+  propertyToCompare: string,
+  queryResultPairs: QueryResultsPair[],
+) => {
+  queryResultPairs.forEach(([expectedResults, queryString, ...queryArgs]) => {
+    let results = realm.objects(objectSchemaName);
+    results = results.filtered(queryString, ...queryArgs);
+    expect(results.length).to.equal(expectedResults.length);
+    expect(results.map((el) => (el as any)[propertyToCompare])).to.deep.equal(
       expectedResults,
       `
       Expected results not returned from query: ${queryString} ${JSON.stringify(queryArgs)},
@@ -1247,14 +1316,14 @@ describe("Queries", () => {
       beforeEach(function (this: RealmContext) {
         objects = this.realm.write(() => {
           return [
-            this.realm.create<INullableTypesObject>("NullableTypesObject", {
+            this.realm.create<NullableTypesObject>("NullableTypesObject", {
               dataCol: new Uint8Array([1, 100, 233, 255, 0]),
             }),
-            this.realm.create<INullableTypesObject>("NullableTypesObject", { dataCol: new Uint8Array([1, 100]) }),
-            this.realm.create<INullableTypesObject>("NullableTypesObject", { dataCol: new Uint8Array([100]) }),
-            this.realm.create<INullableTypesObject>("NullableTypesObject", { dataCol: new Uint8Array([2]) }),
-            this.realm.create<INullableTypesObject>("NullableTypesObject", { dataCol: new Uint8Array([255, 0]) }),
-            this.realm.create<INullableTypesObject>("NullableTypesObject", { dataCol: undefined }),
+            this.realm.create<NullableTypesObject>("NullableTypesObject", { dataCol: new Uint8Array([1, 100]) }),
+            this.realm.create<NullableTypesObject>("NullableTypesObject", { dataCol: new Uint8Array([100]) }),
+            this.realm.create<NullableTypesObject>("NullableTypesObject", { dataCol: new Uint8Array([2]) }),
+            this.realm.create<NullableTypesObject>("NullableTypesObject", { dataCol: new Uint8Array([255, 0]) }),
+            this.realm.create<NullableTypesObject>("NullableTypesObject", { dataCol: undefined }),
           ];
         });
       });
@@ -1310,13 +1379,13 @@ describe("Queries", () => {
       beforeEach(function (this: RealmContext) {
         objects = this.realm.write(() => {
           return [
-            this.realm.create("NullableTypesObject", { objectIdCol: new BSON.ObjectId("6001c033600510df3bbfd864") }),
-            this.realm.create("NullableTypesObject", { objectIdCol: new BSON.ObjectId("6001c04b3bc6feeda9ef44f3") }),
-            this.realm.create("NullableTypesObject", { objectIdCol: new BSON.ObjectId("6001c05521acef4e39acfd6f") }),
-            this.realm.create("NullableTypesObject", { objectIdCol: new BSON.ObjectId("6001c05e73ac00af232fb7f6") }),
-            this.realm.create("NullableTypesObject", { objectIdCol: new BSON.ObjectId("6001c069c2f8b350ddeeceaa") }),
-            this.realm.create("NullableTypesObject", { objectIdCol: undefined }),
-            this.realm.create("NullableTypesObject", { objectIdCol: undefined }),
+            this.realm.create(NullableTypesObject, { objectIdCol: new BSON.ObjectId("6001c033600510df3bbfd864") }),
+            this.realm.create(NullableTypesObject, { objectIdCol: new BSON.ObjectId("6001c04b3bc6feeda9ef44f3") }),
+            this.realm.create(NullableTypesObject, { objectIdCol: new BSON.ObjectId("6001c05521acef4e39acfd6f") }),
+            this.realm.create(NullableTypesObject, { objectIdCol: new BSON.ObjectId("6001c05e73ac00af232fb7f6") }),
+            this.realm.create(NullableTypesObject, { objectIdCol: new BSON.ObjectId("6001c069c2f8b350ddeeceaa") }),
+            this.realm.create(NullableTypesObject, { objectIdCol: undefined }),
+            this.realm.create(NullableTypesObject, { objectIdCol: undefined }),
           ];
         });
       });
@@ -1349,13 +1418,13 @@ describe("Queries", () => {
 
       beforeEach(function (this: RealmContext) {
         objects = this.realm.write(() => [
-          this.realm.create("NullableTypesObject", { uuidCol: new BSON.UUID("d1b186e1-e9e0-4768-a1a7-c492519d47ee") }),
-          this.realm.create("NullableTypesObject", { uuidCol: new BSON.UUID("08c35c66-69bd-4b28-8177-f9135553711f") }),
-          this.realm.create("NullableTypesObject", { uuidCol: new BSON.UUID("35f8f06b-dc77-4781-8b5e-9a09759db989") }),
-          this.realm.create("NullableTypesObject", { uuidCol: new BSON.UUID("39e2d5ce-087d-4d0c-a149-05acc74c53f1") }),
-          this.realm.create("NullableTypesObject", { uuidCol: new BSON.UUID("b521bc19-4e92-4e23-ae85-df937abfd89c") }),
-          this.realm.create("NullableTypesObject", { uuidCol: undefined }),
-          this.realm.create("NullableTypesObject", { uuidCol: undefined }),
+          this.realm.create(NullableTypesObject, { uuidCol: new BSON.UUID("d1b186e1-e9e0-4768-a1a7-c492519d47ee") }),
+          this.realm.create(NullableTypesObject, { uuidCol: new BSON.UUID("08c35c66-69bd-4b28-8177-f9135553711f") }),
+          this.realm.create(NullableTypesObject, { uuidCol: new BSON.UUID("35f8f06b-dc77-4781-8b5e-9a09759db989") }),
+          this.realm.create(NullableTypesObject, { uuidCol: new BSON.UUID("39e2d5ce-087d-4d0c-a149-05acc74c53f1") }),
+          this.realm.create(NullableTypesObject, { uuidCol: new BSON.UUID("b521bc19-4e92-4e23-ae85-df937abfd89c") }),
+          this.realm.create(NullableTypesObject, { uuidCol: undefined }),
+          this.realm.create(NullableTypesObject, { uuidCol: undefined }),
         ]);
       });
 
@@ -1428,9 +1497,9 @@ describe("Queries", () => {
 
       beforeEach(function (this: RealmContext) {
         objects = this.realm.write(() => [
-          this.realm.create("LinkObject", { linkCol: { intCol: 1 } }),
-          this.realm.create("LinkObject", { linkCol: { intCol: 2 } }),
-          this.realm.create("LinkObject", { linkCol: undefined }),
+          this.realm.create(LinkObject, { linkCol: { intCol: 1 } }),
+          this.realm.create(LinkObject, { linkCol: { intCol: 2 } }),
+          this.realm.create(LinkObject, { linkCol: undefined }),
         ]);
       });
 
@@ -1446,7 +1515,7 @@ describe("Queries", () => {
       });
 
       it("throws with invalid queries", function (this: RealmContext) {
-        expectQueryException(this.realm, "LinkObject", [
+        expectQueryException(this.realm, LinkObject, [
           ["Unsupported operator", "linkCol > $0", objects[0].linkCol],
           ["'LinkObject' has no property 'intCol'", "intCol = $0", objects[0].linkCol],
         ]);
@@ -1521,7 +1590,7 @@ describe("Queries", () => {
       });
 
       it("returns correct results", function (this: RealmContext) {
-        expectQueryResultValues(this.realm, "LinkTypesObject", "id", [
+        expectQueryResultValuesByName(this.realm, "LinkTypesObject", "id", [
           [[0, 2], "basicLink.intCol == 1"],
           [[1], "linkLink.basicLink.intCol == 1"],
           [[1, 3], "linkLink.basicLink.intCol > 0"],
@@ -1562,7 +1631,7 @@ describe("Queries", () => {
       });
 
       it("returns correct results", function (this: RealmContext) {
-        expectQueryResultValues(this.realm, "Person", "id", [
+        expectQueryResultValues(this.realm, Person, "id", [
           [[1, 3], "age > 20 SORT(age DESC) DISTINCT(name)"],
           [[2, 0], "age > 20 SORT(age ASC) DISTINCT(name)"],
           [[2, 0], "age > 20 SORT(age ASC, name DESC) DISTINCT(name)"],
@@ -1615,7 +1684,7 @@ describe("Queries", () => {
       });
 
       it("returns correct results", function (this: RealmContext) {
-        expectQueryResultValues(this.realm, "Movie", "id", [
+        expectQueryResultValuesByName(this.realm, "Movie", "id", [
           [[0, 1, 2], "tags =[c] 'science fiction'"],
           [[0, 1, 2], "tags BEGINSWITH[c] 'science'"],
           [[], "NONE tags CONTAINS ' '"],
