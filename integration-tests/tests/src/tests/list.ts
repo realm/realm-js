@@ -21,7 +21,6 @@ import { expectArraysEqual, expectSimilar } from "../utils/comparisons";
 import { expect } from "chai";
 import { CanonicalObjectSchema } from "realm";
 import { openRealmBeforeEach, openRealmBefore } from "../hooks";
-import { select } from "../utils/select";
 
 const DATA1 = new Uint8Array([0x01]);
 const DATA2 = new Uint8Array([0x02]);

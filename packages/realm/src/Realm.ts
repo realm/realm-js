@@ -880,11 +880,12 @@ export class Realm {
     return isAsymmetric(helpers.objectSchema) ? undefined : realmObject;
   }
 
+  //FIXME: any should not be used, but we are staying compatible with previous versions
   /**
    * Deletes the provided Realm object, or each one inside the provided collection.
    * @param subject - The Realm object to delete, or a collection containing multiple Realm objects to delete.
    */
-  delete(subject: AnyRealmObject | AnyRealmObject[] | AnyList | AnyResults): void {
+  delete(subject: AnyRealmObject | AnyRealmObject[] | AnyList | AnyResults | any): void {
     assert.inTransaction(this, "Can only delete objects within a transaction.");
     assert.object(subject, "subject");
     if (subject instanceof RealmObject) {
