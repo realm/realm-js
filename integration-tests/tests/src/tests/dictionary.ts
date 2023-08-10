@@ -52,7 +52,7 @@ const EmbeddedChild = {
   },
 };
 
-const DictTypedSchema = {
+const DictTypedSchema: Realm.ObjectSchema = {
   name: "TypedDictionary",
   properties: {
     dict1: { type: "dictionary", objectType: "Children" }, // dictionary of objects is nullable by default

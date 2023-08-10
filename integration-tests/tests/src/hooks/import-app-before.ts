@@ -40,7 +40,7 @@ export function importAppBefore(config: AppConfig | { config: AppConfig }, sdkCo
     return importAppBefore(config.config, sdkConfig);
   }
 
-  before(importAppBefore.name, async function (this: Partial<AppContext> & Mocha.Context) {
+  before(importAppBefore.name, async function (this: AppContext & Mocha.Context) {
     // Importing an app might take up to 5 minutes when the app has a MongoDB Atlas service enabled.
     this.longTimeout();
     if (this.app) {
@@ -55,7 +55,7 @@ export function importAppBefore(config: AppConfig | { config: AppConfig }, sdkCo
         .map(([service]) => {
           if ("sync" in service.config) {
             return service.config.sync.database_name;
-          } else if ("flexible_sync" in service.config) {
+          } else {
             return service.config.flexible_sync.database_name;
           }
         })

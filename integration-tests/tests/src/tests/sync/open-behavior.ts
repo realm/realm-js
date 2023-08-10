@@ -460,7 +460,6 @@ describe("OpenBehaviour", function () {
         sync: {
           user,
           partitionValue,
-          _sessionStopPolicy: "immediately",
           existingRealmFileBehavior: {
             //@ts-expect-error TYPEBUG: cannot access const enum at runtime
             type: "downloadBeforeOpen",
