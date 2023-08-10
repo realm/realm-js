@@ -105,17 +105,16 @@ describe("OpenBehaviour", function () {
     });
     realm.close();
 
-    const config2: Realm.Configuration = {
+    const config2 = {
       schema: [DogForSyncSchema],
       sync: {
-        user,
+        user: user as Realm.User,
         partitionValue,
-        //@ts-expect-error const enum is removed at runtime, should either remove const or leave this as is.
         existingRealmFileBehavior: { type: "openImmediately" },
       },
     };
 
-    realm = await Realm.open(config2);
+    realm = await Realm.open(config2 as Realm.Configuration);
 
     expect(realm.objects(DogForSyncSchema.name).length).equals(1);
   });
@@ -129,8 +128,8 @@ describe("OpenBehaviour", function () {
       sync: {
         user,
         partitionValue,
+        //@ts-expect-error TYPEBUG: cannot access const enum at runtime
         _sessionStopPolicy: "immediately",
-        //@ts-expect-error const enum is removed at runtime, should either remove const or leave this as is.
         newRealmFileBehavior: { type: "downloadBeforeOpen" },
       },
     };
@@ -187,8 +186,8 @@ describe("OpenBehaviour", function () {
         sync: {
           user,
           partitionValue,
-          _sessionStopPolicy: "immediately",
           //@ts-expect-error TYPEBUG: cannot access const enum at runtime
+          _sessionStopPolicy: "immediately",
           existingRealmFileBehavior: { type: "downloadBeforeOpen" },
         },
       };
@@ -207,12 +206,11 @@ describe("OpenBehaviour", function () {
       sync: {
         user,
         partitionValue,
+        //@ts-expect-error TYPEBUG: cannot access const enum at runtime
         _sessionStopPolicy: "immediately",
         newRealmFileBehavior: {
-          //@ts-expect-error TYPEBUG: cannot access const enum at runtime
           type: "downloadBeforeOpen",
           timeOut: 0,
-          //@ts-expect-error TYPEBUG: cannot access const enum at runtime
           timeOutBehavior: "throwException",
         },
       },
@@ -252,12 +250,11 @@ describe("OpenBehaviour", function () {
         sync: {
           user,
           partitionValue,
+          //@ts-expect-error TYPEBUG: cannot access const enum at runtime
           _sessionStopPolicy: "immediately",
           existingRealmFileBehavior: {
-            //@ts-expect-error TYPEBUG: cannot access const enum at runtime
             type: "downloadBeforeOpen",
             timeOut: 0,
-            //@ts-expect-error TYPEBUG: cannot access const enum at runtime
             timeOutBehavior: "throwException",
           },
         },
@@ -314,12 +311,11 @@ describe("OpenBehaviour", function () {
         sync: {
           user,
           partitionValue,
+          //@ts-expect-error TYPEBUG: cannot access const enum at runtime
           _sessionStopPolicy: "immediately",
           newRealmFileBehavior: {
-            //@ts-expect-error TYPEBUG: cannot access const enum at runtime
             type: "downloadBeforeOpen",
             timeOut: 0,
-            //@ts-expect-error TYPEBUG: cannot access const enum at runtime
             timeOutBehavior: "openLocalRealm",
           },
         },
@@ -394,12 +390,11 @@ describe("OpenBehaviour", function () {
         sync: {
           user,
           partitionValue,
+          //@ts-expect-error TYPEBUG: cannot access const enum at runtime
           _sessionStopPolicy: "immediately",
           existingRealmFileBehavior: {
-            //@ts-expect-error TYPEBUG: cannot access const enum at runtime
             type: "downloadBeforeOpen",
             timeOut: 0,
-            //@ts-expect-error TYPEBUG: cannot access const enum at runtime
             timeOutBehavior: "openLocalRealm",
           },
         },
@@ -461,11 +456,9 @@ describe("OpenBehaviour", function () {
           user,
           partitionValue,
           existingRealmFileBehavior: {
-            //@ts-expect-error TYPEBUG: cannot access const enum at runtime
-            type: "downloadBeforeOpen",
+            type: OpenRealmBehaviorType.DownloadBeforeOpen,
             timeOut: 1000,
-            //@ts-expect-error TYPEBUG: cannot access const enum at runtime
-            timeOutBehavior: "openLocalRealm",
+            timeOutBehavior: OpenRealmTimeOutBehavior.OpenLocalRealm,
           },
         },
       };
@@ -487,8 +480,8 @@ describe("OpenBehaviour", function () {
       sync: {
         user,
         partitionValue,
-        _sessionStopPolicy: "immediately",
         //@ts-expect-error TYPEBUG: cannot access const enum at runtime
+        _sessionStopPolicy: "immediately",
         newRealmFileBehavior: { type: "downloadBeforeOpen" },
       },
     };
@@ -521,8 +514,8 @@ describe("OpenBehaviour", function () {
       sync: {
         user,
         partitionValue,
-        _sessionStopPolicy: "immediately",
         //@ts-expect-error TYPEBUG: cannot access const enum at runtime
+        _sessionStopPolicy: "immediately",
         newRealmFileBehavior: { type: "downloadBeforeOpen" },
       },
     };
@@ -543,8 +536,8 @@ describe("OpenBehaviour", function () {
       sync: {
         user,
         partitionValue,
-        _sessionStopPolicy: "immediately",
         //@ts-expect-error TYPEBUG: cannot access const enum at runtime
+        _sessionStopPolicy: "immediately",
         newRealmFileBehavior: { type: "downloadBeforeOpen" },
       },
     };
@@ -585,7 +578,6 @@ describe("OpenBehaviour", function () {
           user,
           partitionValue,
           _sessionStopPolicy: "immediately",
-          //@ts-expect-error testing invalid value for newRealmFileBehaviour
           newRealmFileBehavior: { type: "foo" },
         },
       }),
@@ -598,8 +590,7 @@ describe("OpenBehaviour", function () {
           user,
           partitionValue,
           _sessionStopPolicy: "immediately",
-          //@ts-expect-error testing invalid value for newRealmFileBehaviour
-          newRealmFileBehavior: { type: "openLocalRealm", timeOutBehavior: "foo" },
+          newRealmFileBehavior: { type: OpenRealmBehaviorType.OpenImmediately, timeOutBehavior: "foo" },
         },
       }),
     ).throws;
@@ -611,8 +602,7 @@ describe("OpenBehaviour", function () {
           user,
           partitionValue,
           _sessionStopPolicy: "immediately",
-          //@ts-expect-error testing invalid value for newRealmFileBehaviour
-          newRealmFileBehavior: { type: "openLocalRealm", timeOut: "bar" },
+          newRealmFileBehavior: { type: OpenRealmBehaviorType.OpenImmediately, timeOut: "bar" },
         },
       }),
     ).throws;
