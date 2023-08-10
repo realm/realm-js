@@ -65,8 +65,8 @@ function waitForConnectionState(session: Realm.App.Sync.Session, state: string) 
   };
 }
 
-function getSyncConfiguration(user: Realm.User, partition: string): Realm.Configuration {
-  const realmConfig = {
+function getSyncConfiguration(user: Realm.User, partition: string): Realm.ConfigurationWithSync {
+  const realmConfig: Realm.Configuration = {
     schema: [
       {
         name: "Dog",
@@ -116,10 +116,7 @@ function createObjects(user: Realm.User, partition: string): Promise<Realm> {
   });
 }
 
-async function seedDataWithExternalUser(
-  app: Realm.App<Realm.DefaultFunctionsFactory, SimpleObject>,
-  partition: string,
-) {
+async function seedDataWithExternalUser(app: Realm.App, partition: string) {
   const credentials = Realm.Credentials.anonymous();
   const user = await app.logIn(credentials);
   const realm = await createObjects(user, partition);
@@ -183,7 +180,7 @@ describe("SessionTest", () => {
       config.sync.customHttpHeaders = { language: "English" };
       const realm = new Realm(config);
       const session = realm.syncSession;
-      expect(session.config.customHttpHeaders.language).equals(
+      expect(session?.config.customHttpHeaders?.language).equals(
         "English",
         "Synced realm does not contain the expected customHttpHeader",
       );

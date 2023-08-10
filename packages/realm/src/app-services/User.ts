@@ -81,9 +81,9 @@ type UserListenerToken = binding.SyncUserSubscriptionToken;
  * Representation of an authenticated user of an {@link App}.
  */
 export class User<
-  FunctionsFactoryType = DefaultFunctionsFactory,
-  CustomDataType = DefaultObject,
-  UserProfileDataType = DefaultUserProfileData,
+  UserFunctionsFactoryType extends DefaultFunctionsFactory = DefaultFunctionsFactory,
+  UserCustomDataType extends DefaultObject = DefaultObject,
+  UserProfileDataType extends DefaultUserProfileData = DefaultUserProfileData,
 > {
   /** @internal */
   public app: App;
@@ -105,9 +105,9 @@ export class User<
 
   /** @internal */
   public static get<
-    FunctionsFactoryType = DefaultFunctionsFactory,
-    CustomDataType = DefaultObject,
-    UserProfileDataType = DefaultUserProfileData,
+    FunctionsFactoryType extends DefaultFunctionsFactory = DefaultFunctionsFactory,
+    CustomDataType extends DefaultObject = DefaultObject,
+    UserProfileDataType extends DefaultUserProfileData = DefaultUserProfileData,
   >(internal: binding.SyncUser, app?: AnyApp) {
     // Update the static user reference to the current app
     if (app) {
@@ -214,12 +214,12 @@ export class User<
    * If this value has not been configured, it will be empty.
    * @returns The custom data as an object.
    */
-  get customData(): CustomDataType {
+  get customData(): UserCustomDataType {
     const result = this.internal.customData;
     if (result === undefined) {
-      return {} as CustomDataType;
+      return {} as UserCustomDataType;
     }
-    return result as CustomDataType;
+    return result as UserCustomDataType;
   }
 
   /**
@@ -237,7 +237,7 @@ export class User<
    * Use this to call functions defined by the Atlas App Services application, as this user.
    * @returns A {@link FunctionsFactory} that can be used to call the app's functions.
    */
-  get functions(): FunctionsFactoryType {
+  get functions(): UserFunctionsFactoryType {
     return createFactory(this as User, undefined);
   }
 
@@ -319,7 +319,7 @@ export class User<
    * Refresh the access token and derive custom data from it.
    * @returns A promise that resolves to the refreshed custom data.
    */
-  async refreshCustomData(): Promise<CustomDataType> {
+  async refreshCustomData(): Promise<UserCustomDataType> {
     await this.app.internal.refreshCustomData(this.internal);
     return this.customData;
   }

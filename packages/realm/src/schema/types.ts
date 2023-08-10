@@ -72,11 +72,6 @@ export type RelationshipPropertyTypeName = "object" | "linkingObjects";
 export type UserTypeName = string;
 
 /**
- * The list of object schemas belonging to a specific {@link Realm}.
- */
-export type CanonicalRealmSchema = CanonicalObjectSchema[];
-
-/**
  * @deprecated Will be removed in v13.0.0. Please use {@link CanonicalPropertySchema}.
  */
 export type CanonicalObjectSchemaProperty = CanonicalPropertySchema;

@@ -16,10 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-type RealmObject = import("realm").Object;
-type App = import("realm").App;
-type User = import("realm").User;
-type Configuration = import("realm").Configuration;
 //type BenchmarkResult = import("@thi.ng/bench").BenchmarkResult;
 
 interface fs {
@@ -160,8 +156,8 @@ declare namespace Mocha {
 }
 
 // Mocha contexts made available by hooks
-type AppContext = { app: App; databaseName: string } & Mocha.Context;
-type UserContext = { user: User } & Mocha.Context;
+type AppContext = { app: Realm.App; databaseName: string } & Mocha.Context;
+type UserContext = { user: Realm.User } & Mocha.Context;
 type CloseRealmOptions = { deleteFile: boolean; clearTestState: boolean; reopen: boolean };
 type RealmContext = {
   realm: Realm;
@@ -172,7 +168,7 @@ type RealmContext = {
   closeRealm(options?: Partial<CloseRealmOptions>): Promise<void>;
 } & Mocha.Context;
 type RealmObjectContext<T = Record<string, unknown>> = {
-  object: RealmObject & T;
+  object: Realm.Object & T;
 } & RealmContext;
 // type BenchmarkContext = {
 //   result: BenchmarkResult;

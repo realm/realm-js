@@ -21,7 +21,7 @@ import { expect } from "chai";
 import Realm from "realm";
 import { openRealmBeforeEach } from "../hooks";
 
-function names(results: Realm.Collection<IPersonSchema> | Realm.Results<IPersonSchema>) {
+function names(results: Realm.Results<IPersonSchema> | Realm.Results<IPersonSchema>) {
   return results.map(function (object: IPersonSchema) {
     return object.name;
   });

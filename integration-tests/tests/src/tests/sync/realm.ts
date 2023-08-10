@@ -152,7 +152,7 @@ const IndexedTypesSchema = {
   },
 };
 
-const DefaultValuesSchema = {
+const DefaultValuesSchema: Realm.ObjectSchema = {
   name: "DefaultValuesObject",
   properties: {
     boolCol: { type: "bool", default: true },
@@ -168,14 +168,14 @@ const DefaultValuesSchema = {
   },
 };
 
-const ObjectSchema = {
+const ObjectSchema: Realm.ObjectSchema = {
   name: "IntObject",
   properties: {
     intCol: { type: "int", default: 1 },
   },
 };
 
-const LinkTypesSchema = {
+const LinkTypesSchema: Realm.ObjectSchema = {
   name: "LinkTypesObject",
   properties: {
     objectCol: "TestObject",
@@ -185,7 +185,7 @@ const LinkTypesSchema = {
   },
 };
 
-const LinkingObjectsObjectSchema = {
+const LinkingObjectsObjectSchema: Realm.ObjectSchema = {
   name: "LinkingObjectsObject",
   properties: {
     value: "int",
@@ -789,10 +789,10 @@ describe("Realmtest", () => {
       });
 
       it("diffed updates only trigger notifications for changed values", async function (this: RealmContext) {
-        type iAllPrimaryTypesChanges = [Realm.Collection<IAllPrimaryTypes>, CollectionChangeSet];
+        type iAllPrimaryTypesChanges = [Realm.Results<IAllPrimaryTypes>, CollectionChangeSet];
         let resolve: ((value: iAllPrimaryTypesChanges) => void) | undefined;
         this.realm.objects<IAllPrimaryTypes>(AllPrimaryTypesSchema.name).addListener((objects, changes) => {
-          resolve?.([objects, changes]);
+          resolve?.([objects as unknown as Realm.Results<IAllPrimaryTypes>, changes]);
           resolve = undefined;
         });
 
@@ -977,13 +977,11 @@ describe("Realmtest", () => {
               objectCol: { doubleCol: 0 },
               arrayCol: [{ doubleCol: 2 }],
             },
-            //@ts-expect-error: TYPEBUG: expects a Realm.UpdateMode instead of boolean "true"
             true,
           );
           const objects = this.realm.objects(AllPrimaryTypesSchema.name);
           expect(objects.length).equals(2);
           this.realm.create(
-            //@ts-expect-error: TYPEBUG: expects a Realm.UpdateMode instead of boolean "true"
             AllPrimaryTypesSchema.name,
             {
               primaryCol: "0",
@@ -1009,15 +1007,12 @@ describe("Realmtest", () => {
           expect(obj0.dataCol.byteLength).equals(2);
           expect(obj0.objectCol).equals(null);
           expect(obj0.arrayCol.length).equals(1);
-          //@ts-expect-error: TYPEBUG: expects a Realm.UpdateMode instead of boolean "true"
           this.realm.create(AllPrimaryTypesSchema.name, { primaryCol: "0" }, true);
-          //@ts-expect-error: TYPEBUG: expects a Realm.UpdateMode instead of boolean "true"
           this.realm.create(AllPrimaryTypesSchema.name, { primaryCol: "1" }, true);
           expect(obj0.stringCol).equals("2");
           expect(obj0.objectCol).equals(null);
           expect(obj1.objectCol.doubleCol).equals(0);
           this.realm.create(
-            //@ts-expect-error: TYPEBUG: expects a Realm.UpdateMode instead of boolean "true"
             AllPrimaryTypesSchema.name,
             {
               primaryCol: "0",
@@ -1035,9 +1030,7 @@ describe("Realmtest", () => {
           expect(obj0.dataCol.byteLength).equals(2);
           expect(obj0.objectCol.doubleCol).equals(0);
           expect(obj0.arrayCol.length).equals(1);
-          //@ts-expect-error: TYPEBUG: expects a Realm.UpdateMode instead of boolean "true"
           this.realm.create(AllPrimaryTypesSchema.name, { primaryCol: "0", objectCol: undefined }, true);
-          //@ts-expect-error: TYPEBUG: expects a Realm.UpdateMode instead of boolean "true"
           this.realm.create(AllPrimaryTypesSchema.name, { primaryCol: "1", objectCol: null }, true);
           expect(obj0.objectCol.doubleCol).equals(0);
           expect(obj1.objectCol).equals(null);
@@ -1048,7 +1041,6 @@ describe("Realmtest", () => {
           });
           expect(obj.valueCol).equals(0);
           this.realm.create(
-            //@ts-expect-error: TYPEBUG: expects a Realm.UpdateMode instead of boolean "true"
             StringPrimarySchema.name,
             {
               primaryCol: "0",
@@ -1087,12 +1079,13 @@ describe("Realmtest", () => {
 
         const createAndTestObject = () => {
           const object = realm.create<IObject>(ObjectSchema.name, {});
+          //@ts-expect-error intCol is an object, but typings indicate it could be a string
           expect(object.intCol).equals(ObjectSchema.properties.intCol.default);
         };
 
         realm.write(createAndTestObject);
 
-        ObjectSchema.properties.intCol.default++;
+        ((ObjectSchema.properties.intCol as unknown as Realm.PropertySchema).default as number)++;
 
         realm = new Realm({ schema: [ObjectSchema] });
         realm.write(createAndTestObject);
@@ -1117,11 +1110,13 @@ describe("Realmtest", () => {
           return {};
         }
 
+        //@ts-expect-error InvalidObject is not a proper schema
         expect(() => new Realm({ schema: [InvalidObject] })).throws("Class 'InvalidObject' must extend Realm.Object");
 
         Object.setPrototypeOf(InvalidObject, Realm.Object);
         Object.setPrototypeOf(InvalidObject.prototype, Realm.Object.prototype);
 
+        //@ts-expect-error InvalidObject is not a proper schema
         expect(() => new Realm({ schema: [InvalidObject] })).throws(
           "Expected 'schema static' to be an object, got undefined",
         );
@@ -1133,10 +1128,11 @@ describe("Realmtest", () => {
           },
         };
         Object.setPrototypeOf(InvalidObject, Realm.Object);
+        //@ts-expect-error InvalidObject is not a proper schema
         let realm = new Realm({ schema: [CustomObject, InvalidObject] });
 
         realm.write(() => {
-          let object = realm.create("CustomObject", { intCol: 1 });
+          let object: CustomObject = realm.create<CustomObject>("CustomObject", { intCol: 1 });
           expect(object).instanceof(CustomObject);
           expect(customCreated).equals(0);
 
@@ -1163,6 +1159,7 @@ describe("Realmtest", () => {
         }).throws("Constructor was not registered in the schema for this Realm");
         realm.close();
 
+        //@ts-expect-error Invalid object is not a proper schema
         realm = new Realm({ schema: [CustomObject, InvalidObject] });
         const obj = realm.objects("CustomObject")[0];
         expect(realm.objects("CustomObject")[0]).instanceof(CustomObject);
@@ -1224,52 +1221,52 @@ describe("Realmtest", () => {
         });
       });
 
-      // TODO: Refactor and re-enable
-      it.skip("writeCopyTo works", async function (this: RealmContext) {
-        const realm = new Realm({
-          schema: [schemas.IntPrimary, schemas.AllTypes, schemas.TestObject, schemas.LinkToAllTypes],
-        });
+      // TODO: Refactor and re-enable/uncomment (commented out to avoid type errors)
+      // it.skip("writeCopyTo works", async function (this: RealmContext) {
+      //   const realm = new Realm({
+      //     schema: [schemas.IntPrimary, schemas.AllTypes, schemas.TestObject, schemas.LinkToAllTypes],
+      //   });
 
-        realm.write(() => {
-          realm.create("TestObject", { doubleCol: 1 });
-        });
-        TestCase.assertEqual(1, realm.objects("TestObject").length);
+      //   realm.write(() => {
+      //     realm.create("TestObject", { doubleCol: 1 });
+      //   });
+      //   TestCase.assertEqual(1, realm.objects("TestObject").length);
 
-        TestCase.assertThrowsContaining(() => {
-          realm.writeCopyTo();
-        }, "Expected value to be an object, got undefined");
+      //   TestCase.assertThrowsContaining(() => {
+      //     realm.writeCopyTo();
+      //   }, "Expected value to be an object, got undefined");
 
-        TestCase.assertThrowsContaining(() => {
-          realm.writeCopyTo(34);
-        }, "Expected value to be an object, got a number");
+      //   TestCase.assertThrowsContaining(() => {
+      //     realm.writeCopyTo(34);
+      //   }, "Expected value to be an object, got a number");
 
-        // make sure that copies are in the same directory as the original file
-        // that is important for running tests on mobile devices,
-        // so we don't have issues with permissisons
-        const copyName = realm.path + ".copy.realm";
+      //   // make sure that copies are in the same directory as the original file
+      //   // that is important for running tests on mobile devices,
+      //   // so we don't have issues with permissisons
+      //   const copyName = realm.path + ".copy.realm";
 
-        const copyConfig = { path: copyName };
-        realm.writeCopyTo(copyConfig);
+      //   const copyConfig = { path: copyName };
+      //   realm.writeCopyTo(copyConfig);
 
-        const realmCopy = new Realm(copyConfig);
-        TestCase.assertEqual(1, realmCopy.objects("TestObject").length);
-        realmCopy.close();
+      //   const realmCopy = new Realm(copyConfig);
+      //   TestCase.assertEqual(1, realmCopy.objects("TestObject").length);
+      //   realmCopy.close();
 
-        const encryptedCopyName = realm.path + ".copy-encrypted.realm";
+      //   const encryptedCopyName = realm.path + ".copy-encrypted.realm";
 
-        const encryptionKey = new Int8Array(64);
-        for (let i = 0; i < 64; i++) {
-          encryptionKey[i] = 1;
-        }
-        realm.writeCopyTo({ path: encryptedCopyName, encryptionKey });
+      //   const encryptionKey = new Int8Array(64);
+      //   for (let i = 0; i < 64; i++) {
+      //     encryptionKey[i] = 1;
+      //   }
+      //   realm.writeCopyTo({ path: encryptedCopyName, encryptionKey });
 
-        const encryptedCopyConfig = { path: encryptedCopyName, encryptionKey: encryptionKey };
-        const encryptedRealmCopy = new Realm(encryptedCopyConfig);
-        TestCase.assertEqual(1, encryptedRealmCopy.objects("TestObject").length);
-        encryptedRealmCopy.close();
+      //   const encryptedCopyConfig = { path: encryptedCopyName, encryptionKey: encryptionKey };
+      //   const encryptedRealmCopy = new Realm(encryptedCopyConfig);
+      //   TestCase.assertEqual(1, encryptedRealmCopy.objects("TestObject").length);
+      //   encryptedRealmCopy.close();
 
-        realm.close();
-      });
+      //   realm.close();
+      // });
 
       it("creating objects without properties work", async function (this: RealmContext) {
         this.realm.write(() => {
@@ -1322,7 +1319,6 @@ describe("Realmtest", () => {
         });
         realm.close();
 
-        //@ts-expect-error TYPEBUG: opening without a config works in legacy test but is not accepted by typesystem.
         return Realm.open().then((realm) => {
           const objects = realm.objects<ITestObject>("TestObject");
           expect(objects.length).equals(1);
@@ -1461,7 +1457,7 @@ describe("Realmtest", () => {
         });
       });
 
-      const NotIndexed = {
+      const NotIndexed: Realm.ObjectSchema = {
         name: "NotIndexedObject",
         properties: {
           floatCol: { type: "float", indexed: false },
@@ -1521,7 +1517,7 @@ describe("Realmtest", () => {
       Realm.clearTestState();
     });
 
-    it("onFirstOpen properly intializes data", () => {
+    it("onFirstOpen properly initializes data", () => {
       const data = [1, 2, 3];
       const initializer = (r: Realm) => {
         data.forEach((n) => r.create(IntOnlySchema.name, { intCol: n }));
@@ -1674,7 +1670,6 @@ describe("Realmtest", () => {
         "Object type 'InvalidClass' not found in schema.",
       );
 
-      //@ts-expect-error objectForprimaryKey with object as key
       expect(() => this.realm.objectForPrimaryKey("IntPrimaryObject", { foo: "bar" })).throws(
         "Expected value to be a number or bigint, got an object",
       );
@@ -1727,6 +1722,7 @@ describe("Realmtest", () => {
       expect(notificationCount).equals(3);
       expect(secondNotificationCount).equals(1);
 
+      // @ts-expect-error Invalid listener event
       // eslint-disable-next-line @typescript-eslint/no-empty-function
       expect(() => this.realm.addListener("invalid", () => {})).throws(
         "Unknown event name 'invalid': only 'change', 'schema' and 'beforenotify' are supported.",
@@ -1767,11 +1763,11 @@ describe("Realmtest", () => {
           prop.optional = val.optional || false;
           prop.indexed = val.indexed || false;
         } else {
-          prop = { type: val as unknown as string, indexed: false, optional: false };
+          prop = { type: val as unknown as Realm.PropertyTypeName, indexed: false, optional: false };
         }
         if (prop.type.includes("?")) {
           prop.optional = true;
-          prop.type = prop.type.replace("?", "");
+          prop.type = prop.type.replace("?", "") as unknown as Realm.PropertyTypeName;
         }
         if (prop.type.includes("[]")) {
           prop.objectType = prop.type.replace("[]", "");
@@ -1839,12 +1835,12 @@ describe("Realmtest", () => {
 
       // eslint-disable-next-line no-async-promise-executor
       return new Promise<void>(async (resolve, reject) => {
-        realm1.addListener("schema", (realm: Realm, event: string, schema: Realm.ObjectSchema[]) => {
+        realm1.addListener("schema", (realm, event, schema) => {
           try {
             expect(event).equals("schema");
-            expect(schema.length).equals(1);
+            expect(schema?.length).equals(1);
             expect(realm.schema.length).equals(1);
-            expect(schema[0].name).equals("TestObject");
+            expect(schema?.[0]?.name).equals("TestObject");
             expect(realm1.schema.length).equals(1);
             expect(realm.schema[0].name).equals("TestObject");
             resolve();

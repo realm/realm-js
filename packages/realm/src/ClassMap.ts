@@ -18,7 +18,6 @@
 
 import {
   CanonicalObjectSchema,
-  CanonicalRealmSchema,
   Constructor,
   INTERNAL,
   KEY_ARRAY,
@@ -110,7 +109,11 @@ export class ClassMap {
     });
   }
 
-  constructor(realm: Realm, realmSchema: readonly binding.ObjectSchema[], canonicalRealmSchema: CanonicalRealmSchema) {
+  constructor(
+    realm: Realm,
+    realmSchema: readonly binding.ObjectSchema[],
+    canonicalRealmSchema: CanonicalObjectSchema[],
+  ) {
     this.mapping = Object.fromEntries(
       realmSchema.map((objectSchema, index) => {
         const canonicalObjectSchema: CanonicalObjectSchema = canonicalRealmSchema[index];

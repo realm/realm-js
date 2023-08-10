@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import Realm from "realm";
+import Realm, { User } from "realm";
 
 import { openRealm, OpenRealmConfiguration } from "../utils/open-realm";
 
@@ -37,7 +37,7 @@ export function openRealmHook(config: OpenRealmConfiguration = {}) {
       this.closeRealm = async () => {
         console.warn("🤷 Skipped closing a Realm that failed to open");
       };
-      const { realm, config: actualConfig } = await openRealm(config, this.user);
+      const { realm, config: actualConfig } = await openRealm(config, this.user as unknown as User);
       this.realm = realm;
       this.closeRealm = async ({
         clearTestState = true,
@@ -56,7 +56,7 @@ export function openRealmHook(config: OpenRealmConfiguration = {}) {
           Realm.clearTestState();
         }
         if (reopen) {
-          const { realm } = await openRealm(actualConfig, this.user);
+          const { realm } = await openRealm(actualConfig, this.user as unknown as User);
           this.realm = realm;
         }
       };

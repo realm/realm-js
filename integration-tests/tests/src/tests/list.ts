@@ -30,7 +30,7 @@ const DATE1 = new Date(1);
 const DATE2 = new Date(2);
 const DATE3 = new Date(3);
 
-const PersonSchema: Realm.ObjectSchema = {
+const PersonSchema = {
   name: "PersonObject",
   properties: {
     name: "string",
