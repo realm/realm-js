@@ -18,7 +18,9 @@
 
 import {
   AggregatePipelineStage,
+  AnyList,
   AnyRealmObject,
+  AnyResults,
   ApiKey,
   ApiKeyAuth,
   App,
@@ -882,7 +884,7 @@ export class Realm {
    * Deletes the provided Realm object, or each one inside the provided collection.
    * @param subject - The Realm object to delete, or a collection containing multiple Realm objects to delete.
    */
-  delete(subject: AnyRealmObject | AnyRealmObject[] | List | Results): void {
+  delete(subject: AnyRealmObject | AnyRealmObject[] | AnyList | AnyResults): void {
     assert.inTransaction(this, "Can only delete objects within a transaction.");
     assert.object(subject, "subject");
     if (subject instanceof RealmObject) {
