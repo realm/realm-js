@@ -62,7 +62,7 @@ export function generate({ rawSpec, spec: boundSpec, file }: TemplateContext): v
     const nativeModule = nodeRequire("./realm.node");
 
     if(!nativeModule) {
-      throw new Error("Could not find the Realm binary. Please consult our troubleshooting guide. (https://www.mongodb.com/docs/realm-sdks/js/latest/#md:troubleshooting-missing-binary))");
+      throw new Error("Could not find the Realm binary. Please consult our troubleshooting guide: https://www.mongodb.com/docs/realm-sdks/js/latest/#md:troubleshooting-missing-binary");
     }
 
     // We know that node always has real WeakRefs so just use them.
