@@ -64,8 +64,6 @@ export function importAppBefore(config: AppConfig | { config: AppConfig }, sdkCo
         this.databaseName = databaseNames[0];
       } else if (databaseNames.length > 1) {
         throw new Error("Expected at most 1 database name in the config");
-      } else {
-        throw new Error("Expected a database name in the config");
       }
 
       Realm.App.Sync.setLogLevel(this.app, syncLogLevel);
