@@ -8,6 +8,7 @@
 
 ### Fixed
 * Fix issues with `yarn` and the `bson` dependency. ([#6040](https://github.com/realm/realm-js/issues/6040))
+* Report helpful errors if the `realm` binary is missing and provide guidance in the `README.md`. ([#5981](https://github.com/realm/realm-js/issues/6040))
 
 ### Compatibility
 * React Native >= v0.71.4

@@ -46,6 +46,9 @@ export function generate({ rawSpec, spec: boundSpec, file }: TemplateContext): v
     // TODO: Remove the need to store Realm as a global
     // @see https://github.com/realm/realm-js/issues/2126
     const nativeModule = global.__RealmFuncs;
+    if(!nativeModule) {
+      throw new Error("Could not find the Realm binary. Please consult our troubleshooting guide: https://www.mongodb.com/docs/realm-sdks/js/latest/#md:troubleshooting-missing-binary");
+    }
 
     export const WeakRef = global.WeakRef ?? class WeakRef {
         constructor(obj) { this.native = nativeModule.createWeakRef(obj) }
@@ -57,6 +60,10 @@ export function generate({ rawSpec, spec: boundSpec, file }: TemplateContext): v
     import { createRequire } from 'node:module';
     const nodeRequire = typeof require === 'function' ? require : createRequire(import.meta.url);
     const nativeModule = nodeRequire("./realm.node");
+
+    if(!nativeModule) {
+      throw new Error("Could not find the Realm binary. Please consult our troubleshooting guide: https://www.mongodb.com/docs/realm-sdks/js/latest/#md:troubleshooting-missing-binary");
+    }
 
     // We know that node always has real WeakRefs so just use them.
     export const WeakRef = global.WeakRef;

@@ -119,6 +119,59 @@ Some users have reported the Chrome debugging being too slow to use after integr
 
 Moreover, we have a switch to [Flipper](https://fbflipper.com/) in the works as part of our effort to [support Hermes](https://github.com/realm/realm-js/pull/3792). It implies that we envision a near future where the Chrome debugging will be removed, and we currently don't invest much in its maintenance.
 
+## Troubleshooting missing binary
+It's possible after installing and running Realm that one encounters the error `Could not find the Realm binary`.  Here are are some tips to help with this.
+
+### Compatibility
+Consult our [`COMPATIBILITY.md`](./COMPATIBILITY.md) to ensure you are running compatible version of `realm` with the supported versions of `node`, `react-native` or `expo`.
+
+### React Native
+
+#### iOS
+Typically this error occurs when the pod dependencies haven't been updating.  Try running the following command
+```
+npx pod-install
+```
+If that still doesn't help it's possible there are some caching errors with your build or your pod dependencies.  The following commands can be used to safely clear these caches:
+```
+rm -rf ios/Pods
+rm ios/Podfile.lock
+rm -rf ~/Library/Developer/Xcode/DerivedData
+```
+Afterwards, reinstall pods and try again.  If this still doesn't work, ensure that `node_modules/realm/react-native/ios/realm-js-ios.xcframework` exists and contains a binary for your architecture.  If this is missing, try reinstalling the `realm`` npm package.
+
+#### Android
+This can occur when installing `realm` and not performing a clean build.  The following commands can be used to clear your cache:
+```
+cd android
+./gradlew clean
+```
+
+Afterwards, try and rebuild for Android.  If you are still encountering problems, ensure that `node_moduels/realm/react-native/android/src/main/jniLibs` contains a realm binary for your architecture.  If this is missing, try reinstalling the `realm` npm package.
+
+### Expo
+If you are using Expo, a common pitfall is not installing the `expo-dev-client` and using the Development Client specific scripts to build and run your React Native project in Expo.  The Development Client allows you to create a local version of Expo Go which includes 3rd party libraries such as Realm.  If you would like to use `realm` in an Expo project, the following steps can help.
+
+- install the `expo-dev-client`:
+  ```
+  npm install expo-dev-client
+  ```
+- build the dev client for iOS
+  ```
+  npx expo run:ios
+  ```
+- build the dev client for Android
+  ```
+  npx expo run:android
+  ```
+- start the bundler without building
+  ```
+  npx expo start --dev-client
+  ```
+
+### Node/Electron
+When running `npm install realm` the realm binaries for the detected architecture are downloaded into `node_modules/realm/prebuilds`.  If this directory is missing or empty, ensure that there weren't any network issues reported on installation.
+
 ## Analytics
 
 Asynchronously submits install information to Realm.
