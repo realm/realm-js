@@ -272,7 +272,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           initialSubscriptions: Realm.FlexibleSyncConfiguration["initialSubscriptions"],
         ): Realm.Configuration {
           return {
-            schema: [Person, DogSchema],
+            schema: [Person, Dog],
             sync: {
               // @ts-expect-error Using an internal API
               _sessionStopPolicy: SessionStopPolicy.Immediately,
@@ -471,9 +471,9 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         expect((compensatingWrites[1].primaryKey as BSON.ObjectId).equals(person2Id)).to.be.true;
         expect((compensatingWrites[2].primaryKey as BSON.ObjectId).equals(dogId)).to.be.true;
 
-        expect(compensatingWrites[0].objectName).to.equal(Person);
-        expect(compensatingWrites[1].objectName).to.equal(Person);
-        expect(compensatingWrites[2].objectName).to.equal(DogSchema.name);
+        expect(compensatingWrites[0].objectName).to.equal(Person.name);
+        expect(compensatingWrites[1].objectName).to.equal(Person.name);
+        expect(compensatingWrites[2].objectName).to.equal(Dog.name);
 
         expect(compensatingWrites[0].reason).to.contain("object is outside of the current query view");
         expect(compensatingWrites[1].reason).to.contain("object is outside of the current query view");
@@ -483,7 +483,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
       };
 
       const realm = await Realm.open({
-        schema: [Person, DogSchema],
+        schema: [Person, Dog],
         sync: {
           flexible: true,
           user: this.user,
@@ -493,7 +493,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
 
       await realm.subscriptions.update((mutableSubs) => {
         mutableSubs.add(realm.objects(Person).filtered("age < 30"));
-        mutableSubs.add(realm.objects(DogSchema.name).filtered("age > 5"));
+        mutableSubs.add(realm.objects(Dog).filtered("age > 5"));
       });
 
       realm.write(() => {
@@ -523,7 +523,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
 
   describe("with realm opened before", function () {
     openRealmBeforeEach({
-      schema: [Person, DogSchema],
+      schema: [Person, Dog],
       sync: {
         flexible: true,
         //@ts-expect-error Using an internal API
@@ -593,7 +593,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
 
         it("has an objectType", function (this: RealmContext) {
           const { sub } = addSubscriptionForPerson(this.realm);
-          expect(sub.objectType).to.equal(Person);
+          expect(sub.objectType).to.equal(Person.name);
         });
 
         it("has a default queryString", function (this: RealmContext) {
@@ -1154,13 +1154,13 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
 
             const subsCopy = [...subs];
             expect(subsCopy[0].queryString).to.equal("age < 10");
-            expect(subsCopy[0].objectType).to.equal(Person);
+            expect(subsCopy[0].objectType).to.equal(Person.name);
 
             expect(subsCopy[1].queryString).to.equal("age > 20");
-            expect(subsCopy[1].objectType).to.equal(Person);
+            expect(subsCopy[1].objectType).to.equal(Person.name);
 
             expect(subsCopy[2].queryString).to.equal("age > 30");
-            expect(subsCopy[2].objectType).to.equal(DogSchema.name);
+            expect(subsCopy[2].objectType).to.equal(Dog.name);
           });
 
           it("handles multiple updates in multiple batches", async function (this: RealmContext) {
@@ -1173,20 +1173,20 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
 
             await subs.update((mutableSubs) => {
               mutableSubs.add(this.realm.objects(Person).filtered("age > 20"));
-              mutableSubs.add(this.realm.objects(DogSchema.name).filtered("age > 30"));
+              mutableSubs.add(this.realm.objects(Dog).filtered("age > 30"));
             });
 
             expect(subs).to.have.length(3);
 
             const subsCopy = [...subs];
             expect(subsCopy[0].queryString).to.equal("age < 10");
-            expect(subsCopy[0].objectType).to.equal(Person);
+            expect(subsCopy[0].objectType).to.equal(Person.name);
 
             expect(subsCopy[1].queryString).to.equal("age > 20");
-            expect(subsCopy[1].objectType).to.equal(Person);
+            expect(subsCopy[1].objectType).to.equal(Person.name);
 
             expect(subsCopy[2].queryString).to.equal("age > 30");
-            expect(subsCopy[2].objectType).to.equal(DogSchema.name);
+            expect(subsCopy[2].objectType).to.equal(Dog.name);
           });
 
           // TODO: Enable test when we can find another way of triggering a `SubscriptionSetState.Error`.
@@ -2043,7 +2043,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         it("handles manual client resets with flexible sync enabled", async function (this: RealmContext) {
           await expectClientResetError(
             {
-              schema: [Person, DogSchema],
+              schema: [Person, Dog],
               sync: {
                 //@ts-expect-error non-public internal configuration.
                 _sessionStopPolicy: SessionStopPolicy.Immediately,
