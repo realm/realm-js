@@ -451,7 +451,7 @@ describe("Results", () => {
     });
 
     it("implements sorted", () => {
-      const realm = new Realm({ schema: [IntPrimarySchema] });
+      const realm = new Realm({ schema: [IntPrimaryObject] });
       let objects = realm.objects<IntPrimaryObject>(IntPrimaryObject);
 
       realm.write(function () {
