@@ -84,12 +84,6 @@ const PrimitiveArraysSchema: Realm.ObjectSchema = {
   },
 };
 
-const PersonListSchema: Realm.ObjectSchema = {
-  name: "PersonList",
-  properties: {
-    list: "PersonObject[]",
-  },
-};
 const UuidListSchema: Realm.ObjectSchema = {
   name: "PrimUuidListsObject",
   primaryKey: "_id",
@@ -239,6 +233,20 @@ interface IPersonSchema {
   parents: Realm.Collection<IPersonSchema>;
 }
 
+class Person extends Realm.Object<Person> {
+  name!: string;
+  age!: number;
+  married!: boolean;
+  children!: Realm.List<Person>;
+  parents!: Realm.Collection<Person>;
+
+  constructor(realm: Realm, name: string, age: number, married: boolean) {
+    super(realm, { name, age, married });
+  }
+
+  static schema: Realm.ObjectSchema = PersonSchema;
+}
+
 interface ILinkTypeSchema {
   objectCol: ITestObjectSchema;
   objectCol1: ITestObjectSchema;
@@ -274,8 +282,25 @@ interface IPrimitiveArraysSchema {
   optUuid: Realm.List<BSON.UUID | null>;
 }
 
+const PersonListSchema: Realm.ObjectSchema = {
+  name: "PersonList",
+  properties: {
+    list: "PersonObject[]",
+  },
+};
+
 interface IPersonListSchema {
   list: Realm.List<IPersonSchema>;
+}
+
+class PersonList extends Realm.Object<PersonList> {
+  list!: Realm.List<Person>;
+
+  constructor(realm: Realm) {
+    super(realm, {});
+  }
+
+  static schema: Realm.ObjectSchema = PersonListSchema;
 }
 
 interface IUuidListSchema {
@@ -1437,13 +1462,13 @@ describe("Lists", () => {
     });
   });
   describe("array-methods", () => {
-    openRealmBeforeEach({ schema: [PersonSchema, PersonListSchema, PrimitiveArrays] });
+    openRealmBeforeEach({ schema: [Person, PersonList, PrimitiveArrays] });
     it("works on differentProperties", function (this: RealmContext) {
-      let object!: IPersonListSchema;
+      let object!: PersonList;
       let prim!: PrimitiveArrays;
 
       this.realm.write(() => {
-        object = this.realm.create<IPersonListSchema>(PersonListSchema.name, {
+        object = this.realm.create<PersonList>(PersonListSchema.name, {
           list: [
             { name: "Ari", age: 10 },
             { name: "Tim", age: 11 },
@@ -1453,12 +1478,12 @@ describe("Lists", () => {
         prim = this.realm.create(PrimitiveArrays, { int: [10, 11, 12] });
       });
 
-      for (const list of [object.list, this.realm.objects<IPersonListSchema>(PersonSchema.name)]) {
+      for (const list of [object.list, this.realm.objects<PersonList>(PersonList)[0].list]) {
         expect(list.slice().length).equals(3);
         expect(list.slice(-1).length).equals(1);
-        expect((list.slice(-1)[0] as IPersonSchema).age).equals(12);
+        expect((list.slice(-1)[0] as Person).age).equals(12);
         expect(list.slice(1, 3).length).equals(2);
-        expect((list.slice(1, 3)[1] as IPersonSchema).age).equals(12);
+        expect((list.slice(1, 3)[1] as Person).age).equals(12);
         expect(list.map((p) => p.name).join(" ")).equals("Ari Tim Bjarne");
 
         let count = 0;
@@ -1473,17 +1498,17 @@ describe("Lists", () => {
           [10, 11, 12],
         );
         expect(list.some((p) => p.age > 10)).is.true;
-        expect(list.every((p) => p.age > 0)).is.true;
+        expect(list.every((p: Person) => p.age > 0)).is.true;
 
-        const person = list.find((p) => p.name == "Tim");
+        const person = list.find((p: Person) => p.name == "Tim");
         expect(person?.name).equals("Tim");
 
         const index = list.findIndex((p) => p.name == "Tim");
         expect(index).equals(1);
-        expect(list.indexOf(list[index])).equals(index);
+        expect(list.indexOf(list[index] as Person)).equals(index);
 
-        expect(list.reduce((n, p) => n + p.age, 0)).equals(33);
-        expect(list.reduceRight((n, p) => n + p.age, 0)).equals(33);
+        expect(list.reduce((n: number, p: Person) => n + p.age, 0)).equals(33);
+        expect(list.reduceRight((n: number, p: Person) => n + p.age, 0)).equals(33);
 
         // eslint-disable-next-line no-undef
         const iteratorMethodNames: (string | symbol)[] = ["entries", "keys", "values"];
@@ -1934,7 +1959,6 @@ describe("Lists", () => {
       });
       const names = realm2.objects(NameObjectLocalSchema.name);
       expect(names.length).equals(1);
-      //@ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
       expect(names[0]["family"]).equals("Smith");
       //@ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
       expect(names[0]["given"].length).equals(2);
