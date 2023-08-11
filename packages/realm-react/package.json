@@ -22,7 +22,7 @@
         "../realm-common:bundle"
       ],
       "files": [
-        "rollup.config.mjs",
+        "rollup.config.js",
         "src/**/*.ts",
         "src/**/*.tsx"
       ],
@@ -54,7 +54,6 @@
     "@babel/preset-typescript": "^7.15.0",
     "@babel/runtime": "^7.15.4",
     "@realm/app-importer": "*",
-    "@rollup/plugin-commonjs": "^25.0.3",
     "@rollup/plugin-node-resolve": "^15.0.1",
     "@rollup/plugin-typescript": "^9.0.2",
     "@testing-library/jest-native": "^4.0.13",
