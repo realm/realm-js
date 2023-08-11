@@ -24,7 +24,7 @@ import { expectArraysEqual, expectDecimalEqual } from "../../utils/comparisons";
 import { sleep } from "../../utils/sleep";
 import { buildAppConfig } from "../../utils/build-app-config";
 
-const CarSchema = {
+const CarSchema: Realm.ObjectSchema = {
   name: "Car",
   properties: {
     make: "string",
@@ -33,14 +33,14 @@ const CarSchema = {
   },
 };
 
-const TestObjectSchema = {
+const TestObjectSchema: Realm.ObjectSchema = {
   name: "TestObject",
   properties: {
     doubleCol: "double",
   },
 };
 
-const AllTypesSchema = {
+const AllTypesSchema: Realm.ObjectSchema = {
   name: "AllTypesObject",
   properties: {
     boolCol: "bool",
@@ -81,21 +81,21 @@ const AllTypesSchema = {
   },
 };
 
-const LinkToAllTypesObjectSchema = {
+const LinkToAllTypesObjectSchema: Realm.ObjectSchema = {
   name: "LinkToAllTypesObject",
   properties: {
     allTypesCol: "AllTypesObject",
   },
 };
 
-const IntOnlySchema = {
+const IntOnlySchema: Realm.ObjectSchema = {
   name: "IntOnlyObject",
   properties: {
     intCol: "int",
   },
 };
 
-const IntPrimarySchema = {
+const IntPrimarySchema: Realm.ObjectSchema = {
   name: "IntPrimaryObject",
   primaryKey: "primaryCol",
   properties: {
@@ -104,7 +104,7 @@ const IntPrimarySchema = {
   },
 };
 
-const AllPrimaryTypesSchema = {
+const AllPrimaryTypesSchema: Realm.ObjectSchema = {
   name: "AllPrimaryTypesObject",
   primaryKey: "primaryCol",
   properties: {
@@ -121,7 +121,7 @@ const AllPrimaryTypesSchema = {
   },
 };
 
-const StringPrimarySchema = {
+const StringPrimarySchema: Realm.ObjectSchema = {
   name: "StringPrimaryObject",
   primaryKey: "primaryCol",
   properties: {
@@ -130,7 +130,7 @@ const StringPrimarySchema = {
   },
 };
 
-const OptionalStringSchema = {
+const OptionalStringSchema: Realm.ObjectSchema = {
   name: "OptionalString",
   properties: {
     name: "string",
@@ -138,7 +138,7 @@ const OptionalStringSchema = {
   },
 };
 
-const IndexedTypesSchema = {
+const IndexedTypesSchema: Realm.ObjectSchema = {
   name: "IndexedTypesObject",
   properties: {
     boolCol: { type: "bool", indexed: true },
@@ -194,7 +194,7 @@ const LinkingObjectsObjectSchema: Realm.ObjectSchema = {
   },
 };
 
-const DateObjectSchema = {
+const DateObjectSchema: Realm.ObjectSchema = {
   name: "Date",
   properties: {
     currentDate: "date",
@@ -202,14 +202,14 @@ const DateObjectSchema = {
   },
 };
 
-const StringOnlySchema = {
+const StringOnlySchema: Realm.ObjectSchema = {
   name: "StringOnlyObject",
   properties: {
     stringCol: "string",
   },
 };
 
-const TestObjectWithPkSchema = {
+const TestObjectWithPkSchema: Realm.ObjectSchema = {
   name: "TestObject",
   primaryKey: "_id",
   properties: {
@@ -218,7 +218,7 @@ const TestObjectWithPkSchema = {
   },
 };
 
-const ObjectWithoutPropertiesSchema = {
+const ObjectWithoutPropertiesSchema: Realm.ObjectSchema = {
   name: "ObjectWithoutProperties",
   properties: {},
 };
@@ -265,7 +265,7 @@ const EmbeddedObjectSchemas: Realm.ObjectSchema[] = [
   },
 ];
 
-const PersonSchema = {
+const PersonSchema: Realm.ObjectSchema = {
   name: "Person",
   primaryKey: "name",
   properties: {
@@ -275,7 +275,7 @@ const PersonSchema = {
   },
 };
 
-const DogSchema = {
+const DogSchema: Realm.ObjectSchema = {
   name: "Dog",
   properties: {
     age: "int",
@@ -383,7 +383,7 @@ interface IDateObject {
   nullDate: Date | undefined;
 }
 
-class TestObject extends Realm.Object {
+class TestObject extends Realm.Object<TestObject> {
   doubleCol!: number;
   static schema: Realm.ObjectSchema = {
     name: "TestObject",
@@ -393,7 +393,7 @@ class TestObject extends Realm.Object {
   };
 }
 
-class PersonObject extends Realm.Object {
+class PersonObject extends Realm.Object<TestObject> {
   name!: string;
   age!: number;
   married!: boolean;
@@ -1057,16 +1057,26 @@ describe("Realmtest", () => {
           const obj = this.realm.create<IDefaultValues>(DefaultValuesSchema.name, {});
           const properties = DefaultValuesSchema.properties;
 
+          //@ts-expect-error it's currently not typed for access
           expect(obj.boolCol).equals(properties.boolCol.default);
+          //@ts-expect-error it's currently not typed for access
           expect(obj.intCol).equals(properties.intCol.default);
+          //@ts-expect-error it's currently not typed for access
           expectDecimalEqual(obj.floatCol, properties.floatCol.default);
+          //@ts-expect-error it's currently not typed for access
           expectDecimalEqual(obj.doubleCol, properties.doubleCol.default);
+          //@ts-expect-error it's currently not typed for access
           expect(obj.stringCol).equals(properties.stringCol.default);
+          //@ts-expect-error it's currently not typed for access
           expect(obj.dateCol.getTime()).equals(properties.dateCol.default.getTime());
+          //@ts-expect-error it's currently not typed for access
           expect(obj.dataCol.byteLength).equals(properties.dataCol.default.byteLength);
+          //@ts-expect-error it's currently not typed for access
           expect(obj.objectCol.doubleCol).equals(properties.objectCol.default.doubleCol);
           expect(obj.nullObjectCol).equals(null);
+          //@ts-expect-error it's currently not typed for access
           expect(obj.arrayCol.length).equals(properties.arrayCol.default.length);
+          //@ts-expect-error it's currently not typed for access
           expect(obj.arrayCol[0].doubleCol).equals(properties.arrayCol.default[0].doubleCol);
         };
 
@@ -1161,7 +1171,6 @@ describe("Realmtest", () => {
 
         //@ts-expect-error Invalid object is not a proper schema
         realm = new Realm({ schema: [CustomObject, InvalidObject] });
-        const obj = realm.objects("CustomObject")[0];
         expect(realm.objects("CustomObject")[0]).instanceof(CustomObject);
         expect(realm.objects(CustomObject).length > 0).to.be.true;
         realm.close();
