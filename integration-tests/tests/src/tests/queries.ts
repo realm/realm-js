@@ -1631,7 +1631,7 @@ describe("Queries", () => {
       });
 
       it("returns correct results", function (this: RealmContext) {
-        expectQueryResultValues(this.realm, Person, "id", [
+        expectQueryResultValuesByName(this.realm, "Person", "id", [
           [[1, 3], "age > 20 SORT(age DESC) DISTINCT(name)"],
           [[2, 0], "age > 20 SORT(age ASC) DISTINCT(name)"],
           [[2, 0], "age > 20 SORT(age ASC, name DESC) DISTINCT(name)"],
