@@ -172,10 +172,6 @@ If you are using Expo, a common pitfall is not installing the `expo-dev-client` 
 ### Node/Electron
 When running `npm install realm` the realm binaries for the detected architecture are downloaded into `node_modules/realm/prebuilds`.  If this directory is missing or empty, ensure that there weren't any network issues reported on installation.
 
-
-
-
-
 ## Analytics
 
 Asynchronously submits install information to Realm.
