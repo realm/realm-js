@@ -37,9 +37,22 @@ export type SyncConfig = {
 export type ServiceConfig = {
   name: string;
   type: string;
-  config: DisabledConfig | PartitionSyncConfig | FlexibleSyncConfig;
+  config:
+    | DisabledConfig
+    | PartitionSyncConfig
+    | FlexibleSyncConfig
+    | (PartitionConfig & WithAtlas)
+    | (FlexibleSyncConfig & WithAtlas)
+    | WithAtlas;
+
   secret_config: Record<string, unknown>;
   version?: number;
+};
+
+export type WithAtlas = {
+  clusterName: string;
+  readPreference: string;
+  wireProtocolEnabled: boolean;
 };
 
 export type ServiceRule = {
