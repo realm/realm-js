@@ -260,7 +260,7 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
     }
   }
 
-  readonly [n: number]: T;
+  [n: number]: T;
 
   /**
    * @returns The number of values.

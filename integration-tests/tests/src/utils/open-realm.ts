@@ -47,7 +47,7 @@ export type OpenRealmConfiguration = ConfigurationWithoutSync | ConfigurationWit
  */
 export async function openRealm(
   partialConfig: LocalConfiguration | Partial<SyncedConfiguration> = {},
-  user: User,
+  user: Realm.User,
 ): Promise<{ config: Configuration; realm: Realm }> {
   if (!partialConfig.sync) {
     const config = createLocalConfig(partialConfig as LocalConfiguration);
@@ -80,7 +80,7 @@ export async function openRealm(
   return { config, realm };
 }
 
-export function createSyncConfig(partialConfig: SyncedConfiguration = {}, user: User): Configuration {
+export function createSyncConfig(partialConfig: SyncedConfiguration = {}, user: Realm.User): Configuration {
   const { path, nonce } = getRandomPathAndNonce();
 
   return {

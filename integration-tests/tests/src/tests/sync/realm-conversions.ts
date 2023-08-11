@@ -22,7 +22,7 @@ import { importAppBefore } from "../../hooks";
 import { getRegisteredEmailPassCredentials } from "../../utils/credentials";
 import { buildAppConfig } from "../../utils/build-app-config";
 
-const DogForSyncSchema = {
+const DogForSyncSchema: Realm.ObjectSchema = {
   name: "Dog",
   primaryKey: "_id",
   properties: {
@@ -33,7 +33,7 @@ const DogForSyncSchema = {
   },
 };
 
-const PersonForSyncSchema = {
+const PersonForSyncSchema: Realm.ObjectSchema = {
   name: "Person",
   primaryKey: "_id",
   properties: {

@@ -47,7 +47,7 @@ describe("Sets", () => {
     it("short (JS) and canonical schema types yield the same results", () => {
       const shorthandSchema = IntSetObjectSchema;
 
-      const canonicalSchema = {
+      const canonicalSchema: Realm.ObjectSchema = {
         name: "CanonicalSchema",
         properties: {
           intSet: { type: "set", objectType: "int" },

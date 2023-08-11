@@ -212,7 +212,7 @@ describe("Migrations", () => {
     });
 
     it("should be able to add optional new properties", () => {
-      const TestSchemaWithOptionalNewProperty = {
+      const TestSchemaWithOptionalNewProperty: Realm.ObjectSchema = {
         ...TestSchema,
         properties: {
           ...TestSchema.properties,
@@ -399,7 +399,7 @@ describe("Migrations", () => {
       Realm.clearTestState();
     });
 
-    const PersonWithDogsSchema = {
+    const PersonWithDogsSchema: Realm.ObjectSchema = {
       ...PersonSchema,
       properties: {
         ...PersonSchema.properties,

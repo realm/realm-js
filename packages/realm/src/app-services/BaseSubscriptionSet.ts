@@ -217,7 +217,7 @@ export abstract class BaseSubscriptionSet {
    *  e.g. `Realm.objects("Cat").filtered("age > 10")`.
    * @returns The subscription with the specified query, or `null` if the subscription is not found.
    */
-  findByQuery<Subscription>(query: Results<Subscription & RealmObject>): Subscription | null {
+  findByQuery<Subscription>(query: Results<Subscription & RealmObject<Subscription>>): Subscription | null {
     assert.instanceOf(query, Results, "query");
 
     const subscription = this.internal.findByQuery(query.internal.query);

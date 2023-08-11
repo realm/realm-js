@@ -880,11 +880,12 @@ export class Realm {
     return isAsymmetric(helpers.objectSchema) ? undefined : realmObject;
   }
 
+  //FIXME: any should not be used, but we are staying compatible with previous versions
   /**
    * Deletes the provided Realm object, or each one inside the provided collection.
    * @param subject - The Realm object to delete, or a collection containing multiple Realm objects to delete.
    */
-  delete(subject: AnyRealmObject | AnyRealmObject[] | AnyList | AnyResults): void {
+  delete(subject: AnyRealmObject | AnyRealmObject[] | AnyList | AnyResults | any): void {
     assert.inTransaction(this, "Can only delete objects within a transaction.");
     assert.object(subject, "subject");
     if (subject instanceof RealmObject) {
@@ -902,6 +903,7 @@ export class Realm {
     } else if (subject instanceof Results) {
       subject.internal.clear();
     } else if (Array.isArray(subject) || Symbol.iterator in subject) {
+      //@ts-expect-error the above check is good enough
       for (const object of subject) {
         assert.instanceOf(object, RealmObject);
         assert.isSameRealm(object[REALM].internal, this.internal, "Can't delete an object from another Realm");
@@ -1386,6 +1388,7 @@ type MongoDBCollectionType<T extends Document> = MongoDBCollection<T>;
 type MongoDBDatabaseType = MongoDBDatabase;
 type NewDocumentType<T extends Document> = NewDocument<T>;
 type OperationTypeType = OperationType;
+type OrderedCollectionType<T = unknown> = OrderedCollection<T>;
 type RenameEventType = RenameEvent;
 type ReplaceEventType<T extends Document> = ReplaceEvent<T>;
 type UpdateType = Update;
@@ -1465,6 +1468,7 @@ export declare namespace Realm {
     OpenRealmBehaviorConfiguration,
     OpenRealmBehaviorTypeType as OpenRealmBehaviorType,
     OpenRealmTimeOutBehaviorType as OpenRealmTimeOutBehavior,
+    OrderedCollectionType as OrderedCollection,
     PartitionSyncConfiguration,
     PrimaryKey,
     PrimitivePropertyTypeName,

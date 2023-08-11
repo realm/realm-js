@@ -29,7 +29,7 @@ type ChangeEvent<T extends Document> = Realm.Services.MongoDB.ChangeEvent<T>;
 type InsertEvent<T extends Document> = Realm.Services.MongoDB.InsertEvent<T>;
 
 type TestDocument = {
-  _id: BSON.ObjectId;
+  _id: BSON.ObjectId | number;
   text?: string;
   isLast?: boolean;
   date?: Date;

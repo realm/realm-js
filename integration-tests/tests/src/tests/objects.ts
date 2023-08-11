@@ -27,7 +27,6 @@ import {
 import { openRealmBeforeEach } from "../hooks";
 import { expectArraysEqual, expectSimilar } from "../utils/comparisons";
 import jsrsasign from "jsrsasign";
-import { select } from "../utils/select";
 
 const RANDOM_DATA = new Uint8Array([
   0xd8, 0x21, 0xd6, 0xe8, 0x00, 0x57, 0xbc, 0xb2, 0x6a, 0x15, 0x77, 0x30, 0xac, 0x77, 0x96, 0xd9, 0x67, 0x1e, 0x40,
@@ -143,7 +142,7 @@ const DateObjectSchema = {
   },
 };
 
-const DefaultValuesSchema = {
+const DefaultValuesSchema: Realm.ObjectSchema = {
   name: "DefaultValuesObject",
   properties: {
     boolCol: { type: "bool", default: true },
@@ -159,7 +158,7 @@ const DefaultValuesSchema = {
   },
 };
 
-const LinkTypesSchema = {
+const LinkTypesSchema: Realm.ObjectSchema = {
   name: "LinkTypesObject",
   properties: {
     objectCol: "TestObject",
@@ -195,7 +194,7 @@ const CollectionSchema: Realm.ObjectSchema = {
   },
 };
 
-const AllTypesSchema = {
+const AllTypesSchema: Realm.ObjectSchema = {
   name: "AllTypesObject",
   properties: {
     boolCol: "bool",
@@ -847,7 +846,6 @@ describe("Realm.Object", () => {
         }
 
         function tryAssign(name: string, value: any) {
-          //@ts-expect-error TYPEBUG: indexing with string is not allowed by typesystem.
           const prop = AllTypesSchema.properties[name];
           const type = typeof prop == "object" ? prop.type : prop;
           //@ts-expect-error TYPEBUG: indexing with string is not allowed by typesystem.
@@ -1079,12 +1077,12 @@ describe("Realm.Object", () => {
     });
 
     it("getPropertyType gives correct properties", function (this: Mocha.Context & RealmContext) {
-      let obj!: Realm.Object;
-      let mixedNull!: Realm.Object;
-      let mixedInt!: Realm.Object;
-      let mixedString!: Realm.Object;
-      let mixedFloat!: Realm.Object;
-      let mixedBool!: Realm.Object;
+      let obj!: Realm.Object<IAllTypes>;
+      let mixedNull!: Realm.Object<IMixed>;
+      let mixedInt!: Realm.Object<IMixed>;
+      let mixedString!: Realm.Object<IMixed>;
+      let mixedFloat!: Realm.Object<IMixed>;
+      let mixedBool!: Realm.Object<IMixed>;
 
       this.realm.write(() => {
         obj = this.realm.create<IAllTypes>(AllTypesSchema.name, allTypesValues);
@@ -1327,14 +1325,14 @@ describe("Realm.Object", () => {
 
       const objKey = obj._objectKey();
       //@ts-expect-error uses private method.
-      const objFromKey = this.realm._objectForObjectKey(AgeSchema.name, objKey);
+      const objFromKey = this.realm._objectForObjectKey<IAge>(AgeSchema.name, objKey);
 
       this.realm.write(() => {
-        objFromKey.age = 7;
+        objFromKey!.age = 7;
       });
 
       expect(obj.age).equals(7);
-      expect(objFromKey.age).equals(7);
+      expect(objFromKey?.age).equals(7);
     });
   });
 });

@@ -39,7 +39,7 @@ export const PersonSchema: Realm.ObjectSchema = {
   },
 };
 
-export class Person extends Realm.Object<Person> implements IPerson {
+export class Person extends Realm.Object<Person> {
   _id!: Realm.BSON.ObjectId;
   name!: string;
   age!: number;
@@ -67,7 +67,7 @@ export const DogSchema: Realm.ObjectSchema = {
   },
 };
 
-export class Dog extends Realm.Object<Dog> implements IDog {
+export class Dog extends Realm.Object<Dog> {
   _id!: Realm.BSON.ObjectId;
   name!: string;
   age!: number;

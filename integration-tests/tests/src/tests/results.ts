@@ -19,12 +19,11 @@
 import { expect } from "chai";
 import Realm, { BSON } from "realm";
 import { openRealmBeforeEach } from "../hooks";
-import { select } from "../utils/select";
 const { Decimal128, ObjectId, UUID } = Realm.BSON;
 
 class TestObject extends Realm.Object {
   doubleCol!: Realm.Types.Double;
-  static schema = {
+  static schema: Realm.ObjectSchema = {
     name: "TestObject",
     properties: {
       doubleCol: "double",
@@ -32,7 +31,7 @@ class TestObject extends Realm.Object {
   };
 }
 
-const IntPrimarySchema = {
+const IntPrimarySchema: Realm.ObjectSchema = {
   name: "IntPrimaryObject",
   primaryKey: "primaryCol",
   properties: {
@@ -41,12 +40,13 @@ const IntPrimarySchema = {
   },
 };
 
-interface IntPrimaryObject {
-  primaryCol: Realm.Types.Int;
-  valueCol: string;
+class IntPrimaryObject extends Realm.Object<IntPrimaryObject> {
+  primaryCol!: Realm.Types.Int;
+  valueCol!: string;
+  static schema: Realm.ObjectSchema = IntPrimarySchema;
 }
 
-const BasicTypesSchema = {
+const BasicTypesSchema: Realm.ObjectSchema = {
   name: "BasicTypesObject",
   properties: {
     boolCol: "bool",
@@ -75,7 +75,7 @@ interface BasicTypesObject {
   uuidCol: Realm.Types.UUID;
 }
 
-const LinkTypesSchema = {
+const LinkTypesSchema: Realm.ObjectSchema = {
   name: "LinkTypesObject",
   properties: {
     objectCol: "TestObject",
@@ -85,7 +85,7 @@ const LinkTypesSchema = {
   },
 };
 
-const NullableBasicTypesSchema = {
+const NullableBasicTypesSchema: Realm.ObjectSchema = {
   name: "NullableBasicTypesObject",
   properties: {
     boolCol: "bool?",
@@ -154,7 +154,7 @@ describe("Results", () => {
       });
 
       // Search in base table
-      const objects = this.realm.objects("TestObject");
+      const objects = this.realm.objects<TestObject>("TestObject");
       expect(objects.indexOf(object1)).equals(0);
       expect(objects.indexOf(object2)).equals(1);
       expect(objects.indexOf(object3)).equals(2);
@@ -196,7 +196,6 @@ describe("Results", () => {
         objects[1] = { doubleCol: 0 };
       }).throws("Assigning into a Results is not supported");
       expect(() => {
-        //@ts-expect-error Should be an invalid write to read-only object.
         objects.length = 0;
       }).throws("Cannot assign to read only property 'length'");
     });
@@ -400,7 +399,7 @@ describe("Results", () => {
       married!: boolean;
       children!: Realm.List<PersonObject>;
       parents!: Realm.List<PersonObject>;
-      static schema = {
+      static schema: Realm.ObjectSchema = {
         name: "PersonObject",
         properties: {
           name: "string",
@@ -453,14 +452,14 @@ describe("Results", () => {
 
     it("implements sorted", () => {
       const realm = new Realm({ schema: [IntPrimarySchema] });
-      let objects = realm.objects<IntPrimaryObject>("IntPrimaryObject");
+      let objects = realm.objects<IntPrimaryObject>(IntPrimaryObject);
 
       realm.write(function () {
-        realm.create("IntPrimaryObject", { primaryCol: 2, valueCol: "a" });
-        realm.create("IntPrimaryObject", { primaryCol: 3, valueCol: "a" });
-        realm.create("IntPrimaryObject", { primaryCol: 1, valueCol: "b" });
-        realm.create("IntPrimaryObject", { primaryCol: 4, valueCol: "c" });
-        realm.create("IntPrimaryObject", { primaryCol: 0, valueCol: "c" });
+        realm.create<IntPrimaryObject>(IntPrimaryObject, { primaryCol: 2, valueCol: "a" });
+        realm.create<IntPrimaryObject>(IntPrimaryObject, { primaryCol: 3, valueCol: "a" });
+        realm.create<IntPrimaryObject>(IntPrimaryObject, { primaryCol: 1, valueCol: "b" });
+        realm.create<IntPrimaryObject>(IntPrimaryObject, { primaryCol: 4, valueCol: "c" });
+        realm.create<IntPrimaryObject>(IntPrimaryObject, { primaryCol: 0, valueCol: "c" });
       });
 
       const primaries = function (results: Realm.Results<IntPrimaryObject>) {

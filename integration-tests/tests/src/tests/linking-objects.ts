@@ -21,33 +21,11 @@ import { expect } from "chai";
 import Realm from "realm";
 import { openRealmBeforeEach } from "../hooks";
 
-function names(results: Realm.Results<IPersonSchema> | Realm.Results<IPersonSchema>) {
-  return results.map(function (object: IPersonSchema) {
+function names(results: Realm.OrderedCollection<Person> | Realm.Results<Person>) {
+  return results.map(function (object: Person) {
     return object.name;
   });
 }
-
-const PersonSchema: Realm.ObjectSchema = {
-  name: "PersonObject",
-  properties: {
-    name: "string",
-    age: "double",
-    married: { type: "bool", default: false },
-    children: { type: "list", objectType: "PersonObject" },
-    parents: { type: "linkingObjects", objectType: "PersonObject", property: "children" },
-  },
-};
-
-const NameSchema: Realm.ObjectSchema = {
-  name: "NameObject",
-  primaryKey: "_id",
-  properties: {
-    _id: "objectId",
-    family: "string",
-    given: "string[]",
-    prefix: "string[]",
-  },
-};
 
 const ParentSchema: Realm.ObjectSchema = {
   name: "ParentObject",
@@ -75,21 +53,6 @@ const CountrySchema: Realm.ObjectSchema = {
   },
 };
 
-interface IPersonSchema {
-  name: string;
-  age: number;
-  married: boolean;
-  children: Realm.List<IPersonSchema>;
-  parents: Realm.Collection<IPersonSchema>;
-}
-
-interface INameSchema {
-  _id: BSON.ObjectId;
-  family: string;
-  given: string[];
-  prefix: string[];
-}
-
 interface IParentSchema {
   _id: BSON.ObjectId;
   id: number;
@@ -106,30 +69,52 @@ interface ICountrySchema {
   languages: ILanguageSchema[];
 }
 
-class Person extends Realm.Object implements IPersonSchema {
+class Person extends Realm.Object<Person> {
   name!: string;
   age!: number;
   married!: boolean;
-  children!: Realm.List<IPersonSchema>;
-  parents!: Realm.Collection<IPersonSchema>;
+  children!: Realm.List<Person>;
+  parents!: Realm.OrderedCollection<Person>;
+
+  static schema: Realm.ObjectSchema = {
+    name: "PersonObject",
+    properties: {
+      name: "string",
+      age: "double",
+      married: { type: "bool", default: false },
+      children: { type: "list", objectType: "PersonObject" },
+      parents: { type: "linkingObjects", objectType: "PersonObject", property: "children" },
+    },
+  };
 }
 
-class Name extends Realm.Object implements INameSchema {
+class Name extends Realm.Object<Name> {
   _id!: BSON.ObjectId;
   family!: string;
   given!: string[];
   prefix!: string[];
+
+  static schema: Realm.ObjectSchema = {
+    name: "NameObject",
+    primaryKey: "_id",
+    properties: {
+      _id: "objectId",
+      family: "string",
+      given: "string[]",
+      prefix: "string[]",
+    },
+  };
 }
 
 describe("Linking objects", () => {
   describe("Same class", () => {
-    openRealmBeforeEach({ schema: [PersonSchema] });
+    openRealmBeforeEach({ schema: [Person] });
     it("add and delete propagate to linking object", function (this: RealmContext) {
-      let olivier: IPersonSchema;
-      let oliviersParents!: Realm.Collection<IPersonSchema>;
+      let olivier: Person;
+      let oliviersParents!: Realm.OrderedCollection<Person>;
       this.realm.write(() => {
-        olivier = this.realm.create<IPersonSchema>(PersonSchema.name, { name: "Olivier", age: 0 });
-        this.realm.create(PersonSchema.name, { name: "Christine", age: 25, children: [olivier] });
+        olivier = this.realm.create(Person, { name: "Olivier", age: 0 });
+        this.realm.create(Person, { name: "Christine", age: 25, children: [olivier] });
         oliviersParents = olivier.parents;
         expect(names(oliviersParents)).eql(["Christine"]);
       });
@@ -137,7 +122,7 @@ describe("Linking objects", () => {
       expect(names(oliviersParents)).eql(["Christine"]);
 
       this.realm.write(() => {
-        this.realm.create(PersonSchema.name, { name: "JP", age: 28, children: [olivier] });
+        this.realm.create(Person, { name: "JP", age: 28, children: [olivier] });
 
         expect(names(oliviersParents)).eql(["Christine", "JP"]);
       });
@@ -150,16 +135,16 @@ describe("Linking objects", () => {
     });
     it("filters work on linking object", function (this: RealmContext) {
       this.realm.write(() => {
-        const olivier = this.realm.create<IPersonSchema>(PersonSchema.name, { name: "Olivier", age: 0 });
-        this.realm.create<IPersonSchema>(PersonSchema.name, {
+        const olivier = this.realm.create(Person, { name: "Olivier", age: 0 });
+        this.realm.create(Person, {
           name: "Christine",
           age: 25,
           children: [olivier],
         });
-        this.realm.create(PersonSchema.name, { name: "JP", age: 28, children: [olivier] });
+        this.realm.create(Person, { name: "JP", age: 28, children: [olivier] });
       });
 
-      const people = this.realm.objects<IPersonSchema>("PersonObject");
+      const people = this.realm.objects(Person);
       expect(people.filtered("parents.age > 25").length).equals(1);
       expect(people.filtered("parents.age > 25")[0].name).equals("Olivier");
       expect(people.filtered("parents.@count == 2").length).equals(1);
@@ -170,7 +155,7 @@ describe("Linking objects", () => {
     it("throws on invalid input", function (this: RealmContext) {
       let person: Person;
       this.realm.write(() => {
-        person = this.realm.create<IPersonSchema>(PersonSchema.name, { name: "Person 1", age: 50 });
+        person = this.realm.create(Person, { name: "Person 1", age: 50 });
       });
       expect(() => person.linkingObjects("NoSuchSchema", "noSuchProperty")).throws(
         "Object type 'NoSuchSchema' not found in schema.",
@@ -182,16 +167,16 @@ describe("Linking objects", () => {
         "'PersonObject#name' is not a relationship to 'PersonObject'",
       );
       let olivier: Person;
-      let oliviersParents: Realm.Results<IPersonSchema>;
+      let oliviersParents: Realm.OrderedCollection<Person>;
       this.realm.write(() => {
-        olivier = this.realm.create<IPersonSchema>(PersonSchema.name, { name: "Olivier", age: 0 });
-        this.realm.create(PersonSchema.name, { name: "Christine", age: 25, children: [olivier] });
-        oliviersParents = olivier.linkingObjects<IPersonSchema>("PersonObject", "children");
+        olivier = this.realm.create(Person, { name: "Olivier", age: 0 });
+        this.realm.create(Person, { name: "Christine", age: 25, children: [olivier] });
+        oliviersParents = olivier.linkingObjects(Person, "children");
         expect(names(oliviersParents)).eql(["Christine"]);
       });
 
       this.realm.write(() => {
-        this.realm.create<IPersonSchema>(PersonSchema.name, { name: "JP", age: 28, children: [olivier] });
+        this.realm.create(Person, { name: "JP", age: 28, children: [olivier] });
 
         expect(names(oliviersParents)).eql(["Christine", "JP"]);
       });
@@ -204,7 +189,7 @@ describe("Linking objects", () => {
     it("supports count operation", function (this: RealmContext) {
       let john!: Person;
       this.realm.write(() => {
-        john = this.realm.create<IPersonSchema>(PersonSchema.name, { name: "John", age: 50 });
+        john = this.realm.create(Person, { name: "John", age: 50 });
       });
 
       expect(john.linkingObjectsCount()).equals(0);
@@ -212,9 +197,9 @@ describe("Linking objects", () => {
       let olivier!: Person;
       let key;
       this.realm.write(() => {
-        olivier = this.realm.create<IPersonSchema>(PersonSchema.name, { name: "Olivier", age: 0 });
+        olivier = this.realm.create(Person, { name: "Olivier", age: 0 });
         key = olivier._objectKey();
-        this.realm.create<IPersonSchema>(PersonSchema.name, { name: "Christine", age: 25, children: [olivier] });
+        this.realm.create(Person, { name: "Christine", age: 25, children: [olivier] });
       });
 
       expect(olivier.linkingObjectsCount()).equals(1);
@@ -233,7 +218,7 @@ describe("Linking objects", () => {
     });
   });
   describe("Non recursive", () => {
-    openRealmBeforeEach({ schema: [ParentSchema, NameSchema] });
+    openRealmBeforeEach({ schema: [ParentSchema, Name] });
     it("count operation", function (this: RealmContext) {
       let parent: IParentSchema;
       this.realm.write(() => {
@@ -247,7 +232,7 @@ describe("Linking objects", () => {
 
       let child!: Name;
       this.realm.write(() => {
-        child = this.realm.create<INameSchema>(NameSchema.name, {
+        child = this.realm.create(Name, {
           _id: new BSON.ObjectId("0000002a9a7969d24bea4cf6"),
           family: "Johnson",
           given: ["Olivier"],
@@ -256,14 +241,14 @@ describe("Linking objects", () => {
         this.realm.create("ParentObject", { _id: new BSON.ObjectId("0000002a9a7969d24bea4cf7"), id: 1, name: [child] });
       });
       expect(this.realm.objects(ParentSchema.name).length).equals(2);
-      expect(this.realm.objects(NameSchema.name).length).equals(1);
+      expect(this.realm.objects(Name).length).equals(1);
       expect(child.linkingObjectsCount()).equals(1);
 
       this.realm.write(() => {
         parent.name.push(child);
       });
       expect(this.realm.objects(ParentSchema.name).length).equals(2);
-      expect(this.realm.objects(NameSchema.name).length).equals(1);
+      expect(this.realm.objects(Name).length).equals(1);
       expect(child.linkingObjectsCount()).equals(2);
     });
   });
