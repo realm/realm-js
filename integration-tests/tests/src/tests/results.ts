@@ -40,9 +40,10 @@ const IntPrimarySchema: Realm.ObjectSchema = {
   },
 };
 
-interface IntPrimaryObject {
-  primaryCol: Realm.Types.Int;
-  valueCol: string;
+class IntPrimaryObject extends Realm.Object<IntPrimaryObject> {
+  primaryCol!: Realm.Types.Int;
+  valueCol!: string;
+  static schema: Realm.ObjectSchema = IntPrimarySchema;
 }
 
 const BasicTypesSchema: Realm.ObjectSchema = {
@@ -451,18 +452,17 @@ describe("Results", () => {
 
     it("implements sorted", () => {
       const realm = new Realm({ schema: [IntPrimarySchema] });
-      let objects = realm.objects<IntPrimaryObject>("IntPrimaryObject");
+      let objects = realm.objects<IntPrimaryObject>(IntPrimaryObject);
 
       realm.write(function () {
-        realm.create<IntPrimaryObject>("IntPrimaryObject", { primaryCol: 2, valueCol: "a" });
-        realm.create<IntPrimaryObject>("IntPrimaryObject", { primaryCol: 3, valueCol: "a" });
-        realm.create<IntPrimaryObject>("IntPrimaryObject", { primaryCol: 1, valueCol: "b" });
-        realm.create<IntPrimaryObject>("IntPrimaryObject", { primaryCol: 4, valueCol: "c" });
-        realm.create<IntPrimaryObject>("IntPrimaryObject", { primaryCol: 0, valueCol: "c" });
+        realm.create<IntPrimaryObject>(IntPrimaryObject, { primaryCol: 2, valueCol: "a" });
+        realm.create<IntPrimaryObject>(IntPrimaryObject, { primaryCol: 3, valueCol: "a" });
+        realm.create<IntPrimaryObject>(IntPrimaryObject, { primaryCol: 1, valueCol: "b" });
+        realm.create<IntPrimaryObject>(IntPrimaryObject, { primaryCol: 4, valueCol: "c" });
+        realm.create<IntPrimaryObject>(IntPrimaryObject, { primaryCol: 0, valueCol: "c" });
       });
 
-      // FIXME: Realm.Results<IntPrimaryObject> should work here.
-      const primaries = function (results: Realm.Results<any>) {
+      const primaries = function (results: Realm.Results<IntPrimaryObject>) {
         return results.map(function (object) {
           return object.primaryCol;
         });
