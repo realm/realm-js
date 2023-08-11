@@ -283,9 +283,7 @@ describe("App", () => {
           _sessionStopPolicy: "immediately", // Make it safe to delete files after realm.close()
         },
       };
-      //@ts-expect-error TYPEBUG: SyncConfiguration interfaces misses a user property.
       Realm.deleteFile(realmConfig);
-      //@ts-expect-error TYPEBUG: SyncConfiguration interfaces misses a user property.
       const realm = await Realm.open(realmConfig);
       expect(nCalls).equals(1);
       realm.write(() => {
@@ -308,10 +306,8 @@ describe("App", () => {
       expect(realm.objects("Dog").length).equals(2);
       realm.close();
 
-      //@ts-expect-error TYPEBUG: SyncConfiguration interfaces misses a user property.
       Realm.deleteFile(realmConfig);
 
-      //@ts-expect-error TYPEBUG: SyncConfiguration interfaces misses a user property.
       const realm2 = await Realm.open(realmConfig);
       expect(nCalls).equals(2);
       await realm2.syncSession?.downloadAllServerChanges();
