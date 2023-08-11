@@ -337,7 +337,6 @@ describe("Realm#constructor", () => {
       realm1.write(() => {
         realm1.create("TestObject", [1]);
       });
-      //@ts-expect-error TYPEBUG: isInMemory property does not exist
       expect(realm1.isInMemory).to.be.true;
 
       // open a second instance of the same realm and check that they share data
@@ -345,7 +344,6 @@ describe("Realm#constructor", () => {
       const objects = realm2.objects<TestObject>(TestObject.schema.name);
       expect(objects.length).equals(1);
       expect(objects[0].doubleCol).equals(1.0);
-      //@ts-expect-error TYPEBUG: isInMemory property does not exist
       expect(realm2.isInMemory).equals(true);
 
       realm1.close();
@@ -358,7 +356,6 @@ describe("Realm#constructor", () => {
       realm1.write(() => {
         realm1.create("TestObject", [1]);
       });
-      //@ts-expect-error TYPEBUG: isInMemory property does not exist
       expect(realm1.isInMemory).to.be.true;
       // Close realm (this should delete the realm since there are no more
       // references to it).

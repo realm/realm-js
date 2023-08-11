@@ -20,9 +20,9 @@ import { expect } from "chai";
 import Realm from "realm";
 import { openRealmBeforeEach } from "../hooks";
 
-class ListObject extends Realm.Object {
+class ListObject extends Realm.Object<ListObject> {
   list!: Realm.List<TestObject>;
-  static schema = {
+  static schema: Realm.ObjectSchema = {
     name: "ListObject",
     properties: {
       list: { type: "list", objectType: "TestObject" },
@@ -30,7 +30,7 @@ class ListObject extends Realm.Object {
   };
 }
 
-class TestObject extends Realm.Object {
+class TestObject extends Realm.Object<TestObject> {
   doubleCol!: Realm.Types.Double;
   static schema = {
     name: "TestObject",
@@ -40,7 +40,7 @@ class TestObject extends Realm.Object {
   };
 }
 
-class StringOnlyObject extends Realm.Object {
+class StringOnlyObject extends Realm.Object<StringOnlyObject> {
   stringCol!: Realm.Types.String;
   static schema = {
     name: "StringOnlyObject",
@@ -165,7 +165,7 @@ describe("Notifications", () => {
     onEnd: () => void | Mocha.Done,
     changesOnRun: Realm.CollectionChangeSet[],
   ) => {
-    return (_: Realm.Collection<Realm.Object>, changes: Realm.CollectionChangeSet) => {
+    return (_: Realm.OrderedCollection<any>, changes: Realm.CollectionChangeSet) => {
       runCount++;
 
       expect(changes.insertions).deep.equals(changesOnRun[runCount - 1].insertions);
@@ -183,7 +183,7 @@ describe("Notifications", () => {
   };
 
   describe("Results notifications", () => {
-    let testObjects: Realm.Collection<TestObject>;
+    let testObjects: Realm.OrderedCollection<TestObject>;
 
     openRealmBeforeEach({ schema: [TestObject] });
 
