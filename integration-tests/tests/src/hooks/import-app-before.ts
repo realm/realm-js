@@ -50,20 +50,22 @@ export function importAppBefore(config: AppConfig | { config: AppConfig }, sdkCo
       this.app = new Realm.App({ id: appId, baseUrl, ...sdkConfig });
 
       // Extract the sync database name from the config
-      const databaseNames: string[] = config.services
+      const databaseNames: (string | undefined)[] = config.services
         .filter(([service]) => service.type === mongodbServiceType)
         .map(([service]) => {
           if ("sync" in service.config) {
             return service.config.sync.database_name;
-          } else {
+          } else if ("flexible_sync" in service.config) {
             return service.config.flexible_sync.database_name;
           }
         })
         .filter((name) => typeof name === "string");
-      if (databaseNames.length === 1) {
+      if (databaseNames.length === 1 && databaseNames[0]) {
         this.databaseName = databaseNames[0];
       } else if (databaseNames.length > 1) {
         throw new Error("Expected at most 1 database name in the config");
+      } else {
+        throw new Error("Expected a database name in the config");
       }
 
       Realm.App.Sync.setLogLevel(this.app, syncLogLevel);
