@@ -47,7 +47,7 @@ export function generate({ rawSpec, spec: boundSpec, file }: TemplateContext): v
     // @see https://github.com/realm/realm-js/issues/2126
     const nativeModule = global.__RealmFuncs;
     if(!nativeModule) {
-      throw new Error("Could not find the Realm binary. Please consult our troubleshooting guide. (https://www.mongodb.com/docs/realm-sdks/js/latest/#md:troubleshooting-missing-binary)");
+      throw new Error("Could not find the Realm binary. Please consult our troubleshooting guide: https://www.mongodb.com/docs/realm-sdks/js/latest/#md:troubleshooting-missing-binary");
     }
 
     export const WeakRef = global.WeakRef ?? class WeakRef {
