@@ -33,7 +33,7 @@ export type DefaultFunctionsFactory = {
   [name: string]: AppServicesFunction<unknown, unknown[]>;
 };
 
-export function createFactory<T>(user: User<unknown, unknown, unknown>, serviceName: string | undefined): T {
+export function createFactory<T>(user: User, serviceName: string | undefined): T {
   return new Proxy(
     {},
     {

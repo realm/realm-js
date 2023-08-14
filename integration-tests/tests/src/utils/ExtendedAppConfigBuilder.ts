@@ -20,9 +20,12 @@ import {
   PartitionConfig,
   CustomTokenAuthMetadataField,
   EmailPasswordAuthConfig,
+  FlexibleSyncConfig,
+  PartitionSyncConfig,
 } from "@realm/app-importer";
 
 import { randomDatabaseName } from "./generators";
+import { DisabledConfig } from "@realm/app-importer/src/AppConfigBuilder";
 
 // Setting the mongodbClusterName on the Mocha Remote context will default the service type of mongodb services to "mongodb-atlas"
 // This makes sense because there's no reason to provide the cluster name if we're not on Atlas.
@@ -183,7 +186,7 @@ export class ExtendedAppConfigBuilder extends AppConfigBuilder {
         exports = async function (appId, userId) {
           return (await deleteClientFile("__realm_sync_" + appId, userId)) || (await deleteClientFile("__realm_sync", userId));
         };
-        
+
         async function deleteClientFile(db, userId) {
           const mongodb = context.services.get("mongodb");
           return (await mongodb.db(db).collection("clientfiles").deleteMany({ ownerId: userId })).deletedCount > 0;
@@ -210,7 +213,9 @@ export function buildMongoDBConfig(config: MongoServiceSyncConfig) {
   }
 }
 
-function buildMongoDBSyncConfig(config: MongoServiceSyncConfig) {
+function buildMongoDBSyncConfig(
+  config: MongoServiceSyncConfig,
+): DisabledConfig | FlexibleSyncConfig | PartitionSyncConfig {
   if (config.kind === "disabled") {
     return {};
   } else if (config.kind === "flexible") {

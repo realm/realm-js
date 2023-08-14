@@ -16,15 +16,26 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import Realm, { Configuration, SyncConfiguration, User, BSON } from "realm";
-
 // Either the sync property is left out (local Realm)
 export type LocalConfiguration = Omit<Configuration, "sync"> & { sync?: never };
 // Or the sync parameter is present
 export type SyncedConfiguration = Omit<Configuration, "sync"> & {
   sync?: Partial<SyncConfiguration>;
 };
-export type OpenRealmConfiguration = LocalConfiguration | SyncedConfiguration;
+import Realm, {
+  Configuration,
+  User,
+  BSON,
+  ConfigurationWithSync,
+  ConfigurationWithoutSync,
+  SyncConfiguration,
+} from "realm";
+
+type ConfigurationWithSyncPartial = Omit<ConfigurationWithSync, "sync"> & {
+  sync: Partial<SyncConfiguration>;
+};
+
+export type OpenRealmConfiguration = ConfigurationWithoutSync | ConfigurationWithSyncPartial;
 
 /**
  * Open a Realm for test usage with the specified config. By default this will use
@@ -35,8 +46,8 @@ export type OpenRealmConfiguration = LocalConfiguration | SyncedConfiguration;
  * @returns
  */
 export async function openRealm(
-  partialConfig: LocalConfiguration | SyncedConfiguration = {},
-  user: User | undefined,
+  partialConfig: LocalConfiguration | Partial<SyncedConfiguration> = {},
+  user: Realm.User,
 ): Promise<{ config: Configuration; realm: Realm }> {
   if (!partialConfig.sync) {
     const config = createLocalConfig(partialConfig as LocalConfiguration);
@@ -69,7 +80,7 @@ export async function openRealm(
   return { config, realm };
 }
 
-export function createSyncConfig(partialConfig: SyncedConfiguration = {}, user: User): Configuration {
+export function createSyncConfig(partialConfig: SyncedConfiguration = {}, user: Realm.User): Configuration {
   const { path, nonce } = getRandomPathAndNonce();
 
   return {

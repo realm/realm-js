@@ -111,10 +111,10 @@ describe("Iterating", () => {
     }).throws("Object type 'SomeOtherClass' not found in schema");
   });
 
-  type CollectionContext = { collection: Collection<unknown, Person, [unknown, Person], unknown> } & RealmContext;
-  type OrderedCollectionContext = { collection: OrderedCollection<Person> } & RealmContext;
+  type CollectionContext = { collection: Realm.Collection<unknown, Person, [unknown, Person], unknown> } & RealmContext;
+  type OrderedCollectionContext = { collection: Realm.OrderedCollection<Person> } & RealmContext;
 
-  function ifOrderedCollectionIt(title: string, test: (collection: OrderedCollection<Person>) => void) {
+  function ifOrderedCollectionIt(title: string, test: (collection: Realm.OrderedCollection<Person>) => void) {
     it(title, function (this: OrderedCollectionContext) {
       const { collection } = this;
       if (!(collection instanceof OrderedCollection)) {
@@ -124,7 +124,9 @@ describe("Iterating", () => {
     });
   }
 
-  function collectionBefore(getCollection: (realm: Realm) => Collection<unknown, Person, [unknown, Person], unknown>) {
+  function collectionBefore(
+    getCollection: (realm: Realm) => Realm.Collection<unknown, Person, [unknown, Person], unknown>,
+  ) {
     before(function (this: CollectionContext) {
       this.collection = getCollection(this.realm);
     });

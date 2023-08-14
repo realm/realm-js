@@ -26,7 +26,7 @@ import { importApp } from "../../utils/import-app";
 import { sleep, throwAfterTimeout } from "../../utils/sleep";
 import { buildAppConfig } from "../../utils/build-app-config";
 
-const DogForSyncSchema = {
+const DogForSyncSchema: Realm.ObjectSchema = {
   name: "Dog",
   primaryKey: "_id",
   properties: {
@@ -37,7 +37,7 @@ const DogForSyncSchema = {
   },
 };
 
-const PersonForSyncSchema = {
+const PersonForSyncSchema: Realm.ObjectSchema = {
   name: "Person",
   primaryKey: "_id",
   properties: {
@@ -65,8 +65,8 @@ function waitForConnectionState(session: Realm.App.Sync.Session, state: string) 
   };
 }
 
-function getSyncConfiguration(user: Realm.User, partition: string): Realm.Configuration {
-  const realmConfig = {
+function getSyncConfiguration(user: Realm.User, partition: string): Realm.ConfigurationWithSync {
+  const realmConfig: Realm.Configuration = {
     schema: [
       {
         name: "Dog",
@@ -116,10 +116,7 @@ function createObjects(user: Realm.User, partition: string): Promise<Realm> {
   });
 }
 
-async function seedDataWithExternalUser(
-  app: Realm.App<Realm.DefaultFunctionsFactory, SimpleObject>,
-  partition: string,
-) {
+async function seedDataWithExternalUser(app: Realm.App, partition: string) {
   const credentials = Realm.Credentials.anonymous();
   const user = await app.logIn(credentials);
   const realm = await createObjects(user, partition);
@@ -183,7 +180,7 @@ describe("SessionTest", () => {
       config.sync.customHttpHeaders = { language: "English" };
       const realm = new Realm(config);
       const session = realm.syncSession;
-      expect(session.config.customHttpHeaders.language).equals(
+      expect(session?.config.customHttpHeaders?.language).equals(
         "English",
         "Synced realm does not contain the expected customHttpHeader",
       );
@@ -614,6 +611,7 @@ describe("SessionTest", () => {
   describe("hasExistingSessions", () => {
     afterEach(() => Realm.clearTestState());
     it("starting and stopping syncsessions propagates to hasExistingSessions", async function (this: AppContext) {
+      //@ts-expect-error internal method
       expect(Realm.App.Sync._hasExistingSessions(this.app)).to.be.false;
 
       const credentials = Realm.Credentials.anonymous();
@@ -621,12 +619,14 @@ describe("SessionTest", () => {
       return this.app.logIn(credentials).then((user) => {
         const config = getSyncConfiguration(user, partition);
         const realm = new Realm(config);
+        //@ts-expect-error internal method
         expect(Realm.App.Sync._hasExistingSessions(this.app)).to.be.true;
         realm.close();
 
         // Wait for the session to finish
         return async () => {
           for (let i = 50; i >= 0; i--) {
+            //@ts-expect-error internal method
             if (!Realm.App.Sync._hasExistingSessions(this.app)) {
               return;
             }
@@ -720,11 +720,14 @@ describe("SessionTest", () => {
         config.sync._sessionStopPolicy = "immediately";
 
         {
+          //@ts-expect-error internal method
           expect(Realm.App.Sync._hasExistingSessions(this.app)).to.be.false;
           const realm = new Realm(config);
+          //@ts-expect-error internal method
           expect(Realm.App.Sync._hasExistingSessions(this.app)).to.be.true;
           realm.close();
         }
+        //@ts-expect-error internal method
         expect(Realm.App.Sync._hasExistingSessions(this.app)).to.be.false;
       });
     });
@@ -1048,7 +1051,6 @@ describe("SessionTest", () => {
           //@ts-expect-error internal field
           _sessionStopPolicy: "immediately", // Make it safe to delete files after realm.close()
           clientReset: {
-            //@ts-expect-error TYPEBUG: enum not exposed in realm namespace
             mode: "manual",
             onManual: (...args) => console.log("error", args),
           },

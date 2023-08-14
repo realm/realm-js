@@ -397,7 +397,7 @@ export class MongoDBCollection<T extends Document> {
 
   /** @internal */
   constructor(
-    /** @internal */ private user: User<unknown, unknown, unknown>,
+    /** @internal */ private user: User,
     public readonly serviceName: string,
     public readonly databaseName: string,
     private readonly collectionName: string,

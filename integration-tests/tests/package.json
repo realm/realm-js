@@ -12,11 +12,19 @@
 		"build": "wireit",
 		"start": "wireit",
 		"test": "wireit",
-		"lint": "eslint --ext .js,.ts .",
+		"lint": "wireit",
 		"coverage": "wireit",
 		"ci:coverage": "wireit"
 	},
 	"wireit": {
+    "lint": {
+      "command": "eslint --ext .js,.ts . && tsc --noEmit",
+      "dependencies": [
+        "../../packages/realm-network-transport:bundle",
+				"../../packages/realm:bundle",
+				"build-dependencies"
+      ]
+    },
 		"build": {
 			"command": "tsc",
 			"dependencies": [

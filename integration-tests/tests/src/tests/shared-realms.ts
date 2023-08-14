@@ -104,7 +104,7 @@ describe("SharedRealm operations", () => {
   });
 
   describe("List#unshift", () => {
-    type Person = { name: string; friends: List<Person> };
+    type Person = { name: string; friends: Realm.List<Person> };
     openRealmBeforeEach({
       schema: [{ name: "Person", primaryKey: "name", properties: { name: "string", friends: "Person[]" } }],
     });

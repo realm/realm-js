@@ -18,7 +18,9 @@
 
 import {
   AggregatePipelineStage,
+  AnyList,
   AnyRealmObject,
+  AnyResults,
   ApiKey,
   ApiKeyAuth,
   App,
@@ -878,11 +880,12 @@ export class Realm {
     return isAsymmetric(helpers.objectSchema) ? undefined : realmObject;
   }
 
+  //FIXME: any should not be used, but we are staying compatible with previous versions
   /**
    * Deletes the provided Realm object, or each one inside the provided collection.
    * @param subject - The Realm object to delete, or a collection containing multiple Realm objects to delete.
    */
-  delete(subject: AnyRealmObject | AnyRealmObject[] | List | Results): void {
+  delete(subject: AnyRealmObject | AnyRealmObject[] | AnyList | AnyResults | any): void {
     assert.inTransaction(this, "Can only delete objects within a transaction.");
     assert.object(subject, "subject");
     if (subject instanceof RealmObject) {
@@ -900,6 +903,7 @@ export class Realm {
     } else if (subject instanceof Results) {
       subject.internal.clear();
     } else if (Array.isArray(subject) || Symbol.iterator in subject) {
+      //@ts-expect-error the above check is good enough
       for (const object of subject) {
         assert.instanceOf(object, RealmObject);
         assert.isSameRealm(object[REALM].internal, this.internal, "Can't delete an object from another Realm");
@@ -1293,10 +1297,10 @@ function isEmbedded(objectSchema: binding.ObjectSchema): boolean {
 // We need these type aliases because of https://github.com/Swatinem/rollup-plugin-dts/issues/223
 // We cannot move this to a different file and rely on module declarations because of https://github.com/Swatinem/rollup-plugin-dts/issues/168
 
-type AppType<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType = DefaultObject> = App<
-  FunctionsFactoryType,
-  CustomDataType
->;
+type AppType<
+  FunctionsFactoryType extends DefaultFunctionsFactory = DefaultFunctionsFactory,
+  CustomDataType extends DefaultObject = DefaultObject,
+> = App<FunctionsFactoryType, CustomDataType>;
 type BSONType = typeof BSON;
 type ClientResetModeType = ClientResetMode;
 type CollectionType<
@@ -1336,10 +1340,10 @@ type TypesType = typeof Types;
 type UpdateModeType = UpdateMode;
 type UserStateType = UserState;
 type UserType<
-  FunctionsFactoryType = DefaultFunctionsFactory,
-  CustomDataType = DefaultObject,
-  UserProfileDataType = DefaultUserProfileData,
-> = User<FunctionsFactoryType, CustomDataType, UserProfileDataType>;
+  UserFunctionsType extends DefaultFunctionsFactory = DefaultFunctionsFactory,
+  UserCustomDataType extends DefaultObject = DefaultObject,
+  UserProfileDataType extends DefaultUserProfileData = DefaultUserProfileData,
+> = User<UserFunctionsType, UserCustomDataType, UserProfileDataType>;
 
 type BaseSubscriptionSetType = BaseSubscriptionSet;
 type LogLevelType = LogLevel;
@@ -1384,6 +1388,7 @@ type MongoDBCollectionType<T extends Document> = MongoDBCollection<T>;
 type MongoDBDatabaseType = MongoDBDatabase;
 type NewDocumentType<T extends Document> = NewDocument<T>;
 type OperationTypeType = OperationType;
+type OrderedCollectionType<T = unknown> = OrderedCollection<T>;
 type RenameEventType = RenameEvent;
 type ReplaceEventType<T extends Document> = ReplaceEvent<T>;
 type UpdateType = Update;
@@ -1463,6 +1468,7 @@ export declare namespace Realm {
     OpenRealmBehaviorConfiguration,
     OpenRealmBehaviorTypeType as OpenRealmBehaviorType,
     OpenRealmTimeOutBehaviorType as OpenRealmTimeOutBehavior,
+    OrderedCollectionType as OrderedCollection,
     PartitionSyncConfiguration,
     PrimaryKey,
     PrimitivePropertyTypeName,

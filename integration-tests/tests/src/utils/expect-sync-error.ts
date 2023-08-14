@@ -17,9 +17,8 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
+import { SyncError } from "realm";
 import { openRealm } from "./open-realm";
-
-type Error = Realm.SyncError | (Realm.ClientResetError & { message: string; code: number });
 
 /**
  * Open a new Realm and perform an action, expecting a sync error to occur. Will
@@ -36,7 +35,7 @@ export async function expectSyncError(
   config: Realm.Configuration,
   user: Realm.User,
   action: (realm: Realm) => void,
-  expectation: (error: Error) => void,
+  expectation: (error: SyncError) => void,
 ): Promise<void> {
   return new Promise((resolve, reject) => {
     if (!config.sync) {
@@ -48,7 +47,7 @@ export async function expectSyncError(
       ...config,
       sync: {
         ...config.sync,
-        onError(_, error: Error) {
+        onError(_, error: SyncError) {
           try {
             expectation(error);
             resolve();

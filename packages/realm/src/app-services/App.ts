@@ -20,6 +20,7 @@ import {
   AnyUser,
   Credentials,
   DefaultFunctionsFactory,
+  DefaultObject,
   EmailPasswordAuth,
   Listeners,
   Sync,
@@ -104,7 +105,10 @@ type AppListenerToken = binding.AppSubscriptionToken;
  * const app = new App({ id: "my-app-qwert" });
  * ```
  */
-export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType = Record<string, unknown>> {
+export class App<
+  FunctionsFactoryType extends DefaultFunctionsFactory = DefaultFunctionsFactory,
+  CustomDataType extends DefaultObject = DefaultObject,
+> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private static appById = new Map<string, binding.WeakRef<AnyApp>>();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

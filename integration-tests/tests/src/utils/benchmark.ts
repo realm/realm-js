@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import type { BenchmarkOpts } from "@thi.ng/bench";
+import type { BenchmarkOpts, BenchmarkResult } from "@thi.ng/bench";
 
 import { openRealmBefore } from "../hooks";
 
@@ -25,6 +25,10 @@ const { performanceMaxTime } = environment;
 const maxTimeMs = parseInt(typeof performanceMaxTime === "string" ? performanceMaxTime : "1000", 10);
 
 const DEFAULT_OPTIONS: Partial<BenchmarkOpts> = { output: false, iter: 1000, size: 1000 };
+
+type BenchmarkContext = {
+  result: BenchmarkResult;
+} & Mocha.Context;
 
 export function itPerforms(title: string, fn: () => void, options?: Partial<BenchmarkOpts>): void {
   it(title, async function (this: Partial<BenchmarkContext> & Mocha.Context) {

@@ -79,6 +79,7 @@ describe.skipIf(environment.missingServer, "User", () => {
     removeExistingUsers();
 
     it("login without username throws", async function (this: AppContext & RealmContext) {
+      //@ts-expect-error email cannot be undefined.
       expect(() => Realm.Credentials.emailPassword({ email: undefined, password: "password" })).throws(
         "Expected 'email' to be a string, got undefined",
       );
@@ -86,6 +87,7 @@ describe.skipIf(environment.missingServer, "User", () => {
 
     it("login without password throws", async function (this: AppContext & RealmContext) {
       const username = new Realm.BSON.UUID().toHexString();
+      //@ts-expect-error password cannot be undefined.
       expect(() => Realm.Credentials.emailPassword({ email: username, password: undefined })).throws(
         "Expected 'password' to be a string, got undefined",
       );

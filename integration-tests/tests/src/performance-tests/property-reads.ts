@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import Realm from "realm";
+import Realm, { ObjectSchema, PropertySchema } from "realm";
 
 import { describePerformance } from "../utils/benchmark";
 
@@ -47,10 +47,16 @@ function describeTypeRead({ type, value, schema = [] }: TestParameters) {
   const objectSchemaName = type + "Class";
   const propertyName = type + "Prop";
 
-  const defaultSchema = {
+  const defaultSchema: ObjectSchema = {
     name: objectSchemaName,
     properties: {
-      [propertyName]: type,
+      [propertyName]:
+        typeof type === "object"
+          ? type
+          : ({
+              type,
+              optional: true,
+            } as PropertySchema),
     },
   };
 

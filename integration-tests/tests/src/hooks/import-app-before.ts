@@ -40,7 +40,7 @@ export function importAppBefore(config: AppConfig | { config: AppConfig }, sdkCo
     return importAppBefore(config.config, sdkConfig);
   }
 
-  before(importAppBefore.name, async function (this: Partial<AppContext> & Mocha.Context) {
+  before(importAppBefore.name, async function (this: AppContext & Mocha.Context) {
     // Importing an app might take up to 5 minutes when the app has a MongoDB Atlas service enabled.
     this.longTimeout();
     if (this.app) {
@@ -50,7 +50,7 @@ export function importAppBefore(config: AppConfig | { config: AppConfig }, sdkCo
       this.app = new Realm.App({ id: appId, baseUrl, ...sdkConfig });
 
       // Extract the sync database name from the config
-      const databaseNames: string[] = config.services
+      const databaseNames: (string | undefined)[] = config.services
         .filter(([service]) => service.type === mongodbServiceType)
         .map(([service]) => {
           if ("sync" in service.config) {
@@ -60,7 +60,7 @@ export function importAppBefore(config: AppConfig | { config: AppConfig }, sdkCo
           }
         })
         .filter((name) => typeof name === "string");
-      if (databaseNames.length === 1) {
+      if (databaseNames.length === 1 && databaseNames[0]) {
         this.databaseName = databaseNames[0];
       } else if (databaseNames.length > 1) {
         throw new Error("Expected at most 1 database name in the config");

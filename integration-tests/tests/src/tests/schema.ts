@@ -86,16 +86,17 @@ describe("Realm schema", () => {
 
   describe("Schema validation", () => {
     it("throws on invalid indexed type", () => {
+      const TestPropSchema: Realm.ObjectSchema = {
+        name: "testProp",
+        properties: {
+          //@ts-expect-error indexed is an invalid value in this test.
+          content: { type: "string", indexed: 22 },
+        },
+      };
+
       expect(() => {
         new Realm({
-          schema: [
-            {
-              name: "testProp",
-              properties: {
-                content: { type: "string", indexed: 22 },
-              },
-            },
-          ],
+          schema: [TestPropSchema],
         });
       }).throws(
         "Invalid type declaration for property 'content' on 'testProp': Expected 'content.indexed' on 'testProp' to be a boolean or 'full-text'",
