@@ -253,9 +253,9 @@ jobs:
           - { os: linux, target: "test:ci", runner: ubuntu-latest, environment: node }
           - { os: linux, target: "test:ci:main", runner: ubuntu-latest, environment: electron }
           - { os: linux, target: "test:ci:renderer", runner: ubuntu-latest, environment: electron }
-          #- { os: windows, target: "test:ci", runner: windows-latest, environment: node}
-          #- { os: windows, target: "test:ci:main", runner: windows-latest, environment: electron }
-          #- { os: windows, target: "test:ci:renderer", runner: windows-latest, environment: electron }
+          - { os: windows, target: "test:ci", runner: windows-latest, environment: node}
+          - { os: windows, target: "test:ci:main", runner: windows-latest, environment: electron }
+          - { os: windows, target: "test:ci:renderer", runner: windows-latest, environment: electron }
           - { os: darwin, target: "test:ci:main", runner: macos-latest, environment: electron }
           - { os: darwin, target: "test:ci:renderer", runner: macos-latest, environment: electron }
           - { os: darwin, target: "test:ci", runner: macos-latest, environment: node }
