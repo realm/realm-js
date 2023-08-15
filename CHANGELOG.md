@@ -207,6 +207,8 @@ Nikolai Samorodov / [@zabutok](https://github.com/zabutok) for contributing the 
 * Fixed a bug that may have resulted in `Realm.Results` and `Realm.List` being in different orders on different devices. Moreover, some cases of the error message `Invalid prior_size` may have be fixed too. ([realm/realm-core#6191](https://github.com/realm/realm-core/issues/6191), since v10.15.0)
 * Exposed `Sync` as named export. [#5649](https://github.com/realm/realm-js/issues/5649)
 * Fixed the return value of `App.allUsers` to return a record with the `User.id` as the key and the `User` as the value. [#5671](https://github.com/realm/realm-js/issues/5671)
+* Running a query on `@keys` in a Dictionary would throw an exception. ([realm/realm-core#6831](https://github.com/realm/realm-core/issues/6831), since v12.0.0-rc.3)
+* Testing the size of a collection of links against zero would sometimes fail. ([realm/realm-core#6850](https://github.com/realm/realm-core/issues/6850), since v12.0.0-rc.3)
 
 ### Compatibility
 * React Native >= v0.71.4
@@ -214,10 +216,12 @@ Nikolai Samorodov / [@zabutok](https://github.com/zabutok) for contributing the 
 * File format: generates Realms with format v23 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-* Using Realm Core v13.15.1.
+* Using Realm Core v13.17.2.
 * Re-implemented the entire SDK leveraging code generation for the binding between NAPI / JSI and Realm Core.
 * Aligning analytics with other Realm SDKs. You can still disable the submission by setting environment variable `REALM_DISABLE_ANALYTICS`, and you can print out what is submitted by setting the environment variable `REALM_PRINT_ANALYTICS`.
 * Enabling sync session multiplexing by default in the SDK. ([#5831](https://github.com/realm/realm-js/pull/5831) & [#5912](https://github.com/realm/realm-js/pull/5912))
+* Fix types in integration tests and added type checking to the lint command.
+* Upgraded Realm Core from v13.17.1 to v13.17.2
 
 ## 12.0.0-rc.3 (2023-08-03)
 
