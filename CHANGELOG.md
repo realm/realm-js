@@ -9,7 +9,9 @@
 ### Fixed
 * Fix issues with `yarn` and the `bson` dependency. ([#6040](https://github.com/realm/realm-js/issues/6040))
 * Report helpful errors if the `realm` binary is missing and provide guidance in the `README.md`. ([#5981](https://github.com/realm/realm-js/issues/6040))
-
+* Running a query on `@keys` in a Dictionary would throw an exception. ([realm/realm-core#6831](https://github.com/realm/realm-core/issues/6831), since v12.0.0-rc.3)
+* Testing the size of a collection of links against zero would sometimes fail. ([realm/realm-core#6850](https://github.com/realm/realm-core/issues/6850), since v12.0.0-rc.3)
+ 
 ### Compatibility
 * React Native >= v0.71.4
 * Realm Studio v14.0.0.
@@ -17,9 +19,7 @@
 
 ### Internal
 * Fix types in integration tests and added type checking to the lint command.
-<!-- * Either mention core version or upgrade -->
-<!-- * Using Realm Core vX.Y.Z -->
-<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
+* Upgraded Realm Core from v13.17.1 to v13.17.2
 
 ## 12.0.0-rc.3 (2023-08-03)
 
