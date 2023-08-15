@@ -366,13 +366,16 @@ jobs:
 
       - name: Create Mocha Remote Context
         id: mocha-env
+        shell: bash
         run: echo "context=syncLogLevel=warn,longTimeout=${{ env.LONG_TIMEOUT }},realmBaseUrl=${{ steps.baas-config.outputs.url }}" >> $GITHUB_OUTPUT
 
       - name: Wait for the server to start
+        shell: bash
         run: npx wait-on ${{ steps.baas-config.outputs.url }}
 
       - name: Run ${{matrix.variant.target}} (${{ matrix.variant.os}} / ${{ matrix.variant.environment }})
         if: ${{ (matrix.variant.os != 'android') && (matrix.variant.os != 'ios') }}
+        shell: bash
         env:
           MOCHA_REMOTE_CONTEXT: ${{ steps.mocha-env.outputs.context }}
         # The non react native environments should not take so long
