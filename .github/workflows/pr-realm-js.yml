@@ -277,6 +277,7 @@ jobs:
 
       - name: Generate server configuration
         id: baas-config
+        shell: bash
         run:
           suffix=$(node -p 'Math.floor(Math.random()*Number.MAX_SAFE_INTEGER)');
           subdomain="realm-js-test-server-${{ github.run_id }}-${{ github.run_attempt }}-${suffix}";
@@ -284,6 +285,7 @@ jobs:
           echo "url=https://${subdomain}.ngrok.io" >> $GITHUB_OUTPUT;
 
       - name: Trigger the test server workflow to start the server
+        shell: bash
         run: gh workflow run test-server.yml -f ngrok_subdomain=${{ steps.baas-config.outputs.subdomain }} -f run_id=${{ github.run_id }} -f server_tag=${{ env.BAAS_TAG }}
         env:
           GH_TOKEN: ${{ github.token }}
