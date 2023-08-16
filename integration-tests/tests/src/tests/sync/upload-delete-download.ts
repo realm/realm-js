@@ -20,7 +20,7 @@ import { createPromiseHandle } from "../../utils/promise-handle";
 
 export function itUploadsDeletesAndDownloads(): void {
   it("uploads, cleans and downloads", async function (this: RealmContext) {
-    const handle = createPromiseHandle();
+    let handle = createPromiseHandle();
     if (!this.realm) {
       throw new Error("Expected a 'realm' on the mocha context");
     }
@@ -33,7 +33,7 @@ export function itUploadsDeletesAndDownloads(): void {
     await this.realm.syncSession.uploadAllLocalChanges();
     this.realm.syncSession.addConnectionNotification(async (newState) => {
       if (!that.realm.syncSession) {
-        handle.reject("Expected a 'syncSession' on the realm");
+        handle.reject(new Error("Expected a 'syncSession' on the realm"));
       }
 
       if (newState === "disconnected" /*Realm.App.Sync.ConnectionState.Disconnected*/) {
@@ -49,6 +49,7 @@ export function itUploadsDeletesAndDownloads(): void {
 
     this.realm.syncSession.pause();
     await handle;
+    handle = createPromiseHandle();
     that.realm.syncSession?.resume();
     await handle;
   });
