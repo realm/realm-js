@@ -16,11 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { createPromiseHandle } from "../../utils/promise-handle";
-
 export function itUploadsDeletesAndDownloads(): void {
   it("uploads, cleans and downloads", async function (this: RealmContext) {
-    let handle = createPromiseHandle();
     if (!this.realm) {
       throw new Error("Expected a 'realm' on the mocha context");
     }
@@ -28,29 +25,14 @@ export function itUploadsDeletesAndDownloads(): void {
       throw new Error("Expected a 'syncSession' on the realm");
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
-    const that = this;
     await this.realm.syncSession.uploadAllLocalChanges();
-    this.realm.syncSession.addConnectionNotification(async (newState) => {
-      if (!that.realm.syncSession) {
-        handle.reject(new Error("Expected a 'syncSession' on the realm"));
-      }
 
-      if (newState === "disconnected" /*Realm.App.Sync.ConnectionState.Disconnected*/) {
-        await that.closeRealm({ deleteFile: true, clearTestState: true, reopen: true });
-        handle.resolve();
-      }
+    await this.closeRealm({ deleteFile: true, clearTestState: true, reopen: true });
 
-      if (newState === "connected" /*Realm.App.Sync.ConnectionState.Connected*/) {
-        await that.realm.syncSession?.downloadAllServerChanges();
-        handle.resolve();
-      }
-    });
+    if (!this.realm.syncSession) {
+      throw new Error("Expected a 'syncSession' on the realm");
+    }
 
-    this.realm.syncSession.pause();
-    await handle;
-    handle = createPromiseHandle();
-    that.realm.syncSession?.resume();
-    await handle;
+    await this.realm.syncSession.downloadAllServerChanges();
   });
 }

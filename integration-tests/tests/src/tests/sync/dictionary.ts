@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 import { expect } from "chai";
-import Realm from "realm";
+import Realm, { SessionStopPolicy } from "realm";
 import { authenticateUserBefore, importAppBefore, openRealmBefore } from "../../hooks";
 import { expectDecimalEqual } from "../../utils/comparisons";
 import { itUploadsDeletesAndDownloads } from "./upload-delete-download";
@@ -46,7 +46,11 @@ describe.skipIf(environment.missingServer, "Type roundtrip of Dictionary object"
 
   openRealmBefore({
     schema: [DictionaryObject],
-    sync: { partitionValue: "dictionary-test" },
+    sync: {
+      partitionValue: "dictionary-test",
+      // @ts-expect-error this setting is not for users to consume
+      _sessionStopPolicy: SessionStopPolicy.Immediately,
+    },
   });
 
   const expectedObject = {
