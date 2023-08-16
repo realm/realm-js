@@ -26,9 +26,11 @@ export function itUploadsDeletesAndDownloads(): void {
     }
 
     await this.realm.syncSession.uploadAllLocalChanges();
+    this.realm.syncSession.pause();
 
     await this.closeRealm({ deleteFile: true, clearTestState: true, reopen: true });
 
+    this.realm.syncSession.resume();
     if (!this.realm.syncSession) {
       throw new Error("Expected a 'syncSession' on the realm");
     }
