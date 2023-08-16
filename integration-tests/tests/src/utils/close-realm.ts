@@ -41,10 +41,6 @@ export function closeRealm(realm: Realm, deleteRealmFile = true, clearTestState 
   const config = deriveConfig(realm);
   realm.close();
 
-  if (clearTestState) {
-    Realm.clearTestState();
-  }
-
   if (deleteRealmFile) {
     Realm.deleteFile(config);
   }
