@@ -1,4 +1,4 @@
-## vNext (TBD)
+## 12.0.0 (2023-08-17)
 NOTE: This combines all changelog entries for prereleases of v12.0.0.
 
 ### Breaking changes
