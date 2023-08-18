@@ -34,6 +34,22 @@ import {
 export type MigrationCallback = (oldRealm: Realm, newRealm: Realm) => void;
 
 /**
+ * This describes options used during schema migration.
+ */
+ export type MigrationOptions = {
+   /**
+    * A flag to indicate whether Realm should resolve
+    * embedded object constraints after migration. If this is `true` then all embedded objects
+    * without a parent will be deleted and every embedded object with every embedded object with
+    * one or more references to it will be duplicated so that every referencing object will hold
+    * its own copy of the embedded object.
+    * @default false
+    * @since 12.1.0
+    */
+   resolveEmbeddedConstraints?: boolean;
+ };
+
+/**
  * The options used to create a {@link Realm} instance.
  */
 export type BaseConfiguration = {
@@ -144,6 +160,7 @@ export type BaseConfiguration = {
    * @since 10.14.0
    */
   onFirstOpen?: (realm: Realm) => void;
+  migrationOptions?: MigrationOptions;
 };
 
 export type ConfigurationWithSync = BaseConfiguration & {
@@ -176,6 +193,7 @@ export function validateConfiguration(config: unknown): asserts config is Config
     disableFormatUpgrade,
     encryptionKey,
     onMigration,
+    automaticallyHandleBacklinksInMigration,
   } = config;
 
   if (path !== undefined) {
@@ -235,6 +253,12 @@ export function validateConfiguration(config: unknown): asserts config is Config
       `Expected 'encryptionKey' on realm configuration to be an ArrayBuffer, ArrayBufferView (Uint8Array), or Int8Array, got ${TypeAssertionError.deriveType(
         encryptionKey,
       )}.`,
+    );
+  }
+  if (automaticallyHandleBacklinksInMigration !== undefined) {
+    assert.boolean(
+      automaticallyHandleBacklinksInMigration,
+      "'automaticallyHandleBacklinksInMigration' on realm configuration",
     );
   }
 }

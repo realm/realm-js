@@ -521,4 +521,75 @@ describe("Migrations", () => {
       expect(objects[1].values[2]).equals(5);
     });
   });
+
+  describe("Migrate to embedded objects", () => {
+    const ParentSchema = {
+      name: "Parent",
+      primaryKey: "id",
+      properties: {
+        id: "int",
+        child: "Child",
+      },
+    };
+
+    const ChildSchema = {
+      name: "Child",
+      embedded: false,
+      properties: {
+        value: "int",
+      },
+    };
+
+    const EmbeddedChildSchema = {
+      name: "Child",
+      embedded: true,
+      properties: {
+        value: "int",
+      },
+    };
+
+    beforeEach(() => {
+      Realm.clearTestState();
+
+      const realm = new Realm({
+        schema: [ParentSchema, ChildSchema],
+        schemaVersion: 1,
+      });
+
+      realm.write(() => {
+        const child1 = realm.create(ChildSchema.name, { value: 11 });
+        const child2 = realm.create(ChildSchema.name, { value: 22 });
+        realm.create(ParentSchema.name, { id: 1, child: child1 });
+        realm.create(ParentSchema.name, { id: 2, child: child2 });
+      });
+
+      realm.write(() => {
+        realm.delete(realm.objectForPrimaryKey(ParentSchema.name, 1));
+      });
+
+      realm.close();
+    });
+
+    it("migration should delete orphan objects", () => {
+      const realm = new Realm({
+        schema: [ParentSchema, EmbeddedChildSchema],
+        schemaVersion: 2,
+        automaticallyHandleBacklinksInMigration: true,
+      });
+      expect(realm.objects(ParentSchema.name).length).equals(1);
+      realm.close();
+    });
+
+    it("orphan objects lead to exception", () => {
+      expect(() => {
+        new Realm({
+          schema: [ParentSchema, EmbeddedChildSchema],
+          schemaVersion: 2,
+          automaticallyHandleBacklinksInMigration: false,
+        });
+      }).to.throw(
+        `Cannot convert '${EmbeddedChildSchema.name}' to embedded: at least one object has no incoming links and would be deleted.`,
+      );
+    });
+  });
 });

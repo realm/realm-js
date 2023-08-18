@@ -550,6 +550,7 @@ export class Realm {
         encryptionKey: Realm.determineEncryptionKey(config.encryptionKey),
         syncConfig: config.sync ? toBindingSyncConfig(config.sync) : undefined,
         forceSyncHistory: config.openSyncedRealmLocally,
+        automaticallyHandleBacklinksInMigrations: config.automaticallyHandleBacklinksInMigration,
       },
     };
   }

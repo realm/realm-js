@@ -50,6 +50,7 @@ records:
       - migration_function
       - initialization_function
       - should_compact_on_launch_function
+      - automatically_handle_backlinks_in_migrations
 
   UserIdentity:
     fields:
