@@ -19,6 +19,7 @@
 <!-- * Either mention core version or upgrade -->
 <!-- * Using Realm Core vX.Y.Z -->
 <!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
+* Removed pre-v12 source code
 
 ## 12.0.0 (2023-08-17)
 NOTE: This combines all changelog entries for prereleases of v12.0.0.
