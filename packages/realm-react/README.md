@@ -234,6 +234,19 @@ const AppWrapper = () => {
   )
 }
 ```
+
+It may also be necessary to render multiple `RealmProvider`s of the same Realm in an app.  In this case, the flag `closeOnUnmount` can be set to `false`` to prevent both Realm instances from closing when one has been removed from the component tree.
+This is set to `true` by default.
+
+```tsx
+const AppWrapper = () => {
+  return (
+    <RealmProvider closeOnUnmount={false}>
+      <App/>
+    <RealmProvider>
+  )
+}
+```
 ### Dynamically Updating a Realm Configuration
 
 It is possible to update the realm configuration by setting props on the `RealmProvider`.  The `RealmProvider` takes props for all possible realm configuration properties.
