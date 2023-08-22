@@ -27,6 +27,7 @@ type PartialRealmConfiguration = Omit<Partial<Realm.Configuration>, "sync"> & {
 
 type ProviderProps = PartialRealmConfiguration & {
   fallback?: React.ComponentType<unknown> | React.ReactElement | null | undefined;
+  closeOnUnmount?: boolean;
   realmRef?: React.MutableRefObject<Realm | null>;
   children: React.ReactNode;
 };
@@ -65,7 +66,7 @@ export function createRealmProvider(
    * For example, to override the `path` config value, use a prop named `path`,
    * e.g. `path="newPath.realm"`
    */
-  return ({ children, fallback: Fallback, realmRef, ...restProps }) => {
+  return ({ children, fallback: Fallback, closeOnUnmount = true, realmRef, ...restProps }) => {
     const [realm, setRealm] = useState<Realm | null>(() =>
       realmConfig.sync === undefined && restProps.sync === undefined
         ? new Realm(mergeRealmConfiguration(realmConfig, restProps))
@@ -129,11 +130,13 @@ export function createRealmProvider(
 
       return () => {
         if (realm) {
-          realm.close();
+          if (closeOnUnmount) {
+            realm.close();
+          }
           setRealm(null);
         }
       };
-    }, [configVersion, realm, setRealm]);
+    }, [configVersion, realm, setRealm, closeOnUnmount]);
 
     if (!realm) {
       if (typeof Fallback === "function") {

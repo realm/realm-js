@@ -68,6 +68,19 @@ describe("RealmProvider", () => {
     expect(realm.isClosed).toBe(true);
   });
 
+  it("returns the configured realm with useRealm and stays open if flagged", async () => {
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <RealmProvider closeOnUnmount={false}>{children}</RealmProvider>
+    );
+    const { result, unmount } = renderHook(() => useRealm(), { wrapper });
+    await waitFor(() => expect(result.current).not.toBe(null));
+    const realm = result.current;
+    expect(realm).not.toBe(null);
+    expect(realm.schema[0].name).toBe("dog");
+    unmount();
+    expect(realm.isClosed).toBe(false);
+  });
+
   it("will override the the configuration provided in createRealmContext", async () => {
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <RealmProvider schema={[catSchema]}>{children}</RealmProvider>
