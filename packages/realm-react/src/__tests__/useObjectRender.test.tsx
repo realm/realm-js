@@ -392,16 +392,33 @@ describe("useObject: rendering objects with a Realm.List property", () => {
     it("renders a different list if the target primary key changes", async () => {
       const { rerender, getByTestId } = await setupTest();
 
-      const newParentObjectId = new Realm.BSON.ObjectId();
+      const secondListId = new Realm.BSON.ObjectId();
 
       testRealm.write(() => {
-        testRealm.create(List, { id: newParentObjectId, title: "Other List", items: [] });
+        testRealm.create(List, { id: secondListId, title: "Second List", items: [] });
       });
 
-      rerender(<App targetPrimaryKey={newParentObjectId} />);
+      rerender(<App targetPrimaryKey={secondListId} />);
 
-      const titleElement = getByTestId(`listTitle${newParentObjectId.toHexString()}`);
-      expect(titleElement).toHaveTextContent("Other List");
+      let titleElement = getByTestId(`listTitle${secondListId.toHexString()}`);
+      expect(titleElement).toHaveTextContent("Second List");
+
+      const thirdListId = new Realm.BSON.ObjectId();
+
+      testRealm.write(() => {
+        testRealm.create(List, { id: thirdListId, title: "Third List", items: [] });
+      });
+
+      rerender(<App targetPrimaryKey={thirdListId} />);
+
+      titleElement = getByTestId(`listTitle${thirdListId.toHexString()}`);
+      expect(titleElement).toHaveTextContent("Third List");
+
+      // Render the old id
+      rerender(<App targetPrimaryKey={secondListId} />);
+
+      titleElement = getByTestId(`listTitle${secondListId.toHexString()}`);
+      expect(titleElement).toHaveTextContent("Second List");
     });
     it("will return the same reference when state changes", async () => {
       const { getByTestId } = await setupTest();
