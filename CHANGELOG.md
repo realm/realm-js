@@ -4,7 +4,7 @@
 * None
 
 ### Enhancements
-* Added configuration option `automaticallyHandleBacklinksInMigration` to support for automatic resolution of embedded object constraints during migration. ([#6073](https://github.com/realm/realm-js/issues/6073))
+* Added configuration option `autoResolveEmbeddedConstraintsInMigration` to support for automatic resolution of embedded object constraints during migration. ([#6073](https://github.com/realm/realm-js/issues/6073))
 
 ### Fixed
 * Fixed toolchain on Linux. On older Linux installations, the error `GLIBC_2.34' not found (required by /home/user/MyProject/node_modules/realm/generated/ts/realm.node)` could be observed. ([#6082](https://github.com/realm/realm-js/issues/6082), since v12.0.0)
