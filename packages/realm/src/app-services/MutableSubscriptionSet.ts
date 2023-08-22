@@ -67,6 +67,7 @@ export type SubscriptionOptions = {
   throwOnUpdate?: boolean;
   /**
    * Specifies how to wait or not wait for subscribed objects to be downloaded.
+   * @default WaitForSync.FirstTime
    */
   behavior?: WaitForSync;
   /**
