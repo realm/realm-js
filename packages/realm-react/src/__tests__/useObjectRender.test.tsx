@@ -417,6 +417,7 @@ describe("useObject: rendering objects with a Realm.List property", () => {
       // Render the old id
       rerender(<App targetPrimaryKey={secondListId} />);
 
+      await waitFor(() => getByTestId(`listTitle${secondListId.toHexString()}`));
       titleElement = getByTestId(`listTitle${secondListId.toHexString()}`);
       expect(titleElement).toHaveTextContent("Second List");
     });
