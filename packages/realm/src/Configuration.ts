@@ -34,15 +34,15 @@ import {
 export type MigrationCallback = (oldRealm: Realm, newRealm: Realm) => void;
 
 /**
- * This describes the different options used to create a {@link Realm} instance.
+ * The options used to create a {@link Realm} instance.
  */
 export type BaseConfiguration = {
   /**
    * The path to the file where the Realm database should be stored. For synced Realms, a relative path
-   * is used together with app id and user id in order to avoid collisions with other apps or users.
+   * is used together with the {@link AppConfiguration.id | app ID} and {@link User.id | user ID} in order to avoid collisions with other apps or users.
    * An absolute path is left untouched and on some platforms (iOS and Android) the app might not have
    * permissions to create or open the file - permissions are not validated.
-   * If a relative path is specified, it is relative to @link{Realm.App.Configuration.baseFilePath}.
+   * If a relative path is specified, it is relative to {@link AppConfiguration.baseFilePath}.
    * @since 0.10.0
    */
   path?: string;
@@ -53,7 +53,7 @@ export type BaseConfiguration = {
    */
   schema?: (RealmObjectConstructor<AnyRealmObject> | ObjectSchema)[];
   /**
-   * **Required** (and must be incremented) after changing the `schema`.
+   * If changing the `schema`, this field is **required** and must be incremented.
    * @since 0.11.0
    */
   schemaVersion?: number;
@@ -92,9 +92,9 @@ export type BaseConfiguration = {
    *
    * It returns `true` to indicate that an attempt to compact the file should be made. The compaction
    * will be skipped if another process is accessing it.
-   * @param totalBytes - The total file size (data + free space)
-   * @param usedBytes - The total bytes used by data in the file
-   * @returns `true` if Realm file should be compacted before opening
+   * @param totalBytes - The total file size (data + free space).
+   * @param usedBytes - The total bytes used by data in the file.
+   * @returns `true` if Realm file should be compacted before opening.
    * @since 2.9.0
    * @example
    * // compact large files (>100 MB) with more than half is free space
@@ -139,7 +139,7 @@ export type BaseConfiguration = {
   /**
    * The function called when opening a Realm for the first time. The function can populate the Realm
    * prior to opening it. When calling the callback, the Realm will be in a write transaction.
-   * @param realm - The newly created Realm
+   * @param realm - The newly created Realm.
    * @since 10.14.0
    */
   onFirstOpen?: (realm: Realm) => void;

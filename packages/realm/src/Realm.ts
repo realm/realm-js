@@ -232,7 +232,7 @@ type InternalConfig = {
 };
 
 /**
- * A Realm instance represents a Realm database.
+ * The Realm database.
  */
 export class Realm {
   public static App = App;
