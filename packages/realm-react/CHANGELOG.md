@@ -7,8 +7,7 @@
 * None
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None
+* Fix for `useObject`` not updating when using previously used primary key. ([#5620](https://github.com/realm/realm-js/issues/5620), since v0.4.2. Thanks @RS1-Project)
 
 ### Compatibility
 * React Native >= v0.71.4
