@@ -4,20 +4,16 @@
 * None
 
 ### Enhancements
-* None
+* Add flag to keep realm open on unmount of `RealmProvider`. ([#6023](https://github.com/realm/realm-js/issues/6023))
 
 ### Fixed
 * Fix for `useObject`` not updating when using previously used primary key. ([#5620](https://github.com/realm/realm-js/issues/5620), since v0.4.2. Thanks @RS1-Project)
 
 ### Compatibility
-* React Native >= v0.71.4
-* Realm Studio v14.0.0.
-* File format: generates Realms with format v23 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
+* Realm >= 11.0.0
 
 ### Internal
-<!-- * Either mention core version or upgrade -->
-<!-- * Using Realm Core vX.Y.Z -->
-<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
+* Added more documentation to provider params.
 
 ## 0.5.2 (2023-08-09)
 

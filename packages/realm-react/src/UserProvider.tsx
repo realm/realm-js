@@ -26,7 +26,10 @@ import { useApp } from "./AppProvider";
 export const UserContext = createContext<Realm.User | null>(null);
 
 type UserProviderProps = {
-  // Optional fallback component to render when unauthenticated
+  /**
+   * The fallback component to render if there is no authorized user.  This can be used
+   * to render a login screen or another component which will log the user in.
+   */
   fallback?: React.ComponentType<unknown> | React.ReactElement | null | undefined;
   children: React.ReactNode;
 };
