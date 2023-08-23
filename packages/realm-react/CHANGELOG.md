@@ -7,7 +7,7 @@
 * Add flag to keep realm open on unmount of `RealmProvider`. ([#6023](https://github.com/realm/realm-js/issues/6023))
 
 ### Fixed
-* Fix for `useObject`` not updating when using previously used primary key. ([#5620](https://github.com/realm/realm-js/issues/5620), since v0.4.2. Thanks @RS1-Project)
+* Fix for `useObject` not updating when using previously used primary key. ([#5620](https://github.com/realm/realm-js/issues/5620), since v0.4.2. Thanks @RS1-Project)
 
 ### Compatibility
 * Realm >= 11.0.0
