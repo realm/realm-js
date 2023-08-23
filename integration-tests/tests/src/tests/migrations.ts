@@ -579,7 +579,9 @@ describe("Migrations", () => {
       const realm = new Realm({
         schema: [ParentSchema, EmbeddedChildSchema],
         schemaVersion: 2,
-        autoResolveEmbeddedConstraintsInMigration: true,
+        migrationOptions: {
+          resolveEmbeddedConstraints: true,
+        },
       });
       expect(realm.objects(ParentSchema.name).length).equals(1);
       realm.close();
@@ -590,7 +592,9 @@ describe("Migrations", () => {
         new Realm({
           schema: [ParentSchema, EmbeddedChildSchema],
           schemaVersion: 2,
-          autoResolveEmbeddedConstraintsInMigration: false,
+          migrationOptions: {
+            resolveEmbeddedConstraints: false,
+          },
         });
       }).to.throw(
         `Cannot convert '${EmbeddedChildSchema.name}' to embedded: at least one object has no incoming links and would be deleted.`,
@@ -665,7 +669,9 @@ describe("Migrations", () => {
       const realm = new Realm({
         schema: [ParentSchema, EmbeddedChildSchema],
         schemaVersion: 2,
-        autoResolveEmbeddedConstraintsInMigration: true,
+        migrationOptions: {
+          resolveEmbeddedConstraints: true,
+        },
       });
       const parents = realm.objects<Parent>(ParentSchema.name);
       expect(parents.length).equals(2);
@@ -683,7 +689,9 @@ describe("Migrations", () => {
         new Realm({
           schema: [ParentSchema, EmbeddedChildSchema],
           schemaVersion: 2,
-          autoResolveEmbeddedConstraintsInMigration: false,
+          migrationOptions: {
+            resolveEmbeddedConstraints: false,
+          },
         });
       }).to.throw(
         `Cannot convert '${EmbeddedChildSchema.name}' to embedded: at least one object has no incoming links and would be deleted.`,

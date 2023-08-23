@@ -193,7 +193,7 @@ export function validateConfiguration(config: unknown): asserts config is Config
     disableFormatUpgrade,
     encryptionKey,
     onMigration,
-    autoResolveEmbeddedConstraintsInMigration,
+    migrationOptions,
   } = config;
 
   if (path !== undefined) {
@@ -224,6 +224,7 @@ export function validateConfiguration(config: unknown): asserts config is Config
   }
   if (sync !== undefined) {
     assert(!onMigration, "The realm configuration options 'onMigration' and 'sync' cannot both be defined.");
+    assert(!migrationOptions, "The realm configuration options 'migrationOptions' and 'sync' cannot both be defined.")
     assert(inMemory === undefined, "The realm configuration options 'inMemory' and 'sync' cannot both be defined.");
     assert(
       deleteRealmIfMigrationNeeded === undefined,
@@ -255,10 +256,16 @@ export function validateConfiguration(config: unknown): asserts config is Config
       )}.`,
     );
   }
-  if (autoResolveEmbeddedConstraintsInMigration !== undefined) {
-    assert.boolean(
-      autoResolveEmbeddedConstraintsInMigration,
-      "'autoResolveEmbeddedConstraintsInMigration' on realm configuration",
-    );
+  if (migrationOptions) {
+    validateMigrationOptions(migrationOptions);
+  }
+}
+
+function validateMigrationOptions(options: unknown): asserts options is MigrationOptions {
+  assert.object(options, "'migrationOptions'", { allowArrays: false });
+  const { resolveEmbeddedConstraints } = options;
+
+  if (resolveEmbeddedConstraints !== undefined) {
+    assert.boolean(resolveEmbeddedConstraints, "'resolveEmbeddedConstraints' on 'migrationOptions'");
   }
 }
