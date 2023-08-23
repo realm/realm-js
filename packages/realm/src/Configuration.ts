@@ -33,20 +33,115 @@ import {
  */
 export type MigrationCallback = (oldRealm: Realm, newRealm: Realm) => void;
 
+/**
+ * This describes the different options used to create a {@link Realm} instance.
+ */
 export type BaseConfiguration = {
+  /**
+   * The path to the file where the Realm database should be stored. For synced Realms, a relative path
+   * is used together with app id and user id in order to avoid collisions with other apps or users.
+   * An absolute path is left untouched and on some platforms (iOS and Android) the app might not have
+   * permissions to create or open the file - permissions are not validated.
+   * If a relative path is specified, it is relative to @link{Realm.App.Configuration.baseFilePath}.
+   * @since 0.10.0
+   */
   path?: string;
+  /**
+   * Specifies all the object types in this Realm. **Required** when first creating a Realm at this `path`.
+   * If omitted, the schema will be read from the existing Realm file.
+   * @since 0.10.0
+   */
   schema?: (RealmObjectConstructor<AnyRealmObject> | ObjectSchema)[];
+  /**
+   * **Required** (and must be incremented) after changing the `schema`.
+   * @since 0.11.0
+   */
   schemaVersion?: number;
+  /**
+   * Specifies if this Realm should be opened in-memory. This
+   * still requires a path (can be the default path) to identify the Realm so other processes can
+   * open the same Realm. The file will also be used as swap space if the Realm becomes bigger than
+   * what fits in memory, but it is not persistent and will be removed when the last instance
+   * is closed. This option is incompatible with option `sync`.
+   * @default false
+   * @since 0.10.0
+   */
   inMemory?: boolean;
+  /**
+   * Specifies if this Realm should be opened as read-only.
+   * @default false
+   * @since 0.10.0
+   */
   readOnly?: boolean;
+  /**
+   * Opening a Realm creates a number of FIFO special files in order to
+   * coordinate access to the Realm across threads and processes. If the Realm file is stored in a location
+   * that does not allow the creation of FIFO special files (e.g. FAT32 file systems), then the Realm cannot be opened.
+   * In that case Realm needs a different location to store these files and this property defines that location.
+   * The FIFO special files are very lightweight and the main Realm file will still be stored in the location defined
+   * by the `path` property. This property is ignored if the directory defined by `path` allow FIFO special files.
+   * @since 2.23.0
+   */
   fifoFilesFallbackPath?: string;
   sync?: SyncConfiguration;
   /** @internal */ openSyncedRealmLocally?: true;
+  /**
+   * The function called when opening a Realm for the first time during the life of
+   * a process to determine if it should be compacted before being returned to the user.
+   *
+   * It returns `true` to indicate that an attempt to compact the file should be made. The compaction
+   * will be skipped if another process is accessing it.
+   * @param totalBytes - The total file size (data + free space)
+   * @param usedBytes - The total bytes used by data in the file
+   * @returns `true` if Realm file should be compacted before opening
+   * @since 2.9.0
+   * @example
+   * // compact large files (>100 MB) with more than half is free space
+   * shouldCompact: (totalBytes, usedBytes) => {
+   *   const oneHundredMB = 100 * 1024 * 1024; // 100 MB
+   *   return totalBytes > oneHundredMB && usedBytes / totalBytes < 0.5;
+   * }
+   */
   shouldCompact?: (totalBytes: number, usedBytes: number) => boolean;
+  /**
+   * Specifies if this Realm should be deleted if a migration is needed.
+   * The option is incompatible with option `sync`.
+   * @default: false
+   * @since 1.13.0
+   */
   deleteRealmIfMigrationNeeded?: boolean;
+  /**
+   * Specifies if this Realm's file format should
+   * be automatically upgraded if it was created with an older version of the Realm library.
+   * If set to `true` and a file format upgrade is required, an error will be thrown instead.
+   * @default false
+   * @since 2.1.0
+   */
   disableFormatUpgrade?: boolean;
+  /**
+   * The 512-bit (64-byte) encryption key used to encrypt and decrypt all data in the Realm.
+   * @since 0.11.1
+   */
   encryptionKey?: ArrayBuffer | ArrayBufferView | Int8Array;
+  /**
+   * The function to run if a migration is needed.
+   *
+   * This function should provide all the logic for converting data models from previous schemas
+   * to the new schema. This option is incompatible with option `sync`.
+   *
+   * The function takes two arguments:
+   *   - `oldRealm` - The Realm before migration is performed.
+   *   - `newRealm` - The Realm that uses the latest `schema`, which should be modified as necessary.
+   * @since 0.12.0
+   */
   onMigration?: MigrationCallback;
+  /**
+   * The function called when opening a Realm for the first time. The function can populate the Realm
+   * prior to opening it. When calling the callback, the Realm will be in a write transaction.
+   * @param realm - The newly created Realm
+   * @since 10.14.0
+   */
+  onFirstOpen?: (realm: Realm) => void;
 };
 
 export type ConfigurationWithSync = BaseConfiguration & {
