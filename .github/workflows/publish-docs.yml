@@ -8,8 +8,7 @@
 name: Publish Docs
 on:
   push:
-    tags:
-      - (realm-react|realm-web)?-?v([0-9]+\.[0-9]+\.[0-9]+(-\S+)?)
+    tags: ['realm-react-v[0-9]+.[0-9]+.[0-9]+*', 'realm-web-v[0-9]+.[0-9]+.[0-9]+*', 'v[0-9]+.[0-9]+.[0-9]+*']
   workflow_dispatch:
     inputs:
       tag:
