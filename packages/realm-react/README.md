@@ -235,7 +235,7 @@ const AppWrapper = () => {
 }
 ```
 
-It may also be necessary to render multiple `RealmProvider`s of the same Realm in an app.  In this case, the flag `closeOnUnmount` can be set to `false`` to prevent both Realm instances from closing when one has been removed from the component tree.
+It may also be necessary to render multiple `RealmProvider`s of the same Realm in an app. In this case, the flag `closeOnUnmount` can be set to `false`` to prevent both Realm instances from closing when one has been removed from the component tree.
 This is set to `true` by default.
 
 ```tsx

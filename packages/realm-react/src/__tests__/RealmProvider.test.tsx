@@ -75,7 +75,6 @@ describe("RealmProvider", () => {
     const { result, unmount } = renderHook(() => useRealm(), { wrapper });
     await waitFor(() => expect(result.current).not.toBe(null));
     const realm = result.current;
-    expect(realm).not.toBe(null);
     expect(realm.schema[0].name).toBe("dog");
     unmount();
     expect(realm.isClosed).toBe(false);

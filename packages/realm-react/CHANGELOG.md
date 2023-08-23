@@ -4,7 +4,7 @@
 * None
 
 ### Enhancements
-* Add flag to keep realm open on unmount of RealmProvider. ([#6023](https://github.com/realm/realm-js/issues/6023))
+* Add flag to keep realm open on unmount of `RealmProvider`. ([#6023](https://github.com/realm/realm-js/issues/6023))
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
