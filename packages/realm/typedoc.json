@@ -7,5 +7,6 @@
   "media": "../../media",
   "name": "Realm JavaScript",
   "includeVersion": true,
-  "sourceLinkTemplate": "https://github.com/realm/realm-js/blob/{gitRevision}/{path}#L{line}"
+  "sourceLinkTemplate": "https://github.com/realm/realm-js/blob/{gitRevision}/{path}#L{line}",
+  "plugin": ["typedoc-plugin-missing-exports"]
 }

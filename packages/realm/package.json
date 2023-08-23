@@ -299,7 +299,8 @@
     "react-native": "0.71.7",
     "rollup-plugin-dts": "^5.0.0",
     "rollup-plugin-istanbul": "^4.0.0",
-    "tsm": "^2.2.2"
+    "tsm": "^2.2.2",
+    "typedoc-plugin-missing-exports": "^2.0.1"
   },
   "repository": {
     "type": "git",
