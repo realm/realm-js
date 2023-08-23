@@ -19,7 +19,9 @@
 <!-- * Either mention core version or upgrade -->
 <!-- * Using Realm Core vX.Y.Z -->
 <!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
-* Removed pre-v12 source code
+* Removed pre-v12 source code.
+* Added API documentation for `Realm.Configuration`. ([#6081](https://github.com/realm/realm-js/issues/6081), since v12.0.0)
+* Added [typedoc-plugin-missing-exports](https://www.npmjs.com/package/typedoc-plugin-missing-exports) to resolved missing exports.
 
 ## 12.0.0 (2023-08-17)
 NOTE: This combines all changelog entries for prereleases of v12.0.0.
