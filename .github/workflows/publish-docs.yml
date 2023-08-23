@@ -7,8 +7,8 @@
 
 name: Publish Docs
 on:
-  push:
-    tags: ['realm-react-v[0-9]+.[0-9]+.[0-9]+*', 'realm-web-v[0-9]+.[0-9]+.[0-9]+*', 'v[0-9]+.[0-9]+.[0-9]+*']
+  release:
+    types: [published, edited] # edited is added here in case we want to republish the docs
   workflow_dispatch:
     inputs:
       tag:
