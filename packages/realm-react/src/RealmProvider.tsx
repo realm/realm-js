@@ -26,8 +26,19 @@ type PartialRealmConfiguration = Omit<Partial<Realm.Configuration>, "sync"> & {
 };
 
 type ProviderProps = PartialRealmConfiguration & {
+  /**
+   * The fallback component to render if the Realm is not opened.
+   */
   fallback?: React.ComponentType<unknown> | React.ReactElement | null | undefined;
+  /**
+   * If false, Realm will not be closed when the component unmounts.
+   * @default true
+   */
   closeOnUnmount?: boolean;
+  /**
+   * A ref to the Realm instance. This is useful if you need to access the Realm
+   * instance outside of a component that uses the Realm hooks.
+   */
   realmRef?: React.MutableRefObject<Realm | null>;
   children: React.ReactNode;
 };
