@@ -10,8 +10,6 @@ on:
   release:
     types:
       - published
-      # edited is added here in case we want to republish the docs
-      - edited
   workflow_dispatch:
     inputs:
       tag:
