@@ -84,7 +84,8 @@ export type BaseConfiguration = {
    */
   fifoFilesFallbackPath?: string;
   sync?: SyncConfiguration;
-  /** @internal */ openSyncedRealmLocally?: true;
+  /** @internal */ 
+  openSyncedRealmLocally?: true;
   /**
    * The function called when opening a Realm for the first time during the life of
    * a process to determine if it should be compacted before being returned to the user.
