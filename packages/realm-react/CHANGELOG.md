@@ -1,7 +1,4 @@
-## vNext (TBD)
-
-### Deprecations
-* None
+## 0.6.0 (2023-08-23)
 
 ### Enhancements
 * Add flag to keep realm open on unmount of `RealmProvider`. ([#6023](https://github.com/realm/realm-js/issues/6023))
