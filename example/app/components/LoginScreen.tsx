@@ -43,19 +43,17 @@ export const LoginScreen = () => {
           placeholder="Password"
         />
       </View>
-
-      {result?.error?.operation === AuthOperationName.LogIn && (
+      {result?.error?.operation ===
+        AuthOperationName.LogInWithEmailPassword && (
         <Text style={[styles.error]}>
           There was an error logging in, please try again{' '}
         </Text>
       )}
-
       {result?.error?.operation === AuthOperationName.Register && (
         <Text style={[styles.error]}>
           There was an error registering, please try again
         </Text>
       )}
-
       <View style={styles.buttons}>
         <Pressable
           onPress={() => logInWithEmailPassword({email, password})}
