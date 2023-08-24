@@ -224,7 +224,7 @@ export function validateConfiguration(config: unknown): asserts config is Config
   }
   if (sync !== undefined) {
     assert(!onMigration, "The realm configuration options 'onMigration' and 'sync' cannot both be defined.");
-    assert(!migrationOptions, "The realm configuration options 'migrationOptions' and 'sync' cannot both be defined.")
+    assert(!migrationOptions, "The realm configuration options 'migrationOptions' and 'sync' cannot both be defined.");
     assert(inMemory === undefined, "The realm configuration options 'inMemory' and 'sync' cannot both be defined.");
     assert(
       deleteRealmIfMigrationNeeded === undefined,
