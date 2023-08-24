@@ -53,7 +53,7 @@ export type BaseConfiguration = {
    */
   schema?: (RealmObjectConstructor<AnyRealmObject> | ObjectSchema)[];
   /**
-   * If changing the `schema`, this field is **required** and must be incremented. This only 
+   * If changing the `schema`, this field is **required** and must be incremented. This only
    * applies to local Realms.
    * @since 0.11.0
    */
@@ -85,7 +85,7 @@ export type BaseConfiguration = {
    */
   fifoFilesFallbackPath?: string;
   sync?: SyncConfiguration;
-  /** @internal */ 
+  /** @internal */
   openSyncedRealmLocally?: true;
   /**
    * The function called when opening a Realm for the first time during the life of
