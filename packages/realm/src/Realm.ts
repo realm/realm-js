@@ -231,6 +231,9 @@ type InternalConfig = {
   realmExists?: boolean;
 };
 
+/**
+ * The Realm database.
+ */
 export class Realm {
   public static App = App;
   public static Auth = { EmailPasswordAuth, ApiKeyAuth };
@@ -279,7 +282,7 @@ export class Realm {
    * Sets the log level.
    * @param level - The log level to be used by the logger. The default value is `info`.
    * @note The log level can be changed during the lifetime of the application.
-   * @since v12.0.0
+   * @since 12.0.0
    */
   static setLogLevel(level: LogLevel) {
     const bindingLoggerLevel = toBindingLoggerLevel(level);
@@ -290,7 +293,7 @@ export class Realm {
    * Sets the logger callback.
    * @param loggerCallback - The callback invoked by the logger. The default callback uses `console.log`, `console.warn` and `console.error`, depending on the level of the message.
    * @note The logger callback needs to be setup before opening the first realm.
-   * @since v12.0.0
+   * @since 12.0.0
    */
   static setLogger(loggerCallback: LoggerCallback) {
     const logger = binding.Helpers.makeLogger((level, message) => {
