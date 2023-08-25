@@ -1,6 +1,6 @@
 # Reference App Using RealmJS in Node.js
 
-A skeleton app to be used as a reference for how to use the [Realm Node.js SDK](https://www.mongodb.com/docs/realm/sdk/node/) specifically around detecting various changes in e.g. connection state, user state, and sync errors.
+A skeleton app to be used as a reference for how to use the [Realm Node.js SDK](https://www.mongodb.com/docs/realm/sdk/node/) specifically around detecting various changes in e.g. connection state, user state, and sync errors, in order to better guide developers.
 
 ## Relevant Files
 
@@ -12,35 +12,39 @@ A skeleton app to be used as a reference for how to use the [Realm Node.js SDK](
 │   ├── models              (Simplified data model)
 │   │   ├── Kiosk.ts
 │   │   ├── Product.ts
-│   │   └──Store.ts
+│   │   └── Store.ts
 │   ├── index.ts            (Entry point)
 │   ├── logger.ts           (Replaceable logger)
-│   ├── realm-auth.ts       (Main Realm usage examples)
-│   └── realm-query.ts      (Data manipulation helper)
+│   ├── realm-auth.ts       (Main Realm auth usage examples)
+│   └── realm-query.ts      (Data access/manipulation helper)
 └── other..
 ```
 
-Main file for showcasing Realm usage:
-* `src/realm-auth.ts`
+Main file for showcasing Realm usage pertaining to connection and error handling:
+* [src/realm-auth.ts](./src/realm-auth.ts)
 
 ## Scope
 
 The app addresses the following points:
+
 * Listening when a user is logged out or removed.
 * Listening when a user's tokens are refreshed.
 * Listening when the underlying sync session is connecting, gets connected, gets disconnected, and fails to reconnect.
 * Listening for sync errors.
 * Listening for pre and post client resets.
 * Explains that the refresh of access tokens is handled automatically by the SDK.
-  * [Refresh token expiration time](https://www.mongodb.com/docs/atlas/app-services/users/sessions/#configure-refresh-token-expiration) can be altered in the Atlas UI and then observed on the client how listeners are fired.
-  * Login is NOT currently shown with JWT, but is instead using email/password. However, with the above point, testing refresh token expiration is still possible.
+  * [Refresh token expiration time](https://www.mongodb.com/docs/atlas/app-services/users/sessions/#configure-refresh-token-expiration) can be altered in the Atlas UI, whereafter you can observe the relevant client listeners being fired.
+  * Login is shown using email/password. With the above bullet point, testing refresh token expiration is still possible in this case despite not using JWT as the login method.
 * Generally providing best practices for the surrounding Realm usage such as opening and closing of realms, configurations, adding subscriptions, etc.
 * Includes useful comments around the use of Realm.
-* An over-simplified data model is used. This app also writes data to confirm the functionality.
+* Note that an over-simplified data model is used. This app also writes data to confirm the functionality.
 
-This reference app thus focuses on showing where and when to perform logging and handle specific scenarios based on observed changes in order to better guide developers on how to proceed.
+### Summary
 
-**Realm Details:**
+This reference app thus focuses on showing where and when you can (a) perform logging and (b) handle specific scenarios based on observed changes.
+
+### Realm Details
+
 * RealmJS version: ^12.0.0
 * Device Sync type: Flexible
 
