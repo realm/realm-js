@@ -72,10 +72,10 @@ After running the client and seeing the available collections in Atlas, [set rea
 npm i
 ```
 
-### Run the Node.js code
+### Run the app
 
 1. Copy your [Atlas App ID](https://www.mongodb.com/docs/atlas/app-services/reference/find-your-project-or-app-id/#std-label-find-your-app-id) from the App Services UI.
-2. Paste the copied ID as the value of the existing variable `ATLAS_APP_ID` in `src/atlas-app-services/config.ts`:
+2. Paste the copied ID as the value of the existing variable `ATLAS_APP_ID` in [src/atlas-app-services/config.ts](./src/atlas-app-services/config.ts):
 ```js
 export const ATLAS_APP_ID = "YOUR_APP_ID";
 ```
