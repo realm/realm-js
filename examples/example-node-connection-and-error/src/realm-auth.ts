@@ -34,8 +34,10 @@ function resetUser(): void {
   originalAccessToken = null;
 }
 
-// The user listener will be invoked on various user related events including
-// refresh of auth token, refresh token, custom user data, and logout.
+/**
+ * The user listener - Will be invoked on various user related events including
+ * refresh of auth token, refresh token, custom user data, and logout.
+ */
 function handleUserEventChange(): void {
   if (currentUser) {
     // Currently we don't provide any arguments to this callback but we have opened
@@ -67,8 +69,10 @@ function handleUserEventChange(): void {
   }
 }
 
-// The connection listener will be invoked when the the underlying sync session
-// changes its connection state.
+/**
+ * The connection listener - Will be invoked when the the underlying sync
+ * session changes its connection state.
+ */
 function handleConnectionChange(newState: ConnectionState, oldState: ConnectionState): void {
   const connecting = newState === ConnectionState.Connecting;
   const connected = newState === ConnectionState.Connected;
@@ -76,11 +80,11 @@ function handleConnectionChange(newState: ConnectionState, oldState: ConnectionS
   const failedReconnecting = oldState === ConnectionState.Connecting && newState === ConnectionState.Disconnected;
 
   if (connecting) {
-    logger.info(`Connecting...`);
+    logger.info("Connecting...");
   } else if (connected) {
-    logger.info(`Connected.`);
+    logger.info("Connected.");
   } else if (disconnected) {
-    logger.info(`Disconnected.`);
+    logger.info("Disconnected.");
 
     // At this point, the `newState` is `ConnectionState.Disconnected`. Automatic retries
     // will start and the state will alternate in the following way for the period where
@@ -93,15 +97,18 @@ function handleConnectionChange(newState: ConnectionState, oldState: ConnectionS
     // Be aware of that there may be a delay from the time of actual disconnect until this
     // listener is invoked.
   } else /* failedReconnecting */ {
-    logger.info(`Failed to reconnect.`);
+    logger.info("Failed to reconnect.");
   }
 }
 
+/**
+ * The sync error listener - Will be invoked when various synchronization errors occur.
+ * @see {@link https://github.com/realm/realm-core/blob/master/doc/protocol.md#error-codes | error codes }
+ * for detailed error codes. Examples:
+ * * 202 (Access token expired)
+ * * 225 (Invalid schema change)
+ */
 function handleSyncError(session: SyncSession, error: SyncError): void {
-  // For error codes see: https://github.com/realm/realm-core/blob/master/doc/protocol.md#error-codes
-  // * Examples:
-  //   * 100 (Connection closed, no error)
-  //   * 202 (Access token expired)
   if (error.code >= 100 && error.code < 200) {
     logger.error(`Connection level and protocol error: ${error.message}. ${JSON.stringify(error)}`);
   } else if (error.code >= 200 && error.code < 300) {
@@ -110,26 +117,21 @@ function handleSyncError(session: SyncSession, error: SyncError): void {
     // Should not be reachable.
     logger.error(`Unexpected error code: ${error.code}. ${JSON.stringify(error)}`);
   }
-
-  // Regarding manual client resets. The deprecated `Realm.App.Sync.initiateClientReset()`
-  // is meant for use only when the `clientReset` property on the sync configuration is
-  // set to `ClientResetMode.Manual` and should not be needed when using
-  // `ClientResetMode.DiscardUnsyncedChanges`.
 }
 
 function handlePreClientReset(localRealm: Realm): void {
-  // To read more about manual client reset data recovery, see:
-  // https://www.mongodb.com/docs/realm/sdk/node/advanced/client-reset-data-recovery/
-  logger.info(`Initiating client reset...`);
+  logger.info("Initiating client reset...");
 }
 
 function handlePostClientReset(localRealm: Realm, remoteRealm: Realm) {
-  logger.info(`Client has been reset.`);
+  logger.info("Client has been reset.");
 }
 
-// The collection listener will be invoked when the listener is added and
-// whenever an object in the collection is deleted, inserted, or modified.
-// (Always handle potential deletions first.)
+/**
+ * The products collection listener - Will be invoked when the listener is added
+ * and whenever an object in the collection is deleted, inserted, or modified.
+ * (Always handle potential deletions first.)
+ */
 const handleProductsChange: CollectionChangeCallback = (products, changes) => {
   logger.info("Products changed.");
 }
@@ -153,16 +155,19 @@ export async function register(email: string, password: string): Promise<boolean
   }
 };
 
+/**
+ * Log in to an Atlas App Services App.
+ *
+ * Access tokens are created once a user logs in. These tokens are refreshed
+ * automatically by the SDK when needed. Manually refreshing the token is only
+ * required if requests are sent outside of the SDK. If that's the case, see:
+ * https://www.mongodb.com/docs/realm/sdk/node/examples/authenticate-users/#get-a-user-access-token
+ *
+ * By default, refresh tokens expire 60 days after they are issued. You can configure this
+ * time for your App's refresh tokens to be anywhere between 30 minutes and 180 days. See:
+ * https://www.mongodb.com/docs/atlas/app-services/users/sessions/#configure-refresh-token-expiration
+ */
 export async function logIn(email: string, password: string): Promise<boolean> {
-  // Access tokens are created once a user logs in. These tokens are refreshed
-  // automatically by the SDK when needed. Manually refreshing the token is only
-  // required if requests are sent outside of the SDK. If that's the case, see:
-  // https://www.mongodb.com/docs/realm/sdk/node/examples/authenticate-users/#get-a-user-access-token
-
-  // By default, refresh tokens expire 60 days after they are issued. You can configure this
-  // time for your App's refresh tokens to be anywhere between 30 minutes and 180 days. See:
-  // https://www.mongodb.com/docs/atlas/app-services/users/sessions/#configure-refresh-token-expiration
-
   if (currentUser) {
     return true;
   }
@@ -173,6 +178,8 @@ export async function logIn(email: string, password: string): Promise<boolean> {
     currentUser = await app.logIn(Credentials.emailPassword(email, password));
     originalAccessToken = currentUser.accessToken;
     logger.info("Logged in.");
+
+    // Listen for changes to user-related events.
     currentUser.addListener(handleUserEventChange);
     return true;
   } catch (err: any) {
@@ -185,17 +192,16 @@ export async function logOut(): Promise<void> {
   if (currentUser) {
     logger.info("Logging out...");
     await currentUser.logOut();
-
     // The `currentUser` variable is being set to `null` in the user listener.
   }
 }
 
 export async function openRealm(): Promise<void> {
-  if (!currentUser) {
-    throw new Error("The user needs to be logged in before the synced Realm can be opened.");
-  }
-
   try {
+    if (!currentUser) {
+      throw new Error("The user needs to be logged in before the synced Realm can be opened.");
+    }
+
     const config: ConfigurationWithSync = {
       schema: [StoreSchema, KioskSchema, ProductSchema],
       sync: {
@@ -229,12 +235,18 @@ export async function openRealm(): Promise<void> {
           mode: ClientResetMode.RecoverOrDiscardUnsyncedChanges,
           onBefore: handlePreClientReset,
           onAfter: handlePostClientReset,
+
           // For read-only clients, `ClientResetMode.DiscardUnsyncedChanges` is suitable.
+          // Regarding manual client resets. The deprecated `Realm.App.Sync.initiateClientReset()`
+          // was meant for use only when the `clientReset` property on the sync configuration is
+          // set to `ClientResetMode.Manual`. To read more about manual client reset data recovery, see:
+          // https://www.mongodb.com/docs/realm/sdk/node/advanced/client-reset-data-recovery/
         },
         // The old property for the error callback was called `error`, please use `onError`.
         onError: handleSyncError,
       },
     };
+
     logger.info("Opening realm...");
     realm = await Realm.open(config);
     logger.info("Realm opened.");
@@ -243,6 +255,7 @@ export async function openRealm(): Promise<void> {
     // to live throughout the session.
     realm.syncSession?.addConnectionNotification(handleConnectionChange);
 
+    // Listen for changes to the products at the given store ID.
     realm.objects(ProductSchema.name).filtered("storeId = $0", SYNC_STORE_ID).addListener(handleProductsChange);
   } catch (err: any) {
     logger.error(`Error opening the realm: ${err?.message}`);
