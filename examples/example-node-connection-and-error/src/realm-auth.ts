@@ -5,9 +5,7 @@ import Realm, {
   ConfigurationWithSync,
   ConnectionState,
   Credentials,
-  MutableSubscriptionSet,
   SyncError,
-  SyncSession,
   UserState,
 } from "realm";
 
@@ -103,12 +101,13 @@ function handleConnectionChange(newState: ConnectionState, oldState: ConnectionS
 
 /**
  * The sync error listener - Will be invoked when various synchronization errors occur.
+ *
  * @see {@link https://github.com/realm/realm-core/blob/master/doc/protocol.md#error-codes | error codes }
  * for detailed error codes. Examples:
- * * 202 (Access token expired)
- * * 225 (Invalid schema change)
+ * - 202 (Access token expired)
+ * - 225 (Invalid schema change)
  */
-function handleSyncError(session: SyncSession, error: SyncError): void {
+function handleSyncError(session: Realm.App.Sync.SyncSession, error: SyncError): void {
   if (error.code >= 100 && error.code < 200) {
     logger.error(`Connection level and protocol error: ${error.message}. ${JSON.stringify(error)}`);
   } else if (error.code >= 200 && error.code < 300) {
@@ -132,15 +131,19 @@ function handlePostClientReset(localRealm: Realm, remoteRealm: Realm) {
  * and whenever an object in the collection is deleted, inserted, or modified.
  * (Always handle potential deletions first.)
  */
-const handleProductsChange: CollectionChangeCallback = (products, changes) => {
+const handleProductsChange: CollectionChangeCallback<Product, [number, Product]> = (products, changes) => {
   logger.info("Products changed.");
 }
 
+/**
+ * Register a user to an Atlas App Services App.
+ *
+ * For this simplified example, the app is configured via the Atlas App Services UI
+ * to automatically confirm users' emails.
+ */
 export async function register(email: string, password: string): Promise<boolean> {
   try {
     logger.info("Registering...");
-    // For this simplified example, the app is configured via the Atlas App Services UI
-    // to automatically confirm users' emails.
     await app.emailPasswordAuth.registerUser({ email, password });
     logger.info("Registered.");
     return true;
@@ -156,7 +159,7 @@ export async function register(email: string, password: string): Promise<boolean
 };
 
 /**
- * Log in to an Atlas App Services App.
+ * Log in a user to an Atlas App Services App.
  *
  * Access tokens are created once a user logs in. These tokens are refreshed
  * automatically by the SDK when needed. Manually refreshing the token is only
@@ -196,6 +199,9 @@ export async function logOut(): Promise<void> {
   }
 }
 
+/**
+ * Configure and open the synced realm.
+ */
 export async function openRealm(): Promise<void> {
   try {
     if (!currentUser) {
@@ -203,7 +209,7 @@ export async function openRealm(): Promise<void> {
     }
 
     const config: ConfigurationWithSync = {
-      schema: [Store.schema, Kiosk.schema, Product.schema], // [Store, Kiosk, Product],
+      schema: [Store, Kiosk, Product],
       sync: {
         user: currentUser,
         // To read more about flexible sync and subscriptions, see:
@@ -212,7 +218,7 @@ export async function openRealm(): Promise<void> {
         initialSubscriptions: {
           // When adding subscriptions, best practice is to name each subscription
           // for better managing removal of them.
-          update: (mutableSubs: MutableSubscriptionSet, realm: Realm) => {
+          update: (mutableSubs: Realm.App.Sync.MutableSubscriptionSet, realm: Realm) => {
             // Subscribe to the store with the given ID.
             mutableSubs.add(
               realm.objects(Store).filtered("_id = $0", SYNC_STORE_ID),
@@ -251,8 +257,8 @@ export async function openRealm(): Promise<void> {
     realm = await Realm.open(config);
     logger.info("Realm opened.");
     
-    // Explicitly removing the connection listener is not needed if you intend for it
-    // to live throughout the session.
+    // Listen for changes to the connection. (Explicitly removing the connection
+    // listener is not needed if you intend for it to live throughout the session.)
     realm.syncSession?.addConnectionNotification(handleConnectionChange);
 
     // Listen for changes to the products at the given store ID.
@@ -274,7 +280,7 @@ function closeRealm(): void {
 
 function handleExit(code: number): void {
   closeRealm();
-  logger.info(`Exiting with code ${code}...`);
+  logger.info(`Exiting with code ${code}.`);
 }
 
 process.on("exit", handleExit);
