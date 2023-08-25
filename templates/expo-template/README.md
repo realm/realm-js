@@ -10,18 +10,16 @@ Simple Expo template to quickly get started with Realm.
 
 ## 🚀 How to use
 
-If you haven't already, install the `expo-cli`:
-```
-npm install --global expo-cli
-```
-```
-yarn global add expo-cli
-```
-
-Then use the following command to generate your template:
+Use the following command to generate your template:
 
 ```
-expo init MyAwesomeRealmApp --template @realm/expo-template
+npx create-expo-app MyAwesomeRealmApp --template @realm/expo-template
+```
+
+NOTE: version of `npm` before v9 may cause problems when initializing the template.  If the initialization fails, please upgrade to the latest `npm` and try again.
+
+```
+npm install -g npm
 ```
 ## 🏃 How to build and run locally
 

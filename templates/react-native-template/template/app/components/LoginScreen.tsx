@@ -44,7 +44,7 @@ export const LoginScreen = () => {
         />
       </View>
 
-      {result?.error?.operation === AuthOperationName.LogIn && (
+      {result?.error?.operation === AuthOperationName.LogInWithEmailPassword && (
         <Text style={[styles.error]}>
           There was an error logging in, please try again{' '}
         </Text>

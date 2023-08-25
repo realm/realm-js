@@ -17,4 +17,6 @@ const App = () =>
     <AppWrapperNonSync />
   );
 
+export default App;
+
 AppRegistry.registerComponent(appName, () => App);
