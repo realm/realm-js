@@ -1,23 +1,24 @@
 import { BSON } from "realm";
 
-import { Store, StoreSchema } from "./models/Store";
-import { Kiosk, KioskSchema } from "./models/Kiosk";
-import { Product, ProductSchema } from "./models/Product";
 import { SYNC_STORE_ID } from "./atlas-app-services/config";
+import { Store } from "./models/Store";
+import { Kiosk } from "./models/Kiosk";
+import { Product } from "./models/Product";
 import { getRealm } from "./realm-auth";
 
 export function getStore() {
-  return getRealm()?.objects<Store>(StoreSchema.name).filtered("_id = $0", SYNC_STORE_ID)[0];
+  return getRealm()?.objects(Store).filtered("_id = $0", SYNC_STORE_ID)[0];
+  // or:            .objects<Store>(Store.schema.name, ..)
 }
 
 function getKiosks() {
   const realm = getRealm();
-  return realm ? realm.objects<Kiosk>(KioskSchema.name).filtered("storeId = $0", SYNC_STORE_ID) : [];
+  return realm ? realm.objects<Kiosk>(Kiosk).filtered("storeId = $0", SYNC_STORE_ID) : [];
 }
 
 function getProducts() {
   const realm = getRealm();
-  return realm ? realm.objects<Product>(ProductSchema.name).filtered("storeId = $0", SYNC_STORE_ID) : [];
+  return realm ? realm.objects<Product>(Product).filtered("storeId = $0", SYNC_STORE_ID) : [];
 }
 
 function addProducts() {
@@ -26,12 +27,13 @@ function addProducts() {
     realm.write(() => {
       const NUM_PRODUCTS = 10;
       for (let i = 1; i <= NUM_PRODUCTS; i++) {
-        realm.create(ProductSchema.name, {
+        const randomPrice = parseFloat((5 + Math.random() * 10).toFixed(2));
+        realm.create(Product, { // Or: `realm.create<Product>(Product.schema.name, ..)`
           _id: new BSON.ObjectId(),
           storeId: SYNC_STORE_ID,
           name: `product${i}`,
-          price: parseFloat((5 + Math.random() * 10).toFixed(2)),
-          numInStock: NUM_PRODUCTS
+          price: randomPrice,
+          numInStock: NUM_PRODUCTS,
         });
       }
     });
@@ -44,7 +46,7 @@ function addKiosks() {
     const products = getProducts();
     realm.write(() => {
       for (let i = 1; i <= 10; i++) {
-        realm.create(KioskSchema.name, {
+        realm.create(Kiosk.schema.name, {
           _id: new BSON.ObjectId(),
           storeId: SYNC_STORE_ID,
           products,
@@ -59,7 +61,7 @@ function addStore() {
   if (realm) {
     const kiosks = getKiosks();
     realm.write(() => {
-      realm.create(StoreSchema.name, {
+      realm.create(Store.schema.name, {
         _id: SYNC_STORE_ID,
         kiosks,
       });

@@ -11,11 +11,11 @@ import Realm, {
   UserState,
 } from "realm";
 
-import { StoreSchema } from "./models/Store";
-import { KioskSchema } from "./models/Kiosk";
-import { ProductSchema } from "./models/Product";
 import { SYNC_STORE_ID } from "./atlas-app-services/config";
 import { getAtlasApp } from "./atlas-app-services/getAtlasApp";
+import { Store } from "./models/Store";
+import { Kiosk } from "./models/Kiosk";
+import { Product } from "./models/Product";
 import { logger } from "./logger";
 
 const app = getAtlasApp();
@@ -23,7 +23,7 @@ let currentUser: Realm.User | null = null;
 let originalAccessToken: string | null = null;
 let realm: Realm | null = null;
 
-// Exported for use by `./realm-query.js`
+// Exported for use by `./realm-query.ts`
 export function getRealm(): Realm | null {
   return realm;
 }
@@ -203,7 +203,7 @@ export async function openRealm(): Promise<void> {
     }
 
     const config: ConfigurationWithSync = {
-      schema: [StoreSchema, KioskSchema, ProductSchema],
+      schema: [Store.schema, Kiosk.schema, Product.schema], // [Store, Kiosk, Product],
       sync: {
         user: currentUser,
         // To read more about flexible sync and subscriptions, see:
@@ -215,17 +215,17 @@ export async function openRealm(): Promise<void> {
           update: (mutableSubs: MutableSubscriptionSet, realm: Realm) => {
             // Subscribe to the store with the given ID.
             mutableSubs.add(
-              realm.objects(StoreSchema.name).filtered("_id = $0", SYNC_STORE_ID),
+              realm.objects(Store).filtered("_id = $0", SYNC_STORE_ID),
               { name: "storeA" },
             );
             // Subscribe to all kiosks in the store with the given ID.
             mutableSubs.add(
-              realm.objects(KioskSchema.name).filtered("storeId = $0", SYNC_STORE_ID),
+              realm.objects(Kiosk).filtered("storeId = $0", SYNC_STORE_ID),
               { name: "kiosksInStoreA" },
             );
             // Subscribe to all products in the store with the given ID.
             mutableSubs.add(
-              realm.objects(ProductSchema.name).filtered("storeId = $0", SYNC_STORE_ID),
+              realm.objects(Product).filtered("storeId = $0", SYNC_STORE_ID),
               { name: "productsInStoreA" },
             );
           },
@@ -256,7 +256,7 @@ export async function openRealm(): Promise<void> {
     realm.syncSession?.addConnectionNotification(handleConnectionChange);
 
     // Listen for changes to the products at the given store ID.
-    realm.objects(ProductSchema.name).filtered("storeId = $0", SYNC_STORE_ID).addListener(handleProductsChange);
+    realm.objects(Product).filtered("storeId = $0", SYNC_STORE_ID).addListener(handleProductsChange);
   } catch (err: any) {
     logger.error(`Error opening the realm: ${err?.message}`);
     throw err;

@@ -17,7 +17,7 @@ async function main(): Promise<void> {
 
   await openRealm();
 
-  // Cleaning the DB before continuing.
+  // Cleaning the DB for this example before continuing.
   deleteDummyData();
   addDummyData();
   updateDummyData();
