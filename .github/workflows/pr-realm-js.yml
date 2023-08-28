@@ -242,7 +242,7 @@ jobs:
       MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
       MOCHA_REMOTE_EXIT_ON_ERROR: true
       SPAWN_LOGCAT: true
-      BAAS_TAG: 2023-08-21
+      BAAS_TAG: 2023-08-14
       # Pin the Xcode version
       DEVELOPER_DIR: /Applications/Xcode_13.4.1.app
     runs-on: ${{ matrix.variant.runner }}
