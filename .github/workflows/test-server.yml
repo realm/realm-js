@@ -12,7 +12,7 @@ on:
       server_tag:
         description: The docker tag to use when pulling the server
         type: string
-        default: 3.3.1
+        default: latest
 
 jobs:
   server:
@@ -27,7 +27,7 @@ jobs:
           echo "subdomain=${subdomain}" >> $GITHUB_OUTPUT;
           echo "hostname=${subdomain}.ngrok.io" >> $GITHUB_OUTPUT;
       - name: Start Ngrok
-        run: docker run --detach --network host --env NGROK_AUTHTOKEN ngrok/ngrok http --subdomain ${{ steps.ngrok-config.outputs.subdomain }} 9090
+        run: docker run --detach --network host --env NGROK_AUTHTOKEN ngrok/ngrok:3.3.3 http --subdomain ${{ steps.ngrok-config.outputs.subdomain }} 9090
         env:
           NGROK_AUTHTOKEN: ${{ secrets.NGROK_AUTHTOKEN }}
       - name: Preparing server entrypoint
