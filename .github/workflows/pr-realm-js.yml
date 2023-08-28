@@ -288,6 +288,11 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
 
+      - name: Sleep for 120s
+        uses: juliangruber/sleep-action@v2.0.0
+        with:
+          time: 120s
+
       - name: Get NPM cache directory
         id: npm-cache-dir
         shell: bash
