@@ -165,8 +165,7 @@ export async function register(email: string, password: string): Promise<boolean
     await app.emailPasswordAuth.registerUser({ email, password });
     logger.info("Registered.");
     return true;
-  }
-  catch (err: any) {
+  } catch (err: any) {
     if (err?.message?.includes("name already in use")) {
       logger.info("Already registered.");
       return true;
@@ -189,6 +188,7 @@ export async function register(email: string, password: string): Promise<boolean
  * https://www.mongodb.com/docs/atlas/app-services/users/sessions/#configure-refresh-token-expiration
  */
 export async function logIn(email: string, password: string): Promise<boolean> {
+  // If there is already a logged in user, there is no need to reauthenticate.
   if (currentUser) {
     return true;
   }
