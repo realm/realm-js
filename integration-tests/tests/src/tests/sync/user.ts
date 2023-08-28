@@ -132,9 +132,14 @@ describe.skipIf(environment.missingServer, "User", () => {
         this.app.emailPasswordAuth.registerUser({ email: validEmail, password: invalidPassword }),
       ).to.be.rejectedWith("password must be between 6 and 128 characters");
       await expect(this.app.logIn(credentials)).to.be.rejectedWith("invalid username/password"); // this user did not register
+    });
+
+    it("valid email, valid password", async function (this: AppContext & RealmContext) {
+      const validEmail = randomVerifiableEmail();
+      const validPassword = "password123456";
 
       // valid email, valid password
-      credentials = Realm.Credentials.emailPassword({ email: validEmail, password: validPassword });
+      const credentials = Realm.Credentials.emailPassword({ email: validEmail, password: validPassword });
       await expect(this.app.logIn(credentials)).to.be.rejectedWith("invalid username/password"); // this user does not exist yet
       await this.app.emailPasswordAuth.registerUser({ email: validEmail, password: validPassword });
       const user = await this.app.logIn(credentials);
@@ -469,7 +474,7 @@ describe.skipIf(environment.missingServer, "User", () => {
     });
   });
 
-  describe("custom functions", () => {
+  describe("custom auth functions", () => {
     importAppBefore(
       buildAppConfig("with-custom-function")
         .anonAuth()
@@ -518,7 +523,41 @@ describe.skipIf(environment.missingServer, "User", () => {
               return { status: "fail" };
             };
           `,
-        })
+        }),
+    );
+
+    it("custom confirmation function works", async function (this: AppContext & RealmContext) {
+      const pendingEmail = randomPendingVerificationEmail();
+      const validPassword = "password123456";
+
+      // we should be able to register our user as pending confirmation
+      await this.app.emailPasswordAuth.registerUser({ email: pendingEmail, password: validPassword });
+
+      // we should be able to call the registration function again
+      await this.app.emailPasswordAuth.retryCustomConfirmation({ email: pendingEmail });
+    });
+
+    it("reset password function works", async function (this: AppContext & RealmContext) {
+      const validEmail = randomVerifiableEmail();
+      const validPassword = "password123456";
+      await this.app.emailPasswordAuth.registerUser({ email: validEmail, password: validPassword });
+
+      const newPassword = "realm_tests_do_reset654321";
+      await this.app.emailPasswordAuth.callResetPasswordFunction({ email: validEmail, password: newPassword });
+
+      // see if we can log in
+      const creds = Realm.Credentials.emailPassword({ email: validEmail, password: newPassword });
+      const user = await this.app.logIn(creds);
+      expect(user instanceof Realm.User).to.be.true;
+
+      await user.logOut();
+    });
+  });
+
+  describe("custom functions", () => {
+    importAppBefore(
+      buildAppConfig("with-custom-function")
+        .anonAuth()
         .customFunctionAuth(
           `
           exports = async function (loginPayload) {
@@ -559,33 +598,6 @@ describe.skipIf(environment.missingServer, "User", () => {
         }),
     );
 
-    it("custom confirmation function works", async function (this: AppContext & RealmContext) {
-      const pendingEmail = randomPendingVerificationEmail();
-      const validPassword = "password123456";
-
-      // we should be able to register our user as pending confirmation
-      await this.app.emailPasswordAuth.registerUser({ email: pendingEmail, password: validPassword });
-
-      // we should be able to call the registration function again
-      await this.app.emailPasswordAuth.retryCustomConfirmation({ email: pendingEmail });
-    });
-
-    it("reset password function works", async function (this: AppContext & RealmContext) {
-      const validEmail = randomVerifiableEmail();
-      const validPassword = "password123456";
-      await this.app.emailPasswordAuth.registerUser({ email: validEmail, password: validPassword });
-
-      const newPassword = "realm_tests_do_reset654321";
-      await this.app.emailPasswordAuth.callResetPasswordFunction({ email: validEmail, password: newPassword });
-
-      // see if we can log in
-      const creds = Realm.Credentials.emailPassword({ email: validEmail, password: newPassword });
-      const user = await this.app.logIn(creds);
-      expect(user instanceof Realm.User).to.be.true;
-
-      await user.logOut();
-    });
-
     it("arbitrary custom function works", async function (this: AppContext & RealmContext) {
       const credentials = Realm.Credentials.anonymous();
       const user = await this.app.logIn(credentials);
@@ -607,6 +619,7 @@ describe.skipIf(environment.missingServer, "User", () => {
       await expect(user.functions.error()).to.be.rejectedWith("function not found: 'error'");
     });
   });
+
   describe("currentUser", () => {
     importAppBefore(buildAppConfig("with-anon-auth").anonAuth());
 
