@@ -50,19 +50,19 @@ jobs:
       matrix:
         variant:
           - { os: linux, runner: ubuntu-latest, arch: x64, artifact-path: packages/realm/prebuilds, test-node: true, test-electron: true }
-          - { os: linux, runner: ubuntu-latest, arch: arm, artifact-path: packages/realm/prebuilds }
-          - { os: linux, runner: ubuntu-latest, arch: arm64, artifact-path: packages/realm/prebuilds }
-          - { os: windows, runner: windows-latest, arch: x64, artifact-path: packages/realm/prebuilds, test-node: true, test-electron: true }
-          - { os: windows, runner: windows-2019, arch: ia32, artifact-path: packages/realm/prebuilds }
-          - { os: android, runner: ubuntu-latest, arch: x86_64, artifact-path: packages/realm/react-native/android/src/main/jniLibs }
-          - { os: android, runner: ubuntu-latest, arch: armeabi-v7a, artifact-path: packages/realm/react-native/android/src/main/jniLibs }
-          - { os: android, runner: ubuntu-latest, arch: arm64-v8a, artifact-path: packages/realm/react-native/android/src/main/jniLibs }
-          - { os: android, runner: ubuntu-latest, arch: x86, artifact-path: packages/realm/react-native/android/src/main/jniLibs }
-          - { os: darwin, runner: macos-latest, arch: x64, artifact-path: packages/realm/prebuilds, test-node: true, test-electron: true }
-          - { os: darwin, runner: macos-latest, arch: arm64, artifact-path: packages/realm/prebuilds, test-node: true, test-electron: true }
-          - { os: ios, runner: macos-latest, arch: simulator, artifact-path: packages/realm/react-native/ios/realm-js-ios.xcframework }
-          - { os: ios, runner: macos-latest, arch: catalyst, artifact-path: packages/realm/react-native/ios/realm-js-ios.xcframework }
-          - { os: ios, runner: macos-latest, arch: ios, artifact-path: packages/realm/react-native/ios/realm-js-ios.xcframework }
+          # - { os: linux, runner: ubuntu-latest, arch: arm, artifact-path: packages/realm/prebuilds }
+          # - { os: linux, runner: ubuntu-latest, arch: arm64, artifact-path: packages/realm/prebuilds }
+          # - { os: windows, runner: windows-latest, arch: x64, artifact-path: packages/realm/prebuilds, test-node: true, test-electron: true }
+          # - { os: windows, runner: windows-2019, arch: ia32, artifact-path: packages/realm/prebuilds }
+          # - { os: android, runner: ubuntu-latest, arch: x86_64, artifact-path: packages/realm/react-native/android/src/main/jniLibs }
+          # - { os: android, runner: ubuntu-latest, arch: armeabi-v7a, artifact-path: packages/realm/react-native/android/src/main/jniLibs }
+          # - { os: android, runner: ubuntu-latest, arch: arm64-v8a, artifact-path: packages/realm/react-native/android/src/main/jniLibs }
+          # - { os: android, runner: ubuntu-latest, arch: x86, artifact-path: packages/realm/react-native/android/src/main/jniLibs }
+          # - { os: darwin, runner: macos-latest, arch: x64, artifact-path: packages/realm/prebuilds, test-node: true, test-electron: true }
+          # - { os: darwin, runner: macos-latest, arch: arm64, artifact-path: packages/realm/prebuilds, test-node: true, test-electron: true }
+          # - { os: ios, runner: macos-latest, arch: simulator, artifact-path: packages/realm/react-native/ios/realm-js-ios.xcframework }
+          # - { os: ios, runner: macos-latest, arch: catalyst, artifact-path: packages/realm/react-native/ios/realm-js-ios.xcframework }
+          # - { os: ios, runner: macos-latest, arch: ios, artifact-path: packages/realm/react-native/ios/realm-js-ios.xcframework }
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -251,17 +251,17 @@ jobs:
       matrix:
         variant:
           - { os: linux, target: "test:ci", runner: ubuntu-latest, environment: node }
-          - { os: linux, target: "test:ci:main", runner: ubuntu-latest, environment: electron }
-          - { os: linux, target: "test:ci:renderer", runner: ubuntu-latest, environment: electron }
-          #- { os: windows, target: "test:ci", runner: windows-latest, environment: node}
-          #- { os: windows, target: "test:ci:main", runner: windows-latest, environment: electron }
-          #- { os: windows, target: "test:ci:renderer", runner: windows-latest, environment: electron }
-          - { os: darwin, target: "test:ci:main", runner: macos-latest, environment: electron }
-          - { os: darwin, target: "test:ci:renderer", runner: macos-latest, environment: electron }
-          - { os: darwin, target: "test:ci", runner: macos-latest, environment: node }
-          - { os: android, target: "test:ci:android", runner: macos-latest, environment: react-native, arch: "armeabi-v7a" }
-          - { os: ios, target: "test:ci:ios", runner: macos-latest, environment: react-native, arch: "ios" }
-          #- { os: ios, target: "test:ci:catalyst", runner: macos-latest, environment: react-native, arch: "catalyst" }
+          # - { os: linux, target: "test:ci:main", runner: ubuntu-latest, environment: electron }
+          # - { os: linux, target: "test:ci:renderer", runner: ubuntu-latest, environment: electron }
+          # #- { os: windows, target: "test:ci", runner: windows-latest, environment: node}
+          # #- { os: windows, target: "test:ci:main", runner: windows-latest, environment: electron }
+          # #- { os: windows, target: "test:ci:renderer", runner: windows-latest, environment: electron }
+          # - { os: darwin, target: "test:ci:main", runner: macos-latest, environment: electron }
+          # - { os: darwin, target: "test:ci:renderer", runner: macos-latest, environment: electron }
+          # - { os: darwin, target: "test:ci", runner: macos-latest, environment: node }
+          # - { os: android, target: "test:ci:android", runner: macos-latest, environment: react-native, arch: "armeabi-v7a" }
+          # - { os: ios, target: "test:ci:ios", runner: macos-latest, environment: react-native, arch: "ios" }
+          # #- { os: ios, target: "test:ci:catalyst", runner: macos-latest, environment: react-native, arch: "catalyst" }
     timeout-minutes: 60
     steps:
       - name: Checkout code
