@@ -449,8 +449,8 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
       // See `[binding.PropertyType.Array]` in `PropertyHelpers.ts`.
       get(results: binding.Results, index: number) {
         return results.getObj(index);
-      }
-    }
+      },
+    };
 
     // Create the Result for the backlink view.
     const tableRef = binding.Helpers.getTable(this[REALM].internal, targetObjectSchema.tableKey);

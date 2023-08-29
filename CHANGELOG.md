@@ -8,7 +8,7 @@
 
 ### Fixed
 * Fixed toolchain on Linux. On older Linux installations, the error `GLIBC_2.34' not found (required by /home/user/MyProject/node_modules/realm/generated/ts/realm.node)` could be observed. ([#6082](https://github.com/realm/realm-js/issues/6082), since v12.0.0)
-* Fixed accessing `Realm.Object.linkingObjects()` when the origin and target are of different object types. ([#6108](https://github.com/realm/realm-js/pull/6108))
+* Fixed accessing `Realm.Object.linkingObjects()` when the origin and target are of different object types. ([#6108](https://github.com/realm/realm-js/pull/6108), since v12.0.0)
 
 ### Compatibility
 * React Native >= v0.71.4
