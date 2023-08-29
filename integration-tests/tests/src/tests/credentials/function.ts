@@ -36,7 +36,7 @@ describe.skip("custom-function credentials", () => {
           const { username, secret } = loginPayload;
 
           if (secret !== "v3ry-s3cret") {
-            throw new Error("Ah ah ah, you did not say the magic word");
+            throw new Error("Ah ah ah, you didn't say the magic word");
           }
           // Query for an existing user document with the specified username
 
