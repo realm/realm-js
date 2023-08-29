@@ -427,30 +427,35 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
   linkingObjects<T = DefaultObject>(objectType: string, propertyName: string): Results<RealmObject<T> & T>;
   linkingObjects<T extends AnyRealmObject>(objectType: Constructor<T>, propertyName: string): Results<T>;
   linkingObjects<T extends AnyRealmObject>(objectType: string | Constructor<T>, propertyName: string): Results<T> {
-    const { objectSchema: linkedObjectSchema, properties } = this[REALM].getClassHelpers(objectType);
-    const tableRef = binding.Helpers.getTable(this[REALM].internal, linkedObjectSchema.tableKey);
-    const property = properties.get(propertyName);
+    const targetClassHelpers = this[REALM].getClassHelpers(objectType);
+    const { objectSchema: targetObjectSchema, properties, wrapObject } = targetClassHelpers;
+    const targetProperty = properties.get(propertyName);
     const currentObjectSchema = this.objectSchema();
 
-    console.log({ "linkedObjectSchema.name": linkedObjectSchema.name });
-    console.log({ "currentObjectSchema.name": currentObjectSchema.name });
-    console.log({ "property.objectType": property.objectType });
-
     assert(
-      currentObjectSchema.name === property.objectType,
+      currentObjectSchema.name === targetProperty.objectType,
       () => `'${objectType}#${propertyName}' is not a relationship to '${currentObjectSchema.name}'`,
     );
 
-    // Create the Result for the backlink view
-    const { columnKey, collectionHelpers } = property;
-    assert(collectionHelpers, "collection helpers");
-    const tableView = this[INTERNAL].getBacklinkView(tableRef, columnKey);
-    const results = binding.Results.fromTableView(this[REALM].internal, tableView);
+    const collectionHelpers = {
+      // See `[binding.PropertyType.LinkingObjects]` in `TypeHelpers.ts`.
+      toBinding(value: unknown) {
+        return value as binding.MixedArg;
+      },
+      fromBinding(value: unknown) {
+        assert.instanceOf(value, binding.Obj);
+        return wrapObject(value);
+      },
+      // See `[binding.PropertyType.Array]` in `PropertyHelpers.ts`.
+      get(results: binding.Results, index: number) {
+        return results.getObj(index);
+      }
+    }
 
-    // Note: I think it's the wrong `collectionHelpers` because `results` is
-    //       `Manufacturer` and `property` (where `collectionHelpers` come from) is `Car`.
-    console.log({ collectionHelpers });
-    console.log({ "results.objectType": results.objectType });
+    // Create the Result for the backlink view.
+    const tableRef = binding.Helpers.getTable(this[REALM].internal, targetObjectSchema.tableKey);
+    const tableView = this[INTERNAL].getBacklinkView(tableRef, targetProperty.columnKey);
+    const results = binding.Results.fromTableView(this[REALM].internal, tableView);
 
     return new Results(this[REALM], results, collectionHelpers);
   }
