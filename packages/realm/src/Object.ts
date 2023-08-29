@@ -430,10 +430,15 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
     const { objectSchema: linkedObjectSchema, properties } = this[REALM].getClassHelpers(objectType);
     const tableRef = binding.Helpers.getTable(this[REALM].internal, linkedObjectSchema.tableKey);
     const property = properties.get(propertyName);
+    const currentObjectSchema = this.objectSchema();
+
+    console.log({ "linkedObjectSchema.name": linkedObjectSchema.name });
+    console.log({ "currentObjectSchema.name": currentObjectSchema.name });
+    console.log({ "property.objectType": property.objectType });
 
     assert(
-      linkedObjectSchema.name === property.objectType,
-      () => `'${linkedObjectSchema.name}#${propertyName}' is not a relationship to '${this.objectSchema().name}'`,
+      currentObjectSchema.name === property.objectType,
+      () => `'${objectType}#${propertyName}' is not a relationship to '${currentObjectSchema.name}'`,
     );
 
     // Create the Result for the backlink view
@@ -441,6 +446,12 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
     assert(collectionHelpers, "collection helpers");
     const tableView = this[INTERNAL].getBacklinkView(tableRef, columnKey);
     const results = binding.Results.fromTableView(this[REALM].internal, tableView);
+
+    // Note: I think it's the wrong `collectionHelpers` because `results` is
+    //       `Manufacturer` and `property` (where `collectionHelpers` come from) is `Car`.
+    console.log({ collectionHelpers });
+    console.log({ "results.objectType": results.objectType });
+
     return new Results(this[REALM], results, collectionHelpers);
   }
 
