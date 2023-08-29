@@ -361,6 +361,7 @@ describe("Linking objects", () => {
 
       const linkedManufacturer = car.linkingObjects(Manufacturer, "cars")[0];
       expect(linkedManufacturer.name).to.equal("Nissan");
+      expect(linkedManufacturer.cars.length).to.equal(2);
       expect(linkedManufacturer.cars[0].model).to.equal("Sentra");
       expect(linkedManufacturer.cars[1].model).to.equal("Pathfinder");
     });
