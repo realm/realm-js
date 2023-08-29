@@ -475,6 +475,7 @@ describe.skipIf(environment.missingServer, "User", () => {
   });
 
   // FIXME: when importing customFunctionAuth we are almost consistently getting "Syntax error: unexpected EOF (400 Bad Request)".
+  // https://jira.mongodb.org/browse/RJS-2545
   describe.skip("custom auth functions", () => {
     importAppBefore(
       buildAppConfig("with-custom-function")

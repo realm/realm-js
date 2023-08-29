@@ -22,6 +22,7 @@ import { importAppBefore } from "../../hooks";
 import { buildAppConfig } from "../../utils/build-app-config";
 
 // FIXME: when importing customFunctionAuth we are almost consistently getting "Syntax error: unexpected EOF (400 Bad Request)".
+// https://jira.mongodb.org/browse/RJS-2545
 // describe.skipIf(environment.missingServer, "custom-function credentials", () => {
 describe.skip("custom-function credentials", () => {
   importAppBefore(
