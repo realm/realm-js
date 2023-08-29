@@ -132,9 +132,14 @@ describe.skipIf(environment.missingServer, "User", () => {
         this.app.emailPasswordAuth.registerUser({ email: validEmail, password: invalidPassword }),
       ).to.be.rejectedWith("password must be between 6 and 128 characters");
       await expect(this.app.logIn(credentials)).to.be.rejectedWith("invalid username/password"); // this user did not register
+    });
+
+    it("valid email, valid password", async function (this: AppContext & RealmContext) {
+      const validEmail = randomVerifiableEmail();
+      const validPassword = "password123456";
 
       // valid email, valid password
-      credentials = Realm.Credentials.emailPassword({ email: validEmail, password: validPassword });
+      const credentials = Realm.Credentials.emailPassword({ email: validEmail, password: validPassword });
       await expect(this.app.logIn(credentials)).to.be.rejectedWith("invalid username/password"); // this user does not exist yet
       await this.app.emailPasswordAuth.registerUser({ email: validEmail, password: validPassword });
       const user = await this.app.logIn(credentials);
@@ -469,7 +474,9 @@ describe.skipIf(environment.missingServer, "User", () => {
     });
   });
 
-  describe("custom functions", () => {
+  // FIXME: when importing customFunctionAuth we are almost consistently getting "Syntax error: unexpected EOF (400 Bad Request)".
+  // https://jira.mongodb.org/browse/RJS-2545
+  describe.skip("custom auth functions", () => {
     importAppBefore(
       buildAppConfig("with-custom-function")
         .anonAuth()
@@ -504,21 +511,6 @@ describe.skipIf(environment.missingServer, "User", () => {
           };
           `,
         })
-        .function({
-          name: "resetFunc",
-          private: false,
-          can_evaluate: {},
-          source: `
-            exports = ({ token, tokenId, username, password }) => {
-              // process the reset token, tokenId, username and password
-              if (password.includes("realm_tests_do_reset")) {
-                return { status: "success" };
-              }
-              // will not reset the password
-              return { status: "fail" };
-            };
-          `,
-        })
         .customFunctionAuth(
           `
           exports = async function (loginPayload) {
@@ -548,12 +540,17 @@ describe.skipIf(environment.missingServer, "User", () => {
         `,
         )
         .function({
-          can_evaluate: {},
-          name: "sumFunc",
+          name: "resetFunc",
           private: false,
+          can_evaluate: {},
           source: `
-            exports = function (...args) {
-              return parseInt(args.reduce((a, b) => a + b, 0));
+            exports = ({ token, tokenId, username, password }) => {
+              // process the reset token, tokenId, username and password
+              if (password.includes("realm_tests_do_reset")) {
+                return { status: "success" };
+              }
+              // will not reset the password
+              return { status: "fail" };
             };
           `,
         }),
@@ -585,6 +582,23 @@ describe.skipIf(environment.missingServer, "User", () => {
 
       await user.logOut();
     });
+  });
+
+  describe("custom functions", () => {
+    importAppBefore(
+      buildAppConfig("with-custom-function")
+        .anonAuth()
+        .function({
+          can_evaluate: {},
+          name: "sumFunc",
+          private: false,
+          source: `
+            exports = function (...args) {
+              return parseInt(args.reduce((a, b) => a + b, 0));
+            };
+          `,
+        }),
+    );
 
     it("arbitrary custom function works", async function (this: AppContext & RealmContext) {
       const credentials = Realm.Credentials.anonymous();
@@ -607,6 +621,7 @@ describe.skipIf(environment.missingServer, "User", () => {
       await expect(user.functions.error()).to.be.rejectedWith("function not found: 'error'");
     });
   });
+
   describe("currentUser", () => {
     importAppBefore(buildAppConfig("with-anon-auth").anonAuth());
 

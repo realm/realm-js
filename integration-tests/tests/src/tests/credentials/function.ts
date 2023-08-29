@@ -21,7 +21,10 @@ import { Credentials, User } from "realm";
 import { importAppBefore } from "../../hooks";
 import { buildAppConfig } from "../../utils/build-app-config";
 
-describe.skipIf(environment.missingServer, "custom-function credentials", () => {
+// FIXME: when importing customFunctionAuth we are almost consistently getting "Syntax error: unexpected EOF (400 Bad Request)".
+// https://jira.mongodb.org/browse/RJS-2545
+// describe.skipIf(environment.missingServer, "custom-function credentials", () => {
+describe.skip("custom-function credentials", () => {
   importAppBefore(
     buildAppConfig("with-custom-function").mongodbService().customFunctionAuth(`
         exports = async function (loginPayload) {
