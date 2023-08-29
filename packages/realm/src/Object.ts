@@ -29,6 +29,7 @@ import {
   ObjectListeners,
   OmittedRealmTypes,
   OrderedCollection,
+  OrderedCollectionHelpers,
   Realm,
   RealmObjectConstructor,
   Results,
@@ -434,10 +435,10 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
 
     assert(
       originObjectSchema.name === targetProperty.objectType,
-      () => `'${objectType}#${propertyName}' is not a relationship to '${originObjectSchema.name}'`,
+      () => `'${targetObjectSchema.name}#${propertyName}' is not a relationship to '${originObjectSchema.name}'`,
     );
 
-    const collectionHelpers = {
+    const collectionHelpers: OrderedCollectionHelpers = {
       // See `[binding.PropertyType.LinkingObjects]` in `TypeHelpers.ts`.
       toBinding(value: unknown) {
         return value as binding.MixedArg;
