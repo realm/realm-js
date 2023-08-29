@@ -430,11 +430,11 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
     const targetClassHelpers = this[REALM].getClassHelpers(objectType);
     const { objectSchema: targetObjectSchema, properties, wrapObject } = targetClassHelpers;
     const targetProperty = properties.get(propertyName);
-    const currentObjectSchema = this.objectSchema();
+    const originObjectSchema = this.objectSchema();
 
     assert(
-      currentObjectSchema.name === targetProperty.objectType,
-      () => `'${objectType}#${propertyName}' is not a relationship to '${currentObjectSchema.name}'`,
+      originObjectSchema.name === targetProperty.objectType,
+      () => `'${objectType}#${propertyName}' is not a relationship to '${originObjectSchema.name}'`,
     );
 
     const collectionHelpers = {
