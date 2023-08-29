@@ -107,6 +107,110 @@ class Name extends Realm.Object<Name> {
 }
 
 describe("Linking objects", () => {
+  // Temporary test suite, will reorder once debugged.
+  describe("DEBUG_LINKING_OBJECTS", () => {
+    class Manufacturer extends Realm.Object {
+      _id!: Realm.BSON.ObjectId;
+      name!: string;
+      cars!: Realm.List<Car>;
+      // cars!: Realm.OrderedCollection<Car>;
+
+      static schema: Realm.ObjectSchema = {
+        name: "Manufacturer",
+        properties: {
+          _id: {
+            type: "objectId",
+          },
+          name: {
+            type: "string",
+          },
+          // A manufacturer that may have many cars
+          cars: {
+            type: "list",
+            objectType: "Car",
+          },
+          // cars: {
+          //   type: "linkingObjects",
+          //   objectType: "Car",
+          //   property: "manufacturer",
+          // },
+        },
+      };
+    }
+
+    class Car extends Realm.Object {
+      _id!: Realm.BSON.ObjectId;
+      model!: string;
+      miles?: number;
+      manufacturer!: Realm.OrderedCollection<Manufacturer>;
+
+      static schema: Realm.ObjectSchema = {
+        name: "Car",
+        properties: {
+          _id: {
+            type: "objectId",
+          },
+          model: {
+            type: "string",
+          },
+          miles: {
+            type: "int",
+            optional: true,
+          },
+          // Also test without this field.
+          manufacturer: {
+            type: "linkingObjects",
+            objectType: "Manufacturer",
+            property: "cars",
+          },
+        },
+      };
+    }
+    openRealmBeforeEach({ schema: [Manufacturer, Car] });
+
+    it("debugging linking objects", async function (this: RealmContext) {
+      expect(this.realm.isClosed).to.be.false;
+
+      this.realm.write(() => {
+        const sentra = this.realm.create(Car, {
+          _id: new Realm.BSON.ObjectID(),
+          model: "Sentra",
+          miles: 1000,
+        });
+
+        const pathfinder = this.realm.create(Car, {
+          _id: new Realm.BSON.ObjectID(),
+          model: "Pathfinder",
+          miles: 254,
+        });
+
+        this.realm.create(Manufacturer, {
+          _id: new Realm.BSON.ObjectID(),
+          name: "Nissan",
+          cars: [sentra, pathfinder],
+        });
+      });
+
+      const manufacturers: Realm.Results<Manufacturer> = this.realm.objects(Manufacturer);
+
+      const manufacturerCars = manufacturers[0].cars;
+
+      // Get the Manufacturer who makes the Car
+      const carObjects = this.realm.objects<Car>(Car);
+      const car = carObjects[0];
+      const linkedManufacturer = car.linkingObjects(Manufacturer, "cars")[0];
+      // const linkedManufacturer: Manufacturer = car.linkingObjects<Manufacturer>("Manufacturer", "cars")[0];
+
+      console.log({ linkingObjectsCount: car.linkingObjectsCount() });
+      console.log({ linkedManufacturer });
+      console.log({ manufacturer: car.manufacturer[0].name });
+
+      expect(manufacturerCars[0].model).to.equal("Sentra");
+      expect(manufacturerCars[1].model).to.equal("Pathfinder");
+      expect(linkedManufacturer.name).to.equal("Nissan");
+    });
+  });
+
   describe("Same class", () => {
     openRealmBeforeEach({ schema: [Person] });
     it("add and delete propagate to linking object", function (this: RealmContext) {
