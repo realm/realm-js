@@ -12,6 +12,7 @@ on:
       server_tag:
         description: The docker tag to use when pulling the server
         type: string
+        # Consider updating this in the calling workflow: https://github.com/realm/realm-js/blob/1a1a0edc354059122f1d9800c66a4a0860120fcb/.github/workflows/pr-realm-js.yml#L245
         default: latest
 
 jobs:
