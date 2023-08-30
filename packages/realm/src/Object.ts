@@ -29,6 +29,7 @@ import {
   ObjectListeners,
   OmittedRealmTypes,
   OrderedCollection,
+  OrderedCollectionHelpers,
   Realm,
   RealmObjectConstructor,
   Results,
@@ -427,20 +428,36 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
   linkingObjects<T = DefaultObject>(objectType: string, propertyName: string): Results<RealmObject<T> & T>;
   linkingObjects<T extends AnyRealmObject>(objectType: Constructor<T>, propertyName: string): Results<T>;
   linkingObjects<T extends AnyRealmObject>(objectType: string | Constructor<T>, propertyName: string): Results<T> {
-    const { objectSchema: linkedObjectSchema, properties } = this[REALM].getClassHelpers(objectType);
-    const tableRef = binding.Helpers.getTable(this[REALM].internal, linkedObjectSchema.tableKey);
-    const property = properties.get(propertyName);
+    const targetClassHelpers = this[REALM].getClassHelpers(objectType);
+    const { objectSchema: targetObjectSchema, properties, wrapObject } = targetClassHelpers;
+    const targetProperty = properties.get(propertyName);
+    const originObjectSchema = this.objectSchema();
 
     assert(
-      linkedObjectSchema.name === property.objectType,
-      () => `'${linkedObjectSchema.name}#${propertyName}' is not a relationship to '${this.objectSchema().name}'`,
+      originObjectSchema.name === targetProperty.objectType,
+      () => `'${targetObjectSchema.name}#${propertyName}' is not a relationship to '${originObjectSchema.name}'`,
     );
 
-    // Create the Result for the backlink view
-    const { columnKey, collectionHelpers } = property;
-    assert(collectionHelpers, "collection helpers");
-    const tableView = this[INTERNAL].getBacklinkView(tableRef, columnKey);
+    const collectionHelpers: OrderedCollectionHelpers = {
+      // See `[binding.PropertyType.LinkingObjects]` in `TypeHelpers.ts`.
+      toBinding(value: unknown) {
+        return value as binding.MixedArg;
+      },
+      fromBinding(value: unknown) {
+        assert.instanceOf(value, binding.Obj);
+        return wrapObject(value);
+      },
+      // See `[binding.PropertyType.Array]` in `PropertyHelpers.ts`.
+      get(results: binding.Results, index: number) {
+        return results.getObj(index);
+      },
+    };
+
+    // Create the Result for the backlink view.
+    const tableRef = binding.Helpers.getTable(this[REALM].internal, targetObjectSchema.tableKey);
+    const tableView = this[INTERNAL].getBacklinkView(tableRef, targetProperty.columnKey);
     const results = binding.Results.fromTableView(this[REALM].internal, tableView);
+
     return new Results(this[REALM], results, collectionHelpers);
   }
 

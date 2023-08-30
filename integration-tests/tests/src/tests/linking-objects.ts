@@ -106,6 +106,36 @@ class Name extends Realm.Object<Name> {
   };
 }
 
+class Manufacturer extends Realm.Object<Manufacturer> {
+  _id!: Realm.BSON.ObjectId;
+  name!: string;
+  cars!: Realm.List<Car>;
+
+  static schema: Realm.ObjectSchema = {
+    name: "Manufacturer",
+    properties: {
+      _id: "objectId",
+      name: "string",
+      cars: "Car[]",
+    },
+  };
+}
+
+class Car extends Realm.Object<Car> {
+  _id!: Realm.BSON.ObjectId;
+  model!: string;
+  miles?: number;
+
+  static schema: Realm.ObjectSchema = {
+    name: "Car",
+    properties: {
+      _id: "objectId",
+      model: "string",
+      miles: "int?",
+    },
+  };
+}
+
 describe("Linking objects", () => {
   describe("Same class", () => {
     openRealmBeforeEach({ schema: [Person] });
@@ -253,7 +283,7 @@ describe("Linking objects", () => {
     });
   });
   describe("across different classes", () => {
-    openRealmBeforeEach({ schema: [LanguageSchema, CountrySchema] });
+    openRealmBeforeEach({ schema: [LanguageSchema, CountrySchema, Manufacturer, Car] });
     it("count operation", function (this: RealmContext) {
       this.realm.write(() => {
         const english = this.realm.create(LanguageSchema.name, { name: "English" });
@@ -302,6 +332,38 @@ describe("Linking objects", () => {
       const notSpokenMethod2 = languages.filtered("@links.Country.languages.@count == 0"); // links of a specific relationship are 0
       expect(notSpokenMethod2.length).equals(1);
       expect(notSpokenMethod2[0].name).equals("Latin");
+    });
+
+    it("can retrieve all linking objects", async function (this: RealmContext) {
+      // Create a manufacturer with 2 cars.
+      this.realm.write(() => {
+        const sentra = this.realm.create(Car, {
+          _id: new Realm.BSON.ObjectID(),
+          model: "Sentra",
+          miles: 1000,
+        });
+
+        const pathfinder = this.realm.create(Car, {
+          _id: new Realm.BSON.ObjectID(),
+          model: "Pathfinder",
+          miles: 500,
+        });
+
+        this.realm.create(Manufacturer, {
+          _id: new Realm.BSON.ObjectID(),
+          name: "Nissan",
+          cars: [sentra, pathfinder],
+        });
+      });
+
+      const car = this.realm.objects(Car)[0];
+      expect(car.linkingObjectsCount()).to.equal(1);
+
+      const linkedManufacturer = car.linkingObjects(Manufacturer, "cars")[0];
+      expect(linkedManufacturer.name).to.equal("Nissan");
+      expect(linkedManufacturer.cars.length).to.equal(2);
+      expect(linkedManufacturer.cars[0].model).to.equal("Sentra");
+      expect(linkedManufacturer.cars[1].model).to.equal("Pathfinder");
     });
   });
 });
