@@ -1,7 +1,4 @@
-## vNext (TBD)
-
-### Deprecations
-* None
+## 12.1.0 (2023-08-30)
 
 ### Enhancements
 * Added configuration option `migrationOptions.resolveEmbeddedConstraints` to support for automatic resolution of embedded object constraints during migration. ([#6073](https://github.com/realm/realm-js/issues/6073))
