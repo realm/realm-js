@@ -34,12 +34,29 @@ import {
 export type MigrationCallback = (oldRealm: Realm, newRealm: Realm) => void;
 
 /**
+ * This describes options used during schema migration.
+ */
+export type MigrationOptions = {
+  /**
+   * A flag to indicate whether Realm should resolve
+   * embedded object constraints after migration. If this is `true` then all embedded objects
+   * without a parent will be deleted and every embedded object with every embedded object with
+   * one or more references to it will be duplicated so that every referencing object will hold
+   * its own copy of the embedded object.
+   * @default false
+   * @since 12.1.0
+   */
+  resolveEmbeddedConstraints?: boolean;
+};
+
+/**
  * The options used to create a {@link Realm} instance.
  */
 export type BaseConfiguration = {
   /**
    * The path to the file where the Realm database should be stored. For synced Realms, a relative path
-   * is used together with the {@link AppConfiguration.id | app ID} and {@link User.id | user ID} in order to avoid collisions with other apps or users.
+   * is used together with the {@link AppConfiguration.id | app ID} and {@link User.id | user ID} in order
+   * to avoid collisions with other apps or users.
    * An absolute path is left untouched and on some platforms (iOS and Android) the app might not have
    * permissions to create or open the file - permissions are not validated.
    * If a relative path is specified, it is relative to {@link AppConfiguration.baseFilePath}.
@@ -144,6 +161,7 @@ export type BaseConfiguration = {
    * @since 10.14.0
    */
   onFirstOpen?: (realm: Realm) => void;
+  migrationOptions?: MigrationOptions;
 };
 
 export type ConfigurationWithSync = BaseConfiguration & {
@@ -176,6 +194,7 @@ export function validateConfiguration(config: unknown): asserts config is Config
     disableFormatUpgrade,
     encryptionKey,
     onMigration,
+    migrationOptions,
   } = config;
 
   if (path !== undefined) {
@@ -206,6 +225,7 @@ export function validateConfiguration(config: unknown): asserts config is Config
   }
   if (sync !== undefined) {
     assert(!onMigration, "The realm configuration options 'onMigration' and 'sync' cannot both be defined.");
+    assert(!migrationOptions, "The realm configuration options 'migrationOptions' and 'sync' cannot both be defined.");
     assert(inMemory === undefined, "The realm configuration options 'inMemory' and 'sync' cannot both be defined.");
     assert(
       deleteRealmIfMigrationNeeded === undefined,
@@ -236,5 +256,17 @@ export function validateConfiguration(config: unknown): asserts config is Config
         encryptionKey,
       )}.`,
     );
+  }
+  if (migrationOptions) {
+    validateMigrationOptions(migrationOptions);
+  }
+}
+
+function validateMigrationOptions(options: unknown): asserts options is MigrationOptions {
+  assert.object(options, "'migrationOptions'", { allowArrays: false });
+  const { resolveEmbeddedConstraints } = options;
+
+  if (resolveEmbeddedConstraints !== undefined) {
+    assert.boolean(resolveEmbeddedConstraints, "'resolveEmbeddedConstraints' on 'migrationOptions'");
   }
 }
