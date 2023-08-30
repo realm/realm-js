@@ -12,7 +12,7 @@ on:
       server_tag:
         description: The docker tag to use when pulling the server
         type: string
-        default: 3.3.1
+        default: latest
 
 jobs:
   server:
