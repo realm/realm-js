@@ -63,7 +63,8 @@ function addKiosks() {
   if (realm) {
     const products = getProducts();
     realm.write(() => {
-      for (let i = 1; i <= 10; i++) {
+      const NUM_KIOSKS = 10;
+      for (let i = 1; i <= NUM_KIOSKS; i++) {
         realm.create(Kiosk.schema.name, {
           _id: new BSON.ObjectId(),
           storeId: SYNC_STORE_ID,
