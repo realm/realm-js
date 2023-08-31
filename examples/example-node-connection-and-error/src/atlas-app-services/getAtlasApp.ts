@@ -25,6 +25,12 @@ let app: Realm.App | null = null;
 
 export const getAtlasApp = function getAtlasApp() {
   if (!app) {
+    if (ATLAS_APP_ID === "YOUR_APP_ID") {
+      throw new Error(
+        "Please add your Atlas App ID to `src/atlas-app-services/config.ts`. Refer to `README.md` on how to find your ID.",
+      );
+    }
+
     app = new Realm.App({ id: ATLAS_APP_ID });
 
     // Using log level "all", "trace", or "debug" is good for debugging during developing.
