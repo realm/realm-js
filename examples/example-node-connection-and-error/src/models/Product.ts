@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { BSON, ObjectSchema } from "realm";
+import Realm, { BSON, ObjectSchema } from "realm";
 
 /**
  * Current information and inventory about a type of product in a particular store.
