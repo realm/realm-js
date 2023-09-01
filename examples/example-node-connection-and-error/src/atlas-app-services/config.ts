@@ -18,5 +18,8 @@
 
 import { BSON } from "realm";
 
-export const ATLAS_APP_ID = "YOUR_APP_ID";
+// For this example app, the constant below is type annotated as `string` rather
+// than inferred due to the equality check in `src/atlas-app-services/getAtlasApp.ts`
+// verifying that this constant has been set.
+export const ATLAS_APP_ID: string = "YOUR_APP_ID";
 export const SYNC_STORE_ID = new BSON.ObjectId("6426106cb0ad9713140883ed");
