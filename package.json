@@ -54,6 +54,7 @@
   },
   "workspaces": [
     "example",
+    "examples/node-connection-and-error",
     "packages/realm/bindgen/",
     "packages/realm/bindgen/vendor/realm-core/",
     "packages/babel-plugin",
