@@ -118,6 +118,19 @@ function handleConnectionChange(newState: ConnectionState, oldState: ConnectionS
 }
 
 /**
+ * Trigger the connection listener by disconnecting and reconnecting.
+ */
+export function triggerConnectionChange(disconnectAfterMs: number, reconnectAfterMs: number) {
+  if (reconnectAfterMs < disconnectAfterMs) {
+    throw new Error("Reconnecting must be performed after disconnecting.");
+  }
+
+  logger.info(`Triggering disconnection and reconnection in ${disconnectAfterMs / 1000} sec...`);
+  setTimeout(() => realm?.syncSession?.pause(), disconnectAfterMs);
+  setTimeout(() => realm?.syncSession?.resume(), reconnectAfterMs);
+}
+
+/**
  * The sync error listener - Will be invoked when various synchronization errors occur.
  *
  * @see {@link https://github.com/realm/realm-core/blob/master/doc/protocol.md#error-codes | error codes }
@@ -220,7 +233,7 @@ export async function logOut(): Promise<void> {
 /**
  * Configure and open the synced realm.
  */
-export async function openRealm(): Promise<void> {
+export async function openRealm(): Promise<Realm> {
   try {
     if (!currentUser) {
       throw new Error("The user needs to be logged in before the synced Realm can be opened.");
@@ -281,6 +294,7 @@ export async function openRealm(): Promise<void> {
 
     // Listen for changes to the products at the given store ID.
     realm.objects(Product).filtered("storeId = $0", SYNC_STORE_ID).addListener(handleProductsChange);
+    return realm;
   } catch (err: any) {
     logger.error(`Error opening the realm: ${err?.message}`);
     throw err;
