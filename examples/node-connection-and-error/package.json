@@ -1,5 +1,5 @@
 {
-  "name": "@realm/example-node-connection-and-error",
+  "name": "@realm/node-connection-and-error",
   "version": "1.0.0",
   "description": "A skeleton app to be used as a reference for how to use the Realm Node.js SDK specifically around detecting various changes in e.g. connection state, user state, and sync errors",
   "main": "src/index.ts",
