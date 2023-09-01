@@ -34,7 +34,7 @@ export class SensorReading extends Realm.Object {
     properties: {
       _id: { type: "objectId", default: () => new BSON.ObjectID() },
       timestamp: { type: "date", optional: false, default: () => new Date() },
-      uptime: "int",
+      uptime: "float",
       freemem: "int",
       loadAvg: { type: "list", objectType: "float" },
       machineInfo: "MachineInfo",
