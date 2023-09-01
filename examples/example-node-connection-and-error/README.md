@@ -69,7 +69,7 @@ After running the client and seeing the available collections in Atlas, [set rea
 ### Install Node.js dependencies
 
 ```sh
-npm i
+npm install
 ```
 
 ### Run the app
