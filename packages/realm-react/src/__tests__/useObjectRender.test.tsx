@@ -438,6 +438,24 @@ describe("useObject: rendering objects with a Realm.List property", () => {
       fireEvent.press(rerenderButton);
       expect(objectChangeCounter).toHaveBeenCalledTimes(expectedCount);
     });
+    it("will rerender when the realm database is cleared", async () => {
+      await setupTest();
+
+      const initialCount = 2;
+
+      expect(objectChangeCounter).toHaveBeenCalledTimes(initialCount);
+
+      await act(async () => {
+        testRealm.write(() => {
+          testRealm.deleteAll();
+        });
+        forceSynchronousNotifications(testRealm);
+      });
+
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      expect(objectChangeCounter).toHaveBeenCalledTimes(initialCount + 1);
+    });
   });
 
   describe("rendering objects with a Realm.List property", () => {
