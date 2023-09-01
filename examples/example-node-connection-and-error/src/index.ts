@@ -16,7 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { register, logIn, logOut, openRealm, triggerConnectionChange } from "./realm-auth";
+import {
+  register,
+  logIn,
+  logOut,
+  openRealm,
+  triggerConnectionChange,
+  triggerUserEventChange,
+} from "./realm-auth";
 import { addDummyData, updateDummyData, deleteDummyData, getStore } from "./realm-query";
 
 const exampleEmail = "john@doe.com";
@@ -51,9 +58,10 @@ async function main(): Promise<void> {
     console.log(JSON.stringify(firstKiosk, null, 2));
   }
 
-  // Manually trigger the connection listener.
+  // Manually trigger specific listeners.
   const TRIGGER_LISTENER_AFTER_MS = 4000;
-  triggerConnectionChange(TRIGGER_LISTENER_AFTER_MS, TRIGGER_LISTENER_AFTER_MS * 2);
+  triggerUserEventChange(TRIGGER_LISTENER_AFTER_MS);
+  triggerConnectionChange(TRIGGER_LISTENER_AFTER_MS * 2, TRIGGER_LISTENER_AFTER_MS * 4);
 }
 
 main();

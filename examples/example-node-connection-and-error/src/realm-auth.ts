@@ -52,7 +52,7 @@ function resetUser(): void {
 
 /**
  * The user listener - Will be invoked on various user related events including
- * refresh of auth token, refresh token, custom user data, and logout.
+ * refresh of auth token, refresh token, custom user data, removal, and logout.
  */
 function handleUserEventChange(): void {
   if (currentUser) {
@@ -83,6 +83,14 @@ function handleUserEventChange(): void {
         break;
     }
   }
+}
+
+/**
+ * Trigger the user event listener by refreshing the access token.
+ */
+export function triggerUserEventChange(triggerAfterMs: number) {
+  logger.info(`Triggering refresh of access token in ${triggerAfterMs / 1000} sec...`);
+  setTimeout(async () => await currentUser?.refreshCustomData(), triggerAfterMs);
 }
 
 /**
@@ -133,8 +141,14 @@ export function triggerConnectionChange(disconnectAfterMs: number, reconnectAfte
 /**
  * The sync error listener - Will be invoked when various synchronization errors occur.
  *
- * @see {@link https://github.com/realm/realm-core/blob/master/doc/protocol.md#error-codes | error codes }
- * for detailed error codes. Examples:
+ * To trigger, for instance, a session level sync error, you may modify the Document
+ * Permissions in Atlas App Services to NOT allow `Delete`, then rerun this app since
+ * this example will always delete all items in the database at startup.
+ * For how to modify the rules and permissions, see:
+ * {@link https://www.mongodb.com/docs/atlas/app-services/rules/roles/#define-roles---permissions}.
+ *
+ * For detailed error codes, see {@link https://github.com/realm/realm-core/blob/master/doc/protocol.md#error-codes}.
+ * Examples:
  * - 202 (Access token expired)
  * - 225 (Invalid schema change)
  */
@@ -194,11 +208,11 @@ export async function register(email: string, password: string): Promise<boolean
  * Access tokens are created once a user logs in. These tokens are refreshed
  * automatically by the SDK when needed. Manually refreshing the token is only
  * required if requests are sent outside of the SDK. If that's the case, see:
- * https://www.mongodb.com/docs/realm/sdk/node/examples/authenticate-users/#get-a-user-access-token
+ * {@link https://www.mongodb.com/docs/realm/sdk/node/examples/authenticate-users/#get-a-user-access-token}.
  *
  * By default, refresh tokens expire 60 days after they are issued. You can configure this
  * time for your App's refresh tokens to be anywhere between 30 minutes and 180 days. See:
- * https://www.mongodb.com/docs/atlas/app-services/users/sessions/#configure-refresh-token-expiration
+ * {@link https://www.mongodb.com/docs/atlas/app-services/users/sessions/#configure-refresh-token-expiration}.
  */
 export async function logIn(email: string, password: string): Promise<boolean> {
   // If there is already a logged in user, there is no need to reauthenticate.
@@ -317,12 +331,3 @@ function handleExit(code: number): void {
 
 process.on("exit", handleExit);
 process.on("SIGINT", process.exit);
-
-// MISCELLANEOUS NOTES:
-// --------------------
-// * Convenience method to check if connected: `app.syncSession?.isConnected()`
-// * Get user's access token: `user.accessToken`
-// * Get user's refresh token: `user.refreshToken`
-// * See more information on error handling: https://www.mongodb.com/docs/atlas/app-services/sync/error-handling/
-// * Removing the local database (directory: mongodb-realm/) can be useful for certain errors.
-//   * For this example app, the helper command `npm run rm-local-db` is provided.
