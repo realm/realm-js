@@ -37,7 +37,7 @@ export const getAtlasApp = function getAtlasApp() {
     // Lower log levels are recommended in production for performance improvement.
     // logLevels = ["all", "trace", "debug", "detail", "info", "warn", "error", "fatal", "off"];
     // You may import `NumericLogLevel` to get them as numbers starting from 0 (`all`).
-    Realm.setLogLevel("all");
+    Realm.setLogLevel("error");
     Realm.setLogger((logLevel, message) => {
       logger.info(`Log level: ${logLevel} - Log message: ${message}`);
     });
