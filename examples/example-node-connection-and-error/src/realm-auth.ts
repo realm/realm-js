@@ -254,17 +254,17 @@ export async function openRealm(): Promise<void> {
             );
           },
         },
+        // The `ClientResetMode.RecoverOrDiscardUnsyncedChanges` will download a fresh copy
+        // from the server if recovery of unsynced changes is not possible. For read-only
+        // clients, `ClientResetMode.DiscardUnsyncedChanges` is suitable.
+        // Regarding manual client resets, the deprecated `Realm.App.Sync.initiateClientReset()`
+        // was meant for use only when the `clientReset` property on the sync configuration is
+        // set to `ClientResetMode.Manual`. To read more about manual client reset data recovery,
+        // see: https://www.mongodb.com/docs/realm/sdk/node/advanced/client-reset-data-recovery/
         clientReset: {
-          // Download a fresh copy from the server if recovery of unsynced changes is not possible.
           mode: ClientResetMode.RecoverOrDiscardUnsyncedChanges,
           onBefore: handlePreClientReset,
           onAfter: handlePostClientReset,
-
-          // For read-only clients, `ClientResetMode.DiscardUnsyncedChanges` is suitable.
-          // Regarding manual client resets. The deprecated `Realm.App.Sync.initiateClientReset()`
-          // was meant for use only when the `clientReset` property on the sync configuration is
-          // set to `ClientResetMode.Manual`. To read more about manual client reset data recovery, see:
-          // https://www.mongodb.com/docs/realm/sdk/node/advanced/client-reset-data-recovery/
         },
         // The old property for the error callback was called `error`, please use `onError`.
         onError: handleSyncError,
