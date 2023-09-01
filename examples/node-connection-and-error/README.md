@@ -1,4 +1,4 @@
-# Connection State Change & Error Handling In Realm Node.js SDK
+# Connection State Change & Error Handling in Realm Node.js SDK
 
 A skeleton app to be used as a reference for how to use the [Realm Node.js SDK](https://www.mongodb.com/docs/realm/sdk/node/) specifically around detecting various changes in e.g. connection state, user state, and sync errors, in order to better guide developers.
 
