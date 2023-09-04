@@ -19,6 +19,66 @@ The file structure is as follows:
 * `src/config.ts` - contains the configuration (app id)
 * `src/models/` - the model classes
 
+## Altas App Services
+
+To use the app together with Atlas App Services, you need to create an Atlas database and collection. Moreover, you need to create App service and enable Device Sync. 
+
+The schema to use (App Services / Data Access / Schema):
+
+```json
+{
+  "title": "SensorReading",
+  "type": "object",
+  "required": [
+    "_id",
+    "freemem",
+    "timestamp",
+    "uptime"
+  ],
+  "properties": {
+    "_id": {
+      "bsonType": "objectId"
+    },
+    "freemem": {
+      "bsonType": "long"
+    },
+    "loadAvg": {
+      "bsonType": "array",
+      "items": {
+        "bsonType": "float"
+      }
+    },
+    "machineInfo": {
+      "title": "MachineInfo",
+      "type": "object",
+      "required": [
+        "platform",
+        "release"
+      ],
+      "properties": {
+        "platform": {
+          "bsonType": "string"
+        },
+        "release": {
+          "bsonType": "string"
+        }
+      }
+    },
+    "timestamp": {
+      "bsonType": "date"
+    },
+    "uptime": {
+      "bsonType": "float"
+    }
+  }
+}
+```
+
+Data can be visualized by [Charts](https://www.mongodb.com/products/charts). An example is shown below.
+
+![An example on how Charts can visualize incoming data](./charts-example.png)
+
+
 ## How to build and run
 
 You need to clone Realm JavaScript's git repository:
