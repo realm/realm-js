@@ -56,7 +56,7 @@ export function createUseObject(useRealm: () => Realm) {
     // Ref: https://github.com/facebook/react/issues/14490
     const cachedObjectRef = useRef<null | CachedObject>(null);
 
-    if (cachedObjectRef.current === null) {
+    if (!cachedObjectRef.current) {
       cachedObjectRef.current = createCachedObject({
         object: originalObject ?? null,
         realm,
@@ -81,7 +81,7 @@ export function createUseObject(useRealm: () => Realm) {
         // Re-instantiate the cachedObject if the primaryKey has changed or the originalObject has gone from null to not null
         if (
           !arePrimaryKeysIdentical(primaryKey, primaryKeyRef.current) ||
-          (originalObjectRef.current === null && originalObject !== null)
+          (!originalObjectRef.current && originalObject)
         ) {
           cachedObjectRef.current = createCachedObject({
             object: originalObject ?? null,
@@ -138,7 +138,7 @@ export function createUseObject(useRealm: () => Realm) {
     }, [realm, type, forceRerender]);
 
     // If the object has been deleted or doesn't exist for the given primary key, just return null
-    if (object === null || object?.isValid() === false) {
+    if (!object?.isValid()) {
       return null;
     }
 

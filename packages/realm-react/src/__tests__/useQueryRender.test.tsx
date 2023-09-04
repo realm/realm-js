@@ -443,4 +443,23 @@ describe.each`
     fireEvent.press(rerenderButton);
     expect(queryObjectChangeCounter).toHaveBeenCalledTimes(1);
   });
+
+  it("will rerender when the realm database is cleared", async () => {
+    await setupTest({ queryType });
+
+    const initialCount = 1;
+
+    expect(queryObjectChangeCounter).toHaveBeenCalledTimes(initialCount);
+
+    await act(async () => {
+      testRealm.write(() => {
+        testRealm.deleteAll();
+      });
+      forceSynchronousNotifications(testRealm);
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    expect(queryObjectChangeCounter).toHaveBeenCalledTimes(initialCount + 1);
+  });
 });
