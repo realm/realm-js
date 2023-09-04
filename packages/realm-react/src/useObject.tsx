@@ -138,7 +138,7 @@ export function createUseObject(useRealm: () => Realm) {
     }, [realm, type, forceRerender]);
 
     // If the object has been deleted or doesn't exist for the given primary key, just return null
-    if (!object || object?.isValid() === false) {
+    if (!object?.isValid()) {
       return null;
     }
 

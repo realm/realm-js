@@ -452,7 +452,6 @@ describe("useObject: rendering objects with a Realm.List property", () => {
         forceSynchronousNotifications(testRealm);
       });
 
-      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       expect(objectChangeCounter).toHaveBeenCalledTimes(initialCount + 1);
     });
