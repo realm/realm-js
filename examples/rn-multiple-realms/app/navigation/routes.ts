@@ -16,12 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import React from 'react';
-
-import {RootNavigator} from './navigation/RootNavigator';
-
-function App() {
-  return <RootNavigator />;
-}
-
-export default App;
+export const routes = {
+  ACCOUNT: 'Account',
+  HOME: 'Home',
+  MY_LIST: 'My List',
+  SEARCH: 'Search',
+};

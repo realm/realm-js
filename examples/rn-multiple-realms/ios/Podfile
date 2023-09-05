@@ -26,6 +26,9 @@ if linkage != nil
 end
 
 target 'ExampleRnMultipleRealms' do
+  # Adding a manual link to avoid error by wrong podfile linked.
+  pod 'RNVectorIcons', :path => '../node_modules/react-native-vector-icons'
+
   config = use_native_modules!
 
   # Flags change depending on the env values.

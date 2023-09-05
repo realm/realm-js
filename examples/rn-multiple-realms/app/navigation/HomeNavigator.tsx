@@ -17,11 +17,39 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import React from 'react';
+import {Text, View} from 'react-native';
+import {createNativeStackNavigator} from '@react-navigation/native-stack';
 
-import {RootNavigator} from './navigation/RootNavigator';
+import {routes} from './routes';
 
-function App() {
-  return <RootNavigator />;
+const Stack = createNativeStackNavigator();
+
+// TODO: Remove
+function Temp() {
+  return (
+    <View>
+      <Text>TODO</Text>
+    </View>
+  );
 }
 
-export default App;
+export function HomeNavigator() {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen
+        name={routes.HOME}
+        component={Temp}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name={routes.MY_LIST}
+        component={Temp}
+        options={{
+          headerShown: false,
+        }}
+      />
+    </Stack.Navigator>
+  );
+}

@@ -16,12 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import React from 'react';
-
-import {RootNavigator} from './navigation/RootNavigator';
-
-function App() {
-  return <RootNavigator />;
-}
-
-export default App;
+export const colors = {
+  white: '#ffffff',
+  grayDark: '#6e6969',
+  black: '#181818',
+};

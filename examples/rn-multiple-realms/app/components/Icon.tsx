@@ -16,12 +16,27 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import React from 'react';
+import React, {memo} from 'react';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
-import {RootNavigator} from './navigation/RootNavigator';
+type IconProps = {
+  name: string;
+  size: number;
+  color: string;
+};
 
-function App() {
-  return <RootNavigator />;
-}
-
-export default App;
+export const Icon = memo(function ({
+  name,
+  size = 30,
+  color = 'black',
+  ...otherProps
+}: IconProps) {
+  return (
+    <MaterialCommunityIcons
+      name={name}
+      color={color}
+      size={size}
+      {...otherProps}
+    />
+  );
+});

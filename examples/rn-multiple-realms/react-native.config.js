@@ -16,12 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import React from 'react';
-
-import {RootNavigator} from './navigation/RootNavigator';
-
-function App() {
-  return <RootNavigator />;
-}
-
-export default App;
+module.exports = {
+  dependencies: {
+    // When using auto linking, it will automatically add all fonts to the Build Phases, Copy
+    // Pods Resources, which will end up in your bundle. The following is added to avoid that.
+    'react-native-vector-icons': {
+      platforms: {
+        ios: null,
+      },
+    },
+  },
+};
