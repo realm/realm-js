@@ -16,10 +16,27 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export const routes = {
-  ACCOUNT: 'Account',
-  HOME: 'Home',
-  MOVIES: 'Movies',
-  MY_LIST: 'My List',
-  SEARCH: 'Search',
-};
+import React, {useEffect} from 'react';
+import {Text, View} from 'react-native';
+import {useApp, useAuth} from '@realm/react';
+
+// TODO: Consider logging in with a "public" profile rather  than anonymous
+//       in order to cache those login credentials.
+export function AnonymousLogin() {
+  const atlasApp = useApp();
+  const {logInWithAnonymous, result} = useAuth();
+
+  useEffect(() => {
+    // Log in as an anonymous user if there is not a logged in user yet.
+    if (!atlasApp.currentUser && !result.pending) {
+      logInWithAnonymous();
+    }
+  }, [atlasApp.currentUser, logInWithAnonymous, result.pending]);
+
+  // TODO: Replace.
+  return (
+    <View>
+      <Text>Loading...</Text>
+    </View>
+  );
+}

@@ -20,6 +20,9 @@ import React from 'react';
 import {Text, View} from 'react-native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 
+import {HomeScreen} from '../screens/HomeScreen';
+import {Icon} from '../components/Icon';
+import {colors} from '../styles/colors';
 import {routes} from './routes';
 
 const Stack = createNativeStackNavigator();
@@ -37,10 +40,12 @@ export function HomeNavigator() {
   return (
     <Stack.Navigator>
       <Stack.Screen
-        name={routes.HOME}
-        component={Temp}
+        name={routes.MOVIES}
+        component={HomeScreen}
         options={{
-          headerShown: false,
+          headerLeft: () => (
+            <Icon color={colors.red} name="alpha-n" size={50} />
+          ),
         }}
       />
       <Stack.Screen

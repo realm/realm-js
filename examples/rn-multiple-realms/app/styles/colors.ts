@@ -17,7 +17,8 @@
 ////////////////////////////////////////////////////////////////////////////
 
 export const colors = {
-  white: '#ffffff',
-  grayDark: '#6e6969',
   black: '#181818',
+  grayDark: '#6e6969',
+  red: '#e50914',
+  white: '#ffffff',
 };

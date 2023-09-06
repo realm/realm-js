@@ -23,7 +23,7 @@ type IconProps = {
   name: string;
   size: number;
   color: string;
-};
+} & React.ComponentProps<typeof MaterialCommunityIcons>;
 
 export const Icon = memo(function ({
   name,

@@ -16,10 +16,4 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export const routes = {
-  ACCOUNT: 'Account',
-  HOME: 'Home',
-  MOVIES: 'Movies',
-  MY_LIST: 'My List',
-  SEARCH: 'Search',
-};
+export const ATLAS_APP_ID = 'YOUR_APP_ID';

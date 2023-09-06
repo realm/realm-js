@@ -45,25 +45,6 @@ export function RootNavigator() {
           tabBarActiveTintColor: colors.white,
           tabBarInactiveTintColor: colors.grayDark,
         }}>
-        {/* screenOptions={({route}) => ({
-          tabBarIcon: ({focused, color, size}) => {
-            let iconName = '';
-            switch (route.name) {
-              case routes.HOME:
-                iconName = 'home-outline';
-                break;
-              case routes.SEARCH:
-                iconName = 'magnify';
-                break;
-              case routes.ACCOUNT:
-                iconName = 'account-outline';
-                break;
-            }
-            return <Icon name={iconName} color={color} size={size} />;
-          },
-          tabBarActiveTintColor: colors.white,
-          tabBarInactiveTintColor: colors.grayDark,
-        })}> */}
         <Tab.Screen
           name={routes.HOME}
           component={HomeNavigator}
@@ -72,6 +53,7 @@ export function RootNavigator() {
               <Icon name="home-outline" color={color} size={size} />
             ),
             tabBarAccessibilityLabel: routes.HOME,
+            headerShown: false,
           }}
         />
         <Tab.Screen
