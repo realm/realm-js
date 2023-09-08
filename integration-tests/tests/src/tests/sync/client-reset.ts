@@ -345,7 +345,7 @@ function getSchema(useFlexibleSync: boolean) {
           (error: SyncError) => {
             expect(error.name).to.equal("ClientReset");
             expect(error.message).to.equal("Simulate Client Reset");
-            expect(error.code).to.equal(211);
+            expect(error.code).to.equal(1032); // diverging client will cause a client reset (error code 1032)
           },
         );
       });

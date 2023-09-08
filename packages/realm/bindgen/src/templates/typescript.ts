@@ -45,7 +45,7 @@ const PRIMITIVES_MAPPING: Record<string, string> = {
   AppError: "AppError",
   "std::exception_ptr": "Error",
   "std::error_code": "CppErrorCode",
-  Status: "Error", // We don't currently expose the code.
+  Status: "Status",
   EJson: "EJson",
   EJsonArray: "EJson[]",
   EJsonObj: "Record<string, EJson>",
@@ -166,6 +166,12 @@ export function generate({ rawSpec, spec: boundSpec, file }: TemplateContext): v
       constructor(public value: number) {}
       valueOf() { return this.value; }
     }
+    export class Status {
+      public isOk: boolean;
+      public code?: number;
+      public reason?: string;
+      constructor(isOk: boolean) { this.isOk = isOk; }
+    }
   `);
 
   const out = file("native.d.mts", eslint);
@@ -174,7 +180,7 @@ export function generate({ rawSpec, spec: boundSpec, file }: TemplateContext): v
   out("declare module 'realm/binding' {");
 
   out('import { ObjectId, UUID, Decimal128 } from "bson";');
-  out("import { Float, ", spec.enums.map((e) => e.name).join(", "), '} from "realm/binding/core";');
+  out("import { Float, Status, ", spec.enums.map((e) => e.name).join(", "), '} from "realm/binding/core";');
   out('export * from "realm/binding/core";');
 
   out("// Utilities");

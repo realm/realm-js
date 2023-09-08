@@ -126,7 +126,7 @@ records:
 
   SyncError:
    fields:
-     - system_error
+     - status
      - is_fatal
      - simple_message
      - logURL
@@ -165,8 +165,6 @@ records:
       - app_id
       - transport
       - base_url
-      - local_app_name
-      - local_app_version
       - default_request_timeout_ms
       - device_info
 

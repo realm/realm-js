@@ -451,7 +451,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
       const callbackHandle = createPromiseHandle();
 
       const errorCallback: ErrorCallback = (_, error) => {
-        expect(error.code).to.equal(231);
+        expect(error.code).to.equal(1033);
         expect(error.logUrl).to.not.be.empty;
         expect(error.message).to.contain(
           "Client attempted a write that is outside of permissions or query filters; it has been reverted",

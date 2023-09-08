@@ -96,7 +96,7 @@ export function generate({ rawSpec, spec: boundSpec, file }: TemplateContext): v
 
   both(`
     import { Long, ObjectId, UUID, Decimal128, EJSON } from "bson";
-    import { Float } from "./core";
+    import { Float, Status } from "./core";
 
     export * from "./core";
 
@@ -134,6 +134,7 @@ export function generate({ rawSpec, spec: boundSpec, file }: TemplateContext): v
     "Long",
     "ArrayBuffer",
     "Float",
+    "Status",
     "ObjectId",
     "UUID",
     "Decimal128",

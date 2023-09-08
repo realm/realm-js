@@ -214,8 +214,6 @@ export class App<
         appId: id,
         deviceInfo: App.deviceInfo,
         transport: createNetworkTransport(),
-        localAppName: app?.name,
-        localAppVersion: app?.version,
         baseUrl,
         defaultRequestTimeoutMs: timeout ? binding.Int64.numToInt(timeout) : undefined,
       },
