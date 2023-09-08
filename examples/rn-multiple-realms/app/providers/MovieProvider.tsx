@@ -51,7 +51,7 @@ export function MovieProvider({children}: MovieProviderProps) {
   const war = useQuery(Movie, movies => query(movies, 'War'));
   const mystery = useQuery(Movie, movies => query(movies, 'Mystery'));
 
-  const movieGroups = [
+  const movieSections = [
     {category: 'Action', movies: action},
     {category: 'Comedies', movies: comedy},
     {category: 'Biographies', movies: biography},
@@ -67,7 +67,7 @@ export function MovieProvider({children}: MovieProviderProps) {
   ];
 
   return (
-    <MovieContext.Provider value={movieGroups}>
+    <MovieContext.Provider value={movieSections}>
       {children}
     </MovieContext.Provider>
   );

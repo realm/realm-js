@@ -17,54 +17,32 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import React from 'react';
-import {FlatList, Image, StyleSheet, Text, View} from 'react-native';
+import {FlatList, View} from 'react-native';
 
-import {colors} from '../styles/colors';
+import {Loading} from '../components/Loading';
+import {MovieList} from '../components/MovieList';
 import {useMovies} from '../providers/MovieProvider';
 
+/**
+ * Displays the movies by genre/category.
+ */
 export function HomeScreen() {
-  const movies = useMovies();
+  const movieSections = useMovies();
 
   return (
     <View>
+      {/* A loading screen is shown for a few seconds to hide when
+      the on-screen movie posters load from their remote sources. */}
+      <Loading duration={3200} />
       <FlatList
-        data={movies}
-        keyExtractor={movieGroup => movieGroup.category}
-        renderItem={({item: movieGroup}) => (
-          <View>
-            <Text style={styles.category}>{movieGroup.category}</Text>
-            <FlatList
-              data={movieGroup.movies}
-              horizontal
-              keyExtractor={movie => movie._id.toHexString()}
-              renderItem={({item: movie}) => (
-                <Image
-                  source={{uri: movie.poster}}
-                  style={styles.poster}
-                  resizeMode="cover"
-                />
-              )}
-              showsHorizontalScrollIndicator={false}
-            />
-          </View>
+        data={movieSections}
+        initialNumToRender={6}
+        keyExtractor={section => section.category}
+        renderItem={({item: section}) => (
+          <MovieList category={section.category} movies={section.movies} />
         )}
         showsVerticalScrollIndicator={false}
       />
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  category: {
-    marginTop: 20,
-    marginBottom: 5,
-    marginLeft: 5,
-    color: colors.white,
-    fontWeight: 'bold',
-  },
-  poster: {
-    width: 120,
-    height: 170,
-    marginHorizontal: 5,
-  },
-});
