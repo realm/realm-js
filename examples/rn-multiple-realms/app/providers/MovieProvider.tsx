@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import React, {createContext, useContext, useState} from 'react';
+import React, {createContext, useContext} from 'react';
 import type Realm from 'realm';
 import {useQuery} from '@realm/react';
 
@@ -36,90 +36,40 @@ type MovieProviderProps = {
  * Queries and provides the relevant movies using `@realm/react`.
  */
 export function MovieProvider({children}: MovieProviderProps) {
-  const actionMovies = useQuery(Movie, movies =>
-    movies
-      .filtered('"Action" IN genres AND poster != nil')
-      .sorted('released', true),
-  );
-  const comedyMovies = useQuery(Movie, movies =>
-    movies
-      .filtered('"Comedy" IN genres AND poster != nil')
-      .sorted('released', true),
-  );
-  const biographyMovies = useQuery(Movie, movies =>
-    movies
-      .filtered('"Biography" IN genres AND poster != nil')
-      .sorted('released', true),
-  );
-  const familyMovies = useQuery(Movie, movies =>
-    movies
-      .filtered('"Family" IN genres AND poster != nil')
-      .sorted('released', true),
-  );
-  const dramaMovies = useQuery(Movie, movies =>
-    movies
-      .filtered('"Drama" IN genres AND poster != nil')
-      .sorted('released', true),
-  );
-  const crimeMovies = useQuery(Movie, movies =>
-    movies
-      .filtered('"Crime" IN genres AND poster != nil')
-      .sorted('released', true),
-  );
-  const historyMovies = useQuery(Movie, movies =>
-    movies
-      .filtered('"History" IN genres AND poster != nil')
-      .sorted('released', true),
-  );
-  const westernMovies = useQuery(Movie, movies =>
-    movies
-      .filtered('"Western" IN genres AND poster != nil')
-      .sorted('released', true),
-  );
-  const romanceMovies = useQuery(Movie, movies =>
-    movies
-      .filtered('"Romance" IN genres AND poster != nil')
-      .sorted('released', true),
-  );
-  const fantasyMovies = useQuery(Movie, movies =>
-    movies
-      .filtered('"Fantasy" IN genres AND poster != nil')
-      .sorted('released', true),
-  );
-  const warMovies = useQuery(Movie, movies =>
-    movies
-      .filtered('"War" IN genres AND poster != nil')
-      .sorted('released', true),
-  );
-  const mysteryMovies = useQuery(Movie, movies =>
-    movies
-      .filtered('"Mystery" IN genres AND poster != nil')
-      .sorted('released', true),
-  );
+  const query = (movies: Realm.Results<Movie>, genre: string) =>
+    movies.filtered(`'${genre}' IN genres`);
+  const action = useQuery(Movie, movies => query(movies, 'Action'));
+  const comedy = useQuery(Movie, movies => query(movies, 'Comedy'));
+  const biography = useQuery(Movie, movies => query(movies, 'Biography'));
+  const crime = useQuery(Movie, movies => query(movies, 'Crime'));
+  const family = useQuery(Movie, movies => query(movies, 'Family'));
+  const drama = useQuery(Movie, movies => query(movies, 'Drama'));
+  const history = useQuery(Movie, movies => query(movies, 'History'));
+  const western = useQuery(Movie, movies => query(movies, 'Western'));
+  const romance = useQuery(Movie, movies => query(movies, 'Romance'));
+  const fantasy = useQuery(Movie, movies => query(movies, 'Fantasy'));
+  const war = useQuery(Movie, movies => query(movies, 'War'));
+  const mystery = useQuery(Movie, movies => query(movies, 'Mystery'));
 
-  // We are providing the `movies` value via `useState()` and not
-  // expecting the queries to update for this example. If we would
-  // expect the queries to rerun, consider using `useMemo()` here and
-  // add the the query results to its dependency list. Providing a
-  // reference to `movies` in the `MovieContext.Provider value` (rather
-  // than an inline array or object) prevents unnecessary rerenders.
-  const [movies] = useState([
-    {category: 'Action', movies: actionMovies},
-    {category: 'Comedies', movies: comedyMovies},
-    {category: 'Biographies', movies: biographyMovies},
-    {category: 'Family', movies: familyMovies},
-    {category: 'Drama', movies: dramaMovies},
-    {category: 'Crime', movies: crimeMovies},
-    {category: 'History', movies: historyMovies},
-    {category: 'Western', movies: westernMovies},
-    {category: 'Romance', movies: romanceMovies},
-    {category: 'Fantasy', movies: fantasyMovies},
-    {category: 'War', movies: warMovies},
-    {category: 'Mystery', movies: mysteryMovies},
-  ]);
+  const movieGroups = [
+    {category: 'Action', movies: action},
+    {category: 'Comedies', movies: comedy},
+    {category: 'Biographies', movies: biography},
+    {category: 'Crime', movies: crime},
+    {category: 'Family', movies: family},
+    {category: 'Drama', movies: drama},
+    {category: 'History', movies: history},
+    {category: 'Western', movies: western},
+    {category: 'Romance', movies: romance},
+    {category: 'Fantasy', movies: fantasy},
+    {category: 'War', movies: war},
+    {category: 'Mystery', movies: mystery},
+  ];
 
   return (
-    <MovieContext.Provider value={movies}>{children}</MovieContext.Provider>
+    <MovieContext.Provider value={movieGroups}>
+      {children}
+    </MovieContext.Provider>
   );
 }
 
