@@ -17,11 +17,18 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import React, {useEffect} from 'react';
-import {Text, View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 import {useApp, useAuth} from '@realm/react';
 
-// TODO: Consider logging in with a "public" profile rather  than anonymous
-//       in order to cache those login credentials.
+import {colors} from '../styles/colors';
+
+// TODO: Consider logging in with a "public" shared profile rather
+//       than anonymous in order to cache those login credentials.
+
+/**
+ * Component used solely for logging in which is used where only components
+ * are expected (such as the `fallback` prop of @realm/react's `UserProvider`).
+ */
 export function AnonymousLogin() {
   const atlasApp = useApp();
   const {logInWithAnonymous, result} = useAuth();
@@ -33,10 +40,12 @@ export function AnonymousLogin() {
     }
   }, [atlasApp.currentUser, logInWithAnonymous, result.pending]);
 
-  // TODO: Replace.
-  return (
-    <View>
-      <Text>Loading...</Text>
-    </View>
-  );
+  return <View style={styles.container} />;
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: colors.black,
+  },
+});

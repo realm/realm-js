@@ -64,17 +64,15 @@ const getStyles = ({height, width, show}: StylesProp) =>
       position: 'absolute',
       height,
       width,
-      justifyContent: 'center',
       alignItems: 'center',
       backgroundColor: colors.black,
       zIndex: 1,
     },
     logo: {
-      marginBottom: 50,
+      marginBottom: 40,
     },
     text: {
       color: colors.white,
       fontSize: 20,
-      letterSpacing: 1,
     },
   });

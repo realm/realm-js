@@ -19,16 +19,18 @@
 import React, {memo} from 'react';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
+import {colors} from '../styles/colors';
+
 type IconProps = {
   name: string;
   size: number;
-  color: string;
+  color?: string;
 } & React.ComponentProps<typeof MaterialCommunityIcons>;
 
 export const Icon = memo(function ({
   name,
-  size = 30,
-  color = 'black',
+  size,
+  color = colors.white,
   ...otherProps
 }: IconProps) {
   return (
