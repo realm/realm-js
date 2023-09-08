@@ -25,7 +25,11 @@ import {Icon} from '../components/Icon';
 import {colors} from '../styles/colors';
 import {routes} from './routes';
 
-const Stack = createNativeStackNavigator();
+export type HomeNavigatorParamList = {
+  [routes.MOVIES]: undefined;
+  [routes.MY_LIST]: undefined;
+};
+const Stack = createNativeStackNavigator<HomeNavigatorParamList>();
 
 // TODO: Remove
 function Temp() {
@@ -38,13 +42,13 @@ function Temp() {
 
 export function HomeNavigator() {
   return (
-    <Stack.Navigator>
+    <Stack.Navigator screenOptions={{headerTitleAlign: 'center'}}>
       <Stack.Screen
         name={routes.MOVIES}
         component={HomeScreen}
         options={{
           headerLeft: () => (
-            <Icon color={colors.red} name="alpha-n" size={50} />
+            <Icon name="alpha-n" color={colors.red} size={50} />
           ),
         }}
       />

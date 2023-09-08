@@ -18,16 +18,25 @@
 
 import React from 'react';
 import {Text, View} from 'react-native';
-import {DarkTheme, NavigationContainer} from '@react-navigation/native';
+import {
+  DarkTheme,
+  NavigationContainer,
+  NavigatorScreenParams,
+} from '@react-navigation/native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 
 import {AccountScreen} from '../screens/AccountScreen';
-import {HomeNavigator} from './HomeNavigator';
+import {HomeNavigator, HomeNavigatorParamList} from './HomeNavigator';
 import {Icon} from '../components/Icon';
 import {colors} from '../styles/colors';
 import {routes} from './routes';
 
-const Tab = createBottomTabNavigator();
+export type RootNavigatorParamList = {
+  [routes.HOME]: NavigatorScreenParams<HomeNavigatorParamList>;
+  [routes.SEARCH]: undefined;
+  [routes.ACCOUNT]: undefined;
+};
+const Tab = createBottomTabNavigator<RootNavigatorParamList>();
 
 // TODO: Remove
 function Temp() {

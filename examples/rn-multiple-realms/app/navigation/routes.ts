@@ -22,4 +22,4 @@ export const routes = {
   MOVIES: 'Movies',
   MY_LIST: 'My List',
   SEARCH: 'Search',
-};
+} as const;
