@@ -383,7 +383,9 @@ export class SyncSession {
    * This method is asynchronous so in order to know when the session has started you will need
    * to add a connection notification with {@link addConnectionNotification}.
    *
-   * This method is idempotent so it will be a no-op if the session is already paused.
+   * This method is idempotent so it will be a no-op if the session is already paused or if multiplexing
+   * is enabled.
+   * @since 2.16.0-rc.2
    */
   pause() {
     this.withInternal((internal) => internal.forceClose());
@@ -395,10 +397,25 @@ export class SyncSession {
    * This method is asynchronous so in order to know when the session has started you will need
    * to add a connection notification with {@link addConnectionNotification}.
    *
-   * This method is idempotent so it will be a no-op if the session is already started.
+   * This method is idempotent so it will be a no-op if the session is already started or if multiplexing
+   * is enabled.
+   * @since 2.16.0-rc.2
    */
   resume() {
     this.withInternal((internal) => internal.reviveIfNeeded());
+  }
+
+  /**
+   * Reconnects to Altas Device Sync.
+   *
+   * This method is asynchronous so in order to know when the session has started you will need
+   * to add a connection notification with {@link addConnectionNotification}.
+   *
+   * This method is idempotent so it will be a no-op if the session is already started.
+   * @since 12.2.0
+   */
+  reconnect() {
+    this.withInternal((internal) => internal.handleReconnect());
   }
 
   /**
@@ -411,6 +428,7 @@ export class SyncSession {
    * @param callback - Called with the following arguments:
    * 1. `transferred`: The current number of bytes already transferred
    * 2. `transferable`: The total number of transferable bytes (the number of bytes already transferred plus the number of bytes pending transfer)
+   * @since 1.12.0
    */
   addProgressNotification(direction: ProgressDirection, mode: ProgressMode, callback: ProgressNotificationCallback) {
     this.withInternal((internal) => PROGRESS_LISTENERS.add(callback, this.weakInternal, internal, direction, mode));
@@ -419,6 +437,7 @@ export class SyncSession {
    * Unregister a progress notification callback that was previously registered with {@link addProgressNotification}.
    * Calling the function multiple times with the same callback is ignored.
    * @param callback - A previously registered progress callback.
+   * @since 1.12.0
    */
   removeProgressNotification(callback: ProgressNotificationCallback): void {
     PROGRESS_LISTENERS.remove(callback);
@@ -429,6 +448,7 @@ export class SyncSession {
    * @param callback - Called with the following arguments:
    * 1. `newState`: The new state of the connection
    * 2. `oldState`: The state the connection transitioned from.
+   * @since 2.15.0
    */
   addConnectionNotification(callback: ConnectionNotificationCallback) {
     this.withInternal((internal) => CONNECTION_LISTENERS.add(callback, this.weakInternal, internal));
@@ -438,6 +458,7 @@ export class SyncSession {
    * Unregister a state notification callback that was previously registered with addStateNotification.
    * Calling the function multiple times with the same callback is ignored.
    * @param callback - A previously registered state callback.
+   * @since 2.15.0
    */
   removeConnectionNotification(callback: ConnectionNotificationCallback): void {
     CONNECTION_LISTENERS.remove(callback);
