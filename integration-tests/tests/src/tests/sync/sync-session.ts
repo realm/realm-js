@@ -531,24 +531,6 @@ describe("SessionTest", () => {
       await waitForConnectionState(session, "connected");
       expect(session.isConnected()).to.be.false;
     });
-
-    it("reconnecting", async function (this: AppContext) {
-      const credentials = Realm.Credentials.anonymous();
-      const user = await this.app.logIn(credentials);
-      const partition = generatePartition();
-      const config = getSyncConfiguration(user, partition);
-
-      const realm = await Realm.open(config);
-
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const session = realm.syncSession!;
-      await waitForConnectionState(session, "connected");
-
-      session.reconnect();
-
-      await waitForConnectionState(session, "connected");
-      expect(session.isConnected()).to.be.true;
-    });
   });
 
   describe("upload and download data", () => {

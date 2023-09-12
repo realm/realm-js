@@ -167,9 +167,7 @@ export class Sync {
   static _hasExistingSessions(app: App) {
     return app.internal.syncManager.hasExistingSessions;
   }
-  /**
-   * @deprecated
-   */
+  // TODO: Consider breaking the API, turning this into an instance method
   static reconnect(app: App) {
     app.internal.syncManager.reconnect();
   }

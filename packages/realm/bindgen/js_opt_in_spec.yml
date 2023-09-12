@@ -525,7 +525,6 @@ classes:
       - unregister_connection_change_callback
       - revive_if_needed
       - force_close
-      - handle_reconnect
       # JS-specific
       - DOLLAR_resetSharedPtr
 
