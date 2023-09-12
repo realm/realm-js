@@ -7,8 +7,7 @@
 * None
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None
+* Fixed that value for `Realm.schemaVersion` wasn't propagated correctly for non-existing files. ([#6119](https://github.com/realm/realm-js/issues/6119), since v12.0.0)
 
 ### Compatibility
 * React Native >= v0.71.4

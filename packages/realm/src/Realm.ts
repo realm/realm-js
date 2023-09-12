@@ -376,13 +376,17 @@ export class Realm {
    * @returns Version of the schema as an integer, or `-1` if no Realm exists at {@link path}.
    */
   public static schemaVersion(path: string, encryptionKey?: ArrayBuffer | ArrayBufferView): number {
+    const notFound = 18446744073709551615n; // std::numeric_limit<uint64_t>::max() = 0xffffffffffffffff
     const config: Configuration = { path };
     const absolutePath = Realm.determinePath(config);
     const schemaVersion = binding.Realm.getSchemaVersion({
       path: absolutePath,
       encryptionKey: Realm.determineEncryptionKey(encryptionKey),
     });
-    return binding.Int64.intToNum(schemaVersion);
+    // no easy way to compare uint64_t in TypeScript
+    return notFound.toString() === schemaVersion.toString()
+      ? binding.Int64.intToNum(-1)
+      : binding.Int64.intToNum(schemaVersion);
   }
 
   /**
