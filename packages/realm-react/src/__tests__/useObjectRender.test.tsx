@@ -452,7 +452,6 @@ describe("useObject: rendering objects with a Realm.List property", () => {
         forceSynchronousNotifications(testRealm);
       });
 
-
       expect(objectChangeCounter).toHaveBeenCalledTimes(initialCount + 1);
     });
   });
