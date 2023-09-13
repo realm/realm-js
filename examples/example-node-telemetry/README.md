@@ -25,14 +25,14 @@ The following shows the project structure and the most relevant files.
 
 This app focuses on showing how to use Data Ingest for heavy client-side insert-only workloads. It specifically addresses the following points:
 
-* Using the Data Ingest sync strategy via asymmetric Realm objects.
+* Using the [Data Ingest](https://www.mongodb.com/docs/atlas/app-services/sync/configure/sync-settings/#data-ingest) sync strategy via asymmetric Realm objects.
 * Reading sensor data (system load averages, uptime, and free memory).
-* Inserting sensor data every few seconds and syncing it to Atlas.
-* (The data in Atlas can be visualized via Atlas Charts, but since this is a Node.js app, the visualization is not shown.)
+* Inserting sensor data every few seconds and syncing it to [Atlas](https://www.mongodb.com/atlas).
+* (The data in Atlas can be visualized via [Atlas Charts](https://www.mongodb.com/products/charts), but since this is a Node.js app, the visualization is not shown.)
 
 ### Realm Details
 
-* RealmJS version: ^12.1.0
+* [Realm JavaScript](https://github.com/realm/realm-js) version: ^12.1.0
 * Device Sync type: [Flexible](https://www.mongodb.com/docs/realm/sdk/node/sync/flexible-sync/) with [Data Ingest](https://www.mongodb.com/docs/atlas/app-services/sync/configure/sync-settings/#data-ingest)
 
 ## Getting Started
@@ -40,6 +40,7 @@ This app focuses on showing how to use Data Ingest for heavy client-side insert-
 ### Prerequisites
 
 * [Node.js](https://nodejs.org/)
+* An [Atlas App Service](https://www.mongodb.com/docs/atlas/app-services/) account
 
 ### Set Up an Atlas App Services App
 
@@ -47,7 +48,7 @@ To sync Realm data you must first:
 
 1. [Create an App Services App](https://www.mongodb.com/docs/atlas/app-services/manage-apps/create/create-with-ui/)
 2. [Enable Anonymous Authentication](https://www.mongodb.com/docs/atlas/app-services/authentication/anonymous/)
-3. [Enable Flexible Sync](https://www.mongodb.com/docs/atlas/app-services/sync/configure/enable-sync/) with **Development Mode** on.
+3. [Enable Flexible Sync](https://www.mongodb.com/docs/atlas/app-services/sync/configure/enable-sync/) with **[Development Mode](https://www.mongodb.com/docs/atlas/app-services/sync/configure/sync-settings/#development-mode)** on.
 
 After running the client and seeing the available collection in Atlas, [set write permissions](https://www.mongodb.com/docs/atlas/app-services/rules/roles/#define-roles---permissions) for the collection.
 
@@ -114,22 +115,19 @@ You need to clone Realm JavaScript's git repository:
 
 ```sh
 git clone https://github.com/realm/realm-js
-cd realm-js
-git submodule update --init --recursive
 ```
 
 Moreover, you need to install the dependencies for this app:
 
 ```sh
-cd examples/example-node-telemetry
+cd realm-js/examples/example-node-telemetry
 npm install
 ```
 
 Before building the app, you need to add your app id to `src/config.ts`. After that, you can build and run the app:
 
 ```sh
-npm run build
-node dist/app.js
+npm start
 ```
 
 You can enable debug messages:
