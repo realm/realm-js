@@ -51,7 +51,7 @@ To sync Realm data you must first:
 
 After running the client and seeing the available collection in Atlas, [set write permissions](https://www.mongodb.com/docs/atlas/app-services/rules/roles/#define-roles---permissions) for the collection.
 
-The schema to use (App Services / Data Access / Schema):
+The following schema will automatically be created in **Development Mode** and you can find it at `App Services / Data Access / Schema` in the Atlas App Service UI:
 
 ```json
 {
@@ -102,10 +102,11 @@ The schema to use (App Services / Data Access / Schema):
 }
 ```
 
-Data can be visualized by [Charts](https://www.mongodb.com/products/charts). An example is shown below.
+### Visualize Data
 
-![An example on how Charts can visualize incoming data](./charts-example.png)
+Data can be visualized by [Charts](https://www.mongodb.com/products/charts). An example from a [dashboard](Charts/Dashboard.charts) is shown below.
 
+![An example on how Charts can visualize incoming data](Charts/charts-example.png)
 
 ## How to build and run
 

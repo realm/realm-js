@@ -16,18 +16,18 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import os from "node:os";
+import * as os from "node:os";
 import { machineId } from "node-machine-id";
 
 import createDebug from "debug";
 export const debug = createDebug("realm:telemetry");
 
-import Realm from "realm";
-import { MachineInfo } from "./models/machine_info";
-import { SensorReading } from "./models/sensor_reading";
+import * as Realm from "realm";
+import { MachineInfo } from "./models/MachineInfo";
+import { SensorReading } from "./models/SensorReading";
 import { config } from "./config";
 
-const tenSeconds = 10 * 1000;
+const INSERT_DATA_INTERVAL = 10_000 as const;
 
 /**
  * Samples system's load and memory
@@ -45,11 +45,11 @@ function readSensorData() {
  * the platform/operating system and its version/release
  * @returns machine identifier, platform, and version/release
  */
-async function readMachineInfo() {
+async function readMachineInfo(): Promise<MachineInfo> {
   const identifier = await machineId();
   const platform = os.platform();
   const release = os.release();
-  return { identifier, platform, release };
+  return { identifier, platform, release } as MachineInfo;
 }
 
 async function main() {
@@ -80,14 +80,14 @@ async function main() {
   const intervalId = setInterval(() => {
     const now = new Date();
     const measurement = readSensorData();
-    const obj: SensorReading = {
+    const obj = {
       timestamp: now,
       machineInfo,
       ...measurement,
-    };
+    } as unknown as SensorReading;
     debug("Writing new sensor reading");
     realm.write(() => realm.create(SensorReading, obj));
-  }, tenSeconds);
+  }, INSERT_DATA_INTERVAL);
 
   // Catch CTRL-C in a nice way
   process.stdin.resume();

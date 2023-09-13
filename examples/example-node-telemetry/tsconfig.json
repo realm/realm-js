@@ -1,15 +1,19 @@
 {
 	"compilerOptions": {
 		"target": "es2018",
+		"module": "CommonJS",
 		"moduleResolution": "node",
-		"noEmit": true,
+		"noEmit": false,
 		"forceConsistentCasingInFileNames": true,
 		"types": [
 			"node",
 		],
 		"lib": [
 			"es2019"
-		]
+		],
+		"declaration": true,
+		"outDir": "./dist",
+		"skipLibCheck": true
 	},
 	"include": [
 		"src/**/*.ts"

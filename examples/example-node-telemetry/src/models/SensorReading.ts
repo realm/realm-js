@@ -16,23 +16,23 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import Realm, { BSON, ObjectSchema } from "realm";
-import { MachineInfo } from "./machine_info";
+import * as Realm from "realm";
+import { MachineInfo } from "./MachineInfo";
 
 export class SensorReading extends Realm.Object {
-  _id!: BSON.ObjectId;
+  _id!: Realm.BSON.ObjectId;
   timestamp!: Date;
   uptime!: number;
   freemem!: number;
   loadAvg!: Realm.List<number>;
   machineInfo!: MachineInfo;
 
-  static schema: ObjectSchema = {
+  static schema: Realm.ObjectSchema = {
     name: "SensorReading",
     asymmetric: true,
     primaryKey: "_id",
     properties: {
-      _id: { type: "objectId", default: () => new BSON.ObjectId() },
+      _id: { type: "objectId", default: () => new Realm.BSON.ObjectId() },
       timestamp: "date",
       uptime: "float",
       freemem: "int",

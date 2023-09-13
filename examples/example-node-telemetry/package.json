@@ -5,7 +5,7 @@
   "description": "A demonstration of how to use data ingest to store and visualize sensor data",
   "main": "src/app.ts",
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
+    "build": "tsc -p tsconfig.json",
     "lint": "eslint --ext .js,.mjs,.ts .",
     "start": "npm run build && node dist/app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
