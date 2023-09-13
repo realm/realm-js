@@ -24,7 +24,7 @@ export class SensorReading extends Realm.Object {
   timestamp!: Date;
   uptime!: number;
   freemem!: number;
-  loadAvg!: [number];
+  loadAvg!: Realm.List<number>;
   machineInfo!: MachineInfo;
 
   static schema: ObjectSchema = {
@@ -32,11 +32,11 @@ export class SensorReading extends Realm.Object {
     asymmetric: true,
     primaryKey: "_id",
     properties: {
-      _id: { type: "objectId", default: () => new BSON.ObjectID() },
-      timestamp: { type: "date", optional: false, default: () => new Date() },
+      _id: { type: "objectId", default: () => new BSON.ObjectId() },
+      timestamp: "date",
       uptime: "float",
       freemem: "int",
-      loadAvg: { type: "list", objectType: "float" },
+      loadAvg: "float[]",
       machineInfo: "MachineInfo",
     },
   };

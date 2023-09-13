@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import * as os from "os";
+import os from "node:os";
 import { machineId } from "node-machine-id";
 
 import createDebug from "debug";
@@ -53,15 +53,19 @@ async function readMachineInfo() {
 }
 
 async function main() {
-  // Initialize the app using the app id. You need to copy it from https://realm.mongodb.com
+  // Initialize the app using the App ID. To copy it, see:
+  // https://www.mongodb.com/docs/atlas/app-services/apps/metadata/#std-label-find-your-app-id
   const app = new Realm.App(config.appId);
   debug(`App ${config.appId} has been initiated`);
-  // We are using an anonymous user, and you can switch to any auth provider if needed
+
+  // We are using an anonymous user for this example app, but you can modify this to
+  // use any of the available auth providers.
   debug(`Logging in`);
   const user = await app.logIn(Realm.Credentials.anonymous());
   debug(`User ${user.id} has been logged in`);
-  // For data ingest (`asymmetric: true` in `SensorReading`) you don't need any
-  // subscriptions for flexible sync
+
+  // For Data Ingest (`asymmetric: true` in the `SensorReading` schema) you don't need
+  // to set up any subscriptions for flexible sync since no data will be synced to the device.
   debug("Opening Realm");
   const realm = await Realm.open({
     schema: [SensorReading, MachineInfo],
@@ -71,18 +75,18 @@ async function main() {
     },
   });
 
-  // The metadata about the computer will not change
+  // The metadata about the computer will not change, thus we only read it once.
   const machineInfo = await readMachineInfo();
   const intervalId = setInterval(() => {
     const now = new Date();
     const measurement = readSensorData();
-    const obj = {
+    const obj: SensorReading = {
       timestamp: now,
       machineInfo,
       ...measurement,
     };
     debug("Writing new sensor reading");
-    realm.write(() => realm.create(SensorReading.name, obj));
+    realm.write(() => realm.create(SensorReading, obj));
   }, tenSeconds);
 
   // Catch CTRL-C in a nice way
@@ -93,7 +97,7 @@ async function main() {
     clearInterval(intervalId);
     debug("Sync any outstanding changes");
     await realm.syncSession?.uploadAllLocalChanges();
-    debug("Cloing Realm");
+    debug("Closing Realm");
     realm.close();
     debug(`Logging out user ${user.id}`);
     await user.logOut();

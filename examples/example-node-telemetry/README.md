@@ -1,27 +1,55 @@
-# Telemetry demo app using data ingest and Atlas Charts
+# Telemetry demo app using Data Ingest and Atlas Charts
 
-A [node.js](https://nodejs.org) application to demonstrate how to use [Atlas Device Sync](https://www.mongodb.com/atlas/app-services/device-sync) and [Realm JavaScript](https://github.com/realm/realm-js) to read sensor data, store the data in [Atlas](https://www.mongodb.com/atlas), and visualize it with [Charts](https://www.mongodb.com/products/charts).
+A [Node.js](https://nodejs.org) application to demonstrate how to use [Atlas Device Sync](https://www.mongodb.com/atlas/app-services/device-sync) and the [Realm Node.js SDK](https://www.mongodb.com/docs/realm/sdk/node/) to read sensor data, store the data in [Atlas](https://www.mongodb.com/atlas), and visualize it with [Atlas Charts](https://www.mongodb.com/products/charts). [Data Ingest](https://www.mongodb.com/docs/atlas/app-services/sync/configure/sync-settings/#data-ingest) is enabled since this app uses insert-only workloads.
 
-The file structure is as follows:
+## Project Structure
+
+The following shows the project structure and the most relevant files.
 
 ```
-├── README.md
-├── package.json
 ├── src
-│   ├── app.ts
-│   ├── config.ts
-│   └── models
-│       ├── machine_info.ts
-│       └── sensor_reading.ts
+│   ├── models
+│   │   ├── machine_info.ts
+│   │   └── sensor_reading.ts
+│   ├── app.ts
+│   └── config.ts
+├── package.json
+└── README.md
 ```
 
 * `src/app.ts` - the actual application
-* `src/config.ts` - contains the configuration (app id)
+* `src/config.ts` - contains the configuration (Atlas App ID)
 * `src/models/` - the model classes
 
-## Altas App Services
+## Use Cases
 
-To use the app together with Atlas App Services, you need to create an Atlas database and collection. Moreover, you need to create App service and enable Device Sync. 
+This app focuses on showing how to use Data Ingest for heavy client-side insert-only workloads. It specifically addresses the following points:
+
+* Using the Data Ingest sync strategy via asymmetric Realm objects.
+* Reading sensor data (system load averages, uptime, and free memory).
+* Inserting sensor data every few seconds and syncing it to Atlas.
+* (The data in Atlas can be visualized via Atlas Charts, but since this is a Node.js app, the visualization is not shown.)
+
+### Realm Details
+
+* RealmJS version: ^12.1.0
+* Device Sync type: [Flexible](https://www.mongodb.com/docs/realm/sdk/node/sync/flexible-sync/) with [Data Ingest](https://www.mongodb.com/docs/atlas/app-services/sync/configure/sync-settings/#data-ingest)
+
+## Getting Started
+
+### Prerequisites
+
+* [Node.js](https://nodejs.org/)
+
+### Set Up an Atlas App Services App
+
+To sync Realm data you must first:
+
+1. [Create an App Services App](https://www.mongodb.com/docs/atlas/app-services/manage-apps/create/create-with-ui/)
+2. [Enable Anonymous Authentication](https://www.mongodb.com/docs/atlas/app-services/authentication/anonymous/)
+3. [Enable Flexible Sync](https://www.mongodb.com/docs/atlas/app-services/sync/configure/enable-sync/) with **Development Mode** on.
+
+After running the client and seeing the available collection in Atlas, [set write permissions](https://www.mongodb.com/docs/atlas/app-services/rules/roles/#define-roles---permissions) for the collection.
 
 The schema to use (App Services / Data Access / Schema):
 
