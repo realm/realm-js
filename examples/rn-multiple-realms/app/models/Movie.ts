@@ -28,9 +28,9 @@ export class Movie extends Realm.Object<Movie> {
   _id!: BSON.ObjectId;
   title!: string;
   plot?: string;
-  fullPlot?: string;
+  fullplot?: string;
   genres!: Realm.List<string>;
-  runtime!: number;
+  runtime?: number;
   cast!: Realm.List<string>;
   poster?: string;
   languages!: Realm.List<string>;
@@ -47,9 +47,9 @@ export class Movie extends Realm.Object<Movie> {
       _id: 'objectId',
       title: 'string',
       plot: 'string?',
-      fullPlot: 'string?',
+      fullplot: 'string?',
       genres: 'string[]',
-      runtime: 'int',
+      runtime: 'int?',
       cast: 'string[]',
       poster: 'string?',
       languages: 'string[]',

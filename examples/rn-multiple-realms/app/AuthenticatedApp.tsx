@@ -30,12 +30,14 @@ const realmSyncConfig: Partial<SyncConfiguration> = {
   flexible: true,
   initialSubscriptions: {
     update: (mutableSubs, realm) => {
-      // In order to sync a preferred subset of movies to the device, we subscribe
-      // to all movies from 2005 and later that has the `poster` field defined.
+      // In order to sync a preferred subset of movies to the device, we subscribe to all
+      // movies from 2005 and later that has the `poster` and `fullplot` fields defined.
       mutableSubs.add(
         realm
           .objects(Movie)
-          .filtered('type == "movie" AND year >= 2005 AND poster != nil'),
+          .filtered(
+            'type == "movie" AND year >= 2005 AND poster != nil AND fullplot != nil',
+          ),
         {name: 'allMovies'},
       );
     },
