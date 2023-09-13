@@ -24,9 +24,10 @@ import {Movie} from '../models/Movie';
 import {MovieItem} from './MovieItem';
 import {colors} from '../styles/colors';
 
-type MovieCategoryListProps = {
+type MovieListProps = {
   category: string;
   movies: Realm.Results<Movie>;
+  onItemPress: (movie: Movie) => void;
 };
 
 /**
@@ -37,7 +38,8 @@ type MovieCategoryListProps = {
 export const MovieList = memo(function ({
   category,
   movies,
-}: MovieCategoryListProps) {
+  onItemPress,
+}: MovieListProps) {
   return movies.length ? (
     <View>
       <Text style={styles.category}>{category}</Text>
@@ -46,7 +48,9 @@ export const MovieList = memo(function ({
         horizontal
         initialNumToRender={5}
         keyExtractor={movie => movie._id.toHexString()}
-        renderItem={({item: movie}) => <MovieItem movie={movie} />}
+        renderItem={({item: movie}) => (
+          <MovieItem movie={movie} onPress={onItemPress} />
+        )}
         showsHorizontalScrollIndicator={false}
       />
     </View>

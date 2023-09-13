@@ -16,26 +16,48 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import React, {createContext, useContext} from 'react';
+import React, {ReactNode, createContext, useContext, useState} from 'react';
 import type Realm from 'realm';
 import {useQuery} from '@realm/react';
 
 import {Movie} from '../models/Movie';
 
+/**
+ * Values available to consumers of the `MovieContext`.
+ */
 type MovieContextType = {
-  category: string;
-  movies: Realm.Results<Movie>;
-}[];
-const MovieContext = createContext<MovieContextType>([]);
+  /**
+   * All movies grouped by category
+   */
+  movieSections: {
+    category: string;
+    movies: Realm.Results<Movie>;
+  }[];
+  /**
+   * The movie selected to view more information about.
+   */
+  selectedMovie: Movie | null;
+  /**
+   * Function to set the selected movie.
+   */
+  setSelectedMovie: (movie: Movie) => void;
+};
+const MovieContext = createContext<MovieContextType>({
+  movieSections: [],
+  selectedMovie: null,
+  setSelectedMovie: () => {},
+});
 
 type MovieProviderProps = {
-  children: React.ReactNode;
+  children: ReactNode;
 };
 
 /**
  * Queries and provides the relevant movies using `@realm/react`.
  */
 export function MovieProvider({children}: MovieProviderProps) {
+  const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
+
   const query = (movies: Realm.Results<Movie>, genre: string) =>
     movies.filtered(`'${genre}' IN genres`);
   const action = useQuery(Movie, movies => query(movies, 'Action'));
@@ -66,8 +88,10 @@ export function MovieProvider({children}: MovieProviderProps) {
     {category: 'Mystery', movies: mystery},
   ];
 
+  const contextValue = {movieSections, selectedMovie, setSelectedMovie};
+
   return (
-    <MovieContext.Provider value={movieSections}>
+    <MovieContext.Provider value={contextValue}>
       {children}
     </MovieContext.Provider>
   );

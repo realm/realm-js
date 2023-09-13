@@ -16,18 +16,35 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import React from 'react';
+import React, {useCallback} from 'react';
 import {FlatList, View} from 'react-native';
+import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 
+import {HomeNavigatorParamList} from '../navigation/HomeNavigator';
 import {Loading} from '../components/Loading';
+import {Movie} from '../models/Movie';
 import {MovieList} from '../components/MovieList';
+import {routes} from '../navigation/routes';
 import {useMovies} from '../providers/MovieProvider';
 
+type HomeScreenProps = NativeStackScreenProps<
+  HomeNavigatorParamList,
+  typeof routes.MOVIES
+>;
+
+// TODO: Rename to MoviesScreen
 /**
  * Displays the movies by genre/category.
  */
-export function HomeScreen() {
-  const movieSections = useMovies();
+export function HomeScreen({navigation: {navigate}}: HomeScreenProps) {
+  const {movieSections, setSelectedMovie} = useMovies();
+  const showMovieInfo = useCallback(
+    (movie: Movie) => {
+      setSelectedMovie(movie);
+      navigate(routes.MOVIE);
+    },
+    [navigate, setSelectedMovie],
+  );
 
   return (
     <View>
@@ -39,7 +56,11 @@ export function HomeScreen() {
         initialNumToRender={6}
         keyExtractor={section => section.category}
         renderItem={({item: section}) => (
-          <MovieList category={section.category} movies={section.movies} />
+          <MovieList
+            category={section.category}
+            movies={section.movies}
+            onItemPress={showMovieInfo}
+          />
         )}
         showsVerticalScrollIndicator={false}
       />

@@ -17,29 +17,21 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import React from 'react';
-import {Text, View} from 'react-native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 
 import {HomeScreen} from '../screens/HomeScreen';
+import {MovieInfoScreen} from '../screens/MovieInfoScreen';
 import {Icon} from '../components/Icon';
 import {colors} from '../styles/colors';
 import {routes} from './routes';
 
 export type HomeNavigatorParamList = {
   [routes.MOVIES]: undefined;
-  [routes.MY_LIST]: undefined;
+  [routes.MOVIE]: undefined;
 };
 const Stack = createNativeStackNavigator<HomeNavigatorParamList>();
 
-// TODO: Remove
-function Temp() {
-  return (
-    <View>
-      <Text>TODO</Text>
-    </View>
-  );
-}
-
+// TODO: Rename to MoviesNavigator
 export function HomeNavigator() {
   return (
     <Stack.Navigator screenOptions={{headerTitleAlign: 'center'}}>
@@ -53,8 +45,8 @@ export function HomeNavigator() {
         }}
       />
       <Stack.Screen
-        name={routes.MY_LIST}
-        component={Temp}
+        name={routes.MOVIE}
+        component={MovieInfoScreen}
         options={{
           headerShown: false,
         }}

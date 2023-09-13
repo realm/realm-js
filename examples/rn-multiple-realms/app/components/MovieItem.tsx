@@ -17,31 +17,39 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import React, {memo} from 'react';
-import {Image, StyleSheet} from 'react-native';
+import {Image, Pressable, StyleSheet} from 'react-native';
 
 import {Movie} from '../models/Movie';
 
 type MovieItemProps = {
   movie: Movie;
+  onPress: (movie: Movie) => void;
 };
 
-export const MovieItem = memo(function ({movie}: MovieItemProps) {
+export const MovieItem = memo(function ({movie, onPress}: MovieItemProps) {
   return (
-    <Image
-      accessibilityLabel={movie.title}
-      alt={movie.title}
-      defaultSource={require('../assets/movie-placeholder.png')}
-      source={{uri: movie.poster}}
-      style={styles.poster}
-      resizeMode="cover"
-    />
+    <Pressable
+      onPress={() => onPress(movie)}
+      style={({pressed}) => pressed && styles.pressed}>
+      <Image
+        accessibilityLabel={movie.title}
+        alt={movie.title}
+        defaultSource={require('../assets/movie-placeholder.png')}
+        source={{uri: movie.poster}}
+        style={styles.poster}
+        resizeMode="cover"
+      />
+    </Pressable>
   );
 });
 
 const styles = StyleSheet.create({
+  pressed: {
+    opacity: 0.5,
+  },
   poster: {
     width: 120,
     height: 170,
-    marginHorizontal: 5,
+    marginHorizontal: 4,
   },
 });
