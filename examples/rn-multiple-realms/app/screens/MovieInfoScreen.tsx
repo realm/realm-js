@@ -30,15 +30,15 @@ import {
 } from 'react-native';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 
-import {HomeNavigatorParamList} from '../navigation/HomeNavigator';
 import {Icon} from '../components/Icon';
+import {MoviesNavigatorParamList} from '../navigation/MoviesNavigator';
 import {colors} from '../styles/colors';
 import {routes} from '../navigation/routes';
 import {useAccountInfo} from '../hooks/useAccountInfo';
 import {useMovies} from '../providers/MovieProvider';
 
 type MovieInfoScreenProps = NativeStackScreenProps<
-  HomeNavigatorParamList,
+  MoviesNavigatorParamList,
   typeof routes.MOVIE
 >;
 
@@ -48,7 +48,7 @@ export function MovieInfoScreen({navigation}: MovieInfoScreenProps) {
 
   const handleAddToMyList = useCallback(() => {
     if (isPublicAccount) {
-      return Alert.alert('Log in to add movies to My List.');
+      return Alert.alert('Log in to add and sync movies to My List.');
     }
 
     // TODO: Add to My List.

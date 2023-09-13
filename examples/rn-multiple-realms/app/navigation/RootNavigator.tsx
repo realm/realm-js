@@ -26,13 +26,13 @@ import {
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 
 import {AccountScreen} from '../screens/AccountScreen';
-import {HomeNavigator, HomeNavigatorParamList} from './HomeNavigator';
 import {Icon} from '../components/Icon';
+import {MoviesNavigator, MoviesNavigatorParamList} from './MoviesNavigator';
 import {colors} from '../styles/colors';
 import {routes} from './routes';
 
 export type RootNavigatorParamList = {
-  [routes.HOME]: NavigatorScreenParams<HomeNavigatorParamList>;
+  [routes.HOME]: NavigatorScreenParams<MoviesNavigatorParamList>;
   [routes.SEARCH]: undefined;
   [routes.ACCOUNT]: undefined;
 };
@@ -58,7 +58,7 @@ export function RootNavigator() {
         }}>
         <Tab.Screen
           name={routes.HOME}
-          component={HomeNavigator}
+          component={MoviesNavigator}
           options={{
             headerShown: false,
             tabBarAccessibilityLabel: routes.HOME,

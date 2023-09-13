@@ -19,25 +19,24 @@
 import React from 'react';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 
-import {HomeScreen} from '../screens/HomeScreen';
-import {MovieInfoScreen} from '../screens/MovieInfoScreen';
 import {Icon} from '../components/Icon';
+import {MovieInfoScreen} from '../screens/MovieInfoScreen';
+import {MoviesScreen} from '../screens/MoviesScreen';
 import {colors} from '../styles/colors';
 import {routes} from './routes';
 
-export type HomeNavigatorParamList = {
+export type MoviesNavigatorParamList = {
   [routes.MOVIES]: undefined;
   [routes.MOVIE]: undefined;
 };
-const Stack = createNativeStackNavigator<HomeNavigatorParamList>();
+const Stack = createNativeStackNavigator<MoviesNavigatorParamList>();
 
-// TODO: Rename to MoviesNavigator
-export function HomeNavigator() {
+export function MoviesNavigator() {
   return (
     <Stack.Navigator screenOptions={{headerTitleAlign: 'center'}}>
       <Stack.Screen
         name={routes.MOVIES}
-        component={HomeScreen}
+        component={MoviesScreen}
         options={{
           headerLeft: () => (
             <Icon name="alpha-n" color={colors.red} size={50} />

@@ -20,23 +20,22 @@ import React, {useCallback} from 'react';
 import {FlatList, View} from 'react-native';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 
-import {HomeNavigatorParamList} from '../navigation/HomeNavigator';
 import {Loading} from '../components/Loading';
 import {Movie} from '../models/Movie';
 import {MovieList} from '../components/MovieList';
+import {MoviesNavigatorParamList} from '../navigation/MoviesNavigator';
 import {routes} from '../navigation/routes';
 import {useMovies} from '../providers/MovieProvider';
 
-type HomeScreenProps = NativeStackScreenProps<
-  HomeNavigatorParamList,
+type MoviesScreenProps = NativeStackScreenProps<
+  MoviesNavigatorParamList,
   typeof routes.MOVIES
 >;
 
-// TODO: Rename to MoviesScreen
 /**
  * Displays the movies by genre/category.
  */
-export function HomeScreen({navigation: {navigate}}: HomeScreenProps) {
+export function MoviesScreen({navigation: {navigate}}: MoviesScreenProps) {
   const {movieSections, setSelectedMovie} = useMovies();
   const showMovieInfo = useCallback(
     (movie: Movie) => {
