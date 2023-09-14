@@ -1337,6 +1337,25 @@ describe("Realmtest", () => {
       });
     });
 
+    describe("schemaVersion", () => {
+      importAppBefore(buildAppConfig("with-pbs").anonAuth().partitionBasedSync());
+
+      [true, false].forEach((encryption) => {
+        it(`yields correct value on a local realm (encryption = ${encryption})`, () => {
+          const encryptionKey = new Int8Array(64);
+          const config = {
+            path: `${new Realm.BSON.UUID().toHexString()}.realm`,
+            schema: [TestObject],
+            encryptionKey: encryption ? encryptionKey : undefined,
+          };
+
+          expect(Realm.schemaVersion(config.path, config.encryptionKey)).equals(-1);
+          new Realm(config).close();
+          expect(Realm.schemaVersion(config.path, config.encryptionKey)).equals(0);
+        });
+      });
+    });
+
     describe("exists", () => {
       importAppBefore(buildAppConfig("with-pbs").anonAuth().partitionBasedSync());
 

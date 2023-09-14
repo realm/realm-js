@@ -374,15 +374,18 @@ export class Realm {
    * @param encryptionKey - Required only when accessing encrypted Realms.
    * @throws An {@link Error} if passing an invalid or non-matching encryption key.
    * @returns Version of the schema as an integer, or `-1` if no Realm exists at {@link path}.
+   * @since 0.11.0
    */
   public static schemaVersion(path: string, encryptionKey?: ArrayBuffer | ArrayBufferView): number {
+    const notFound = 18446744073709551615n; // std::numeric_limit<uint64_t>::max() = 0xffffffffffffffff
     const config: Configuration = { path };
     const absolutePath = Realm.determinePath(config);
     const schemaVersion = binding.Realm.getSchemaVersion({
       path: absolutePath,
       encryptionKey: Realm.determineEncryptionKey(encryptionKey),
     });
-    return binding.Int64.intToNum(schemaVersion);
+    // no easy way to compare uint64_t in TypeScript
+    return notFound.toString() === schemaVersion.toString() ? -1 : binding.Int64.intToNum(schemaVersion);
   }
 
   /**
