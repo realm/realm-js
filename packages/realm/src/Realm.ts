@@ -374,6 +374,7 @@ export class Realm {
    * @param encryptionKey - Required only when accessing encrypted Realms.
    * @throws An {@link Error} if passing an invalid or non-matching encryption key.
    * @returns Version of the schema as an integer, or `-1` if no Realm exists at {@link path}.
+   * @since 0.11.0
    */
   public static schemaVersion(path: string, encryptionKey?: ArrayBuffer | ArrayBufferView): number {
     const notFound = 18446744073709551615n; // std::numeric_limit<uint64_t>::max() = 0xffffffffffffffff
