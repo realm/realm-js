@@ -386,7 +386,7 @@ export class Realm {
     });
     // no easy way to compare uint64_t in TypeScript
     return notFound.toString() === schemaVersion.toString()
-      ? binding.Int64.intToNum(-1)
+      ? -1
       : binding.Int64.intToNum(schemaVersion);
   }
 
