@@ -385,9 +385,7 @@ export class Realm {
       encryptionKey: Realm.determineEncryptionKey(encryptionKey),
     });
     // no easy way to compare uint64_t in TypeScript
-    return notFound.toString() === schemaVersion.toString()
-      ? -1
-      : binding.Int64.intToNum(schemaVersion);
+    return notFound.toString() === schemaVersion.toString() ? -1 : binding.Int64.intToNum(schemaVersion);
   }
 
   /**
