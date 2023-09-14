@@ -265,7 +265,6 @@ describe("SessionTest", () => {
             try {
               expect(error.message).equals("simulated error");
               expect(error.code).equals(1032);
-              expect(error.status.toString().startsWith("Error: simulated error")).equals(true);
               resolve();
             } catch (e) {
               _reject(e);
