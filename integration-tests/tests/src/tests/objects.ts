@@ -1335,4 +1335,38 @@ describe("Realm.Object", () => {
       expect(objFromKey?.age).equals(7);
     });
   });
+
+  // from https://github.com/realm/realm-js/issues/6129
+  describe("Primary key and property with default value", () => {
+    const PrimaryAndDefaultSchema: Realm.ObjectSchema = {
+      name: "MySchema",
+      primaryKey: "id",
+      properties: {
+        id: { type: "int" },
+        fieldOne: { type: "string" },
+        fieldTwo: { type: "string", default: "DEFAULT_VALUE" },
+      },
+    };
+    openRealmBeforeEach({ schema: [PrimaryAndDefaultSchema] });
+
+    [Realm.UpdateMode.All, Realm.UpdateMode.Modified].forEach((updateMode) => {
+      it(`Update properties (updateMode = ${updateMode})`, async function (this: Mocha.Context & RealmContext) {
+        this.realm.write(() => {
+          this.realm.create(PrimaryAndDefaultSchema.name, {
+            id: 1337,
+            fieldOne: "SOME_VALUE",
+            fieldTwo: "NOT_DEFAULT_VALUE",
+          });
+        });
+
+        this.realm.write(() => {
+          this.realm.create(PrimaryAndDefaultSchema.name, { id: 1337, fieldOne: "SOME_OTHER_VALUE" }, updateMode);
+        });
+
+        const obj = this.realm.objectForPrimaryKey(PrimaryAndDefaultSchema.name, 1337);
+        expect(obj?.fieldOne).equals("SOME_OTHER_VALUE");
+        expect(obj?.fieldTwo).equals("NOT_DEFAULT_VALUE");
+      });
+    });
+  });
 });

@@ -232,7 +232,7 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
           result[propertyName] = propertyValue;
         }
       } else {
-        if (typeof defaultValue !== "undefined") {
+        if (created && typeof defaultValue !== "undefined") {
           result[propertyName] = typeof defaultValue === "function" ? defaultValue() : defaultValue;
         } else if (
           !(property.type & binding.PropertyType.Collection) &&
