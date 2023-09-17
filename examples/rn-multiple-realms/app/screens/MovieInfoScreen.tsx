@@ -71,7 +71,6 @@ export function MovieInfoScreen({navigation}: MovieInfoScreenProps) {
   return movie ? (
     <View style={styles.container}>
       <ImageBackground
-        accessibilityLabel={movie.title}
         alt={movie.title}
         defaultSource={require('../assets/movie-placeholder.png')}
         source={{uri: movie.poster}}
@@ -79,12 +78,16 @@ export function MovieInfoScreen({navigation}: MovieInfoScreenProps) {
         resizeMode="cover">
         {/* Back button */}
         <Pressable
+          accessibilityLabel="Go back"
+          accessibilityHint="Navigates to the previous screen"
           onPress={() => navigation.goBack()}
           style={({pressed}) => [styles.backButton, pressed && styles.pressed]}>
           <Icon name="arrow-left" color={colors.white} size={25} />
         </Pressable>
         {/* Play button */}
         <Pressable
+          accessibilityLabel="Play"
+          accessibilityHint="Placeholder play button but does not support play."
           onPress={() =>
             Alert.alert('This example app does not support playing movies.')
           }
@@ -104,6 +107,9 @@ export function MovieInfoScreen({navigation}: MovieInfoScreenProps) {
         )}
         <View style={styles.myList}>
           <Pressable
+            accessibilityLabel={
+              existsInMyList(movie) ? 'Remove from My List' : 'Add to My List'
+            }
             onPress={handlePressMyList}
             style={({pressed}) => pressed && styles.pressed}>
             <Icon

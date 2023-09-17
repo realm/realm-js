@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import React, {useCallback} from 'react';
-import {FlatList, View} from 'react-native';
+import {FlatList, StyleSheet, View} from 'react-native';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 
 import {Loading} from '../components/Loading';
@@ -46,7 +46,7 @@ export function MoviesScreen({navigation: {navigate}}: MoviesScreenProps) {
   );
 
   return (
-    <View>
+    <View style={styles.container}>
       {/* A loading screen is shown for a few seconds to hide when
       the on-screen movie posters load from their remote sources. */}
       <Loading duration={3200} />
@@ -66,3 +66,9 @@ export function MoviesScreen({navigation: {navigate}}: MoviesScreenProps) {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+});

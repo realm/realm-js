@@ -63,6 +63,7 @@ export function AccountScreen() {
       style={styles.container}>
       <Icon name="alpha-n" color={colors.red} size={200} style={styles.logo} />
       <TextInput
+        accessibilityLabel="Enter email"
         autoCapitalize="none"
         autoCorrect={false}
         keyboardAppearance="dark"
@@ -75,6 +76,7 @@ export function AccountScreen() {
         value={email}
       />
       <TextInput
+        accessibilityLabel="Enter password"
         keyboardAppearance="dark"
         onChangeText={setPassword}
         placeholder="Password"
