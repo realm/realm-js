@@ -42,17 +42,31 @@ type MovieInfoScreenProps = NativeStackScreenProps<
   typeof routes.MOVIE
 >;
 
+/**
+ * Displays information about a movie along with the option to add or
+ * remove it from `My List`.
+ */
 export function MovieInfoScreen({navigation}: MovieInfoScreenProps) {
-  const {selectedMovie: movie} = useMovies();
+  const {
+    selectedMovie: movie,
+    addToMyList,
+    removeFromMyList,
+    existsInMyList,
+  } = useMovies();
   const {isPublicAccount} = useAccountInfo();
 
-  const handleAddToMyList = useCallback(() => {
+  const handlePressMyList = useCallback(() => {
     if (isPublicAccount) {
       return Alert.alert('Log in to add and sync movies to My List.');
     }
-
-    // TODO: Add to My List.
-  }, [isPublicAccount]);
+    if (movie) {
+      if (existsInMyList(movie)) {
+        removeFromMyList(movie);
+      } else {
+        addToMyList(movie);
+      }
+    }
+  }, [isPublicAccount, movie, addToMyList, removeFromMyList, existsInMyList]);
 
   return movie ? (
     <View style={styles.container}>
@@ -90,10 +104,10 @@ export function MovieInfoScreen({navigation}: MovieInfoScreenProps) {
         )}
         <View style={styles.myList}>
           <Pressable
-            onPress={handleAddToMyList}
+            onPress={handlePressMyList}
             style={({pressed}) => pressed && styles.pressed}>
             <Icon
-              name="plus"
+              name={existsInMyList(movie) ? 'check' : 'plus'}
               color={isPublicAccount ? colors.grayDark : colors.white}
               size={30}
             />
