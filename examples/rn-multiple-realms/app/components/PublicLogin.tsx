@@ -22,14 +22,18 @@ import {useApp, useAuth} from '@realm/react';
 
 import {colors} from '../styles/colors';
 
-// TODO: Consider logging in with a "public" shared profile rather
-//       than anonymous in order to cache those login credentials.
-
 /**
  * Component used solely for logging in which is used where only components
- * are expected (such as the `fallback` prop of @realm/react's `UserProvider`).
+ * are expected (such as the `fallback` prop of `@realm/react`'s `UserProvider`).
+ * This logs a user in using Anonymous Authentication. To read more, see:
+ * {@link https://www.mongodb.com/docs/atlas/app-services/authentication/anonymous/}.
+ *
+ * @note
+ * Another alternative for representing a "public" user could be to use the
+ * same email/password credentials for such users which could be stored among
+ * environment variables. This way, a new App user is not created for each login.
  */
-export function AnonymousLogin() {
+export function PublicLogin() {
   const atlasApp = useApp();
   const {logInWithAnonymous, result} = useAuth();
 

@@ -21,19 +21,24 @@ import {StatusBar, StyleSheet, View} from 'react-native';
 import {AppProvider, UserProvider} from '@realm/react';
 
 import {ATLAS_APP_ID} from './atlas-app-services/config';
-import {AnonymousLogin} from './components/AnonymousLogin';
+import {PublicLogin} from './components/PublicLogin';
 import {AuthenticatedApp} from './AuthenticatedApp';
 
+/**
+ * The root React component which renders `@realm/react`'s `AppProvider`
+ * for instantiation an Atlas App Services App, and `UserProvider` for
+ * providing the App User once authenticated.
+ */
 function App() {
   return (
     <View style={styles.container}>
       <StatusBar animated barStyle="light-content" />
       <AppProvider id={ATLAS_APP_ID}>
-        {/* The component set as the `fallback` prop will be rendered if a user has not been
-        authenticated. In this case, we will log in as an anonymous user. Once authenticated,
-        `RealmProvider` will have access to the user and set it in the Realm configuration;
-        therefore, you do not have to explicitly provide the user here. */}
-        <UserProvider fallback={AnonymousLogin}>
+        {/* The component set as the `fallback` prop will be rendered if a user has not
+        been authenticated. In this case, we will log in as a public/anonymous user. Once
+        authenticated, `RealmProvider` will have access to the user and set it in the Realm
+        configuration; therefore, you do not have to explicitly provide the user here. */}
+        <UserProvider fallback={PublicLogin}>
           <AuthenticatedApp />
         </UserProvider>
       </AppProvider>
