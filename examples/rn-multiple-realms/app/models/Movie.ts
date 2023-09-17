@@ -20,8 +20,8 @@ import Realm, {BSON, ObjectSchema} from 'realm';
 
 /**
  * A movie in MongoDB's Mflix sample dataset.
- * (Most, but not all, fields of the dataset are defined here.)
  *
+ * @note Most, but not all, fields of the dataset are defined here.
  * @see https://www.mongodb.com/docs/atlas/sample-data/sample-mflix/#std-label-mflix-movies
  */
 export class Movie extends Realm.Object<Movie> {
@@ -45,7 +45,7 @@ export class Movie extends Realm.Object<Movie> {
     primaryKey: '_id',
     properties: {
       _id: 'objectId',
-      title: 'string',
+      title: {type: 'string', indexed: true},
       plot: 'string?',
       fullplot: 'string?',
       genres: 'string[]',

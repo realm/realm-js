@@ -37,6 +37,7 @@ import {useAccountInfo} from '../hooks/useAccountInfo';
  * is anonymous, or showing the account information if the user is already
  * logged in with their email.
  *
+ * @note
  * For this example app, users are logged in automatically as anonymous
  * users so that all users can see what content exists. In this app, they
  * are referred to as "public". Once they log in using their email and
@@ -55,7 +56,7 @@ export function AccountScreen() {
   }, [email, password, result.operation, result.success, logIn]);
 
   return isPublicAccount ? (
-    // Login/Registration view.
+    // View for logging in or registering.
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={50}
@@ -104,7 +105,7 @@ export function AccountScreen() {
       </View>
     </KeyboardAvoidingView>
   ) : (
-    // Authenticated account view.
+    // View with account info for users who are already logged in.
     <View style={styles.container}>
       <Icon name="alpha-n" color={colors.red} size={200} style={styles.logo} />
       <View style={styles.accountInfo}>

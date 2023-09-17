@@ -31,6 +31,9 @@ export type MoviesNavigatorParamList = {
 };
 const Stack = createNativeStackNavigator<MoviesNavigatorParamList>();
 
+/**
+ * Navigator for the movie screens.
+ */
 export function MoviesNavigator() {
   return (
     <Stack.Navigator screenOptions={{headerTitleAlign: 'center'}}>

@@ -47,6 +47,9 @@ function Temp() {
   );
 }
 
+/**
+ * Navigator for the bottom tabs.
+ */
 export function RootNavigator() {
   return (
     <NavigationContainer theme={DarkTheme}>
