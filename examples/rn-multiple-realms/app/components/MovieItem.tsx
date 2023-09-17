@@ -26,6 +26,9 @@ type MovieItemProps = {
   onPress: (movie: Movie) => void;
 };
 
+/**
+ * Displays a movie list item.
+ */
 export const MovieItem = memo(function ({movie, onPress}: MovieItemProps) {
   return (
     <Pressable

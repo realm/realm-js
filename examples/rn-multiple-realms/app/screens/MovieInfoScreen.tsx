@@ -140,8 +140,6 @@ const styles = StyleSheet.create({
     marginTop: StatusBar.currentHeight ? StatusBar.currentHeight + 10 : 50,
     marginLeft: 20,
     alignSelf: 'flex-start',
-    borderWidth: 1,
-    borderColor: 'transparent',
     borderRadius: 25,
     backgroundColor: 'rgba(0, 0, 0, 0.2)',
   },

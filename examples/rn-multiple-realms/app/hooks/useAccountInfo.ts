@@ -21,9 +21,11 @@ import {ProviderType} from 'realm';
 import {useUser} from '@realm/react';
 
 /**
- * Hook for checking information about an account, such as if the
- * user is using a public/anonymous account or not. This hook can
- * only be used if it is a child of `@realm/react`'s `UserProvider`.
+ * Hook for checking information about an account, such as if the user
+ * is using a public/anonymous account or not.
+ *
+ * @note
+ * Can only be used if within the subtree of `@realm/react`'s `UserProvider`.
  */
 export function useAccountInfo() {
   const user = useUser();
