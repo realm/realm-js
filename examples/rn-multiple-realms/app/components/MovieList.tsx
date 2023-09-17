@@ -26,7 +26,7 @@ import {colors} from '../styles/colors';
 
 type MovieListProps = {
   category: string;
-  movies: Realm.Results<Movie>;
+  movies: Realm.Results<Movie> | Realm.List<Movie>;
   onItemPress: (movie: Movie) => void;
 };
 

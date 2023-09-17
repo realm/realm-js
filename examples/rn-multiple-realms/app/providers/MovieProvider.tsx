@@ -16,36 +16,49 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import React, {ReactNode, createContext, useContext, useState} from 'react';
+import React, {
+  ReactNode,
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+} from 'react';
 import type Realm from 'realm';
-import {useQuery} from '@realm/react';
+import {useQuery, useRealm} from '@realm/react';
 
 import {Movie} from '../models/Movie';
+import {PrivateContent} from '../models/PrivateContent';
 
 /**
  * Values available to consumers of the `MovieContext`.
  */
 type MovieContextType = {
   /**
-   * All movies grouped by category
+   * All movies grouped by category.
    */
   movieSections: {
     category: string;
-    movies: Realm.Results<Movie>;
+    // `My List` is a `Realm.List<Movie>` while the other
+    // movie categories will yield `Realm.Results<Movie>`.
+    movies: Realm.Results<Movie> | Realm.List<Movie>;
   }[];
   /**
    * The movie selected to view more information about.
    */
   selectedMovie: Movie | null;
-  /**
-   * Function to set the selected movie.
-   */
   setSelectedMovie: (movie: Movie) => void;
+  addToMyList: (movie: Movie) => void;
+  removeFromMyList: (movie: Movie) => void;
+  existsInMyList: (movie: Movie) => boolean;
 };
 const MovieContext = createContext<MovieContextType>({
   movieSections: [],
   selectedMovie: null,
   setSelectedMovie: () => {},
+  addToMyList: () => {},
+  removeFromMyList: () => {},
+  existsInMyList: () => false,
 });
 
 type MovieProviderProps = {
@@ -56,8 +69,14 @@ type MovieProviderProps = {
  * Queries and provides the relevant movies using `@realm/react`.
  */
 export function MovieProvider({children}: MovieProviderProps) {
+  const realm = useRealm();
+
+  // The selected movie will decide which movie is shown on the
+  // `MovieInfoScreen` when a movie item is pressed from the list.
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
 
+  // Query movies of certain genres. (A helper `query()` function is
+  // defined to simplify the argument passed to `useQuery()`).
   const query = (movies: Realm.Results<Movie>, genre: string) =>
     movies.filtered(`'${genre}' IN genres`);
   const action = useQuery(Movie, movies => query(movies, 'Action'));
@@ -73,7 +92,48 @@ export function MovieProvider({children}: MovieProviderProps) {
   const war = useQuery(Movie, movies => query(movies, 'War'));
   const mystery = useQuery(Movie, movies => query(movies, 'Mystery'));
 
+  // When a user registers with email and password, a `PrivateContent` document
+  // is automatically created (we set this up via an Atlas Trigger (`onNewUser`)
+  // which calls an Atlas Function (`createPrivateContent`), see `README.md`).
+  // Here we query the private content. This will only be populated if the account
+  // is private due to the `initialSubscriptions` defined as a prop to `RealmProvider`
+  // in `AuthenticatedApp.tsx`. Since that subscription already filters the `PrivateContent`
+  // to the currently logged in user, we do not need to filter that here. Moreover,
+  // the backend in Atlas App Services is set up to only allow reads and writes
+  // to a user's own `PrivateContent` document.
+  const privateContent = useQuery(PrivateContent);
+
+  const myList = useMemo(
+    () => privateContent[0]?.myList || [],
+    [privateContent],
+  );
+
+  const existsInMyList = useCallback(
+    (movie: Movie) => myList.includes(movie),
+    [myList],
+  );
+
+  const addToMyList = useCallback(
+    (movie: Movie) => {
+      if (!existsInMyList(movie)) {
+        realm.write(() => myList.unshift(movie));
+      }
+    },
+    [realm, myList, existsInMyList],
+  );
+
+  const removeFromMyList = useCallback(
+    (movie: Movie) => {
+      const index = myList.indexOf(movie);
+      if (index >= 0) {
+        realm.write(() => myList.remove(index));
+      }
+    },
+    [realm, myList],
+  );
+
   const movieSections = [
+    {category: 'My List', movies: myList},
     {category: 'Action', movies: action},
     {category: 'Comedies', movies: comedy},
     {category: 'Biographies', movies: biography},
@@ -88,7 +148,14 @@ export function MovieProvider({children}: MovieProviderProps) {
     {category: 'Mystery', movies: mystery},
   ];
 
-  const contextValue = {movieSections, selectedMovie, setSelectedMovie};
+  const contextValue = {
+    movieSections,
+    selectedMovie,
+    setSelectedMovie,
+    addToMyList,
+    removeFromMyList,
+    existsInMyList,
+  };
 
   return (
     <MovieContext.Provider value={contextValue}>
@@ -97,4 +164,7 @@ export function MovieProvider({children}: MovieProviderProps) {
   );
 }
 
+/**
+ * @returns The context value of the `MovieContext.Provider`.
+ */
 export const useMovies = () => useContext(MovieContext);
