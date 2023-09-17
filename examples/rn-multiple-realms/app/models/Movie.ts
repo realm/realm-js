@@ -24,7 +24,7 @@ import Realm, {BSON, ObjectSchema} from 'realm';
  * @note Most, but not all, fields of the dataset are defined here.
  * @see https://www.mongodb.com/docs/atlas/sample-data/sample-mflix/#std-label-mflix-movies
  */
-export class Movie extends Realm.Object<Movie> {
+export class Movie extends Realm.Object {
   _id!: BSON.ObjectId;
   title!: string;
   plot?: string;

@@ -25,7 +25,7 @@ import {Movie} from './Movie';
  * rather than via a public/anonymous login. This content includes movies
  * saved to `My List` which can be synced to the user's other devices.
  */
-export class PrivateContent extends Realm.Object<PrivateContent> {
+export class PrivateContent extends Realm.Object {
   _id!: BSON.ObjectId;
   /** The Atlas App user ID (i.e. `app.currentUser.id`). */
   userId!: string;
