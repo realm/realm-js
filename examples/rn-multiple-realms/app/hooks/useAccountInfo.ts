@@ -23,12 +23,13 @@ import {useUser} from '@realm/react';
 /**
  * Hook for checking information about an account, such as if the
  * user is using a public/anonymous account or not. This hook can
- * only be used if it is a child of @realm/react's `UserProvider`.
+ * only be used if it is a child of `@realm/react`'s `UserProvider`.
  */
 export function useAccountInfo() {
   const user = useUser();
   const accountInfo = useMemo(
     () => ({
+      userId: user.id,
       email: user.profile.email,
       isPublicAccount: user.providerType === ProviderType.AnonUser,
     }),
