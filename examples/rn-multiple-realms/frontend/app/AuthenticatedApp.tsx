@@ -58,6 +58,8 @@ export function AuthenticatedApp() {
 
   return (
     // Define the Realm configuration as props passed to `RealmProvider`.
+    // Note that `user` does not need to be defined in the `sync` config
+    // since the `RealmProvider` will set it for you once authenticated.
     <RealmProvider
       schema={[Movie, PrivateContent]}
       sync={{

@@ -23,7 +23,7 @@ import {Movie} from './Movie';
 /**
  * The private content of a user who has logged in using email and password
  * rather than via a public/anonymous login. This content includes movies
- * saved to `My List` which can be synced to the user's other devices.
+ * saved to `My List` which can be synced to Atlas and other devices.
  */
 export class PrivateContent extends Realm.Object {
   _id!: BSON.ObjectId;

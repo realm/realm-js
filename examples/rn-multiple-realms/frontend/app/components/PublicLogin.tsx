@@ -32,13 +32,17 @@ import {colors} from '../styles/colors';
  * Another alternative for representing a "public" user could be to use the
  * same email/password credentials for such users which could be stored among
  * environment variables. This way, a new App user is not created for each login.
+ * You would then need to modify the backend to not create `PrivateContent`
+ * documents for these users, and refactor code relying on public users using
+ * anonymous authentication.
  */
 export function PublicLogin() {
   const atlasApp = useApp();
   const {logInWithAnonymous, result} = useAuth();
 
   useEffect(() => {
-    // Log in as an anonymous user if there is not a logged in user yet.
+    // Log in as an anonymous user if there is not a logged in user yet. Also
+    // check `!result.pending` to prevent simultaneous authentication operations.
     if (!atlasApp.currentUser && !result.pending) {
       logInWithAnonymous();
     }

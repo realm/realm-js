@@ -35,9 +35,7 @@ function App() {
       <StatusBar animated barStyle="light-content" />
       <AppProvider id={ATLAS_APP_ID}>
         {/* The component set as the `fallback` prop will be rendered if a user has not
-        been authenticated. In this case, we will log in as a public/anonymous user. Once
-        authenticated, `RealmProvider` will have access to the user and set it in the Realm
-        configuration; therefore, you do not have to explicitly provide the user here. */}
+        been authenticated. In this case, we will log in as a public/anonymous user. */}
         <UserProvider fallback={PublicLogin}>
           <AuthenticatedApp />
         </UserProvider>

@@ -127,7 +127,7 @@ You can either choose to set up your App via a CLI (where the configurations are
 
 To import and deploy changes from your local directory to App Services you can use the command line interface [Realm CLI / App Services CLI](https://www.mongodb.com/docs/atlas/app-services/cli/). Use the provided [backend directory](./backend/) as your App.
 
-**Modifications needed:**
+Modifications needed:
 
 * Cluster Name
   * Update the [`"clusterName"`](./backend/data_sources/mongodb-atlas/config.json) to the name of your cluster.
