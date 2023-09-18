@@ -1,0 +1,12 @@
+[
+    {
+        "name": "createPrivateContent",
+        "private": true,
+        "disable_arg_logs": true
+    },
+    {
+        "name": "deletePrivateContent",
+        "private": true,
+        "disable_arg_logs": true
+    }
+]

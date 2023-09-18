@@ -16,4 +16,5 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export const ATLAS_APP_ID = 'YOUR_APP_ID';
+export const ATLAS_APP_ID = 'mflix-woumg';
+// export const ATLAS_APP_ID = 'YOUR_APP_ID';
