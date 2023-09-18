@@ -12,8 +12,6 @@
 * Full text search supports searching for prefix only e.g., `description TEXT 'alex*'`. ([realm/realm-core#6860](https://github.com/realm/realm-core/issues/6860))
 * Unknown protocol errors received from the Altas Device Sync server will no longer cause the app to crash if a valid error action is also received. Unknown error actions will cause device sync to fail with an error via the sync error handler. ([realm/realm-core#6885](https://github.com/realm/realm-core/pull/6885))
 * Allow arguments to Realm Query Language to be a string representation of a geospatial object for `GEOWITHIN` queries. ([realm/realm-core#6934](https://github.com/realm/realm-core/issues/6934))
-
-### Fixed
 * Crash when querying the size of a Object property through a link chain. ([realm/realm-core#6915](https://github.com/realm/realm-core/issues/6915), since v12.0.0)
 
 ### Compatibility
@@ -25,7 +23,6 @@
 * Upgraded Realm Core from v13.17.2 to v13.20.0. ([#6077](https://github.com/realm/realm-js/issues/6077)
 * Sync protocol version bumped to 10. ([realm/realm-core#6902](https://github.com/realm/realm-core/pull/6902))
 * Error code reported in the sync error handling for compensating writes is reported as 1033 (previously 231). ([#6077](https://github.com/realm/realm-js/issues/6077)
-
 
 ## 12.1.0 (2023-08-30)
 
