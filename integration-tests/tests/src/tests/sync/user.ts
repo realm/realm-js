@@ -105,6 +105,9 @@ describe.skipIf(environment.missingServer, "User", () => {
   });
 
   describe("autoverify email password works", () => {
+    importAppBefore(buildAppConfig("with-email-password").emailPasswordAuth());
+    removeExistingUsers();
+
     const validEmail = randomVerifiableEmail();
     const invalidEmail = randomNonVerifiableEmail();
     const invalidPassword = "pass"; // too short
