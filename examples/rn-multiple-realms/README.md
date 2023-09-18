@@ -6,10 +6,12 @@ A Netflix-like example app showcasing how to use different Realms in [MongoDB's 
 
 ## Screenshots
 
-<img src="frontend/app/assets/screenshot-home.png" width="350" alt="Home screen">
-<img src="frontend/app/assets/screenshot-movie.png" width="350" alt="Movie screen">
-<img src="frontend/app/assets/screenshot-account-logged-out.png" width="350" alt="Account screen when logged out">
-<img src="frontend/app/assets/screenshot-account-logged-in.png" width="350" alt="Account screen when logged in">
+<div style="display: flex">
+  <img src="frontend/app/assets/screenshot-home.png" width="350" alt="Home screen">
+  <img src="frontend/app/assets/screenshot-movie.png" width="350" alt="Movie screen">
+  <img src="frontend/app/assets/screenshot-account-logged-out.png" width="350" alt="Account screen when logged out">
+  <img src="frontend/app/assets/screenshot-account-logged-in.png" width="350" alt="Account screen when logged in">
+</div>
 
 ## Project Structure
 
