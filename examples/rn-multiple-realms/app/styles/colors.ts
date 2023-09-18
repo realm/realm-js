@@ -18,6 +18,7 @@
 
 export const colors = {
   black: '#181818',
+  blue: '#377de3',
   grayDark: '#6e6969',
   red: '#e50914',
   white: '#ffffff',

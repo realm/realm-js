@@ -21,5 +21,5 @@ export const routes = {
   HOME: 'Home',
   MOVIES: 'Movies',
   MOVIE: 'Movie',
-  SEARCH: 'Search',
+  APP_INFO: 'App Info',
 } as const;

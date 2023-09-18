@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import React from 'react';
-import {Text, View} from 'react-native';
 import {
   DarkTheme,
   NavigationContainer,
@@ -26,6 +25,7 @@ import {
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 
 import {AccountScreen} from '../screens/AccountScreen';
+import {AppInfoScreen} from '../screens/AppInfoScreen';
 import {Icon} from '../components/Icon';
 import {MoviesNavigator, MoviesNavigatorParamList} from './MoviesNavigator';
 import {colors} from '../styles/colors';
@@ -33,19 +33,10 @@ import {routes} from './routes';
 
 export type RootNavigatorParamList = {
   [routes.HOME]: NavigatorScreenParams<MoviesNavigatorParamList>;
-  [routes.SEARCH]: undefined;
+  [routes.APP_INFO]: undefined;
   [routes.ACCOUNT]: undefined;
 };
 const Tab = createBottomTabNavigator<RootNavigatorParamList>();
-
-// TODO: Remove
-function Temp() {
-  return (
-    <View>
-      <Text>TODO</Text>
-    </View>
-  );
-}
 
 /**
  * Navigator for the bottom tabs.
@@ -57,7 +48,6 @@ export function RootNavigator() {
         screenOptions={{
           tabBarActiveTintColor: colors.white,
           tabBarInactiveTintColor: colors.grayDark,
-          headerTitleAlign: 'center',
         }}>
         <Tab.Screen
           name={routes.HOME}
@@ -71,12 +61,13 @@ export function RootNavigator() {
           }}
         />
         <Tab.Screen
-          name={routes.SEARCH}
-          component={Temp}
+          name={routes.APP_INFO}
+          component={AppInfoScreen}
           options={{
-            tabBarAccessibilityLabel: routes.SEARCH,
+            headerShown: false,
+            tabBarAccessibilityLabel: routes.APP_INFO,
             tabBarIcon: ({color, size}) => (
-              <Icon name="magnify" color={color} size={size} />
+              <Icon name="information-variant" color={color} size={size} />
             ),
           }}
         />

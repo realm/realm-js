@@ -52,6 +52,10 @@ type MovieContextType = {
   removeFromMyList: (movie: Movie) => void;
   existsInMyList: (movie: Movie) => boolean;
 };
+
+/**
+ * The movie context with initial values.
+ */
 const MovieContext = createContext<MovieContextType>({
   movieSections: [],
   selectedMovie: null,
@@ -66,7 +70,8 @@ type MovieProviderProps = {
 };
 
 /**
- * Queries and provides the relevant movies using `@realm/react`.
+ * Queries and provides the relevant movies using `@realm/react`, as well as
+ * providing functions for updating `My List`.
  */
 export function MovieProvider({children}: MovieProviderProps) {
   const realm = useRealm();
