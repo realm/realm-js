@@ -8,6 +8,7 @@
 
 ### Fixed
 * `useObject` will now re-render if the result of `objectForPrimaryKey` is `null` or `undefined`. ([#6101](https://github.com/realm/realm-js/issues/6101))
+* Changed commonJS file name to make it more bundler friendly, especially for Electron apps.
 
 ### Compatibility
 * React Native >= v0.68.0
