@@ -55,9 +55,7 @@ export function RootNavigator() {
           options={{
             headerShown: false,
             tabBarAccessibilityLabel: routes.HOME,
-            tabBarIcon: ({color, size}) => (
-              <Icon name="home-outline" color={color} size={size} />
-            ),
+            tabBarIcon: HomeTabIcon,
           }}
         />
         <Tab.Screen
@@ -66,9 +64,7 @@ export function RootNavigator() {
           options={{
             headerShown: false,
             tabBarAccessibilityLabel: routes.APP_INFO,
-            tabBarIcon: ({color, size}) => (
-              <Icon name="information-variant" color={color} size={size} />
-            ),
+            tabBarIcon: AppInfoTabIcon,
           }}
         />
         <Tab.Screen
@@ -77,12 +73,30 @@ export function RootNavigator() {
           options={{
             headerShown: false,
             tabBarAccessibilityLabel: routes.ACCOUNT,
-            tabBarIcon: ({color, size}) => (
-              <Icon name="account-outline" color={color} size={size} />
-            ),
+            tabBarIcon: AccountTabIcon,
           }}
         />
       </Tab.Navigator>
     </NavigationContainer>
   );
+}
+
+// Tab icons are defined here rather than inline to prevent the following eslint error:
+//      Do not define components during render. React will see a new component type
+//      on every render and destroy the entire subtree’s DOM nodes and state
+//      (https://reactjs.org/docs/reconciliation.html#elements-of-different-types).
+//      Instead, move this component definition out of the parent component “RootNavigator”
+//      and pass data as props. If you want to allow component creation in props, set
+//      allowAsProps option to true. eslintreact/no-unstable-nested-components:
+//      https://stackoverflow.com/questions/75493412/react-native-eslint-disable-next-line-react-no-unstable-nested-components
+function HomeTabIcon({color, size}: {color: string; size: number}) {
+  return <Icon name="home-outline" color={color} size={size} />;
+}
+
+function AppInfoTabIcon({color, size}: {color: string; size: number}) {
+  return <Icon name="information-variant" color={color} size={size} />;
+}
+
+function AccountTabIcon({color, size}: {color: string; size: number}) {
+  return <Icon name="account-outline" color={color} size={size} />;
 }

@@ -41,9 +41,7 @@ export function MoviesNavigator() {
         name={routes.MOVIES}
         component={MoviesScreen}
         options={{
-          headerLeft: () => (
-            <Icon name="alpha-n" color={colors.red} size={50} />
-          ),
+          headerLeft: HeaderIcon,
         }}
       />
       <Stack.Screen
@@ -55,4 +53,8 @@ export function MoviesNavigator() {
       />
     </Stack.Navigator>
   );
+}
+
+function HeaderIcon() {
+  return <Icon name="alpha-n" color={colors.red} size={50} />;
 }
