@@ -7,8 +7,8 @@
 * Added `Realm.Sync.Session.reconnect()` to help force a reconnection to Atlas Device Sync. ([#6123](https://github.com/realm/realm-js/issues/6123))
 
 ### Fixed
+* Fixed values of properties being replaced by default value when updating. ([#6129](https://github.com/realm/realm-js/issues/6129), since v12.0.0)
 * Fixed that value for `Realm.schemaVersion` wasn't propagated correctly for non-existing files. ([#6119](https://github.com/realm/realm-js/issues/6119), since v12.0.0)
-* Values of properties are replaced by default value when updating. ([#6129](https://github.com/realm/realm-js/issues/6129), since v12.0.0)
 
 ### Compatibility
 * React Native >= v0.71.4
