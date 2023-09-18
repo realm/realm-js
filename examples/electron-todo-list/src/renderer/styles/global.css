@@ -1,0 +1,31 @@
+:root {
+  --primary-color: #7e41f8;
+  --primary-color-dark: #671ff7;
+  --light-gray: #dddde3;
+  --gray: #9f9f9f;
+  --black: #333333;
+  --primary-font: "Gill Sans", sans-serif;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: sans-serif;
+  color: var(--black);
+}
+
+h1 {
+  font-weight: 700;
+  font-size: 2.5rem;
+  font-family: var(--primary-font);
+  text-align: center;
+  color: #2b0676;
+}
+
+button {
+  border: none;
+  background: none;
+  outline: none;
+  cursor: pointer;
+}

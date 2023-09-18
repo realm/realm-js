@@ -1,0 +1,30 @@
+.nav {
+  width: 100%;
+  height: 80px;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--light-gray);
+  background-color: white;
+}
+
+.logo {
+  object-fit: none;
+}
+
+.button {
+  width: 160px;
+  padding: 14px 0;
+  border: 1px solid var(--light-gray);
+  border-radius: 25px;
+  color: var(--gray);
+  font-size: 16px;
+  font-weight: bold;
+  transition: all 150ms ease-in-out;
+}
+
+.button:hover {
+  background-color: var(--primary-color-dark);
+  color: white;
+}
