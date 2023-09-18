@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 import { expect } from "chai";
+import chaiAsPromised from "chai-as-promised";
 import { importAppBefore } from "../../hooks";
 import {
   randomNonVerifiableEmail,
@@ -104,7 +105,7 @@ describe.skipIf(environment.missingServer, "User", () => {
     });
   });
 
-  describe("autoverify email password works", () => {
+  describe.only("autoverify email password works", () => {
     importAppBefore(buildAppConfig("with-email-password").emailPasswordAuth());
     removeExistingUsers();
 
@@ -116,32 +117,32 @@ describe.skipIf(environment.missingServer, "User", () => {
     it("for invalid email invalid password", async function (this: AppContext & RealmContext) {
       // invalid email, invalid password
       const credentials = Realm.Credentials.emailPassword({ email: invalidEmail, password: invalidPassword });
-      await expect(this.app.logIn(credentials)).to.be.rejectedWith("invalid username/password"); // this user does not exist yet
+      await expect(this.app.logIn(credentials)).to.eventually.be.rejectedWith("invalid username/password"); // this user does not exist yet
       await expect(
         this.app.emailPasswordAuth.registerUser({ email: invalidEmail, password: invalidPassword }),
-      ).to.be.rejectedWith("password must be between 6 and 128 characters");
-      await expect(this.app.logIn(credentials)).to.be.rejectedWith("invalid username/password"); // this user did not register
+      ).to.eventually.be.rejectedWith("password must be between 6 and 128 characters");
+      await expect(this.app.logIn(credentials)).to.eventually.be.rejectedWith("invalid username/password"); // this user did not register
     });
 
     it("for invalid email valid password", async function (this: AppContext & RealmContext) {
       console.log("invalid email, valid password", invalidEmail, validPassword);
       // invalid email, valid password
       const credentials = Realm.Credentials.emailPassword({ email: invalidEmail, password: validPassword });
-      await expect(this.app.logIn(credentials)).to.be.rejectedWith("invalid username/password"); // this user does not exist yet
+      await expect(this.app.logIn(credentials)).to.eventually.be.rejectedWith("invalid username/password"); // this user does not exist yet
       expect(
         this.app.emailPasswordAuth.registerUser({ email: invalidEmail, password: validPassword }),
-      ).to.be.rejectedWith(`failed to confirm user "${invalidEmail}"`);
-      await expect(this.app.logIn(credentials)).to.be.rejectedWith("invalid username/password"); // this user did not register
+      ).to.eventually.be.rejectedWith(`failed to confirm user "${invalidEmail}"`);
+      await expect(this.app.logIn(credentials)).to.eventually.be.rejectedWith("invalid username/password"); // this user did not register
     });
 
     it("for valid email invalid password", async function (this: AppContext & RealmContext) {
       // valid email, invalid password
       const credentials = Realm.Credentials.emailPassword({ email: validEmail, password: invalidPassword });
-      await expect(this.app.logIn(credentials)).to.be.rejectedWith("invalid username/password"); // this user does not exist yet
+      await expect(this.app.logIn(credentials)).to.eventually.be.rejectedWith("invalid username/password"); // this user does not exist yet
       await expect(
         this.app.emailPasswordAuth.registerUser({ email: validEmail, password: invalidPassword }),
-      ).to.be.rejectedWith("password must be between 6 and 128 characters");
-      await expect(this.app.logIn(credentials)).to.be.rejectedWith("invalid username/password"); // this user did not register
+      ).to.eventually.be.rejectedWith("password must be between 6 and 128 characters");
+      await expect(this.app.logIn(credentials)).to.eventually.be.rejectedWith("invalid username/password"); // this user did not register
     });
 
     it("valid email, valid password", async function (this: AppContext & RealmContext) {
@@ -150,7 +151,7 @@ describe.skipIf(environment.missingServer, "User", () => {
 
       // valid email, valid password
       const credentials = Realm.Credentials.emailPassword({ email: validEmail, password: validPassword });
-      await expect(this.app.logIn(credentials)).to.be.rejectedWith("invalid username/password"); // this user does not exist yet
+      await expect(this.app.logIn(credentials)).to.eventually.be.rejectedWith("invalid username/password"); // this user does not exist yet
       await this.app.emailPasswordAuth.registerUser({ email: validEmail, password: validPassword });
       const user = await this.app.logIn(credentials);
       expectIsUser(user);
@@ -161,7 +162,7 @@ describe.skipIf(environment.missingServer, "User", () => {
     it("for valid email valid password", async function (this: AppContext & RealmContext) {
       // valid email, valid password
       const credentials = Realm.Credentials.emailPassword({ email: validEmail, password: validPassword });
-      await expect(this.app.logIn(credentials)).to.be.rejectedWith("invalid username/password"); // this user does not exist yet
+      await expect(this.app.logIn(credentials)).to.eventually.be.rejectedWith("invalid username/password"); // this user does not exist yet
       await this.app.emailPasswordAuth.registerUser({ email: validEmail, password: validPassword });
       const user = await this.app.logIn(credentials);
       expectIsUser(user);
