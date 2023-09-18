@@ -1,7 +1,7 @@
 ## vNext (TBD)
 
 ### Deprecations
-* `Realm.Sync.reconnect(app)` has been deprecated and will be removed in the next major version. You can use `Realm.Sync.Session.reconnect()` instead.
+* `Realm.App.Sync.reconnect(app)` has been deprecated and will be removed in the next major version. You can use `Realm.App.Sync.Session.reconnect()` instead.
 
 ### Enhancements
 * Added `Realm.Sync.Session.reconnect()` to help force a reconnection to Atlas Device Sync. ([#6123](https://github.com/realm/realm-js/issues/6123))
