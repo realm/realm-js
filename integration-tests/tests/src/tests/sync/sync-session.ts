@@ -278,7 +278,7 @@ describe("SessionTest", () => {
           const realm = new Realm(config);
           const session = realm.syncSession;
           //@ts-expect-error using internal method.
-          session._simulateError(123, "simulated error", "realm::sync::ProtocolError", false); // this will lead to error code 1032
+          session._simulateError(1032, "simulated error", "realm::sync::ProtocolError", false); // this will lead to error code 1032
         });
       });
     });
