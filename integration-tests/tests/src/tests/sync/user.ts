@@ -68,7 +68,8 @@ function removeExistingUsers(): void {
     if (this.app) {
       const users = this.app.allUsers;
       for (const userId of Object.keys(this.app.allUsers)) {
-        await this.app.removeUser(users[userId]);
+        // await this.app.removeUser(users[userId]);
+        await this.app.deleteUser(users[userId]);
       }
     }
   });
