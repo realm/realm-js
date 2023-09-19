@@ -960,6 +960,8 @@ describe("SessionTest", () => {
       // log out the user that created the realm
       await user1.logOut();
 
+      realm1.syncSession?.pause();
+
       // add another 25 people
       realm1.write(() => {
         for (let i = 0; i < 25; i++) {
@@ -993,6 +995,7 @@ describe("SessionTest", () => {
       }).throws("All client changes must be integrated in server before writing copy");
 
       // log back in and upload the changes we made locally
+      realm1.syncSession?.resume();
       user1 = await this.app.logIn(credentials1);
       await realm1.syncSession?.uploadAllLocalChanges();
 
