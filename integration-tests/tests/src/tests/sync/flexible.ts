@@ -1684,8 +1684,10 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           expect(this.realm.subscriptions).to.have.length(0);
 
           const peopleOver10 = this.realm.objects(Person).filtered("age > 10");
+          this.realm.syncSession?.pause();
           await peopleOver10.subscribe({ behavior: WaitForSync.Always, timeout: 0 });
           expect(this.realm.subscriptions.state).to.equal(SubscriptionSetState.Pending);
+          this.realm.syncSession?.resume();
 
           expect(this.realm.subscriptions).to.have.length(1);
         });
