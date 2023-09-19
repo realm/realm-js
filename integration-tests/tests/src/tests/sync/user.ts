@@ -107,7 +107,6 @@ describe.skipIf(environment.missingServer, "User", () => {
 
   describe.only("autoverify email password works", () => {
     importAppBefore(buildAppConfig("with-email-password").emailPasswordAuth());
-    removeExistingUsers();
 
     const validEmail = randomVerifiableEmail();
     const invalidEmail = randomNonVerifiableEmail();
@@ -115,6 +114,7 @@ describe.skipIf(environment.missingServer, "User", () => {
     const validPassword = "password123456";
 
     it("for invalid email invalid password", async function (this: AppContext & RealmContext) {
+      removeExistingUsers();
       // invalid email, invalid password
       const credentials = Realm.Credentials.emailPassword({ email: invalidEmail, password: invalidPassword });
       await expect(this.app.logIn(credentials)).to.eventually.be.rejectedWith("invalid username/password"); // this user does not exist yet
@@ -125,6 +125,7 @@ describe.skipIf(environment.missingServer, "User", () => {
     });
 
     it("for invalid email valid password", async function (this: AppContext & RealmContext) {
+      removeExistingUsers();
       console.log("invalid email, valid password", invalidEmail, validPassword);
       // invalid email, valid password
       const credentials = Realm.Credentials.emailPassword({ email: invalidEmail, password: validPassword });
@@ -137,6 +138,7 @@ describe.skipIf(environment.missingServer, "User", () => {
 
     it("for valid email invalid password", async function (this: AppContext & RealmContext) {
       // valid email, invalid password
+      removeExistingUsers();
       const credentials = Realm.Credentials.emailPassword({ email: validEmail, password: invalidPassword });
       await expect(this.app.logIn(credentials)).to.eventually.be.rejectedWith("invalid username/password"); // this user does not exist yet
       await expect(
@@ -146,6 +148,7 @@ describe.skipIf(environment.missingServer, "User", () => {
     });
 
     it("valid email, valid password", async function (this: AppContext & RealmContext) {
+      removeExistingUsers();
       const validEmail = randomVerifiableEmail();
       const validPassword = "password123456";
 
@@ -161,6 +164,7 @@ describe.skipIf(environment.missingServer, "User", () => {
 
     it("for valid email valid password", async function (this: AppContext & RealmContext) {
       // valid email, valid password
+      removeExistingUsers();
       const credentials = Realm.Credentials.emailPassword({ email: validEmail, password: validPassword });
       await expect(this.app.logIn(credentials)).to.eventually.be.rejectedWith("invalid username/password"); // this user does not exist yet
       await this.app.emailPasswordAuth.registerUser({ email: validEmail, password: validPassword });
