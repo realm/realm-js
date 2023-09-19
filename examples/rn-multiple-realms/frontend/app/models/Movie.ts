@@ -40,8 +40,8 @@ export class Movie extends Realm.Object {
   type!: string;
 
   static schema: ObjectSchema = {
-    // Use lowercase 'movie' since the Mflix sample dataset uses that name.
-    name: 'movie',
+    // Using same name (lowercase 'movies') as the Mflix sample dataset.
+    name: 'movies',
     primaryKey: '_id',
     properties: {
       _id: 'objectId',

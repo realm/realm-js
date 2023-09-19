@@ -14,7 +14,7 @@
         "PrivateContent": [
             "userId"
         ],
-        "movie": [
+        "movies": [
             "poster",
             "year",
             "fullplot",

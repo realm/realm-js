@@ -37,8 +37,8 @@ export class PrivateContent extends Realm.Object {
     properties: {
       _id: 'objectId',
       userId: 'string',
-      // Make sure to use lowercase `movie` as defined in `Movie.schema.name`.
-      myList: 'movie[]',
+      // Make sure to use lowercase `movies` as defined in `Movie.schema.name`.
+      myList: 'movies[]',
     },
   };
 }

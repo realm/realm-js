@@ -21,7 +21,7 @@ The following shows the project structure and the most relevant files.
 
 ```
 ├── backend
-│   └── ...                           - See link above
+│   └── (see link above)              - App Services App
 ├── frontend
 │   ├── app
 │   │   ├── atlas-app-services
@@ -116,14 +116,13 @@ Each movie poster is loaded from a remote source and is not cached on the client
 
 1. [Deploy a free Atlas cluster](https://www.mongodb.com/docs/atlas/getting-started/#get-started-with-atlas) and create an Atlas database.
 2. [Load the Sample Mflix Dataset](https://www.mongodb.com/docs/atlas/sample-data/) into your Atlas database.
-    * Several collections exist in that dataset, but we will only be using the `movies` collection.
-    * Do note that the name of its schema is lowercase and singular (`movie`).
+    * Several databases and collections exist in the sample dataset, but we will only be using the `sample_mflix` database and its `movies` collection.
 
 ### Set up an Atlas App Services App
 
-You can either choose to set up your App via a CLI (where the configurations are already provided in the [backend directory](./backend/)), or via the App Services UI (steps provided below).
+You can either choose to set up your App via a CLI (this has fewer steps and is much faster since all configurations are already provided in the [backend directory](./backend/)), or via the App Services UI (steps provided below).
 
-#### Via a CLI
+#### Via a CLI (recommended)
 
 To import and deploy changes from your local directory to App Services you can use the command line interface:
 
@@ -138,7 +137,7 @@ To import and deploy changes from your local directory to App Services you can u
 ```sh
 realm-cli push --local <path to backend directory>
 ```
-4. Once pushed, double check in the App Services UI that both triggers are enabled.
+4. Once pushed, verify that your App shows up in the App Services UI and that both triggers have the status `Enabled`.
 5. You can now go ahead and [run the React Native app](#run-the-app).
 
 #### Via the App Services UI
@@ -147,17 +146,20 @@ To sync data used in this app you must first:
 
 1. [Create an App Services App](https://www.mongodb.com/docs/atlas/app-services/manage-apps/create/create-with-ui/).
 2. [Enable Email/Password Authentication](https://www.mongodb.com/docs/atlas/app-services/authentication/email-password/) and [Anonymous Authentication](https://www.mongodb.com/docs/atlas/app-services/authentication/anonymous/).
+    * For this example app, we automatically confirm users' emails.
 3. [Enable Flexible Sync](https://www.mongodb.com/docs/atlas/app-services/sync/configure/enable-sync/) with **Development Mode** enabled.
-    * When Development Mode is enabled, [queryable fields](https://www.mongodb.com/docs/atlas/app-services/sync/configure/sync-settings/#queryable-fields) will be added automatically, and schemas will be inferred based on the client Realm data models.
-    * Queryable fields used in this app include:
+    * Select `sample_mflix` as the database to store new collections in.
+    * When Development Mode is enabled, [queryable fields](https://www.mongodb.com/docs/atlas/app-services/sync/configure/sync-settings/#queryable-fields) will be added **automatically**, and schemas will be inferred based on the client Realm data models.
+    * For information, queryable fields used in this app include:
       * Global (all collections): `_id`
       * `movies` collection: `title`, `fullplot`, `type`, `year`, `genres`, `poster`
       * `PrivateContent` collection: `userId`
     * (Development Mode should be turned off in production.)
+4. Don't forget to click `Review Draft and Deploy`.
 
 ### Add Atlas Triggers and Functions
 
-> If you set up your App Services App [via a CLI](#via-a-cli), you can **skip this step** as the triggers and functions should already be defined for you.
+> If you set up your App Services App [via a CLI](#via-a-cli-recommended), you can **skip this step** as the triggers and functions should already be defined for you.
 
 We will add a trigger that is automatically triggered when users register with email and password. This trigger in turn calls a function to create a `PrivateContent` document containing the `myList` field. When a user is deleted (e.g. by manually deleting them via the App Services UI) we also add a trigger and function for deleting the `PrivateContent` document.
 
@@ -226,7 +228,7 @@ npm run android
 
 ### Set Data Access Permissions
 
-> If you set up your App Services App [via a CLI](#via-a-cli), you can **skip this step** as the permissions should already be defined for you.
+> If you set up your App Services App [via a CLI](#via-a-cli-recommended), you can **skip this step** as the permissions should already be defined for you.
 
 After running the client app for the first time and seeing the available collections in Atlas, [modify the rules](https://www.mongodb.com/docs/atlas/app-services/rules/roles/#define-roles---permissions) for the collections in the App Services UI for increased security.
 

@@ -180,6 +180,6 @@
         "type",
         "year"
     ],
-    "title": "movie",
+    "title": "movies",
     "type": "object"
 }
