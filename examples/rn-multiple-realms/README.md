@@ -21,35 +21,35 @@ The following shows the project structure and the most relevant files.
 
 ```
 ├── backend
-│   └── ...                         - See link above
+│   └── ...                           - See link above
 ├── frontend
 │   ├── app
 │   │   ├── atlas-app-services
-│   │   │   └── config.ts           - Add App ID
+│   │   │   └── config.ts             - Add App ID
 │   │   ├── components
-│   │   │   ├── MovieItem.tsx       - Movie list item
-│   │   │   ├── MovieList.tsx       - Horizontal movie list
-│   │   │   └── PublicLogin.tsx     - Logs in public/anonymous users
+│   │   │   ├── MovieItem.tsx         - Movie list item
+│   │   │   ├── MovieList.tsx         - Horizontal movie list
+│   │   │   └── PublicLogin.tsx       - Logs in public/anonymous users
 │   │   ├── hooks
-│   │   │   └── useAccountInfo.ts   - Provides account info
+│   │   │   └── useAccountInfo.ts     - Provides account info
 │   │   ├── models
-│   │   │   ├── Movie.ts            - Mflix movie data model
-│   │   │   └── PrivateContent.ts   - Data for private users
+│   │   │   ├── Movie.ts              - Mflix movie data model
+│   │   │   └── PrivateContent.ts     - Data for private users
 │   │   ├── navigation
-│   │   │   ├── MoviesNavigator.tsx - Navigates movie screens
-│   │   │   ├── RootNavigator.tsx   - Navigates bottom tabs
-│   │   │   └── routes.ts           - Available routes
+│   │   │   ├── MoviesNavigator.tsx   - Navigates movie screens
+│   │   │   ├── RootNavigator.tsx     - Navigates bottom tabs
+│   │   │   └── routes.ts             - Available routes
 │   │   ├── providers
-│   │   │   └── MovieProvider.tsx   - Queries and updates data
+│   │   │   └── MovieProvider.tsx     - Queries and updates data
 │   │   ├── screens
-│   │   │   ├── AccountScreen.tsx   - Login and account info
-│   │   │   ├── MovieInfoScreen.tsx - Movie info and add to My List
-│   │   │   └── MoviesScreen.tsx    - Movies grouped by category
-│   │   ├── App.tsx                 - Provides the App Services App
-│   │   └── AuthenticatedApp.tsx    - Opens different Realms
-│   ├── index.ts                    - Entry point
-│   └── package.json                - Dependencies
-└── README.md                       - Instructions and info
+│   │   │   ├── AccountScreen.tsx     - Login and account info
+│   │   │   ├── MovieInfoScreen.tsx   - Movie info and add to My List
+│   │   │   └── MoviesScreen.tsx      - Movies grouped by category
+│   │   ├── App.tsx                   - Provides the App Services App
+│   │   └── AuthenticatedApp.tsx      - Opens different Realms
+│   ├── index.ts                      - Entry point
+│   └── package.json                  - Dependencies
+└── README.md                         - Instructions and info
 ```
 
 ## Use Cases
@@ -74,7 +74,7 @@ It specifically addresses the following points:
 
 ### Note: Using Multiple Realms at the Same Time
 
-This app uses multiple Realms, but only one Realm is kept open at any given time as only one `RealmProvider` is used, but with different configurations. You may also have `RealmProvider`s in different parts of the React tree, specifying different `path`s in order to open multiple Realms at the same time.
+This app uses multiple Realms, but only one Realm is kept open at any given time as only one `RealmProvider` is used, but with different configurations. You can also have `RealmProvider`s in different parts of the React tree, specifying different `path`s in order to open multiple Realms at the same time.
 
 ### Note: Offline Support
 
@@ -125,17 +125,21 @@ You can either choose to set up your App via a CLI (where the configurations are
 
 #### Via a CLI
 
-To import and deploy changes from your local directory to App Services you can use the command line interface [Realm CLI / App Services CLI](https://www.mongodb.com/docs/atlas/app-services/cli/). Use the provided [backend directory](./backend/) as your App.
+To import and deploy changes from your local directory to App Services you can use the command line interface:
 
-Modifications needed:
-
-* Cluster Name
-  * Update the [`"clusterName"`](./backend/data_sources/mongodb-atlas/config.json) to the name of your cluster.
-  * (The default name is `Cluster0`.)
-* App ID
-  * There is no `"app_id"` defined in [realm_config.json](./backend/realm_config.json) since we will create a brand new App. If you for some reason are updating an existing app, add an `"app_id"` field.
-
-You can then [`realm-cli push`](https://www.mongodb.com/docs/atlas/app-services/cli/realm-cli-push/#std-label-realm-cli-push) it to App Services. Once pushed, double check in the App Services UI that both triggers are enabled.
+1. [Set up Realm CLI](https://www.mongodb.com/docs/atlas/app-services/cli/).
+2. In the provided [backend directory](./backend/) (the App Services App), update the following:
+    * Cluster Name
+      * Update the [`"clusterName"`](./backend/data_sources/mongodb-atlas/config.json) to the name of your cluster.
+      * (The default name is `Cluster0`.)
+    * App ID
+      * There is no `"app_id"` defined in [realm_config.json](./backend/realm_config.json) since we will create a brand new App. **If** you for some reason are updating an existing app, add an `"app_id"` field.
+3. Push and deploy the local directory to App Services (see [`realm-cli push`](https://www.mongodb.com/docs/atlas/app-services/cli/realm-cli-push/#std-label-realm-cli-push)):
+```sh
+realm-cli push --local <path to backend directory>
+```
+4. Once pushed, double check in the App Services UI that both triggers are enabled.
+5. You can now go ahead and [run the React Native app](#run-the-app).
 
 #### Via the App Services UI
 
@@ -155,7 +159,7 @@ To sync data used in this app you must first:
 
 > If you set up your App Services App [via a CLI](#via-a-cli), you can **skip this step** as the triggers and functions should already be defined for you.
 
-We will add a trigger that is automatically triggered when users register with email and password. This trigger in turn calls a function to create a `PrivateContent` document containing the `myList` field. When a user is deleted (e.g. by manually deleting them via the App Services UI), we also add a trigger and function for deleting the `PrivateContent` document.
+We will add a trigger that is automatically triggered when users register with email and password. This trigger in turn calls a function to create a `PrivateContent` document containing the `myList` field. When a user is deleted (e.g. by manually deleting them via the App Services UI) we also add a trigger and function for deleting the `PrivateContent` document.
 
 To set this up via the App Services UI:
 
