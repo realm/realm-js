@@ -962,9 +962,9 @@ describe("SessionTest", () => {
 
       realm1.syncSession?.pause();
 
-      // add another 25 people
+      // add another 2500 people
       realm1.write(() => {
-        for (let i = 0; i < 25; i++) {
+        for (let i = 0; i < 2500; i++) {
           realm1.create("Person", {
             _id: new BSON.ObjectId(),
             age: i,
