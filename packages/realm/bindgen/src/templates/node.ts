@@ -238,8 +238,13 @@ function convertPrimToNode(addon: NodeAddon, type: string, expr: string): string
       return `([&] (const Status& status) -> Napi::Value {
                 if (status.is_ok()) {
                   return ${env}.Undefined();
-                } else {
-                  return Napi::Error::New(${env}, status.reason()).Value();
+                }
+                else {
+                  auto jsObj = Napi::Object::New(${env});
+                  jsObj.Set("isOk", status.is_ok());
+                  jsObj.Set("code", static_cast<int32_t>(status.code()));
+                  jsObj.Set("reason", status.reason());
+                  return jsObj.As<Napi::Value>();
                 }
               }(${expr}))`;
   }

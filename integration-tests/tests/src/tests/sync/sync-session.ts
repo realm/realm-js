@@ -264,7 +264,7 @@ describe("SessionTest", () => {
           config.sync!.onError = (_, error: any) => {
             try {
               expect(error.message).equals("simulated error");
-              expect(error.code).equals(123);
+              expect(error.code).equals(1032);
               resolve();
             } catch (e) {
               _reject(e);
@@ -278,7 +278,7 @@ describe("SessionTest", () => {
           const realm = new Realm(config);
           const session = realm.syncSession;
           //@ts-expect-error using internal method.
-          session._simulateError(123, "simulated error", "realm::sync::ProtocolError", false);
+          session._simulateError(1032, "simulated error", "realm::sync::ProtocolError", false); // this will lead to error code 1032
         });
       });
     });

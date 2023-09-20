@@ -121,7 +121,7 @@ export class PropertySchemaParseError extends SchemaParseError {
 
 /** @internal */
 export function fromBindingSyncError(error: binding.SyncError) {
-  if (error.systemError.code === 231) {
+  if (error.compensatingWritesInfo.length > 0) {
     return new CompensatingWriteError(error);
   } else if (error.isClientResetRequested) {
     return new ClientResetError(error);
@@ -136,15 +136,20 @@ export function fromBindingSyncError(error: binding.SyncError) {
 export class SyncError extends Error {
   public name = "SyncError";
 
+  public isOk: boolean;
+
   /**
    * The error code that represents this error.
    */
-  public code: number;
+  public code?: number;
 
   /**
    * The category of this error.
+   * @deprecated
    */
   public category: string;
+
+  public reason?: string;
 
   /**
    * The URL to the associated server log, if available. The string will be empty
@@ -165,9 +170,13 @@ export class SyncError extends Error {
   /** @internal */
   constructor(error: binding.SyncError) {
     super(error.simpleMessage);
-    const { systemError } = error;
-    this.code = systemError.code;
-    this.category = systemError.category;
+    this.message = error.simpleMessage;
+    this.isOk = error.status.isOk;
+    if (!error.status.isOk) {
+      this.reason = error.status.reason;
+      this.code = error.status.code;
+    }
+    this.category = "UNKNOWN";
     this.logUrl = error.logUrl;
     this.userInfo = error.userInfo;
     this.isFatal = error.isFatal;

@@ -293,7 +293,11 @@ function convertPrimToJsi(addon: JsiAddon, type: string, expr: string): string {
                 if (status.is_ok()) {
                   return jsi::Value::undefined();
                 } else {
-                  return jsi::JSError(_env, status.reason()).value().getObject(_env);
+                  auto jsObj = jsi::Object(_env);
+                  jsObj.setProperty(_env, "isOk", status.is_ok());
+                  jsObj.setProperty(_env, "code", static_cast<int32_t>(status.code()));
+                  jsObj.setProperty(_env, "reason", status.reason());
+                  return jsObj;
                 }
               }(${expr}))`;
   }
