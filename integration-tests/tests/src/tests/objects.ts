@@ -1349,8 +1349,8 @@ describe("Realm.Object", () => {
     };
     openRealmBeforeEach({ schema: [PrimaryAndDefaultSchema] });
 
-    [Realm.UpdateMode.All, Realm.UpdateMode.Modified].forEach((updateMode) => {
-      it(`Update properties (updateMode = ${updateMode})`, async function (this: Mocha.Context & RealmContext) {
+    for (const updateMode of [Realm.UpdateMode.All, Realm.UpdateMode.Modified]) {
+      it(`updates properties (updateMode = ${updateMode})`, async function (this: Mocha.Context & RealmContext) {
         this.realm.write(() => {
           this.realm.create(PrimaryAndDefaultSchema.name, {
             id: 1337,
