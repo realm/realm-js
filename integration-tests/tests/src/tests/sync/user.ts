@@ -67,11 +67,7 @@ function removeExistingUsers(): void {
     if (this.app) {
       const users = this.app.allUsers;
       for (const userId of Object.keys(this.app.allUsers)) {
-        if (users[userId].isLoggedIn) {
-          await this.app.deleteUser(users[userId]);
-        } else {
-          await this.app.removeUser(users[userId]);
-        }
+        await this.app.removeUser(users[userId]);
       }
     }
   });
