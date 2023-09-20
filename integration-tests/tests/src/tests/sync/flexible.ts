@@ -1594,18 +1594,6 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
       });
 
       describe("Results#subscribe", function () {
-        // Insert 200 objects before each test to prevent subscription set states from
-        // completing faster than expected for these tests. (A flaky test was discovered
-        // likely due to this reason.)
-        // (The realm will be deleted after each test due to a parent `openRealmBeforeEach`.)
-        beforeEach(async function (this: RealmContext) {
-          this.realm.write(() => {
-            for (let i = 0; i < 100; i++) {
-              this.realm.create(Person, { _id: new BSON.ObjectId(), name: `Name${i}`, age: i });
-            }
-          });
-        });
-
         it("waits for objects to sync the first time only", async function (this: RealmContext) {
           expect(this.realm.subscriptions).to.have.length(0);
 
@@ -1693,6 +1681,12 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         });
 
         it("does not wait for objects to sync when timeout is shorter", async function (this: RealmContext) {
+          // We're rerunning this test to prevent the subscription set state from
+          // completing faster than expected (from the point when `subscribe()` is
+          // called with timeout `0`, to the next line when the state is checked).
+          // (This is due to the test being flaky only on CI.)
+          this.retries(100);
+
           expect(this.realm.subscriptions).to.have.length(0);
 
           const peopleOver10 = this.realm.objects(Person).filtered("age > 10");
