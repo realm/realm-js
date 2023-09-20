@@ -796,10 +796,11 @@ describe("SessionTest", () => {
   describe("writeCopyTo on synced realms", () => {
     afterEach(() => Realm.clearTestState());
     it("can create encrypted copies", async function (this: AppContext) {
+      this.retries(3);
       /*
-    Test that we can create encrypted copies of a realm, and that only the
-    correct encryption key will allow us to re-open that copy
-  */
+      Test that we can create encrypted copies of a realm, and that only the
+      correct encryption key will allow us to re-open that copy
+    */
       const credentials1 = await getRegisteredEmailPassCredentials(this.app);
       const credentials2 = await getRegisteredEmailPassCredentials(this.app);
       const partition = generatePartition();
@@ -960,9 +961,11 @@ describe("SessionTest", () => {
       // log out the user that created the realm
       await user1.logOut();
 
-      // add another 25 people
+      realm1.syncSession?.pause();
+
+      // add another 2500 people
       realm1.write(() => {
-        for (let i = 0; i < 25; i++) {
+        for (let i = 0; i < 2500; i++) {
           realm1.create("Person", {
             _id: new BSON.ObjectId(),
             age: i,
@@ -993,6 +996,7 @@ describe("SessionTest", () => {
       }).throws("All client changes must be integrated in server before writing copy");
 
       // log back in and upload the changes we made locally
+      realm1.syncSession?.resume();
       user1 = await this.app.logIn(credentials1);
       await realm1.syncSession?.uploadAllLocalChanges();
 

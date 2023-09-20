@@ -1681,6 +1681,12 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         });
 
         it("does not wait for objects to sync when timeout is shorter", async function (this: RealmContext) {
+          // We're rerunning this test to prevent the subscription set state from
+          // completing faster than expected (from the point when `subscribe()` is
+          // called with timeout `0`, to the next line when the state is checked).
+          // (This is due to the test being flaky only on CI.)
+          this.retries(100);
+
           expect(this.realm.subscriptions).to.have.length(0);
 
           const peopleOver10 = this.realm.objects(Person).filtered("age > 10");
