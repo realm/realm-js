@@ -105,6 +105,8 @@ describe.skipIf(environment.missingServer, "User", () => {
   });
 
   describe("autoverify email password works", () => {
+    // any email address is valid and registerUser() will never fail when auto-confirm is enabled. The combination invalid email
+    // valid password cannot be tested.
     importAppBefore(buildAppConfig("with-email-password").emailPasswordAuth());
     removeExistingUsers();
 
@@ -119,16 +121,6 @@ describe.skipIf(environment.missingServer, "User", () => {
       await expect(
         this.app.emailPasswordAuth.registerUser({ email: invalidEmail, password: invalidPassword }),
       ).to.eventually.be.rejectedWith("password must be between 6 and 128 characters");
-      await expect(this.app.logIn(credentials)).to.be.rejectedWith("invalid username/password"); // this user did not register
-    });
-
-    // any email address is valid and registerUser() will never fail -- the test doesn't make sense
-    it.skip("invalid email, valid password", async function (this: AppContext & RealmContext) {
-      const credentials = Realm.Credentials.emailPassword({ email: invalidEmail, password: validPassword });
-      await expect(this.app.logIn(credentials)).to.be.rejectedWith("invalid username/password"); // this user does not exist yet
-      expect(
-        this.app.emailPasswordAuth.registerUser({ email: invalidEmail, password: validPassword }),
-      ).to.eventually.be.rejectedWith(`failed to confirm user "${invalidEmail}"`);
       await expect(this.app.logIn(credentials)).to.be.rejectedWith("invalid username/password"); // this user did not register
     });
 
