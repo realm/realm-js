@@ -576,6 +576,18 @@ describe.skipIf(environment.missingServer, "User", () => {
       await this.app.emailPasswordAuth.retryCustomConfirmation({ email: pendingEmail });
     });
 
+    it("custom confirmation function rejects invalid email", async function (this: AppContext & RealmContext) {
+      const invalidEmail = randomNonVerifiableEmail();
+      const validPassword = "password123456";
+
+      const credentials = Realm.Credentials.emailPassword({ email: invalidEmail, password: validPassword });
+      await expect(this.app.logIn(credentials)).to.be.rejectedWith("invalid username/password"); // this user does not exist yet
+      expect(
+        this.app.emailPasswordAuth.registerUser({ email: invalidEmail, password: validPassword }),
+      ).to.eventually.be.rejectedWith(`failed to confirm user "${invalidEmail}"`);
+      await expect(this.app.logIn(credentials)).to.be.rejectedWith("invalid username/password"); // this user did not register
+    });
+
     it("reset password function works", async function (this: AppContext & RealmContext) {
       const validEmail = randomVerifiableEmail();
       const validPassword = "password123456";
