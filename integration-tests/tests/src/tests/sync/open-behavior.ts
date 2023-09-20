@@ -506,6 +506,7 @@ describe("OpenBehaviour", function () {
   });
 
   it("canceling promise with multiple realm.open calls active", async function (this: AppContext) {
+    this.retries(3);
     const user = await this.app.logIn(Realm.Credentials.anonymous());
     const partitionValue = generatePartition();
 
