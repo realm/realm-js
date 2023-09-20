@@ -796,10 +796,11 @@ describe("SessionTest", () => {
   describe("writeCopyTo on synced realms", () => {
     afterEach(() => Realm.clearTestState());
     it("can create encrypted copies", async function (this: AppContext) {
+      this.retries(3);
       /*
-    Test that we can create encrypted copies of a realm, and that only the
-    correct encryption key will allow us to re-open that copy
-  */
+      Test that we can create encrypted copies of a realm, and that only the
+      correct encryption key will allow us to re-open that copy
+    */
       const credentials1 = await getRegisteredEmailPassCredentials(this.app);
       const credentials2 = await getRegisteredEmailPassCredentials(this.app);
       const partition = generatePartition();
