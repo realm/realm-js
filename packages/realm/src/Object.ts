@@ -232,14 +232,15 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
           result[propertyName] = propertyValue;
         }
       } else {
-        if (created && typeof defaultValue !== "undefined") {
-          result[propertyName] = typeof defaultValue === "function" ? defaultValue() : defaultValue;
-        } else if (
-          !(property.type & binding.PropertyType.Collection) &&
-          !(property.type & binding.PropertyType.Nullable) &&
-          created
-        ) {
-          throw new Error(`Missing value for property '${propertyName}'`);
+        if (created) {
+          if (typeof defaultValue !== "undefined") {
+            result[propertyName] = typeof defaultValue === "function" ? defaultValue() : defaultValue;
+          } else if (
+            !(property.type & binding.PropertyType.Collection) &&
+            !(property.type & binding.PropertyType.Nullable)
+          ) {
+            throw new Error(`Missing value for property '${propertyName}'`);
+          }
         }
       }
     }

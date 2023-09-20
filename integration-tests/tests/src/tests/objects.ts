@@ -1367,6 +1367,6 @@ describe("Realm.Object", () => {
         expect(obj?.fieldOne).equals("SOME_OTHER_VALUE");
         expect(obj?.fieldTwo).equals("NOT_DEFAULT_VALUE");
       });
-    });
+    }
   });
 });
