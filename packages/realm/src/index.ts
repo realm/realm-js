@@ -105,6 +105,7 @@ export {
   LogLevel,
   mapTo,
   MapToDecorator,
+  MetadataMode,
   MigrationCallback,
   MongoDB,
   MongoDBCollection,

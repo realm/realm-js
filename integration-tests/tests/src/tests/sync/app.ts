@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
-import Realm, { BSON } from "realm";
+import Realm, { AppConfiguration, BSON, MetadataMode } from "realm";
 
 import { importAppBefore } from "../../hooks";
 import { generatePartition } from "../../utils/generators";
@@ -130,6 +130,37 @@ describe("App", () => {
 
       expect(app).instanceOf(Realm.App);
       expect(app).equals(cachedApp);
+    });
+  });
+
+  describe("how to handle metadata", () => {
+    afterEach(async () => {
+      Realm.clearTestState();
+    });
+
+    it("modes", () => {
+      expect(MetadataMode.NoEncryption).equals("NoEncryption");
+      expect(MetadataMode.Encryption).equals("Encryption");
+      expect(MetadataMode.NoMetadata).equals("NoMetadata");
+    });
+
+    it("no encryption", () => {
+      const config: AppConfiguration = { id: "smurf", metadata: { mode: MetadataMode.NoEncryption } };
+      const app = new Realm.App(config);
+      expect(app).instanceOf(Realm.App);
+    });
+
+    it("encryption", () => {
+      const encryptionKey = new ArrayBuffer(64);
+      const config: AppConfiguration = { id: "smurf", metadata: { mode: MetadataMode.Encryption, encryptionKey } };
+      const app = new Realm.App(config);
+      expect(app).instanceOf(Realm.App);
+    });
+
+    it("no metadata", () => {
+      const config: AppConfiguration = { id: "smurf", metadata: { mode: MetadataMode.NoMetadata } };
+      const app = new Realm.App(config);
+      expect(app).instanceOf(Realm.App);
     });
   });
 

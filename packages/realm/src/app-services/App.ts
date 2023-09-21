@@ -36,6 +36,70 @@ import {
 export type AnyApp = App<any, any>;
 
 /**
+ * This describes the persistence modes for metadata.
+ */
+export enum MetadataMode {
+  /**
+   * Persist {@link User} objects, but do not encrypt them.
+   */
+  NoEncryption = "NoEncryption",
+  /**
+   * Persist {@link User} objects in an encrypted store.
+   */
+  Encryption = "Encryption",
+  /**
+   * Do not persist {@link User} objects.
+   */
+  NoMetadata = "NoMetadata",
+}
+
+/**
+ * This describes how the app's metadata is handled.
+ */
+export type MetadataType = {
+  /**
+   * The different modes for storing meta data in Realm Apps.
+   * @since 12.2.0
+   */
+  mode: MetadataMode;
+  /**
+   * The 512-bit (64-byte) encryption key used to encrypt and decrypt meta data in Realm Apps.
+   * This will not change the encryption key for individual Realms. This should still be set in
+   * {@link Configuration.encryptionKey} when opening the Realm.
+   * @since 12.2.0
+   */
+  encryptionKey?: ArrayBuffer;
+};
+
+/** internal */
+function toBindingMetadataMode(arg: MetadataMode): binding.MetadataMode {
+  const bindingMetadataMode = inverseTranslationTable[arg];
+  assert(bindingMetadataMode !== undefined, `Unexpected metadata mode: ${arg}`);
+  return bindingMetadataMode;
+}
+
+/** @internal */
+export function fromBindingMetadataModeToNumericMetadataMode(arg: binding.MetadataMode): MetadataMode {
+  // For now, these map 1-to-1
+  return arg as unknown as MetadataMode;
+}
+
+const translationTable: Record<binding.MetadataMode, MetadataMode> = {
+  [binding.MetadataMode.NoEncryption]: MetadataMode.NoEncryption,
+  [binding.MetadataMode.Encryption]: MetadataMode.Encryption,
+  [binding.MetadataMode.NoMetadata]: MetadataMode.NoMetadata,
+};
+
+const inverseTranslationTable: Record<MetadataMode, binding.MetadataMode> = Object.fromEntries(
+  Object.entries(translationTable).map(([key, val]) => [val, Number(key)]),
+) as Record<MetadataMode, binding.MetadataMode>;
+
+/** @internal */
+export function fromBindingMetadataModeToMetaDataMode(arg: binding.MetadataMode): MetadataMode {
+  return translationTable[arg];
+}
+
+/**
  * This describes the options used to create a Realm App instance.
  */
 export type AppConfiguration = {
@@ -76,6 +140,12 @@ export type AppConfiguration = {
    * @since v11.7.0
    */
   baseFilePath?: string;
+
+  /**
+   * Specify how meta data should be stored.
+   * @since 12.2.0
+   */
+  metadata?: MetadataType;
 };
 
 /**
@@ -197,7 +267,7 @@ export class App<
   constructor(configOrId: AppConfiguration | string) {
     const config: AppConfiguration = typeof configOrId === "string" ? { id: configOrId } : configOrId;
     assert.object(config, "config");
-    const { id, baseUrl, app, timeout, multiplexSessions = true, baseFilePath } = config;
+    const { id, baseUrl, app, timeout, multiplexSessions = true, baseFilePath, metadata } = config;
     assert.string(id, "id");
     if (timeout !== undefined) {
       assert.number(timeout, "timeout");
@@ -205,6 +275,9 @@ export class App<
     assert.boolean(multiplexSessions, "multiplexSessions");
     if (baseFilePath !== undefined) {
       assert.string(baseFilePath, "baseFilePath");
+    }
+    if (metadata !== undefined) {
+      assert.object(metadata, "metadata");
     }
 
     fs.ensureDirectoryForFile(fs.joinPaths(baseFilePath || fs.getDefaultDirectoryPath(), "mongodb-realm"));
@@ -219,7 +292,8 @@ export class App<
       },
       {
         baseFilePath: baseFilePath ? baseFilePath : fs.getDefaultDirectoryPath(),
-        metadataMode: binding.MetadataMode.NoEncryption,
+        metadataMode: metadata ? toBindingMetadataMode(metadata.mode) : binding.MetadataMode.NoEncryption,
+        customEncryptionKey: metadata ? metadata.encryptionKey : undefined,
         userAgentBindingInfo: App.userAgent,
         multiplexSessions,
       },

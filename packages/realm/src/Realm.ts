@@ -103,6 +103,8 @@ import {
   LogLevel,
   LoggerCallback,
   MapToDecorator,
+  MetadataMode,
+  MetadataType,
   MigrationCallback,
   MongoDB,
   MongoDBCollection,
@@ -248,6 +250,7 @@ export class Realm {
   public static index = index;
   public static List = List;
   public static mapTo = mapTo;
+  public static MetadataMode = MetadataMode;
   public static NumericLogLevel = NumericLogLevel;
   public static Object = RealmObject;
   public static OpenRealmBehaviorType = OpenRealmBehaviorType;
@@ -1324,6 +1327,8 @@ type DictionaryType<T> = Dictionary<T>;
 type IndexDecoratorType = IndexDecorator;
 type ListType<T = unknown> = List<T>;
 type MapToDecoratorType = MapToDecorator;
+type MetadataModeType = MetadataMode;
+type MetadataTypeType = MetadataType;
 type Mixed = unknown;
 type ObjectType = string | RealmObjectConstructor;
 type OpenRealmBehaviorTypeType = OpenRealmBehaviorType;
@@ -1463,6 +1468,8 @@ export declare namespace Realm {
     ListType as List,
     LocalAppConfiguration,
     MapToDecoratorType as MapToDecorator,
+    MetadataModeType as MetadataMode,
+    MetadataTypeType as MetadataType,
     MigrationCallback,
     Mixed,
     NumericLogLevelType as NumericLogLevel,
@@ -1685,6 +1692,9 @@ declare global {
       ListType as List,
       LocalAppConfiguration,
       MapToDecoratorType as MapToDecorator,
+      // MetadataModeType as MetadataMode,
+      MetadataModeType as MetadataMode,
+      MetadataTypeType as MetadataType,
       MigrationCallback,
       Mixed,
       NumericLogLevelType as NumericLogLevel,
