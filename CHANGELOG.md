@@ -14,9 +14,9 @@
 * Allow arguments to Realm Query Language to be a string representation of a geospatial object for `GEOWITHIN` queries. ([realm/realm-core#6934](https://github.com/realm/realm-core/issues/6934))
 * Crash when querying the size of a Object property through a link chain. ([realm/realm-core#6915](https://github.com/realm/realm-core/issues/6915), since v12.0.0)
 * Throw an exception when some limitation on the OS filesystem is reached, instead of crashing the application. The same file locking logic is now also used for all the platforms. ([realm/realm-core#6926](https://github.com/realm/realm-core/pull/6926))
-* Fixed crash that generated the error message `Assertion failed: ref + size <= next->first`. ([realm/realm-core#6340](https://github.com/realm/realm-core/issues/6340), since 11.3.0)
+* Fixed crash that generated the error message `Assertion failed: ref + size <= next->first`. ([realm/realm-core#6340](https://github.com/realm/realm-core/issues/6340), since v11.3.0)
 * When using OpenSSL (i.e. on non-Apple platforms) a TLS handshake error would never be reported and instead TLS errors would be reported as a sync connection failure. When using SecureTransport (i.e. on Apple platforms) only some TLS handshake errors would be reported, but most were reported as a sync connection failure. Additionally, reported sync errors originating from OpenSSL have been improved. ([realm/realm-core#6938](https://github.com/realm/realm-core/pull/6938)).
-* Fixed `Bad server version` errors and client reset which sometimes occurred When updating a subscription's query. ([realm/realm-core#6966](https://github.com/realm/realm-core/issues/6966), since v10.12.0)
+* Fixed `Bad server version` errors and client reset which sometimes occurred when updating a subscription's query. ([realm/realm-core#6966](https://github.com/realm/realm-core/issues/6966), since v10.12.0)
 
 ### Compatibility
 * React Native >= v0.71.4
