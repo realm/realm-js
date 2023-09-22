@@ -146,20 +146,25 @@ describe("App", () => {
       });
     });
 
-    it("no encryption", () => {
+    it("persists a user but does not encrypt it", () => {
       const config: AppConfiguration = { id: "smurf", metadata: { mode: MetadataMode.NoEncryption } };
       const app = new Realm.App(config);
       expect(app).instanceOf(Realm.App);
     });
 
-    it("encryption", () => {
+    it("persists and encrypts a user", () => {
       const encryptionKey = new ArrayBuffer(64);
       const config: AppConfiguration = { id: "smurf", metadata: { mode: MetadataMode.Encryption, encryptionKey } };
       const app = new Realm.App(config);
       expect(app).instanceOf(Realm.App);
     });
 
-    it("no metadata", () => {
+    it("request encryption without encryption key", () => {
+      const config: AppConfiguration = { id: "smurf", metadata: { mode: MetadataMode.Encryption } };
+      expect(() => new Realm.App(config)).to.throw("encryptionKey is required");
+    });
+
+    it("does not persist a user", () => {
       const config: AppConfiguration = { id: "smurf", metadata: { mode: MetadataMode.NoMetadata } };
       const app = new Realm.App(config);
       expect(app).instanceOf(Realm.App);

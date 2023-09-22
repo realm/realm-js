@@ -42,15 +42,15 @@ export enum MetadataMode {
   /**
    * Persist {@link User} objects, but do not encrypt them.
    */
-  NoEncryption = "NoEncryption",
+  NoEncryption = "noEncryption",
   /**
    * Persist {@link User} objects in an encrypted store.
    */
-  Encryption = "Encryption",
+  Encryption = "encryption",
   /**
    * Do not persist {@link User} objects.
    */
-  NoMetadata = "NoMetadata",
+  NoMetadata = "noMetadata",
 }
 
 /**
@@ -78,11 +78,11 @@ function toBindingMetadataMode(arg: MetadataMode): binding.MetadataMode {
   return bindingMetadataMode;
 }
 
-/** @internal */
-export function fromBindingMetadataModeToNumericMetadataMode(arg: binding.MetadataMode): MetadataMode {
-  // For now, these map 1-to-1
-  return arg as unknown as MetadataMode;
-}
+// /** @internal */
+// export function fromBindingMetadataModeToNumericMetadataMode(arg: binding.MetadataMode): MetadataMode {
+//   // For now, these map 1-to-1
+//   return arg as unknown as MetadataMode;
+// }
 
 const translationTable: Record<binding.MetadataMode, MetadataMode> = {
   [binding.MetadataMode.NoEncryption]: MetadataMode.NoEncryption,
@@ -278,6 +278,9 @@ export class App<
     }
     if (metadata !== undefined) {
       assert.object(metadata, "metadata");
+      if (metadata.mode === MetadataMode.Encryption) {
+        assert(metadata.encryptionKey, "encryptionKey is required");
+      }
     }
 
     fs.ensureDirectoryForFile(fs.joinPaths(baseFilePath || fs.getDefaultDirectoryPath(), "mongodb-realm"));
