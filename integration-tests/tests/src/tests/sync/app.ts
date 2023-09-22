@@ -138,10 +138,12 @@ describe("App", () => {
       Realm.clearTestState();
     });
 
-    it("modes", () => {
-      expect(MetadataMode.NoEncryption).equals("NoEncryption");
-      expect(MetadataMode.Encryption).equals("Encryption");
-      expect(MetadataMode.NoMetadata).equals("NoMetadata");
+    it("is accessible", () => {
+      expect(MetadataMode).deep.equals({
+        NoEncryption: "NoEncryption",
+        Encryption: "Encryption",
+        NoMetadata: "NoMetadata",
+      });
     });
 
     it("no encryption", () => {

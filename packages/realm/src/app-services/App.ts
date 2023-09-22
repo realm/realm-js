@@ -36,7 +36,7 @@ import {
 export type AnyApp = App<any, any>;
 
 /**
- * This describes the persistence modes for metadata.
+ * Persistence modes for metadata.
  */
 export enum MetadataMode {
   /**
@@ -54,7 +54,7 @@ export enum MetadataMode {
 }
 
 /**
- * This describes how the app's metadata is handled.
+ * Configuration for how to handle the `App`'s metadata.
  */
 export type MetadataType = {
   /**
@@ -293,7 +293,7 @@ export class App<
       {
         baseFilePath: baseFilePath ? baseFilePath : fs.getDefaultDirectoryPath(),
         metadataMode: metadata ? toBindingMetadataMode(metadata.mode) : binding.MetadataMode.NoEncryption,
-        customEncryptionKey: metadata ? metadata.encryptionKey : undefined,
+        customEncryptionKey: metadata?.encryptionKey,
         userAgentBindingInfo: App.userAgent,
         multiplexSessions,
       },
