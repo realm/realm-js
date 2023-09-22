@@ -11,6 +11,8 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
+    // In order to use Realm and `@realm/react` in the rendering process, it is
+    // required to enable the `nodeIntegration` and disable `contextIsolation`.
     webPreferences: { nodeIntegration: true, contextIsolation: false },
   });
   // and load the index.html of the app.

@@ -1,6 +1,6 @@
-# Electron Example
+# Example Electron Todo App
 
-This Electron example shows how to use Device Sync and `@ream/react` in an Electron application.
+This example Electron Todo/Task app shows how to use [Device Sync](https://www.mongodb.com/atlas/app-services/device-sync) and [@realm/react](https://www.npmjs.com/package/@realm/react).
 
 ## Screenshots
 
@@ -15,17 +15,30 @@ The following shows the project structure and the most relevant files.
 │   ├── main - The main process
 │   │   └── index.js
 │   └── render              - The rendering process
-│      ├── atlas-app-services
-│      |   └── config.json - The config for the AppID
-│      ├── components      - React components for the app
-│      ├── hooks           - Custom hooks needed for the app
-│      ├── models          - The local database models
-│      ├── pages           - Routes for the application
-│      ├── styles          - All stylings contained here
-│      ├── App.tsx         - Main app entry point
-│      └── AuthenticatedApp.tsx  - App after auth established
+│       ├── atlas-app-services
+│       │   └── config.json         - Set Atlas App ID
+│       │
+│       ├── components
+│       │   ├── AddTaskForm.tsx     - Trigger create task
+│       │   ├── NavBar.tsx          - Trigger logout
+│       │   ├── TaskItem.tsx        - Trigger update/delete task
+│       │   └── TaskList.tsx        - Render all tasks
+│       │
+│       ├── hooks
+│       │   └── useTaskManager.ts   - Handle CRUD task
+│       │
+│       ├── models
+│       │   └── Task.ts             - Data model
+│       │
+│       ├── pages
+│       │   ├── LoginPage.tsx       - Trigger login/register
+│       │   └── TaskPage.tsx        - Pass CRUD ops to children
+│       │
+│       ├── App.tsx                 - Get and provide Atlas App
+│       ├── AuthenticatedApp.tsx    - Open and provide Realm & User
+│       └── index.tsx               - Entry point
 ├── public              - The folder of static contents to the web app
-│   └── electron.js     - The bootstrap script for electron
+│   └── electron.cjs     - The bootstrap script for electron
 └── craco.config.cjs    - The bundler config for the rendering process
 ```
 ### Realm Details
