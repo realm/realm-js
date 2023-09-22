@@ -1,6 +1,6 @@
 # Electron Example
 
-This Electron examples shows how to use Device Sync and `@ream/react` in an Electron application.
+This Electron example shows how to use Device Sync and `@ream/react` in an Electron application.
 
 ## Project Structure
 
