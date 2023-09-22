@@ -41,7 +41,6 @@ export function AddTaskForm({ onSubmit }: AddTaskFormProps) {
         placeholder='Add a new task'
         value={description}
         onChange={(event) => setDescription(event.currentTarget.value)}
-        autoCorrect='off'     // Safari only
         autoCapitalize='none' // Safari only
       />
       <button className={styles.button} type='submit'>

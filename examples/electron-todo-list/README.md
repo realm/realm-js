@@ -2,6 +2,10 @@
 
 This Electron example shows how to use Device Sync and `@ream/react` in an Electron application.
 
+## Screenshots
+
+![Tasks Page](./src/renderer/assets/screenshot-realm-web-sync-tasks.png)
+
 ## Project Structure
 
 The following shows the project structure and the most relevant files.
@@ -26,8 +30,8 @@ The following shows the project structure and the most relevant files.
 ```
 ### Realm Details
 
-* RealmJS version: ^12.0.0
-* Device Sync type: Flexible
+* RealmJS version: ^12.1.0
+* Device Sync type: [Flexible](https://www.mongodb.com/docs/atlas/app-services/sync/configure/enable-sync/)
 
 ## Getting Started
 
@@ -37,18 +41,15 @@ The following shows the project structure and the most relevant files.
 
 ### Set Up an Atlas App Services App
 
-To sync Realm data you must first:
+To sync data used in this app you must first:
 
 1. [Create an App Services App](https://www.mongodb.com/docs/atlas/app-services/manage-apps/create/create-with-ui/)
 2. Enable [Email/Password Authentication](https://www.mongodb.com/docs/atlas/app-services/authentication/email-password/#std-label-email-password-authentication)
+    * For this example app, we automatically confirm users' emails.
 3. [Enable Flexible Sync](https://www.mongodb.com/docs/atlas/app-services/sync/configure/enable-sync/) with **Development Mode** on.
-    * When Development Mode is enabled, queryable fields will be added automatically.
+    * When Development Mode is enabled, [queryable fields](https://www.mongodb.com/docs/atlas/app-services/sync/configure/sync-settings/#queryable-fields) will be added **automatically**, and schemas will be inferred based on the client Realm data models.
 
-After running the client and seeing the available collections in Atlas, [set read/write permissions](https://www.mongodb.com/docs/atlas/app-services/rules/roles/#with-device-sync) for all collections.
-
-### Configure AppID
-
-Copy the AppID from your App Services dashboard and paste it into `src/renderer/atlas-app-services/config.json`
+After running the client and seeing the available collections in Atlas, [set read/write permissions](https://www.mongodb.com/docs/atlas/app-services/rules/roles/#define-roles---permissions) for all collections.
 
 ### Install Dependencies
 

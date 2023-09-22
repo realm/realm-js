@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "Electron App",
+  "name": "Electron App Using Atlas Device Sync",
   "icons": [
     {
       "src": "favicon.ico",

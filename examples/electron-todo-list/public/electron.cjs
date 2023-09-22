@@ -14,7 +14,6 @@ function createWindow() {
     webPreferences: { nodeIntegration: true, contextIsolation: false },
   });
   // and load the index.html of the app.
-  console.log(__dirname);
   mainWindow.loadFile(path.join(__dirname, "../build/index.html"));
   mainWindow?.webContents.openDevTools();
 }

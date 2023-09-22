@@ -22,7 +22,7 @@ export function IntroText() {
   return (
     <div className={styles.container}>
       <p>
-        Welcome to a MongoDB Realm, WASM, and Sync app!
+        Welcome to a MongoDB Realm, Electron, and Sync app!
       </p>
       <p>
         Add a task using the form at the top of the screen. It will create a

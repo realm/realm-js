@@ -62,7 +62,7 @@ export function LoginPage() {
         alt='Realm by MongoDB'
       />
       <h1>
-        Log in to try out Realm Web & Sync
+        Log in to try out Realm in Electron & Atlas Device Sync
       </h1>
       <form onSubmit={handleSubmit} className={styles.form}>
         <input

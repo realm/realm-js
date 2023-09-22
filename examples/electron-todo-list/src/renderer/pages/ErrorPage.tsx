@@ -24,8 +24,6 @@ export function ErrorPage() {
   const navigate = useNavigate();
   const error = useRouteError();
 
-  console.error(error);
-
   return (
     <div className={styles.container}>
       <h1>
