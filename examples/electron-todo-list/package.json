@@ -1,0 +1,36 @@
+{
+  "name": "@realm/example-electron-todo-list",
+  "version": "0.1.0",
+  "private": true,
+  "main": "public/electron.cjs",
+  "type": "module",
+  "homepage": "./",
+  "dependencies": {
+    "@craco/craco": "^7.1.0",
+    "@realm/react": "^0.6.0",
+    "@testing-library/jest-dom": "^5.17.0",
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/user-event": "^13.5.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.15.0",
+    "react-scripts": "5.0.1",
+    "realm": "^12.1.0"
+  },
+  "scripts": {
+    "build": "craco build",
+    "start": "electron ."
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "devDependencies": {
+    "electron": "^26.1.0",
+    "electron-reloader": "^1.2.3",
+    "typescript": "^4.9.5",
+    "webpack-node-externals": "^3.0.0"
+  }
+}
