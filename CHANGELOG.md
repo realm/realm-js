@@ -13,6 +13,10 @@
 * Unknown protocol errors received from the Altas Device Sync server will no longer cause the app to crash if a valid error action is also received. Unknown error actions will cause device sync to fail with an error via the sync error handler. ([realm/realm-core#6885](https://github.com/realm/realm-core/pull/6885))
 * Allow arguments to Realm Query Language to be a string representation of a geospatial object for `GEOWITHIN` queries. ([realm/realm-core#6934](https://github.com/realm/realm-core/issues/6934))
 * Crash when querying the size of a Object property through a link chain. ([realm/realm-core#6915](https://github.com/realm/realm-core/issues/6915), since v12.0.0)
+* Throw an exception when some limitation on the OS filesystem is reached, instead of crashing the application. The same file locking logic is now also used for all the platforms. ([realm/realm-core#6926](https://github.com/realm/realm-core/pull/6926))
+* Fixed crash that generated the error message `Assertion failed: ref + size <= next->first`. ([realm/realm-core#6340](https://github.com/realm/realm-core/issues/6340), since v11.3.0)
+* When using OpenSSL (i.e. on non-Apple platforms) a TLS handshake error would never be reported and instead TLS errors would be reported as a sync connection failure. When using SecureTransport (i.e. on Apple platforms) only some TLS handshake errors would be reported, but most were reported as a sync connection failure. Additionally, reported sync errors originating from OpenSSL have been improved. ([realm/realm-core#6938](https://github.com/realm/realm-core/pull/6938)).
+* Fixed `Bad server version` errors and client reset which sometimes occurred when updating a subscription's query. ([realm/realm-core#6966](https://github.com/realm/realm-core/issues/6966), since v10.12.0)
 
 ### Compatibility
 * React Native >= v0.71.4
@@ -20,9 +24,9 @@
 * File format: generates Realms with format v23 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-* Upgraded Realm Core from v13.17.2 to v13.20.0. ([#6077](https://github.com/realm/realm-js/issues/6077)
+* Upgraded Realm Core from v13.17.2 to v13.20.1. ([#6077](https://github.com/realm/realm-js/issues/6077) & [#6134](https://github.com/realm/realm-js/issues/6134))
 * Sync protocol version bumped to 10. ([realm/realm-core#6902](https://github.com/realm/realm-core/pull/6902))
-* Error code reported in the sync error handling for compensating writes is reported as 1033 (previously 231). ([#6077](https://github.com/realm/realm-js/issues/6077)
+* Error code reported in the sync error handling for compensating writes is reported as 1033 (previously 231). ([#6077](https://github.com/realm/realm-js/issues/6077))
 
 ## 12.1.0 (2023-08-30)
 
