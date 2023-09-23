@@ -20,9 +20,9 @@ The following shows the project structure and the most relevant files.
 > To learn more about the backend file structure, see [App Configuration](https://www.mongodb.com/docs/atlas/app-services/reference/config/).
 
 ```
-├── backend
-│   └── (see link above)              - App Services App
-├── frontend
+├── backend                           - App Services App
+│   └── (see link above)
+├── frontend                          - React Native App
 │   ├── app
 │   │   ├── atlas-app-services
 │   │   │   └── config.ts             - Add App ID
@@ -110,7 +110,6 @@ Each movie poster is loaded from a remote source and is not cached on the client
 
 * [Node.js](https://nodejs.org/)
 * [React Native development environment](https://reactnative.dev/docs/environment-setup?guide=native)
-  * See the **React Native CLI Quickstart**.
 
 ### Set up an Atlas Database with a Sample Dataset
 
@@ -129,16 +128,16 @@ To import and deploy changes from your local directory to App Services you can u
 1. [Set up Realm CLI](https://www.mongodb.com/docs/atlas/app-services/cli/).
 2. In the provided [backend directory](./backend/) (the App Services App), update the following:
     * Cluster Name
-      * Update the [`"clusterName"`](./backend/data_sources/mongodb-atlas/config.json) to the name of your cluster.
+      * Update the `"clusterName"` in [data_sources/mongodb-atlas/config.json](./backend/data_sources/mongodb-atlas/config.json) to the name of your cluster.
       * (The default name is `Cluster0`.)
     * App ID
-      * There is no `"app_id"` defined in [realm_config.json](./backend/realm_config.json) since we will create a brand new App. **If** you for some reason are updating an existing app, add an `"app_id"` field.
-3. Push and deploy the local directory to App Services (see [`realm-cli push`](https://www.mongodb.com/docs/atlas/app-services/cli/realm-cli-push/#std-label-realm-cli-push)):
+      * There is no `"app_id"` defined in [realm_config.json](./backend/realm_config.json) since we will create a brand new App. **If** you for some reason are updating an existing app, add an `"app_id"` field and its value.
+3. [Push and deploy](https://www.mongodb.com/docs/atlas/app-services/cli/realm-cli-push/#std-label-realm-cli-push) the local directory to App Services:
 ```sh
 realm-cli push --local <path to backend directory>
 ```
 4. Once pushed, verify that your App shows up in the App Services UI and that both triggers have the status `Enabled`.
-5. You can now go ahead and [run the React Native app](#run-the-app).
+5. 🥳 You can now go ahead and [install dependencies and run the React Native app](#install-dependencies).
 
 #### Via the App Services UI
 
@@ -230,7 +229,7 @@ npm run android
 
 > If you set up your App Services App [via a CLI](#via-a-cli-recommended), you can **skip this step** as the permissions should already be defined for you.
 
-After running the client app for the first time and seeing the available collections in Atlas, [modify the rules](https://www.mongodb.com/docs/atlas/app-services/rules/roles/#define-roles---permissions) for the collections in the App Services UI for increased security.
+After running the client app for the first time, [modify the rules](https://www.mongodb.com/docs/atlas/app-services/rules/roles/#define-roles---permissions) for the collections in the App Services UI for increased security.
 
 * Collection: `movies`
   * Permissions: `readAll` (see [corresponding json](./backend/data_sources/mongodb-atlas/sample_mflix/movies/rules.json))
