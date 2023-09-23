@@ -106,7 +106,7 @@ export {
   mapTo,
   MapToDecorator,
   MetadataMode,
-  MetadataType,
+  Metadata,
   MigrationCallback,
   MongoDB,
   MongoDBCollection,

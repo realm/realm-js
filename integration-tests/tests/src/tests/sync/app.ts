@@ -140,9 +140,9 @@ describe("App", () => {
 
     it("is accessible", () => {
       expect(MetadataMode).deep.equals({
-        NoEncryption: "NoEncryption",
-        Encryption: "Encryption",
-        NoMetadata: "NoMetadata",
+        NoEncryption: "noEncryption",
+        Encryption: "encryption",
+        NoMetadata: "noMetadata",
       });
     });
 

@@ -56,7 +56,7 @@ export enum MetadataMode {
 /**
  * Configuration for how to handle the `App`'s metadata.
  */
-export type MetadataType = {
+export type Metadata = {
   /**
    * The different modes for storing meta data in Realm Apps.
    * @since 12.2.0
@@ -77,12 +77,6 @@ function toBindingMetadataMode(arg: MetadataMode): binding.MetadataMode {
   assert(bindingMetadataMode !== undefined, `Unexpected metadata mode: ${arg}`);
   return bindingMetadataMode;
 }
-
-// /** @internal */
-// export function fromBindingMetadataModeToNumericMetadataMode(arg: binding.MetadataMode): MetadataMode {
-//   // For now, these map 1-to-1
-//   return arg as unknown as MetadataMode;
-// }
 
 const translationTable: Record<binding.MetadataMode, MetadataMode> = {
   [binding.MetadataMode.NoEncryption]: MetadataMode.NoEncryption,
@@ -145,7 +139,7 @@ export type AppConfiguration = {
    * Specify how meta data should be stored.
    * @since 12.2.0
    */
-  metadata?: MetadataType;
+  metadata?: Metadata;
 };
 
 /**
