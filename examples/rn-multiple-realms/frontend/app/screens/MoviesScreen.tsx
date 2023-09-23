@@ -49,7 +49,7 @@ export function MoviesScreen({navigation: {navigate}}: MoviesScreenProps) {
     <View style={styles.container}>
       {/* A loading screen is shown for a few seconds to hide when
       the on-screen movie posters load from their remote sources. */}
-      <Loading duration={3200} />
+      <Loading duration={3500} />
       {/* Renders each horizontal section of movies. */}
       <FlatList
         data={movieSections}

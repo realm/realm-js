@@ -17,7 +17,11 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import React from 'react';
-import {Linking, Pressable, StyleSheet, Text, View} from 'react-native';
+import {Pressable, StyleSheet, Text, View} from 'react-native';
+// @ts-ignore `openURLInBrowser` will open the url in your host's browser. This
+// is used for the purpose of this demo. For your own app, to open a URL on the
+// simulator/device, import {Linking} from 'react-native' and use Linking.openURL().
+import openURLInBrowser from 'react-native/Libraries/Core/Devtools/openURLInBrowser';
 
 import {Icon} from '../components/Icon';
 import {colors} from '../styles/colors';
@@ -42,7 +46,9 @@ export function AppInfoScreen() {
       <Text style={styles.paragraph}>Learn more at:</Text>
       <Pressable
         onPress={() =>
-          Linking.openURL(
+          // Opens link on the host's browser (used for this demo).
+          // Use `Linking.openURL()` to open on the simulator/device.
+          openURLInBrowser(
             'https://www.mongodb.com/docs/realm/sdk/react-native/',
           )
         }>
@@ -50,7 +56,7 @@ export function AppInfoScreen() {
       </Pressable>
       <Pressable
         onPress={() =>
-          Linking.openURL(
+          openURLInBrowser(
             'https://www.mongodb.com/atlas/app-services/device-sync',
           )
         }>
