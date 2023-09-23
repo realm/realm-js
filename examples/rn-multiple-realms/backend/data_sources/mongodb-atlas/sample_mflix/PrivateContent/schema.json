@@ -1,0 +1,22 @@
+{
+    "properties": {
+        "_id": {
+            "bsonType": "objectId"
+        },
+        "myList": {
+            "bsonType": "array",
+            "items": {
+                "bsonType": "objectId"
+            }
+        },
+        "userId": {
+            "bsonType": "string"
+        }
+    },
+    "required": [
+        "_id",
+        "userId"
+    ],
+    "title": "PrivateContent",
+    "type": "object"
+}

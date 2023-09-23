@@ -1,0 +1,185 @@
+{
+    "properties": {
+        "_id": {
+            "bsonType": "objectId"
+        },
+        "awards": {
+            "properties": {
+                "nominations": {
+                    "bsonType": "int"
+                },
+                "text": {
+                    "bsonType": "string"
+                },
+                "wins": {
+                    "bsonType": "int"
+                }
+            },
+            "required": [],
+            "title": "movie_awards",
+            "type": "object"
+        },
+        "cast": {
+            "bsonType": "array",
+            "items": {
+                "bsonType": "string"
+            }
+        },
+        "countries": {
+            "bsonType": "array",
+            "items": {
+                "bsonType": "string"
+            }
+        },
+        "directors": {
+            "bsonType": "array",
+            "items": {
+                "bsonType": "string"
+            }
+        },
+        "fullPlot": {
+            "bsonType": "string"
+        },
+        "fullplot": {
+            "bsonType": "string"
+        },
+        "genres": {
+            "bsonType": "array",
+            "items": {
+                "bsonType": "string"
+            }
+        },
+        "imdb": {
+            "properties": {
+                "id": {
+                    "bsonType": "int"
+                },
+                "rating": {
+                    "bsonType": "double"
+                },
+                "votes": {
+                    "bsonType": "int"
+                }
+            },
+            "required": [],
+            "title": "movie_imdb",
+            "type": "object"
+        },
+        "languages": {
+            "bsonType": "array",
+            "items": {
+                "bsonType": "string"
+            }
+        },
+        "lastupdated": {
+            "bsonType": "string"
+        },
+        "metacritic": {
+            "bsonType": "int"
+        },
+        "num_mflix_comments": {
+            "bsonType": "int"
+        },
+        "plot": {
+            "bsonType": "string"
+        },
+        "poster": {
+            "bsonType": "string"
+        },
+        "rated": {
+            "bsonType": "string"
+        },
+        "released": {
+            "bsonType": "date"
+        },
+        "runtime": {
+            "bsonType": "int"
+        },
+        "title": {
+            "bsonType": "string"
+        },
+        "tomatoes": {
+            "properties": {
+                "boxOffice": {
+                    "bsonType": "string"
+                },
+                "consensus": {
+                    "bsonType": "string"
+                },
+                "critic": {
+                    "properties": {
+                        "meter": {
+                            "bsonType": "int"
+                        },
+                        "numReviews": {
+                            "bsonType": "int"
+                        },
+                        "rating": {
+                            "bsonType": "double"
+                        }
+                    },
+                    "required": [],
+                    "title": "movie_tomatoes_critic",
+                    "type": "object"
+                },
+                "dvd": {
+                    "bsonType": "date"
+                },
+                "fresh": {
+                    "bsonType": "int"
+                },
+                "lastUpdated": {
+                    "bsonType": "date"
+                },
+                "production": {
+                    "bsonType": "string"
+                },
+                "rotten": {
+                    "bsonType": "int"
+                },
+                "viewer": {
+                    "properties": {
+                        "meter": {
+                            "bsonType": "int"
+                        },
+                        "numReviews": {
+                            "bsonType": "int"
+                        },
+                        "rating": {
+                            "bsonType": "double"
+                        }
+                    },
+                    "required": [],
+                    "title": "movie_tomatoes_viewer",
+                    "type": "object"
+                },
+                "website": {
+                    "bsonType": "string"
+                }
+            },
+            "required": [],
+            "title": "movie_tomatoes",
+            "type": "object"
+        },
+        "type": {
+            "bsonType": "string"
+        },
+        "writers": {
+            "bsonType": "array",
+            "items": {
+                "bsonType": "string"
+            }
+        },
+        "year": {
+            "bsonType": "int"
+        }
+    },
+    "required": [
+        "_id",
+        "title",
+        "type",
+        "year"
+    ],
+    "title": "movies",
+    "type": "object"
+}

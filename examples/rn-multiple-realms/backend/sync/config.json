@@ -1,0 +1,26 @@
+{
+    "type": "flexible",
+    "state": "enabled",
+    "development_mode_enabled": true,
+    "service_name": "mongodb-atlas",
+    "database_name": "sample_mflix",
+    "client_max_offline_days": 30,
+    "is_recovery_mode_disabled": false,
+    "permissions": {
+        "rules": {},
+        "defaultRoles": []
+    },
+    "collection_queryable_fields_names": {
+        "PrivateContent": [
+            "userId"
+        ],
+        "movies": [
+            "poster",
+            "year",
+            "fullplot",
+            "title",
+            "type",
+            "genres"
+        ]
+    }
+}

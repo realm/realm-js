@@ -1,0 +1,8 @@
+{
+    "myList": {
+        "ref": "#/relationship/mongodb-atlas/sample_mflix/movies",
+        "source_key": "myList",
+        "foreign_key": "_id",
+        "is_list": true
+    }
+}
