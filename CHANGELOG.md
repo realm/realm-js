@@ -5,6 +5,7 @@
 
 ### Enhancements
 * Added `Realm.Sync.Session.reconnect()` to help force a reconnection to Atlas Device Sync. ([#6123](https://github.com/realm/realm-js/issues/6123))
+* Added `Realm.App.AppConfiguration.metaData` which will make it possible to encrypt metadata used by the `Realm.App`. ([#6147](https://github.com/realm/realm-js/issues/6147))
 
 ### Fixed
 * Fixed values of properties being replaced by default value when updating. ([#6129](https://github.com/realm/realm-js/issues/6129), since v12.0.0)

@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
-import Realm, { BSON } from "realm";
+import Realm, { AppConfiguration, BSON, MetadataMode } from "realm";
 
 import { importAppBefore } from "../../hooks";
 import { generatePartition } from "../../utils/generators";
@@ -130,6 +130,44 @@ describe("App", () => {
 
       expect(app).instanceOf(Realm.App);
       expect(app).equals(cachedApp);
+    });
+  });
+
+  describe("how to handle metadata", () => {
+    afterEach(async () => {
+      Realm.clearTestState();
+    });
+
+    it("is accessible", () => {
+      expect(MetadataMode).deep.equals({
+        NoEncryption: "noEncryption",
+        Encryption: "encryption",
+        NoMetadata: "noMetadata",
+      });
+    });
+
+    it("persists a user but does not encrypt it", () => {
+      const config: AppConfiguration = { id: "smurf", metadata: { mode: MetadataMode.NoEncryption } };
+      const app = new Realm.App(config);
+      expect(app).instanceOf(Realm.App);
+    });
+
+    it("persists and encrypts a user", () => {
+      const encryptionKey = new ArrayBuffer(64);
+      const config: AppConfiguration = { id: "smurf", metadata: { mode: MetadataMode.Encryption, encryptionKey } };
+      const app = new Realm.App(config);
+      expect(app).instanceOf(Realm.App);
+    });
+
+    it("request encryption without encryption key", () => {
+      const config: AppConfiguration = { id: "smurf", metadata: { mode: MetadataMode.Encryption } };
+      expect(() => new Realm.App(config)).to.throw("encryptionKey is required");
+    });
+
+    it("does not persist a user", () => {
+      const config: AppConfiguration = { id: "smurf", metadata: { mode: MetadataMode.NoMetadata } };
+      const app = new Realm.App(config);
+      expect(app).instanceOf(Realm.App);
     });
   });
 

@@ -121,6 +121,7 @@ records:
     fields:
       - base_file_path
       - metadata_mode
+      - custom_encryption_key
       - user_agent_binding_info
       - multiplex_sessions
 
