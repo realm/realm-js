@@ -1,4 +1,4 @@
-## vNext (TBD)
+## 12.2.0 (2023-09-24)
 
 ### Deprecations
 * `Realm.App.Sync.reconnect(app)` has been deprecated and will be removed in the next major version. You can use `Realm.App.Sync.Session.reconnect()` instead.
