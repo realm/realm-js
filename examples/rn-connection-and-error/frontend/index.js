@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+// Polyfill for `crypto.getRandomValues()` used by BSON.
+import 'react-native-get-random-values';
 import {AppRegistry} from 'react-native';
 import App from './app/App';
 import {name as appName} from './app.json';
