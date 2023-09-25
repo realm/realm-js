@@ -44,3 +44,37 @@ export class Product extends Realm.Object {
     },
   };
 }
+
+/**
+ * A dummy list of product names to use when creating a product.
+ */
+const productNames = [
+  'Fresh Salad',
+  'Hoagie',
+  'Burrito',
+  'Quesadilla',
+  'Bagel',
+  'Panini',
+  'Pizza',
+  'Chicken Sandwich',
+  'Fish Soup',
+  'Chicken Soup',
+  'Noodle Soup',
+  'Blueberry Muffin',
+  'Chocolate Chip Muffin',
+  'Brownie',
+  'Coke',
+  'Diet Coke',
+  'Strawberry Milkshake',
+  'Chocolate Milkshake',
+  'Vanilla Milkshake',
+  'Iced Coffee',
+];
+
+/**
+ * @returns one of the valid product names.
+ */
+export const getRandomProductName = () => {
+  const randomIndex = Math.floor(Math.random() * productNames.length);
+  return productNames[randomIndex];
+};
