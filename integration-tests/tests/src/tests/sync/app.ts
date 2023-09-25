@@ -23,6 +23,7 @@ import { importAppBefore } from "../../hooks";
 import { generatePartition } from "../../utils/generators";
 import { baseUrl } from "../../utils/import-app";
 import { select } from "../../utils/select";
+import { sleep } from "../../utils/sleep";
 import { buildAppConfig } from "../../utils/build-app-config";
 
 const TestObjectSchema: Realm.ObjectSchema = {
@@ -344,7 +345,10 @@ describe("App", () => {
       expect(realm.objects("Dog").length).equals(2);
       realm.close();
 
-      Realm.deleteFile(realmConfig);
+      while (Realm.exists(realmConfig)) {
+        Realm.deleteFile(realmConfig);
+        await sleep(100);
+      }
 
       const realm2 = await Realm.open(realmConfig);
       expect(nCalls).equals(2);
