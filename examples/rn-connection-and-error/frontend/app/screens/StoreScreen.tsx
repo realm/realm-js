@@ -17,28 +17,64 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import React from 'react';
-import {FlatList, Pressable, Text, View} from 'react-native';
+import {FlatList, StyleSheet, Text, View} from 'react-native';
 import {useAuth} from '@realm/react';
 
+import {Button} from '../components/Button';
+import {ProductItem} from '../components/ProductItem';
 import {useStore} from '../providers/StoreProvider';
 
 export function StoreScreen() {
-  const store = useStore();
+  const {store, addKiosk, addProduct, updateProduct, removeProduct} =
+    useStore();
   const {logOut} = useAuth();
 
   return (
     // TODO: Update
-    <View>
-      <Pressable onPress={logOut}>
-        <Text>Log Out</Text>
-      </Pressable>
-      {store?.kiosks[0]?.products.length && (
-        <FlatList
-          data={store.kiosks[0].products}
-          keyExtractor={product => product._id.toHexString()}
-          renderItem={({item: product}) => <Text>{product.name}</Text>}
-        />
-      )}
+    <View style={styles.container}>
+      <View style={styles.store}>
+        <Button onPress={logOut} text="Log Out" />
+        <View style={styles.buttons}>
+          <Button onPress={addProduct} text="Add Product" />
+          <Button onPress={addKiosk} text="Add Kiosk" />
+        </View>
+        {store?.kiosks[0]?.products.length ? (
+          <FlatList
+            data={store.kiosks[0].products}
+            keyExtractor={product => product._id.toHexString()}
+            renderItem={({item: product}) => (
+              <ProductItem
+                product={product}
+                update={updateProduct}
+                remove={removeProduct}
+              />
+            )}
+          />
+        ) : (
+          <></>
+        )}
+      </View>
+      <View style={styles.console}>
+        <Text>TODO: Console</Text>
+      </View>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  store: {
+    flex: 1,
+  },
+  console: {
+    height: 150,
+    borderTopWidth: 1,
+    borderColor: 'black',
+  },
+  buttons: {
+    display: 'flex',
+    flexDirection: 'row',
+  },
+});
