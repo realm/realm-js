@@ -249,6 +249,14 @@
   color: var(--color-background);
 }
 
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="os"] #tsd-search .field input,
+  :root[data-theme="os"] .tsd-page-toolbar a:hover,
+  :root[data-theme="os"] .tsd-page-toolbar #tsd-search .results a:hover span.parent {
+    color: var(--color-background);
+  }
+}
+
 /* ==========================================================================
    Basic element style overrides
    ========================================================================== */
