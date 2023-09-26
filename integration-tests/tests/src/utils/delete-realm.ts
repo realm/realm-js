@@ -27,7 +27,7 @@ import Realm, { Configuration } from "realm";
  * @param delay The time (in milliseconds) between attempts
  * @throws If the Realm could not be deleted.
  */
-export async function deleteRealm(config: Configuration, attempts = 10, delay = 100): Promise<void> {
+export async function deleteRealm(config: Configuration, attempts = 25, delay = 100): Promise<void> {
   let n = 0;
   while (Realm.exists(config)) {
     n++;
