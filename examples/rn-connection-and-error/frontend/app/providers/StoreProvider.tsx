@@ -18,8 +18,13 @@
 
 import React, {createContext, useCallback, useContext, useEffect} from 'react';
 import type {PropsWithChildren} from 'react';
-import {BSON, CollectionChangeCallback} from 'realm';
-import {useObject, useQuery, useRealm} from '@realm/react';
+import {
+  BSON,
+  CollectionChangeCallback,
+  ConnectionState,
+  UserState,
+} from 'realm';
+import {useObject, useQuery, useRealm, useUser} from '@realm/react';
 
 import {SYNC_STORE_ID} from '../atlas-app-services/config';
 import {Kiosk} from '../models/Kiosk';
@@ -27,7 +32,7 @@ import {Product, getRandomProductName} from '../models/Product';
 import {Store} from '../models/Store';
 
 /**
- * Value available to consumers of the `StoreContext`.
+ * Values available to consumers of the `StoreContext`.
  */
 type StoreContextType = {
   store: Store | null;
@@ -55,11 +60,12 @@ const StoreContext = createContext<StoreContextType>({
  */
 export function StoreProvider({children}: PropsWithChildren) {
   const realm = useRealm();
+  const currentUser = useUser();
   const store = useObject(Store, SYNC_STORE_ID);
   const products = useQuery(Product);
 
   /**
-   * Add a kiosk to the store, containing all products in that store.
+   * Adds a kiosk to the store, containing all products in that store.
    */
   const addKiosk = useCallback(() => {
     realm.write(() => {
@@ -75,7 +81,7 @@ export function StoreProvider({children}: PropsWithChildren) {
   }, [realm, store, products]);
 
   /**
-   * Add a product and then add it to all kiosks in the store.
+   * Adds a product and then adds it to all kiosks in the store.
    */
   const addProduct = useCallback(() => {
     realm.write(() => {
@@ -94,7 +100,7 @@ export function StoreProvider({children}: PropsWithChildren) {
   }, [realm, store, products.length]);
 
   /**
-   * Update a product by changing the number in stock.
+   * Updates a product by changing the number in stock.
    */
   const updateProduct = useCallback(
     (product: Product) => {
@@ -106,7 +112,7 @@ export function StoreProvider({children}: PropsWithChildren) {
   );
 
   /**
-   * Remove a product from the store.
+   * Removes a product from the store.
    *
    * @note
    * This removes it from the database, rather than setting the number
@@ -145,11 +151,98 @@ export function StoreProvider({children}: PropsWithChildren) {
     products.addListener(handleProductsChange);
   }, [products, handleProductsChange]);
 
+  /**
+   * The connection listener - Will be invoked when the the underlying sync
+   * session changes its connection state.
+   */
+  const handleConnectionChange = useCallback(
+    (newState: ConnectionState, oldState: ConnectionState) => {
+      const connecting = newState === ConnectionState.Connecting;
+      const connected = newState === ConnectionState.Connected;
+      const disconnected =
+        oldState === ConnectionState.Connected &&
+        newState === ConnectionState.Disconnected;
+      const failedReconnecting =
+        oldState === ConnectionState.Connecting &&
+        newState === ConnectionState.Disconnected;
+
+      if (connecting) {
+        console.info('Connecting...');
+      } else if (connected) {
+        console.info('Connected.');
+      } else if (disconnected) {
+        console.info('Disconnected.');
+
+        // At this point, the `newState` is `ConnectionState.Disconnected`. Automatic retries
+        // will start and the state will alternate in the following way for the period where
+        // there is NO network connection:
+        //    (1) oldState: ConnectionState.Disconnected, newState: ConnectionState.Connecting
+        //    (2) oldState: ConnectionState.Connecting, newState: ConnectionState.Disconnected
+
+        // Calling `App.Sync.Session.reconnect()` is not needed due to automatic retries.
+
+        // Be aware of that there may be a delay from the time of actual disconnect until this
+        // listener is invoked.
+      } /* failedReconnecting */ else {
+        console.info('Failed to reconnect.');
+      }
+    },
+    [],
+  );
+
+  const listenForConnectionChange = useCallback(() => {
+    realm.syncSession?.addConnectionNotification(handleConnectionChange);
+  }, [realm, handleConnectionChange]);
+
+  /**
+   * The user listener - Will be invoked on various user related events including
+   * refresh of auth token, refresh token, custom user data, removal, and logout.
+   */
+  const handleUserEventChange = useCallback(() => {
+    // Currently we don't provide any arguments to this callback but we have opened
+    // a ticket for this (see https://github.com/realm/realm-core/issues/6454). To
+    // detect that a token has been refreshed (which can also be manually triggered
+    // by `await user.refreshCustomData()`), the original access token can be saved
+    // to a variable and compared against the current one.
+    // TODO: Update
+    // if (originalAccessToken !== currentUser.accessToken) {
+    //   console.info("Refreshed access token.");
+    //   originalAccessToken = currentUser.accessToken;
+    // }
+
+    switch (currentUser.state) {
+      case UserState.LoggedIn:
+        console.info(`User (id: ${currentUser.id}) has been authenticated.`);
+        break;
+      case UserState.LoggedOut:
+        console.info(`User (id: ${currentUser.id}) has been logged out.`);
+        break;
+      case UserState.Removed:
+        console.info(
+          `User (id: ${currentUser.id}) has been removed from the app.`,
+        );
+        break;
+      default:
+        // Should not be reachable.
+        break;
+    }
+  }, [currentUser]);
+
+  const listenForUserEventChange = useCallback(() => {
+    currentUser.addListener(handleUserEventChange);
+  }, [currentUser, handleUserEventChange]);
+
   const removeListeners = useCallback(() => {
+    realm.syncSession?.removeConnectionNotification(handleConnectionChange);
+    currentUser.removeAllListeners();
     products.removeAllListeners();
-  }, [products]);
+  }, [realm, currentUser, products, handleConnectionChange]);
 
   useEffect(() => {
+    // TODO: Possibly add a state for seeing if the listener have
+    // been added so that listeners are not added multiple times.
+    listenForConnectionChange();
+    listenForUserEventChange();
     listenForProductsChange();
 
     // Remove listeners on unmount.
