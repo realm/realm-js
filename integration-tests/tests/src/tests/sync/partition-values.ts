@@ -21,6 +21,7 @@ import { authenticateUserBefore } from "../../hooks/authenticate-user-before";
 import { importAppBefore } from "../../hooks/import-app-before";
 import { generatePartition } from "../../utils/generators";
 import { buildAppConfig } from "../../utils/build-app-config";
+import { deleteRealm } from "../../utils/delete-realm";
 
 const PvIntDog = {
   name: "Dog",
@@ -133,7 +134,7 @@ describe("Partition-values", () => {
       const realmConfigSecondary = createConfig(PvIntDog, this.user, 43);
 
       // ensure clean starting point
-      Realm.deleteFile(realmConfigPrimary);
+      await deleteRealm(realmConfigPrimary);
 
       const realm1 = await Realm.open(realmConfigPrimary);
       realm1.write(() => {
@@ -145,7 +146,7 @@ describe("Partition-values", () => {
       realm1.close();
 
       // cleanup, re-sync & check changes are synced
-      Realm.deleteFile(realmConfigPrimary);
+      await deleteRealm(realmConfigPrimary);
 
       const realm2 = await Realm.open(realmConfigPrimary);
       await realm2.syncSession?.downloadAllServerChanges();
@@ -154,7 +155,7 @@ describe("Partition-values", () => {
       realm2.close();
 
       // cleanup & re-sync with different partitionValue
-      Realm.deleteFile(realmConfigPrimary);
+      await deleteRealm(realmConfigPrimary);
 
       const realm3 = await Realm.open(realmConfigSecondary);
       await realm3.syncSession?.downloadAllServerChanges();
@@ -173,7 +174,7 @@ describe("Partition-values", () => {
       const realmConfigSecondary = createConfig(PvStringDog, this.user, "43");
 
       // ensure clean starting point
-      Realm.deleteFile(realmConfigPrimary);
+      await deleteRealm(realmConfigPrimary);
 
       const realm1 = await Realm.open(realmConfigPrimary);
       realm1.write(() => {
@@ -185,7 +186,7 @@ describe("Partition-values", () => {
       realm1.close();
 
       // cleanup, re-sync & check changes are synced
-      Realm.deleteFile(realmConfigPrimary);
+      await deleteRealm(realmConfigPrimary);
 
       const realm2 = await Realm.open(realmConfigPrimary);
       await realm2.syncSession?.downloadAllServerChanges();
@@ -194,7 +195,7 @@ describe("Partition-values", () => {
       realm2.close();
 
       // cleanup & re-sync with different partitionValue
-      Realm.deleteFile(realmConfigPrimary);
+      await deleteRealm(realmConfigPrimary);
 
       const realm3 = await Realm.open(realmConfigSecondary);
       await realm3.syncSession?.downloadAllServerChanges();
@@ -221,7 +222,7 @@ describe("Partition-values", () => {
       );
 
       // ensure clean starting point
-      Realm.deleteFile(realmConfigPrimary);
+      await deleteRealm(realmConfigPrimary);
 
       const realm1 = await Realm.open(realmConfigPrimary);
       realm1.write(() => {
@@ -233,7 +234,7 @@ describe("Partition-values", () => {
       realm1.close();
 
       // cleanup, re-sync & check changes are synced
-      Realm.deleteFile(realmConfigPrimary);
+      await deleteRealm(realmConfigPrimary);
 
       const realm2 = await Realm.open(realmConfigPrimary);
       await realm2.syncSession?.downloadAllServerChanges();
@@ -242,7 +243,7 @@ describe("Partition-values", () => {
       realm2.close();
 
       // cleanup & re-sync with different partitionValue
-      Realm.deleteFile(realmConfigPrimary);
+      await deleteRealm(realmConfigPrimary);
 
       const realm3 = await Realm.open(realmConfigSecondary);
       await realm3.syncSession?.downloadAllServerChanges();
@@ -265,7 +266,7 @@ describe("Partition-values", () => {
       );
 
       // ensure clean starting point
-      Realm.deleteFile(realmConfigPrimary);
+      await deleteRealm(realmConfigPrimary);
       const realm1 = await Realm.open(realmConfigPrimary);
       realm1.write(() => {
         realm1.create("Dog", { _id: new BSON.ObjectId(), name: "King" });
@@ -275,7 +276,7 @@ describe("Partition-values", () => {
       await realm1.syncSession?.uploadAllLocalChanges();
       realm1.close();
 
-      Realm.deleteFile(realmConfigPrimary);
+      await deleteRealm(realmConfigPrimary);
 
       const realm2 = await Realm.open(realmConfigPrimary);
       await realm2.syncSession?.downloadAllServerChanges();
@@ -284,7 +285,7 @@ describe("Partition-values", () => {
       realm2.close();
 
       // cleanup & re-sync with different partitionValue
-      Realm.deleteFile(realmConfigPrimary);
+      await deleteRealm(realmConfigPrimary);
 
       const realm3 = await Realm.open(realmConfigSecondary);
       await realm3.syncSession?.downloadAllServerChanges();

@@ -25,6 +25,7 @@ import { generatePartition } from "../../utils/generators";
 import { importApp } from "../../utils/import-app";
 import { sleep, throwAfterTimeout } from "../../utils/sleep";
 import { buildAppConfig } from "../../utils/build-app-config";
+import { deleteRealm } from "../../utils/delete-realm";
 
 const DogForSyncSchema: Realm.ObjectSchema = {
   name: "Dog",
@@ -1053,7 +1054,8 @@ describe("SessionTest", () => {
 
       await user2.logOut();
       realm2.close();
-      Realm.deleteFile(config2);
+
+      await deleteRealm(config2);
 
       /*
       Test 3:  open a copy of our realm with a new user and a new
