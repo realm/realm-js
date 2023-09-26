@@ -50,6 +50,7 @@ type StoreContextType = {
   reconnect: () => void;
   disconnect: () => void;
   triggerSyncError: () => void;
+  refreshAccessToken: () => Promise<void>;
 };
 
 /**
@@ -65,6 +66,7 @@ const StoreContext = createContext<StoreContextType>({
   reconnect: () => {},
   disconnect: () => {},
   triggerSyncError: () => {},
+  refreshAccessToken: async () => {},
 });
 
 /**
@@ -78,6 +80,11 @@ export function StoreProvider({children}: PropsWithChildren) {
   const store = useObject(Store, SYNC_STORE_ID);
   const products = useQuery(Product);
   const [isConnected, setIsConnected] = useState(true);
+  // The original access token is stored in order to detect if
+  // the token has been refreshed (see `handleUserEventChange`).
+  const [originalAccessToken, setOriginalAccessToken] = useState(
+    () => currentUser.accessToken,
+  );
 
   /**
    * Adds a kiosk to the store, containing all products in that store.
@@ -245,14 +252,12 @@ export function StoreProvider({children}: PropsWithChildren) {
   const handleUserEventChange = useCallback(() => {
     // Currently we don't provide any arguments to this callback but we have opened
     // a ticket for this (see https://github.com/realm/realm-core/issues/6454). To
-    // detect that a token has been refreshed (which can also be manually triggered
-    // by `await user.refreshCustomData()`), the original access token can be saved
+    // detect that a token has been refreshed, the original access token can be saved
     // to a variable and compared against the current one.
-    // TODO: Update
-    // if (originalAccessToken !== currentUser.accessToken) {
-    //   console.info("Refreshed access token.");
-    //   originalAccessToken = currentUser.accessToken;
-    // }
+    if (originalAccessToken !== currentUser.accessToken) {
+      console.info('Refreshed access token.');
+      setOriginalAccessToken(currentUser.accessToken);
+    }
 
     switch (currentUser.state) {
       case UserState.LoggedIn:
@@ -270,11 +275,19 @@ export function StoreProvider({children}: PropsWithChildren) {
         // Should not be reachable.
         break;
     }
-  }, [currentUser]);
+  }, [currentUser, originalAccessToken]);
 
   const listenForUserEventChange = useCallback(() => {
     currentUser.addListener(handleUserEventChange);
   }, [currentUser, handleUserEventChange]);
+
+  /**
+   * Trigger the user event listener by refreshing the custom user data
+   * and thereby the access token.
+   */
+  const refreshAccessToken = useCallback(async () => {
+    await currentUser.refreshCustomData();
+  }, [currentUser]);
 
   const removeListeners = useCallback(() => {
     realm.syncSession?.removeConnectionNotification(handleConnectionChange);
@@ -303,6 +316,7 @@ export function StoreProvider({children}: PropsWithChildren) {
     reconnect,
     disconnect,
     triggerSyncError,
+    refreshAccessToken,
   };
 
   return (

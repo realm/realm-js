@@ -35,6 +35,7 @@ export function StoreScreen() {
     reconnect,
     disconnect,
     triggerSyncError,
+    refreshAccessToken,
   } = useStore();
   const {logOut} = useAuth();
 
@@ -65,6 +66,7 @@ export function StoreScreen() {
         <Button onPress={addProduct} text="Add Product" />
         <Button onPress={addKiosk} text="Add Kiosk" />
         <Button onPress={triggerSyncError} text="Session Error" />
+        <Button onPress={refreshAccessToken} text="Refresh Access Token" />
         {isConnected ? (
           <Button onPress={disconnect} text="Disconnect" />
         ) : (
@@ -93,6 +95,8 @@ const styles = StyleSheet.create({
   triggers: {
     display: 'flex',
     flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
     padding: 10,
     borderTopWidth: 1,
     borderBottomWidth: 1,
