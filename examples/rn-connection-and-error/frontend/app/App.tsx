@@ -18,7 +18,8 @@
 
 import React from 'react';
 import {SafeAreaView, StatusBar, StyleSheet} from 'react-native';
-import {ClientResetMode, OpenRealmBehaviorType} from 'realm';
+import type Realm from 'realm';
+import {ClientResetMode, OpenRealmBehaviorType, SyncError} from 'realm';
 import {AppProvider, RealmProvider, UserProvider} from '@realm/react';
 
 import {ATLAS_APP_ID, SYNC_STORE_ID} from './atlas-app-services/config';
@@ -82,10 +83,10 @@ function App() {
               // clients, `ClientResetMode.DiscardUnsyncedChanges` is suitable.
               clientReset: {
                 mode: ClientResetMode.RecoverOrDiscardUnsyncedChanges,
-                onBefore: () => console.log('TODO: Client Reset onBefore'),
-                onAfter: () => console.log('TODO: Client Reset onAfter'),
+                onBefore: handlePreClientReset,
+                onAfter: handlePostClientReset,
               },
-              onError: () => console.error('TODO: onError'),
+              onError: handleSyncError,
               // We can specify the behavior when opening a Realm for the first time
               // (`newRealmFileBehavior`) and for subsequent ones (`existingRealmFileBehavior`).
               // If the user has logged in at least 1 time before, the Realm and its data will
@@ -109,6 +110,57 @@ function App() {
       </AppProvider>
     </SafeAreaView>
   );
+}
+
+/**
+ * The sync error listener - Will be invoked when various synchronization errors occur.
+ *
+ * To trigger, for instance, a session level sync error, you may modify the Document
+ * Permissions in Atlas App Services to NOT allow `Delete`, then rerun this app and
+ * try to delete a product.
+ * For how to modify the rules and permissions, see:
+ * {@link https://www.mongodb.com/docs/atlas/app-services/rules/roles/#define-roles---permissions}.
+ *
+ * For detailed error codes, see {@link https://github.com/realm/realm-core/blob/master/doc/protocol.md#error-codes}.
+ * Examples:
+ * - 202 (Access token expired)
+ * - 225 (Invalid schema change)
+ */
+function handleSyncError(
+  session: Realm.App.Sync.SyncSession,
+  error: SyncError,
+): void {
+  if (error.code) {
+    if (error.code >= 100 && error.code < 200) {
+      console.error(
+        formatErrorMessage('Connection level and protocol error.', error),
+      );
+    } else if (error.code >= 200 && error.code < 300) {
+      console.error(formatErrorMessage('Session level error.', error));
+    } else {
+      // Should not be reachable.
+      console.error(
+        `Unexpected error code: ${error.code}. ${JSON.stringify(error)}`,
+      );
+    }
+  }
+}
+
+function formatErrorMessage(title: string, error: SyncError): string {
+  return (
+    title +
+    `\n  Message: ${error.message}.` +
+    `\n  Reason: ${error.reason}` +
+    `\n  ${JSON.stringify(error)}`
+  );
+}
+
+function handlePreClientReset(localRealm: Realm): void {
+  console.info('Initiating client reset...');
+}
+
+function handlePostClientReset(localRealm: Realm, remoteRealm: Realm) {
+  console.info('Client has been reset.');
 }
 
 const styles = StyleSheet.create({
