@@ -25,18 +25,24 @@ import {ProductItem} from '../components/ProductItem';
 import {useStore} from '../providers/StoreProvider';
 
 export function StoreScreen() {
-  const {store, addKiosk, addProduct, updateProduct, removeProduct} =
-    useStore();
+  const {
+    store,
+    addKiosk,
+    addProduct,
+    updateProduct,
+    removeProduct,
+    isConnected,
+    reconnect,
+    disconnect,
+  } = useStore();
   const {logOut} = useAuth();
 
   return (
     // TODO: Update
     <View style={styles.container}>
       <View style={styles.store}>
-        <Button onPress={logOut} text="Log Out" />
-        <View style={styles.buttons}>
-          <Button onPress={addProduct} text="Add Product" />
-          <Button onPress={addKiosk} text="Add Kiosk" />
+        <View style={styles.header}>
+          <Button onPress={logOut} text="Log Out" />
         </View>
         {store?.kiosks[0]?.products.length ? (
           <FlatList
@@ -54,6 +60,15 @@ export function StoreScreen() {
           <></>
         )}
       </View>
+      <View style={styles.triggers}>
+        <Button onPress={addProduct} text="Add Product" />
+        <Button onPress={addKiosk} text="Add Kiosk" />
+        {isConnected ? (
+          <Button onPress={disconnect} text="Disconnect" />
+        ) : (
+          <Button onPress={reconnect} text="Connect" />
+        )}
+      </View>
       <View style={styles.console}>
         <Text>TODO: Console</Text>
       </View>
@@ -68,13 +83,20 @@ const styles = StyleSheet.create({
   store: {
     flex: 1,
   },
-  console: {
-    height: 150,
-    borderTopWidth: 1,
+  header: {
+    height: 50,
+    borderBottomWidth: 1,
     borderColor: 'black',
   },
-  buttons: {
+  triggers: {
     display: 'flex',
     flexDirection: 'row',
+    padding: 10,
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: 'black',
+  },
+  console: {
+    height: 150,
   },
 });

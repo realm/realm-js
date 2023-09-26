@@ -16,7 +16,13 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import React, {createContext, useCallback, useContext, useEffect} from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
 import type {PropsWithChildren} from 'react';
 import {
   BSON,
@@ -40,6 +46,9 @@ type StoreContextType = {
   addProduct: () => void;
   updateProduct: (product: Product) => void;
   removeProduct: (product: Product) => void;
+  isConnected: boolean;
+  reconnect: () => void;
+  disconnect: () => void;
 };
 
 /**
@@ -51,6 +60,9 @@ const StoreContext = createContext<StoreContextType>({
   addProduct: () => {},
   updateProduct: () => {},
   removeProduct: () => {},
+  isConnected: true,
+  reconnect: () => {},
+  disconnect: () => {},
 });
 
 /**
@@ -63,6 +75,7 @@ export function StoreProvider({children}: PropsWithChildren) {
   const currentUser = useUser();
   const store = useObject(Store, SYNC_STORE_ID);
   const products = useQuery(Product);
+  const [isConnected, setIsConnected] = useState(true);
 
   /**
    * Adds a kiosk to the store, containing all products in that store.
@@ -186,6 +199,8 @@ export function StoreProvider({children}: PropsWithChildren) {
       } /* failedReconnecting */ else {
         console.info('Failed to reconnect.');
       }
+
+      setIsConnected(connected);
     },
     [],
   );
@@ -193,6 +208,20 @@ export function StoreProvider({children}: PropsWithChildren) {
   const listenForConnectionChange = useCallback(() => {
     realm.syncSession?.addConnectionNotification(handleConnectionChange);
   }, [realm, handleConnectionChange]);
+
+  /**
+   * Trigger the connection listener by reconnecting to the sync session.
+   */
+  const reconnect = useCallback(() => {
+    realm.syncSession?.resume();
+  }, [realm]);
+
+  /**
+   * Trigger the connection listener by disconnecting from the sync session.
+   */
+  const disconnect = useCallback(() => {
+    realm.syncSession?.pause();
+  }, [realm]);
 
   /**
    * The user listener - Will be invoked on various user related events including
@@ -255,6 +284,9 @@ export function StoreProvider({children}: PropsWithChildren) {
     addProduct,
     updateProduct,
     removeProduct,
+    isConnected,
+    reconnect,
+    disconnect,
   };
 
   return (
