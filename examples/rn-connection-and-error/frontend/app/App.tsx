@@ -130,25 +130,16 @@ function handleSyncError(
   session: Realm.App.Sync.SyncSession,
   error: SyncError,
 ): void {
-  if (error.code) {
-    if (error.code >= 100 && error.code < 200) {
-      console.error(
-        formatErrorMessage('Connection level and protocol error.', error),
-      );
-    } else if (error.code >= 200 && error.code < 300) {
-      console.error(formatErrorMessage('Session level error.', error));
-    } else {
-      // Should not be reachable.
-      console.error(
-        `Unexpected error code: ${error.code}. ${JSON.stringify(error)}`,
-      );
-    }
-  }
+  // Please note that frequent logging to the `console` greatly decreases
+  // performance and blocks the UI thread. If the user is offline, syncing
+  // will not be possible and this callback will be called frequently. Thus,
+  // when in production, use another preferred logging mechanism.
+  console.error(formatErrorMessage(error));
 }
 
-function formatErrorMessage(title: string, error: SyncError): string {
+function formatErrorMessage(error: SyncError): string {
   return (
-    title +
+    `${error.name}:` +
     `\n  Message: ${error.message}.` +
     `\n  Reason: ${error.reason}` +
     `\n  ${JSON.stringify(error)}`

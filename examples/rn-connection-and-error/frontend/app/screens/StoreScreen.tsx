@@ -34,6 +34,7 @@ export function StoreScreen() {
     isConnected,
     reconnect,
     disconnect,
+    triggerSyncError,
   } = useStore();
   const {logOut} = useAuth();
 
@@ -63,6 +64,7 @@ export function StoreScreen() {
       <View style={styles.triggers}>
         <Button onPress={addProduct} text="Add Product" />
         <Button onPress={addKiosk} text="Add Kiosk" />
+        <Button onPress={triggerSyncError} text="Session Error" />
         {isConnected ? (
           <Button onPress={disconnect} text="Disconnect" />
         ) : (

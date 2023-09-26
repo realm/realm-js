@@ -49,6 +49,7 @@ type StoreContextType = {
   isConnected: boolean;
   reconnect: () => void;
   disconnect: () => void;
+  triggerSyncError: () => void;
 };
 
 /**
@@ -63,6 +64,7 @@ const StoreContext = createContext<StoreContextType>({
   isConnected: true,
   reconnect: () => {},
   disconnect: () => {},
+  triggerSyncError: () => {},
 });
 
 /**
@@ -224,6 +226,19 @@ export function StoreProvider({children}: PropsWithChildren) {
   }, [realm]);
 
   /**
+   * Trigger the sync error listener by trying to create a `Store` that
+   * is outside of the query filter subscribed to. Since we subscribed
+   * to the store with a given ID (see `App.tsx`), attempting to create
+   * one with a different ID will generate a sync error.
+   */
+  const triggerSyncError = useCallback(() => {
+    realm.write(() => {
+      const NON_SUBSCRIBED_STORE_ID = new BSON.ObjectId();
+      realm.create(Store, {_id: NON_SUBSCRIBED_STORE_ID});
+    });
+  }, [realm]);
+
+  /**
    * The user listener - Will be invoked on various user related events including
    * refresh of auth token, refresh token, custom user data, removal, and logout.
    */
@@ -287,6 +302,7 @@ export function StoreProvider({children}: PropsWithChildren) {
     isConnected,
     reconnect,
     disconnect,
+    triggerSyncError,
   };
 
   return (
