@@ -28,13 +28,16 @@ import Realm, { Configuration } from "realm";
  * @throws If the Realm could not be deleted.
  */
 export async function deleteRealm(config: Configuration, attempts = 25, delay = 100): Promise<void> {
-  let n = 0;
   while (Realm.exists(config)) {
-    n++;
-    Realm.deleteFile(config);
-    if (n >= attempts && Realm.exists(config)) {
-      throw new Error(`Could not delete Realm in ${attempts} attempts`);
+    let n = 0;
+    try {
+      Realm.deleteFile(config);
+    } catch (err) {
+      n++;
+      if (n >= attempts && Realm.exists(config)) {
+        throw new Error(`Could not delete Realm in ${attempts} attempts`);
+      }
+      await sleep(delay);
     }
-    await sleep(delay);
   }
 }
