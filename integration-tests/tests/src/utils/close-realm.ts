@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import Realm, { Configuration } from "realm";
+import { deleteRealm } from "../utils/delete-realm";
 
 function deriveConfig(realm: Realm): Configuration {
   const { path, syncSession } = realm;
@@ -37,12 +38,12 @@ function deriveConfig(realm: Realm): Configuration {
  * @param deleteRealmFile If false, do not delete the Realm file before reopening.
  * @param clearTestState If false, do not clear test state before reopening.
  */
-export function closeRealm(realm: Realm, deleteRealmFile = true, clearTestState = true): void {
+export async function closeRealm(realm: Realm, deleteRealmFile = true, clearTestState = true): Promise<void> {
   const config = deriveConfig(realm);
   realm.close();
 
   if (deleteRealmFile) {
-    Realm.deleteFile(config);
+    await deleteRealm(config);
   }
 
   if (clearTestState) {
