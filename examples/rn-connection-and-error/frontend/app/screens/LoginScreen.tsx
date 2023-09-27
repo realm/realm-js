@@ -17,17 +17,55 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import React from 'react';
-import {Pressable, Text, View} from 'react-native';
-import {useAuth} from '@realm/react';
+import {StyleSheet, Text, View} from 'react-native';
+
+import {Button} from '../components/Button';
+import {useDemoAuthOperations} from '../hooks/useDemoAuthOperations';
 
 export function LoginScreen() {
-  const {logInWithAnonymous} = useAuth();
+  const {
+    logInSuccessfully,
+    logInWithInvalidCredentials,
+    logInWithNonExistentCredentials,
+    registerSuccessfully,
+    registerWithInvalidCredentials,
+    registerWithEmailAlreadyInUse,
+  } = useDemoAuthOperations();
 
   return (
     <View>
-      <Pressable onPress={logInWithAnonymous}>
-        <Text>Log In</Text>
-      </Pressable>
+      <View style={styles.operations}>
+        <View>
+          <Text>Register</Text>
+          <Button onPress={registerSuccessfully} text="Successfully" />
+          <Button
+            onPress={registerWithInvalidCredentials}
+            text="With invalid password"
+          />
+          <Button
+            onPress={registerWithEmailAlreadyInUse}
+            text="With email already in use"
+          />
+        </View>
+        <View>
+          <Text>Log In</Text>
+          <Button onPress={logInSuccessfully} text="Successfully" />
+          <Button
+            onPress={logInWithInvalidCredentials}
+            text="With invalid password"
+          />
+          <Button
+            onPress={logInWithNonExistentCredentials}
+            text="With non-existent email"
+          />
+        </View>
+      </View>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  operations: {
+    flexDirection: 'row',
+  },
+});
