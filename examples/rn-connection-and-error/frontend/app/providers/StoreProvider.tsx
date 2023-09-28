@@ -25,6 +25,7 @@ import {SYNC_STORE_ID} from '../atlas-app-services/config';
 import {Kiosk} from '../models/Kiosk';
 import {Product, getRandomProductName} from '../models/Product';
 import {Store} from '../models/Store';
+import {getFloatBetween, getIntBetween} from '../utils/random';
 import {logger} from '../utils/logger';
 
 /**
@@ -80,19 +81,18 @@ export function StoreProvider({children}: PropsWithChildren) {
    */
   const addProduct = useCallback(() => {
     realm.write(() => {
-      const randomPrice = parseFloat((5 + Math.random() * 10).toFixed(2));
       const product = realm.create(Product, {
         _id: new BSON.ObjectId(),
         storeId: SYNC_STORE_ID,
         name: getRandomProductName(),
-        price: randomPrice,
-        numInStock: products.length + 1,
+        price: parseFloat(getFloatBetween(5, 15).toFixed(2)),
+        numInStock: getIntBetween(0, 100),
       });
       for (const kiosk of store?.kiosks || []) {
         kiosk.products.push(product);
       }
     });
-  }, [realm, store, products.length]);
+  }, [realm, store]);
 
   /**
    * Updates a product by changing the number in stock.
@@ -100,7 +100,7 @@ export function StoreProvider({children}: PropsWithChildren) {
   const updateProduct = useCallback(
     (product: Product) => {
       realm.write(() => {
-        product.numInStock = Math.round(Math.random() * 10);
+        product.numInStock = getIntBetween(0, 100);
       });
     },
     [realm],

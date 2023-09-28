@@ -18,6 +18,8 @@
 
 import Realm, {BSON, ObjectSchema} from 'realm';
 
+import {getIntBetween} from '../utils/random';
+
 /**
  * Current information and inventory about a type of product in a particular store.
  *
@@ -74,7 +76,6 @@ const productNames = [
 /**
  * @returns one of the valid product names.
  */
-export const getRandomProductName = () => {
-  const randomIndex = Math.floor(Math.random() * productNames.length);
-  return productNames[randomIndex];
+export const getRandomProductName = (): string => {
+  return productNames[getIntBetween(0, productNames.length)];
 };

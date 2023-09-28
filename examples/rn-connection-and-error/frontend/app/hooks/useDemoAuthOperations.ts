@@ -20,13 +20,13 @@ import {useCallback, useEffect, useMemo, useState} from 'react';
 import {Alert} from 'react-native';
 import {AuthOperationName, useApp, useEmailPasswordAuth} from '@realm/react';
 
+import {getIntBetween} from '../utils/random';
 import {logger} from '../utils/logger';
 
 const VALID_PASSWORD = '123456';
 
 function generateDummyEmail() {
-  const prefix = Math.round(Math.random() * 100_000);
-  return `${prefix}@email.com`;
+  return `${getIntBetween(0, 100_000)}@email.com`;
 }
 
 function getNewValidCredentials() {
