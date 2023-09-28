@@ -36,6 +36,7 @@ import {SYNC_STORE_ID} from '../atlas-app-services/config';
 import {Kiosk} from '../models/Kiosk';
 import {Product, getRandomProductName} from '../models/Product';
 import {Store} from '../models/Store';
+import {logger} from '../utils/logger';
 
 /**
  * Values available to consumers of the `StoreContext`.
@@ -159,13 +160,13 @@ export function StoreProvider({children}: PropsWithChildren) {
     [number, Product]
   > = useCallback((products, changes) => {
     if (changes.deletions.length) {
-      console.info(`Removed ${changes.deletions.length} product(s).`);
+      logger.info(`Removed ${changes.deletions.length} product(s).`);
     }
     for (const insertedIndex of changes.insertions) {
-      console.info(`Product inserted: ${products[insertedIndex].name}`);
+      logger.info(`Product inserted: ${products[insertedIndex].name}`);
     }
     for (const modifiedIndex of changes.newModifications) {
-      console.info(`Product modified: ${products[modifiedIndex].name}`);
+      logger.info(`Product modified: ${products[modifiedIndex].name}`);
     }
   }, []);
 
@@ -189,11 +190,11 @@ export function StoreProvider({children}: PropsWithChildren) {
         newState === ConnectionState.Disconnected;
 
       if (connecting) {
-        console.info('Connecting...');
+        logger.info('Connecting...');
       } else if (connected) {
-        console.info('Connected.');
+        logger.info('Connected.');
       } else if (disconnected) {
-        console.info('Disconnected.');
+        logger.info('Disconnected.');
 
         // At this point, the `newState` is `ConnectionState.Disconnected`. Automatic retries
         // will start and the state will alternate in the following way for the period where
@@ -206,7 +207,7 @@ export function StoreProvider({children}: PropsWithChildren) {
         // Be aware of that there may be a delay from the time of actual disconnect until this
         // listener is invoked.
       } /* failedReconnecting */ else {
-        console.info('Failed to reconnect.');
+        logger.info('Failed to reconnect.');
       }
 
       setIsConnected(connected);
@@ -255,24 +256,25 @@ export function StoreProvider({children}: PropsWithChildren) {
     // detect that a token has been refreshed, the original access token can be saved
     // to a variable and compared against the current one.
     if (originalAccessToken !== currentUser.accessToken) {
-      console.info('Refreshed access token.');
+      logger.info('Refreshed access token.');
       setOriginalAccessToken(currentUser.accessToken);
     }
 
     switch (currentUser.state) {
       case UserState.LoggedIn:
-        console.info(`User (id: ${currentUser.id}) has been authenticated.`);
+        logger.info(`User (id: ${currentUser.id}) has been authenticated.`);
         break;
       case UserState.LoggedOut:
-        console.info(`User (id: ${currentUser.id}) has been logged out.`);
+        logger.info(`User (id: ${currentUser.id}) has been logged out.`);
         break;
       case UserState.Removed:
-        console.info(
+        logger.info(
           `User (id: ${currentUser.id}) has been removed from the app.`,
         );
         break;
       default:
         // Should not be reachable.
+        logger.info(`Unknown user state: ${currentUser.state}.`);
         break;
     }
   }, [currentUser, originalAccessToken]);

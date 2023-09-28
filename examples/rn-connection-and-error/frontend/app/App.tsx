@@ -29,6 +29,40 @@ import {Product} from './models/Product';
 import {Store} from './models/Store';
 import {StoreProvider} from './providers/StoreProvider';
 import {StoreScreen} from './screens/StoreScreen';
+import {logger} from './utils/logger';
+
+/**
+ * The sync error listener - Will be invoked when various synchronization errors occur.
+ *
+ * To trigger, for instance, a session level sync error, you may modify the Document
+ * Permissions in Atlas App Services to NOT allow `Delete`, then rerun this app and
+ * try to delete a product.
+ * For how to modify the rules and permissions, see:
+ * {@link https://www.mongodb.com/docs/atlas/app-services/rules/roles/#define-roles---permissions}.
+ *
+ * For detailed error codes, see {@link https://github.com/realm/realm-core/blob/master/doc/protocol.md#error-codes}.
+ * Examples:
+ * - 202 (Access token expired)
+ * - 225 (Invalid schema change)
+ */
+function handleSyncError(
+  session: Realm.App.Sync.SyncSession,
+  error: SyncError,
+): void {
+  // Please note that frequent logging to the `console` greatly decreases
+  // performance and blocks the UI thread. If the user is offline, syncing
+  // will not be possible and this callback will be called frequently. Thus,
+  // when in production, use another preferred logging mechanism.
+  logger.error(error);
+}
+
+function handlePreClientReset(localRealm: Realm): void {
+  logger.info('Initiating client reset...');
+}
+
+function handlePostClientReset(localRealm: Realm, remoteRealm: Realm): void {
+  logger.info('Client has been reset.');
+}
 
 /**
  * The root React component which renders `@realm/react`'s `AppProvider`
@@ -110,48 +144,6 @@ function App() {
       </AppProvider>
     </SafeAreaView>
   );
-}
-
-/**
- * The sync error listener - Will be invoked when various synchronization errors occur.
- *
- * To trigger, for instance, a session level sync error, you may modify the Document
- * Permissions in Atlas App Services to NOT allow `Delete`, then rerun this app and
- * try to delete a product.
- * For how to modify the rules and permissions, see:
- * {@link https://www.mongodb.com/docs/atlas/app-services/rules/roles/#define-roles---permissions}.
- *
- * For detailed error codes, see {@link https://github.com/realm/realm-core/blob/master/doc/protocol.md#error-codes}.
- * Examples:
- * - 202 (Access token expired)
- * - 225 (Invalid schema change)
- */
-function handleSyncError(
-  session: Realm.App.Sync.SyncSession,
-  error: SyncError,
-): void {
-  // Please note that frequent logging to the `console` greatly decreases
-  // performance and blocks the UI thread. If the user is offline, syncing
-  // will not be possible and this callback will be called frequently. Thus,
-  // when in production, use another preferred logging mechanism.
-  console.error(formatErrorMessage(error));
-}
-
-function formatErrorMessage(error: SyncError): string {
-  return (
-    `${error.name}:` +
-    `\n  Message: ${error.message}.` +
-    `\n  Reason: ${error.reason}` +
-    `\n  ${JSON.stringify(error)}`
-  );
-}
-
-function handlePreClientReset(localRealm: Realm): void {
-  console.info('Initiating client reset...');
-}
-
-function handlePostClientReset(localRealm: Realm, remoteRealm: Realm) {
-  console.info('Client has been reset.');
 }
 
 const styles = StyleSheet.create({

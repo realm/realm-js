@@ -20,6 +20,8 @@ import {useCallback, useEffect, useMemo, useState} from 'react';
 import {Alert} from 'react-native';
 import {AuthOperationName, useApp, useEmailPasswordAuth} from '@realm/react';
 
+import {logger} from '../utils/logger';
+
 const VALID_PASSWORD = '123456';
 
 function generateDummyEmail() {
@@ -72,7 +74,7 @@ export function useDemoAuthOperations() {
 
   const logAndLogIn = useCallback(
     (credentials: {email: string; password: string}) => {
-      console.log('Logging in...');
+      logger.info('Logging in...');
       logIn(credentials);
     },
     [logIn],
@@ -95,7 +97,7 @@ export function useDemoAuthOperations() {
 
   const logAndRegister = useCallback(
     (credentials: {email: string; password: string}) => {
-      console.log('Registering...');
+      logger.info('Registering...');
       register(credentials);
     },
     [register],
@@ -120,21 +122,22 @@ export function useDemoAuthOperations() {
 
   useEffect(() => {
     if (result.error) {
-      console.error(
+      logger.error(
         `Failed operation '${result.operation}': ${result.error.message}`,
       );
     } else if (result.success) {
-      console.log(`Successful operation '${result.operation}'.`);
+      logger.info(`Successful operation '${result.operation}'.`);
       // App developers can choose to automatically log in users upon
-      // successful registration. Note that the user will only appear
-      // in `app.allUsers` once it has logged in for the first time.
-      // Between registration and login, the user status will be
-      // "Pending User Login" which can be seen in the App Services UI.
+      // successful registration. Note that the user will only appear in
+      // `app.allUsers` once it has logged in for the first time. Between
+      // registration and login, the user status will be "Pending User
+      // Login" which can be seen in the App Services UI. If the app data
+      // on the device is deleted, `app.allUsers` will also be empty.
       if (result.operation === AuthOperationName.Register) {
         logInSuccessfully();
       }
     }
-  }, [result, logInSuccessfully]);
+  }, [logInSuccessfully, result]);
 
   return {
     logInSuccessfully,
