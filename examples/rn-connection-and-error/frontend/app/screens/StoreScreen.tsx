@@ -17,11 +17,13 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import React from 'react';
-import {FlatList, StyleSheet, Text, View} from 'react-native';
+import {Alert, FlatList, StyleSheet, Text, View} from 'react-native';
 import {useAuth} from '@realm/react';
 
 import {Button} from '../components/Button';
-import {ProductItem} from '../components/ProductItem';
+import {KioskItem} from '../components/KioskItem';
+import {colors} from '../styles/colors';
+import {fonts} from '../styles/fonts';
 import {useDemoSyncTriggers} from '../hooks/useDemoSyncTriggers';
 import {useStore} from '../providers/StoreProvider';
 
@@ -42,21 +44,24 @@ export function StoreScreen() {
   const {logOut} = useAuth();
 
   return (
-    // TODO: Update
     <View style={styles.container}>
-      <View style={styles.store}>
-        <View style={styles.header}>
-          <Button onPress={logOut} text="Log Out" />
+      <View style={styles.header}>
+        <View>
+          <Text style={styles.title}>Store</Text>
+          <Text style={styles.subtitle}>ID: {store?._id.toHexString()}</Text>
         </View>
-        {store?.kiosks[0]?.products.length ? (
+        <Button onPress={logOut} text="Log Out" />
+      </View>
+      <View style={styles.store}>
+        {store?.kiosks ? (
           <FlatList
-            data={store.kiosks[0].products}
-            keyExtractor={product => product._id.toHexString()}
-            renderItem={({item: product}) => (
-              <ProductItem
-                product={product}
-                update={updateProduct}
-                remove={removeProduct}
+            data={store.kiosks}
+            keyExtractor={kiosk => kiosk._id.toHexString()}
+            renderItem={({item: kiosk}) => (
+              <KioskItem
+                kiosk={kiosk}
+                updateProduct={updateProduct}
+                removeProduct={removeProduct}
               />
             )}
           />
@@ -64,16 +69,45 @@ export function StoreScreen() {
           <Text>Loading...</Text>
         )}
       </View>
-      <View style={styles.triggers}>
-        <Button onPress={addProduct} text="Add Product" />
-        <Button onPress={addKiosk} text="Add Kiosk" />
-        <Button onPress={triggerSyncError} text="Session Error" />
-        <Button onPress={refreshAccessToken} text="Refresh Access Token" />
-        {isConnected ? (
-          <Button onPress={disconnect} text="Disconnect" />
-        ) : (
-          <Button onPress={reconnect} text="Connect" />
-        )}
+      <View style={styles.triggersContainer}>
+        <View style={styles.status}>
+          <Text style={styles.statusText}>
+            Status: {isConnected ? 'Connected 🟢' : 'Not connected 🔴'}
+          </Text>
+          <Button
+            extraStyles={[styles.connectionButton]}
+            onPress={isConnected ? disconnect : reconnect}
+            text={isConnected ? 'Disconnect' : 'Connect'}
+            textStyles={[styles.connectionText]}
+          />
+        </View>
+        <View style={styles.triggers}>
+          <Button
+            extraStyles={[styles.button]}
+            onPress={addKiosk}
+            text="Add Kiosk"
+          />
+          <Button
+            extraStyles={[styles.button]}
+            onPress={addProduct}
+            text="Add Product"
+          />
+          <Button
+            extraStyles={[styles.button]}
+            onPress={triggerSyncError}
+            text="Session Error"
+          />
+          <Button
+            extraStyles={[styles.button]}
+            onPress={() => Alert.alert('TODO')}
+            text="Client Reset"
+          />
+          <Button
+            extraStyles={[styles.button]}
+            onPress={refreshAccessToken}
+            text="Refresh Access Token"
+          />
+        </View>
       </View>
     </View>
   );
@@ -82,22 +116,61 @@ export function StoreScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: colors.grayLight,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingTop: 10,
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+    borderBottomWidth: 1,
+    borderColor: colors.grayMedium,
+    backgroundColor: colors.white,
   },
   store: {
     flex: 1,
+    padding: 20,
   },
-  header: {
-    height: 50,
-    borderBottomWidth: 1,
-    borderColor: 'black',
+  title: {
+    textTransform: 'uppercase',
+    fontFamily: fonts.primary,
+    fontSize: 20,
+    color: colors.grayDark,
+  },
+  subtitle: {
+    color: colors.grayDark,
+  },
+  triggersContainer: {
+    padding: 20,
+    borderTopWidth: 1,
+    borderColor: colors.grayMedium,
+  },
+  status: {
+    marginBottom: 20,
+    paddingHorizontal: 10,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  statusText: {
+    color: colors.grayDark,
   },
   triggers: {
-    display: 'flex',
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'center',
-    padding: 10,
-    borderTopWidth: 1,
-    borderColor: 'black',
+  },
+  button: {
+    margin: 5,
+    flexGrow: 1,
+  },
+  connectionButton: {
+    borderWidth: 1,
+    borderColor: colors.blue,
+    backgroundColor: colors.white,
+  },
+  connectionText: {
+    color: colors.grayDark,
   },
 });

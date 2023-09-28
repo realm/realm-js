@@ -45,6 +45,9 @@ export function LoginScreen() {
           Detect and react to various changes in connection state, user state,
           sync errors, and product inventory.
         </Text>
+        <Text style={styles.info}>
+          🖥️ Observe your console while using this demo.
+        </Text>
       </View>
       <View style={styles.main}>
         <View style={styles.section}>
@@ -96,27 +99,31 @@ const styles = StyleSheet.create({
   },
   header: {
     paddingTop: 10,
-    paddingBottom: 20,
     paddingHorizontal: 20,
+    paddingBottom: 20,
     borderBottomWidth: 1,
     borderColor: colors.grayMedium,
     backgroundColor: colors.white,
   },
   title: {
-    marginBottom: 10,
     textAlign: 'center',
     fontFamily: fonts.primary,
     fontSize: 20,
   },
   subtitle: {
+    marginVertical: 10,
     textAlign: 'center',
     fontFamily: fonts.primary,
     fontSize: 16,
     fontWeight: 'normal',
   },
+  info: {
+    textAlign: 'center',
+    fontStyle: 'italic',
+    color: colors.grayDark,
+  },
   main: {
     marginTop: 20,
-    paddingHorizontal: 20,
   },
   section: {
     marginVertical: 30,

@@ -23,6 +23,7 @@ import {
   Pressable,
   StyleSheet,
   Text,
+  TextStyle,
   ViewStyle,
 } from 'react-native';
 
@@ -31,10 +32,16 @@ import {colors} from '../styles/colors';
 type ButtonProps = {
   onPress: (event: GestureResponderEvent) => void;
   text: string;
+  textStyles?: TextStyle[];
   extraStyles?: ViewStyle[];
 };
 
-export function Button({onPress, text, extraStyles = []}: ButtonProps) {
+export function Button({
+  onPress,
+  text,
+  textStyles = [],
+  extraStyles = [],
+}: ButtonProps) {
   return (
     <Pressable
       onPress={onPress}
@@ -44,7 +51,7 @@ export function Button({onPress, text, extraStyles = []}: ButtonProps) {
         pressed && styles.pressed,
         ...extraStyles,
       ]}>
-      <Text style={[styles.buttonText]}>{text}</Text>
+      <Text style={[styles.buttonText, ...textStyles]}>{text}</Text>
     </Pressable>
   );
 }
@@ -55,7 +62,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 30,
     borderColor: colors.grayMedium,
-    backgroundColor: colors.purple,
+    backgroundColor: colors.blue,
   },
   buttonText: {
     textAlign: 'center',
