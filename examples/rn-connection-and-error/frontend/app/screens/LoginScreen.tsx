@@ -20,8 +20,13 @@ import React from 'react';
 import {StyleSheet, Text, View} from 'react-native';
 
 import {Button} from '../components/Button';
+import {colors} from '../styles/colors';
+import {fonts} from '../styles/fonts';
 import {useDemoAuthOperations} from '../hooks/useDemoAuthOperations';
 
+/**
+ * Screen for registering and/or logging in to the App Services App.
+ */
 export function LoginScreen() {
   const {
     logInSuccessfully,
@@ -33,28 +38,48 @@ export function LoginScreen() {
   } = useDemoAuthOperations();
 
   return (
-    <View>
-      <View style={styles.operations}>
-        <View>
-          <Text>Register</Text>
-          <Button onPress={registerSuccessfully} text="Successfully" />
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.title}>Demo</Text>
+        <Text style={styles.subtitle}>
+          Detect and react to various changes in connection state, user state,
+          sync errors, and product inventory.
+        </Text>
+      </View>
+      <View style={styles.main}>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Register</Text>
           <Button
+            extraStyles={[styles.button]}
+            onPress={registerSuccessfully}
+            text="Successfully"
+          />
+          <Button
+            extraStyles={[styles.button]}
             onPress={registerWithInvalidCredentials}
             text="With invalid password"
           />
           <Button
+            extraStyles={[styles.button]}
             onPress={registerWithEmailAlreadyInUse}
             text="With email already in use"
           />
         </View>
-        <View>
-          <Text>Log In</Text>
-          <Button onPress={logInSuccessfully} text="Successfully" />
+        <View style={styles.separator} />
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Log In</Text>
           <Button
+            extraStyles={[styles.button]}
+            onPress={logInSuccessfully}
+            text="Successfully"
+          />
+          <Button
+            extraStyles={[styles.button]}
             onPress={logInWithInvalidCredentials}
             text="With invalid password"
           />
           <Button
+            extraStyles={[styles.button]}
             onPress={logInWithNonExistentCredentials}
             text="With non-existent email"
           />
@@ -65,7 +90,49 @@ export function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
-  operations: {
-    flexDirection: 'row',
+  container: {
+    flex: 1,
+    backgroundColor: colors.grayLight,
+  },
+  header: {
+    paddingTop: 10,
+    paddingBottom: 20,
+    paddingHorizontal: 20,
+    borderBottomWidth: 1,
+    borderColor: colors.grayMedium,
+    backgroundColor: colors.white,
+  },
+  title: {
+    marginBottom: 10,
+    textAlign: 'center',
+    fontFamily: fonts.primary,
+    fontSize: 20,
+  },
+  subtitle: {
+    textAlign: 'center',
+    fontFamily: fonts.primary,
+    fontSize: 16,
+    fontWeight: 'normal',
+  },
+  main: {
+    marginTop: 20,
+    paddingHorizontal: 20,
+  },
+  section: {
+    marginVertical: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  sectionTitle: {
+    marginBottom: 20,
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  separator: {
+    height: 1,
+    backgroundColor: colors.grayMedium,
+  },
+  button: {
+    marginVertical: 10,
   },
 });

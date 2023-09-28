@@ -17,18 +17,33 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import React from 'react';
-import {GestureResponderEvent, Pressable, StyleSheet, Text} from 'react-native';
+import {
+  GestureResponderEvent,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  ViewStyle,
+} from 'react-native';
+
+import {colors} from '../styles/colors';
 
 type ButtonProps = {
   onPress: (event: GestureResponderEvent) => void;
   text: string;
+  extraStyles?: ViewStyle[];
 };
 
-export function Button({onPress, text}: ButtonProps) {
+export function Button({onPress, text, extraStyles = []}: ButtonProps) {
   return (
     <Pressable
       onPress={onPress}
-      style={({pressed}) => [styles.button, pressed && styles.pressed]}>
+      style={({pressed}) => [
+        styles.button,
+        styles.shadow,
+        pressed && styles.pressed,
+        ...extraStyles,
+      ]}>
       <Text style={[styles.buttonText]}>{text}</Text>
     </Pressable>
   );
@@ -36,18 +51,34 @@ export function Button({onPress, text}: ButtonProps) {
 
 const styles = StyleSheet.create({
   button: {
-    justifyContent: 'center',
-    alignItems: 'center',
+    padding: 15,
+    borderWidth: 1,
+    borderRadius: 30,
+    borderColor: colors.grayMedium,
+    backgroundColor: colors.purple,
   },
   buttonText: {
-    margin: 5,
-    padding: 5,
     textAlign: 'center',
     fontWeight: 'bold',
-    borderWidth: 1,
-    borderColor: 'black',
+    color: colors.white,
   },
   pressed: {
     opacity: 0.8,
+  },
+  shadow: {
+    ...Platform.select({
+      ios: {
+        shadowColor: colors.black,
+        shadowOffset: {
+          width: 0,
+          height: 2,
+        },
+        shadowOpacity: 0.1,
+        shadowRadius: 5,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
   },
 });
