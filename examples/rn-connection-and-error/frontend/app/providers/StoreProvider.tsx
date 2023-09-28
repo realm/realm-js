@@ -16,21 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import React, {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-} from 'react';
+import React, {createContext, useCallback, useContext, useEffect} from 'react';
 import type {PropsWithChildren} from 'react';
-import {
-  BSON,
-  CollectionChangeCallback,
-  ConnectionState,
-  UserState,
-} from 'realm';
-import {useObject, useQuery, useRealm, useUser} from '@realm/react';
+import {BSON, CollectionChangeCallback} from 'realm';
+import {useObject, useQuery, useRealm} from '@realm/react';
 
 import {SYNC_STORE_ID} from '../atlas-app-services/config';
 import {Kiosk} from '../models/Kiosk';
@@ -47,11 +36,6 @@ type StoreContextType = {
   addProduct: () => void;
   updateProduct: (product: Product) => void;
   removeProduct: (product: Product) => void;
-  isConnected: boolean;
-  reconnect: () => void;
-  disconnect: () => void;
-  triggerSyncError: () => void;
-  refreshAccessToken: () => Promise<void>;
 };
 
 /**
@@ -63,11 +47,6 @@ const StoreContext = createContext<StoreContextType>({
   addProduct: () => {},
   updateProduct: () => {},
   removeProduct: () => {},
-  isConnected: true,
-  reconnect: () => {},
-  disconnect: () => {},
-  triggerSyncError: () => {},
-  refreshAccessToken: async () => {},
 });
 
 /**
@@ -77,15 +56,8 @@ const StoreContext = createContext<StoreContextType>({
  */
 export function StoreProvider({children}: PropsWithChildren) {
   const realm = useRealm();
-  const currentUser = useUser();
   const store = useObject(Store, SYNC_STORE_ID);
   const products = useQuery(Product);
-  const [isConnected, setIsConnected] = useState(true);
-  // The original access token is stored in order to detect if
-  // the token has been refreshed (see `handleUserEventChange`).
-  const [originalAccessToken, setOriginalAccessToken] = useState(
-    () => currentUser.accessToken,
-  );
 
   /**
    * Adds a kiosk to the store, containing all products in that store.
@@ -138,8 +110,8 @@ export function StoreProvider({children}: PropsWithChildren) {
    * Removes a product from the store.
    *
    * @note
-   * This removes it from the database, rather than setting the number
-   * in stock to 0.
+   * This removes it from the database completely, rather than setting the
+   * number in stock to 0.
    */
   const removeProduct = useCallback(
     (product: Product) => {
@@ -170,142 +142,8 @@ export function StoreProvider({children}: PropsWithChildren) {
     }
   }, []);
 
-  const listenForProductsChange = useCallback(() => {
-    products.addListener(handleProductsChange);
-  }, [products, handleProductsChange]);
-
-  /**
-   * The connection listener - Will be invoked when the the underlying sync
-   * session changes its connection state.
-   */
-  const handleConnectionChange = useCallback(
-    (newState: ConnectionState, oldState: ConnectionState) => {
-      const connecting = newState === ConnectionState.Connecting;
-      const connected = newState === ConnectionState.Connected;
-      const disconnected =
-        oldState === ConnectionState.Connected &&
-        newState === ConnectionState.Disconnected;
-      const failedReconnecting =
-        oldState === ConnectionState.Connecting &&
-        newState === ConnectionState.Disconnected;
-
-      if (connecting) {
-        logger.info('Connecting...');
-      } else if (connected) {
-        logger.info('Connected.');
-      } else if (disconnected) {
-        logger.info('Disconnected.');
-
-        // At this point, the `newState` is `ConnectionState.Disconnected`. Automatic retries
-        // will start and the state will alternate in the following way for the period where
-        // there is NO network connection:
-        //    (1) oldState: ConnectionState.Disconnected, newState: ConnectionState.Connecting
-        //    (2) oldState: ConnectionState.Connecting, newState: ConnectionState.Disconnected
-
-        // Calling `App.Sync.Session.reconnect()` is not needed due to automatic retries.
-
-        // Be aware of that there may be a delay from the time of actual disconnect until this
-        // listener is invoked.
-      } /* failedReconnecting */ else {
-        logger.info('Failed to reconnect.');
-      }
-
-      setIsConnected(connected);
-    },
-    [],
-  );
-
-  const listenForConnectionChange = useCallback(() => {
-    realm.syncSession?.addConnectionNotification(handleConnectionChange);
-  }, [realm, handleConnectionChange]);
-
-  /**
-   * Trigger the connection listener by reconnecting to the sync session.
-   */
-  const reconnect = useCallback(() => {
-    realm.syncSession?.resume();
-  }, [realm]);
-
-  /**
-   * Trigger the connection listener by disconnecting from the sync session.
-   */
-  const disconnect = useCallback(() => {
-    realm.syncSession?.pause();
-  }, [realm]);
-
-  /**
-   * Trigger the sync error listener by trying to create a `Store` that
-   * is outside of the query filter subscribed to. Since we subscribed
-   * to the store with a given ID (see `App.tsx`), attempting to create
-   * one with a different ID will generate a sync error.
-   */
-  const triggerSyncError = useCallback(() => {
-    realm.write(() => {
-      const NON_SUBSCRIBED_STORE_ID = new BSON.ObjectId();
-      realm.create(Store, {_id: NON_SUBSCRIBED_STORE_ID});
-    });
-  }, [realm]);
-
-  /**
-   * The user listener - Will be invoked on various user related events including
-   * refresh of auth token, refresh token, custom user data, removal, and logout.
-   */
-  const handleUserEventChange = useCallback(() => {
-    // Currently we don't provide any arguments to this callback but we have opened
-    // a ticket for this (see https://github.com/realm/realm-core/issues/6454). To
-    // detect that a token has been refreshed, the original access token can be saved
-    // to a variable and compared against the current one.
-    if (originalAccessToken !== currentUser.accessToken) {
-      logger.info('Refreshed access token.');
-      setOriginalAccessToken(currentUser.accessToken);
-    }
-
-    switch (currentUser.state) {
-      case UserState.LoggedIn:
-        logger.info(`User (id: ${currentUser.id}) has been authenticated.`);
-        break;
-      case UserState.LoggedOut:
-        logger.info(`User (id: ${currentUser.id}) has been logged out.`);
-        break;
-      case UserState.Removed:
-        logger.info(
-          `User (id: ${currentUser.id}) has been removed from the app.`,
-        );
-        break;
-      default:
-        // Should not be reachable.
-        logger.info(`Unknown user state: ${currentUser.state}.`);
-        break;
-    }
-  }, [currentUser, originalAccessToken]);
-
-  const listenForUserEventChange = useCallback(() => {
-    currentUser.addListener(handleUserEventChange);
-  }, [currentUser, handleUserEventChange]);
-
-  /**
-   * Trigger the user event listener by refreshing the custom user data
-   * and thereby the access token.
-   */
-  const refreshAccessToken = useCallback(async () => {
-    await currentUser.refreshCustomData();
-  }, [currentUser]);
-
-  const removeListeners = useCallback(() => {
-    realm.syncSession?.removeConnectionNotification(handleConnectionChange);
-    currentUser.removeAllListeners();
-    products.removeAllListeners();
-  }, [realm, currentUser, products, handleConnectionChange]);
-
   useEffect(() => {
-    // TODO: Possibly add a state for seeing if the listener have
-    // been added so that listeners are not added multiple times.
-    listenForConnectionChange();
-    listenForUserEventChange();
-    listenForProductsChange();
-
-    // Remove listeners on unmount.
-    return removeListeners;
+    products.addListener(handleProductsChange);
   }, []);
 
   const contextValue = {
@@ -314,11 +152,6 @@ export function StoreProvider({children}: PropsWithChildren) {
     addProduct,
     updateProduct,
     removeProduct,
-    isConnected,
-    reconnect,
-    disconnect,
-    triggerSyncError,
-    refreshAccessToken,
   };
 
   return (

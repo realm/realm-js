@@ -22,21 +22,23 @@ import {useAuth} from '@realm/react';
 
 import {Button} from '../components/Button';
 import {ProductItem} from '../components/ProductItem';
+import {useDemoSyncTriggers} from '../hooks/useDemoSyncTriggers';
 import {useStore} from '../providers/StoreProvider';
 
+/**
+ * Screen for showing the kiosks and products in the store,
+ * as well as buttons for triggering various listeners.
+ */
 export function StoreScreen() {
+  const {store, addKiosk, addProduct, updateProduct, removeProduct} =
+    useStore();
   const {
-    store,
-    addKiosk,
-    addProduct,
-    updateProduct,
-    removeProduct,
     isConnected,
     reconnect,
     disconnect,
     triggerSyncError,
     refreshAccessToken,
-  } = useStore();
+  } = useDemoSyncTriggers();
   const {logOut} = useAuth();
 
   return (
@@ -59,7 +61,7 @@ export function StoreScreen() {
             )}
           />
         ) : (
-          <></>
+          <Text>Loading...</Text>
         )}
       </View>
       <View style={styles.triggers}>
@@ -72,9 +74,6 @@ export function StoreScreen() {
         ) : (
           <Button onPress={reconnect} text="Connect" />
         )}
-      </View>
-      <View style={styles.console}>
-        <Text>TODO: Console</Text>
       </View>
     </View>
   );
@@ -99,10 +98,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 10,
     borderTopWidth: 1,
-    borderBottomWidth: 1,
     borderColor: 'black',
-  },
-  console: {
-    height: 150,
   },
 });
