@@ -17,10 +17,12 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import React, {memo} from 'react';
-import {Text, View} from 'react-native';
+import {StyleSheet, Text, View} from 'react-native';
 
 import {Button} from './Button';
 import {Product} from '../models/Product';
+import {colors} from '../styles/colors';
+import {fonts} from '../styles/fonts';
 
 type ProductItemProps = {
   product: Product;
@@ -37,14 +39,40 @@ export const ProductItem = memo(function ({
   remove,
 }: ProductItemProps) {
   return (
-    <View>
-      <Text>Product</Text>
-      <Text>ID: {product._id.toHexString()}</Text>
-      <Text>Name: {product.name}</Text>
-      <Text>Price: ${product.price}</Text>
-      <Text>Num in stock: {product.numInStock}</Text>
-      <Button onPress={() => update(product)} text="Update" />
-      <Button onPress={() => remove(product)} text="Remove" />
+    <View style={styles.product}>
+      <View>
+        <Text style={styles.title}>Product</Text>
+        <Text style={styles.info}>ID: {product._id.toHexString()}</Text>
+        <Text style={styles.info}>Name: {product.name}</Text>
+        <Text style={styles.info}>Price: ${product.price}</Text>
+        <Text style={styles.info}>Num in stock: {product.numInStock}</Text>
+      </View>
+      <View style={styles.buttons}>
+        <Button isSecondary onPress={() => update(product)} text="Update" />
+        <Button isSecondary onPress={() => remove(product)} text="Remove" />
+      </View>
     </View>
   );
+});
+
+const styles = StyleSheet.create({
+  product: {
+    marginVertical: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  title: {
+    textTransform: 'uppercase',
+    fontFamily: fonts.primary,
+    fontWeight: 'bold',
+    color: colors.grayDark,
+  },
+  info: {
+    fontFamily: fonts.primary,
+    fontWeight: 'normal',
+    color: colors.grayDark,
+  },
+  buttons: {
+    justifyContent: 'space-evenly',
+  },
 });

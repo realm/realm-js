@@ -19,27 +19,25 @@
 import React from 'react';
 import {
   GestureResponderEvent,
-  Platform,
   Pressable,
   StyleSheet,
   Text,
-  TextStyle,
   ViewStyle,
 } from 'react-native';
 
 import {colors} from '../styles/colors';
 
 type ButtonProps = {
+  isSecondary?: boolean;
   onPress: (event: GestureResponderEvent) => void;
   text: string;
-  textStyles?: TextStyle[];
   extraStyles?: ViewStyle[];
 };
 
 export function Button({
+  isSecondary = false,
   onPress,
   text,
-  textStyles = [],
   extraStyles = [],
 }: ButtonProps) {
   return (
@@ -47,11 +45,14 @@ export function Button({
       onPress={onPress}
       style={({pressed}) => [
         styles.button,
-        styles.shadow,
+        isSecondary && styles.buttonSecondary,
         pressed && styles.pressed,
         ...extraStyles,
       ]}>
-      <Text style={[styles.buttonText, ...textStyles]}>{text}</Text>
+      <Text
+        style={[styles.buttonText, isSecondary && styles.buttonTextSecondary]}>
+        {text}
+      </Text>
     </Pressable>
   );
 }
@@ -61,31 +62,25 @@ const styles = StyleSheet.create({
     padding: 15,
     borderWidth: 1,
     borderRadius: 30,
-    borderColor: colors.grayMedium,
-    backgroundColor: colors.blue,
+    borderColor: colors.purple,
+    backgroundColor: colors.purple,
+  },
+  buttonSecondary: {
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 20,
+    borderColor: colors.grayDark,
+    backgroundColor: colors.white,
   },
   buttonText: {
     textAlign: 'center',
     fontWeight: 'bold',
     color: colors.white,
   },
+  buttonTextSecondary: {
+    color: colors.grayDark,
+  },
   pressed: {
     opacity: 0.8,
-  },
-  shadow: {
-    ...Platform.select({
-      ios: {
-        shadowColor: colors.black,
-        shadowOffset: {
-          width: 0,
-          height: 2,
-        },
-        shadowOpacity: 0.1,
-        shadowRadius: 5,
-      },
-      android: {
-        elevation: 2,
-      },
-    }),
   },
 });

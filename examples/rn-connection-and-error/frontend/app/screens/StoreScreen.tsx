@@ -48,12 +48,12 @@ export function StoreScreen() {
       <View style={styles.header}>
         <View>
           <Text style={styles.title}>Store</Text>
-          <Text style={styles.subtitle}>ID: {store?._id.toHexString()}</Text>
+          <Text style={styles.info}>ID: {store?._id.toHexString()}</Text>
         </View>
         <Button onPress={logOut} text="Log Out" />
       </View>
       <View style={styles.store}>
-        {store?.kiosks ? (
+        {store?.kiosks && (
           <FlatList
             data={store.kiosks}
             keyExtractor={kiosk => kiosk._id.toHexString()}
@@ -64,9 +64,8 @@ export function StoreScreen() {
                 removeProduct={removeProduct}
               />
             )}
+            ListEmptyComponent={<Text style={styles.info}>No kiosks</Text>}
           />
-        ) : (
-          <Text>Loading...</Text>
         )}
       </View>
       <View style={styles.triggersContainer}>
@@ -75,10 +74,10 @@ export function StoreScreen() {
             Status: {isConnected ? 'Connected 🟢' : 'Not connected 🔴'}
           </Text>
           <Button
-            extraStyles={[styles.connectionButton]}
+            extraStyles={[]}
+            isSecondary
             onPress={isConnected ? disconnect : reconnect}
             text={isConnected ? 'Disconnect' : 'Connect'}
-            textStyles={[styles.connectionText]}
           />
         </View>
         <View style={styles.triggers}>
@@ -89,18 +88,22 @@ export function StoreScreen() {
           />
           <Button
             extraStyles={[styles.button]}
-            onPress={addProduct}
+            onPress={
+              store?.kiosks.length
+                ? addProduct
+                : () => Alert.alert('Add a kiosk first.')
+            }
             text="Add Product"
           />
           <Button
             extraStyles={[styles.button]}
             onPress={triggerSyncError}
-            text="Session Error"
+            text="Trigger Sync Error"
           />
           <Button
             extraStyles={[styles.button]}
             onPress={() => Alert.alert('TODO')}
-            text="Client Reset"
+            text="Trigger Client Reset"
           />
           <Button
             extraStyles={[styles.button]}
@@ -122,24 +125,25 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    padding: 20,
     paddingTop: 10,
-    paddingHorizontal: 20,
-    paddingBottom: 20,
     borderBottomWidth: 1,
     borderColor: colors.grayMedium,
     backgroundColor: colors.white,
   },
   store: {
     flex: 1,
-    padding: 20,
+    paddingTop: 20,
+    paddingHorizontal: 20,
   },
   title: {
     textTransform: 'uppercase',
     fontFamily: fonts.primary,
     fontSize: 20,
+    fontWeight: 'bold',
     color: colors.grayDark,
   },
-  subtitle: {
+  info: {
     color: colors.grayDark,
   },
   triggersContainer: {
@@ -164,13 +168,5 @@ const styles = StyleSheet.create({
   button: {
     margin: 5,
     flexGrow: 1,
-  },
-  connectionButton: {
-    borderWidth: 1,
-    borderColor: colors.blue,
-    backgroundColor: colors.white,
-  },
-  connectionText: {
-    color: colors.grayDark,
   },
 });

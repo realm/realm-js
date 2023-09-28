@@ -40,7 +40,7 @@ export function LoginScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Demo</Text>
+        <Text style={styles.title}>Detection Demo</Text>
         <Text style={styles.subtitle}>
           Detect and react to various changes in connection state, user state,
           sync errors, and product inventory.

@@ -51,7 +51,7 @@ export const KioskItem = memo(function ({
         style={[styles.accordion, expanded && styles.accordionExpanded]}>
         <View>
           <Text style={styles.title}>Kiosk</Text>
-          <Text style={styles.subtitle}>ID: {kiosk._id.toHexString()}</Text>
+          <Text style={styles.info}>ID: {kiosk._id.toHexString()}</Text>
         </View>
         <View
           style={[
@@ -71,7 +71,7 @@ export const KioskItem = memo(function ({
             remove={removeProduct}
           />
         )}
-        ListEmptyComponent={<Text>No products.</Text>}
+        ListEmptyComponent={<Text style={styles.info}>No products</Text>}
         style={[!expanded && styles.hide, styles.products]}
       />
     </View>
@@ -102,7 +102,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: colors.grayDark,
   },
-  subtitle: {
+  info: {
     color: colors.grayDark,
   },
   chevron: {
@@ -124,6 +124,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderWidth: 1,
+    borderTopWidth: 0,
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
     borderColor: colors.grayMedium,
