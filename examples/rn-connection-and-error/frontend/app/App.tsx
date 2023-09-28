@@ -18,7 +18,7 @@
 
 import React from 'react';
 import {SafeAreaView, StatusBar, StyleSheet} from 'react-native';
-import type Realm from 'realm';
+import Realm from 'realm';
 import {ClientResetMode, OpenRealmBehaviorType, SyncError} from 'realm';
 import {AppProvider, RealmProvider, UserProvider} from '@realm/react';
 
@@ -30,6 +30,20 @@ import {Store} from './models/Store';
 import {StoreProvider} from './providers/StoreProvider';
 import {StoreScreen} from './screens/StoreScreen';
 import {logger} from './utils/logger';
+
+// Using log level "all", "trace", or "debug" is okay for debugging during developing.
+// Lower log levels are recommended in production for performance improvement.
+// logLevels = ["all", "trace", "debug", "detail", "info", "warn", "error", "fatal", "off"];
+// You may import `NumericLogLevel` to get them as numbers starting from 0 (`all`).
+Realm.setLogLevel('error');
+Realm.setLogger((logLevel, message) => {
+  const formattedMessage = `Log level: ${logLevel} - Log message: ${message}`;
+  if (logLevel === 'error' || logLevel === 'fatal') {
+    logger.error(formattedMessage);
+  } else {
+    logger.info(formattedMessage);
+  }
+});
 
 /**
  * The sync error listener - Will be invoked when various synchronization errors occur.
