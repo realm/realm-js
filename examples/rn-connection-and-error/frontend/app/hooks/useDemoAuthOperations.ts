@@ -69,9 +69,18 @@ export function useDemoAuthOperations() {
   const [pendingEmail, setPendingEmail] = useState<string>();
 
   const registeredEmail = useMemo(() => {
+    // The user will only appear in `app.allUsers` once it has logged in
+    // for the first time. Between registration and login, the user status
+    // will be "Pending User Login" which can be seen in the App Services UI.
+    // If the app is restarted while the user is logged out, `app.allUsers`
+    // will be empty on startup.
     return pendingEmail || Object.values(app.allUsers)[0]?.profile.email;
   }, [app.allUsers, pendingEmail]);
 
+  /**
+   * Logs a message using a preferred logging mechanism before
+   * proceeding to log in the user to the App.
+   */
   const logAndLogIn = useCallback(
     (credentials: {email: string; password: string}) => {
       logger.info('Logging in...');
@@ -95,6 +104,10 @@ export function useDemoAuthOperations() {
     logAndLogIn(NON_EXISTENT_CREDENTIALS);
   }, [logAndLogIn]);
 
+  /**
+   * Logs a message using a preferred logging mechanism before
+   * proceeding to register the user to the App.
+   */
   const logAndRegister = useCallback(
     (credentials: {email: string; password: string}) => {
       logger.info('Registering...');
@@ -121,21 +134,9 @@ export function useDemoAuthOperations() {
   }, [registeredEmail, logAndRegister]);
 
   useEffect(() => {
-    if (result.error) {
-      logger.error(
-        `Failed operation '${result.operation}': ${result.error.message}`,
-      );
-    } else if (result.success) {
-      logger.info(`Successful operation '${result.operation}'.`);
-      // App developers can choose to automatically log in users upon
-      // successful registration. Note that the user will only appear in
-      // `app.allUsers` once it has logged in for the first time. Between
-      // registration and login, the user status will be "Pending User
-      // Login" which can be seen in the App Services UI. If the app data
-      // on the device is deleted, `app.allUsers` will also be empty.
-      if (result.operation === AuthOperationName.Register) {
-        logInSuccessfully();
-      }
+    // Here we automatically log in users upon successful registration.
+    if (result.operation === AuthOperationName.Register && result.success) {
+      logInSuccessfully();
     }
   }, [logInSuccessfully, result]);
 
