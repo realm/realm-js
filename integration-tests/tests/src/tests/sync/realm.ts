@@ -945,6 +945,28 @@ describe("Realmtest", () => {
         });
       });
 
+      it("cannot change value of primary key", async function (this: RealmContext) {
+        this.realm.write(() => {
+          this.realm.create(IntPrimarySchema.name, { primaryCol: 1, valueCol: "val1" });
+          this.realm.create(IntPrimarySchema.name, { primaryCol: 2, valueCol: "val2" });
+        });
+
+        this.realm.write(() => {
+          const intPrimary = this.realm.objectForPrimaryKey(IntPrimarySchema.name, 1);
+          expect(intPrimary !== null).to.be.true;
+          if (intPrimary !== null) {
+            expect(() => (intPrimary.primaryCol = 2)).to.throw();
+          }
+        });
+
+        const intPrimaryObjects = this.realm.objects(IntPrimarySchema.name);
+        expect(intPrimaryObjects.length).equals(2);
+        expect(intPrimaryObjects[0].primaryCol).equals(1);
+        expect(intPrimaryObjects[1].primaryCol).equals(2);
+        expect(intPrimaryObjects[0].valueCol).equals("val1");
+        expect(intPrimaryObjects[1].valueCol).equals("val2");
+      });
+
       it("upsert works", async function (this: RealmContext) {
         this.realm.write(() => {
           const values = {
