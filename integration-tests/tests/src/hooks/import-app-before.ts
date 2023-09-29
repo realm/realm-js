@@ -32,6 +32,7 @@ export type AppConfigurationRelaxed = {
   timeout?: number;
   multiplexSessions?: boolean;
   baseFilePath?: string;
+  fetchOverride?: any;
 };
 
 export function importAppBefore(config: AppConfig | { config: AppConfig }, sdkConfig?: AppConfigurationRelaxed): void {

@@ -4,7 +4,7 @@
 * `Realm.User.providerType` is deprecated, and will be remove in next major version. Use `Realm.User.identities` instead.
 
 ### Enhancements
-* None
+* Expose `Realm.App.Configuration.fetchOverride` to enable implementing a custom [`fetch`](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch) function. ([#6159](https://github.com/realm/realm-js/issues/6159))
 
 ### Fixed
 * Outside migration functions, it is not possible to change the value of a primary key. ([#6161](https://github.com/realm/realm-js/issues/6161), since v12.0.0)
