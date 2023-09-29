@@ -1,0 +1,8 @@
+{
+    "products": {
+        "ref": "#/relationship/mongodb-atlas/sync/Product",
+        "source_key": "products",
+        "foreign_key": "_id",
+        "is_list": true
+    }
+}
