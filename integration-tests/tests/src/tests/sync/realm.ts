@@ -945,7 +945,7 @@ describe("Realmtest", () => {
         });
       });
 
-      it("cannot change value of primary key", async function (this: RealmContext) {
+      it("cannot change value of primary key outside a migration function", async function (this: RealmContext) {
         this.realm.write(() => {
           this.realm.create(IntPrimarySchema.name, { primaryCol: 1, valueCol: "val1" });
           this.realm.create(IntPrimarySchema.name, { primaryCol: 2, valueCol: "val2" });
@@ -953,9 +953,9 @@ describe("Realmtest", () => {
 
         this.realm.write(() => {
           const intPrimary = this.realm.objectForPrimaryKey(IntPrimarySchema.name, 1);
-          expect(intPrimary !== null).to.be.true;
-          if (intPrimary !== null) {
-            expect(() => (intPrimary.primaryCol = 2)).to.throw();
+          expect(intPrimary).not.to.be.null;
+          if (intPrimary) {
+            expect(() => (intPrimary.primaryCol = 2)).to.throw("Cannot change value of primary key outside migration function");
           }
         });
 
