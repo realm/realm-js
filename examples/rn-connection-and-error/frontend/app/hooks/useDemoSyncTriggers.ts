@@ -112,6 +112,23 @@ export function useDemoSyncTriggers() {
   }, [realm]);
 
   /**
+   * Trigger the client reset listeners by calling a custom Atlas Function
+   * (see `backend/functions/triggerClientReset.js`) that deletes the client
+   * files for the current user.
+   *
+   * @note
+   * This should NOT be used in production.
+   */
+  const triggerClientReset = useCallback(async () => {
+    await currentUser.functions.triggerClientReset();
+    // Once the client tries to reconnect, the client reset will be triggered.
+    if (isConnected) {
+      disconnect();
+    }
+    reconnect();
+  }, [currentUser.functions, isConnected, disconnect, reconnect]);
+
+  /**
    * The user listener - Will be invoked on various user related events including
    * refresh of auth token, refresh token, custom user data, removal, and logout.
    */
@@ -174,6 +191,7 @@ export function useDemoSyncTriggers() {
     reconnect,
     disconnect,
     triggerSyncError,
+    triggerClientReset,
     refreshAccessToken,
   };
 }

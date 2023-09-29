@@ -39,6 +39,7 @@ export function StoreScreen() {
     reconnect,
     disconnect,
     triggerSyncError,
+    triggerClientReset,
     refreshAccessToken,
   } = useDemoSyncTriggers();
   const {logOut} = useAuth();
@@ -103,7 +104,7 @@ export function StoreScreen() {
               />
               <Button
                 extraStyles={[styles.button]}
-                onPress={() => Alert.alert('TODO')}
+                onPress={triggerClientReset}
                 text="Trigger Client Reset"
               />
               <Button
