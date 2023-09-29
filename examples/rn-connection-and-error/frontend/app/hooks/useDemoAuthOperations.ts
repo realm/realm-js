@@ -23,32 +23,39 @@ import {AuthOperationName, useApp, useEmailPasswordAuth} from '@realm/react';
 import {getIntBetween} from '../utils/random';
 import {logger} from '../utils/logger';
 
+type EmailPasswordCredentials = {
+  email: string;
+  password: string;
+};
+
 const VALID_PASSWORD = '123456';
 
-function generateDummyEmail() {
+function generateDummyEmail(): string {
   return `${getIntBetween(0, 100_000)}@email.com`;
 }
 
-function getNewValidCredentials() {
+function getNewValidCredentials(): EmailPasswordCredentials {
   return {
     email: generateDummyEmail(),
     password: VALID_PASSWORD,
   };
 }
 
-function getExistingCredentials(registeredEmail: string) {
+function getExistingCredentials(
+  registeredEmail: string,
+): EmailPasswordCredentials {
   return {
     email: registeredEmail,
     password: VALID_PASSWORD,
   };
 }
 
-const NON_EXISTENT_CREDENTIALS = {
+const NON_EXISTENT_CREDENTIALS: EmailPasswordCredentials = {
   email: 'non-existent@email.com',
   password: VALID_PASSWORD,
 };
 
-const INVALID_CREDENTIALS = {
+const INVALID_CREDENTIALS: EmailPasswordCredentials = {
   email: 'invalid',
   password: '1',
 };
@@ -64,8 +71,7 @@ const INVALID_CREDENTIALS = {
 export function useDemoAuthOperations() {
   const app = useApp();
   const {logIn, register, result} = useEmailPasswordAuth();
-  // An email that has been registered but the user has not yet logged
-  // in. At that stage, the user status will be pending user login.
+  // An email that has been registered but the user has not yet logged in.
   const [pendingEmail, setPendingEmail] = useState<string>();
 
   const registeredEmail = useMemo(() => {
@@ -74,7 +80,8 @@ export function useDemoAuthOperations() {
     // will be "Pending User Login" which can be seen in the App Services UI.
     // If the app is restarted while the user is logged out, `app.allUsers`
     // will be empty on startup.
-    return pendingEmail || Object.values(app.allUsers)[0]?.profile.email;
+    const allUsers = Object.values(app.allUsers);
+    return pendingEmail || allUsers[allUsers.length - 1]?.profile.email;
   }, [app.allUsers, pendingEmail]);
 
   /**
@@ -82,7 +89,7 @@ export function useDemoAuthOperations() {
    * proceeding to log in the user to the App.
    */
   const logAndLogIn = useCallback(
-    (credentials: {email: string; password: string}) => {
+    (credentials: EmailPasswordCredentials) => {
       logger.info('Logging in...');
       logIn(credentials);
     },
@@ -109,7 +116,7 @@ export function useDemoAuthOperations() {
    * proceeding to register the user to the App.
    */
   const logAndRegister = useCallback(
-    (credentials: {email: string; password: string}) => {
+    (credentials: EmailPasswordCredentials) => {
       logger.info('Registering...');
       register(credentials);
     },
@@ -134,11 +141,14 @@ export function useDemoAuthOperations() {
   }, [registeredEmail, logAndRegister]);
 
   useEffect(() => {
-    // Here we automatically log in users upon successful registration.
+    // We show an alert on the screen when a user has been registered. For your own
+    // app, developers can choose to automatically log in users upon successful
+    // registration using this pattern as well. Instead of showing an alert, you can
+    // then call your log in method. (For this app, it would be `logInSuccessfully()`.)
     if (result.operation === AuthOperationName.Register && result.success) {
-      logInSuccessfully();
+      Alert.alert('🥳 You are now registered!');
     }
-  }, [logInSuccessfully, result]);
+  }, [result]);
 
   return {
     logInSuccessfully,
