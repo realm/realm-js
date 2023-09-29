@@ -68,7 +68,7 @@ const INVALID_CREDENTIALS: EmailPasswordCredentials = {
  * These functions are used solely for demo purposes in order to observe
  * various behavior and error messages.
  */
-export function useDemoAuthOperations() {
+export function useDemoAuthTriggers() {
   const app = useApp();
   const {logIn, register, result} = useEmailPasswordAuth();
   // An email that has been registered but the user has not yet logged in.
@@ -146,7 +146,7 @@ export function useDemoAuthOperations() {
     // registration using this pattern as well. Instead of showing an alert, you can
     // then call your log in method. (For this app, it would be `logInSuccessfully()`.)
     if (result.operation === AuthOperationName.Register && result.success) {
-      Alert.alert('🥳 You are now registered!');
+      Alert.alert('🥳 You are now registered and can log in!');
     }
   }, [result]);
 

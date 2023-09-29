@@ -22,7 +22,7 @@ import {StyleSheet, Text, View} from 'react-native';
 import {Button} from '../components/Button';
 import {colors} from '../styles/colors';
 import {fonts} from '../styles/fonts';
-import {useDemoAuthOperations} from '../hooks/useDemoAuthOperations';
+import {useDemoAuthTriggers} from '../hooks/useDemoAuthTriggers';
 
 /**
  * Screen for registering and/or logging in to the App Services App.
@@ -35,7 +35,7 @@ export function LoginScreen() {
     registerSuccessfully,
     registerWithInvalidCredentials,
     registerWithEmailAlreadyInUse,
-  } = useDemoAuthOperations();
+  } = useDemoAuthTriggers();
 
   return (
     <View style={styles.container}>
