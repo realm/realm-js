@@ -23,7 +23,7 @@ import fs from "fs";
 import { CanonicalObjectSchema, Realm, Object as RealmObject, Results } from "../index";
 import { REALMS_DIR, RealmContext, closeRealm, generateRandomInteger, generateTempRealmPath } from "./utils";
 
-type Person = { name: string };
+type Person = { name: string; age?: number };
 type PersonWithFriend = { name: string; bestFriend: Person | null };
 
 const SIMPLE_REALM_PATH = path.resolve(REALMS_DIR, "simple.realm");
@@ -49,6 +49,14 @@ describe("Milestone #2", () => {
                 indexed: true,
                 mapTo: "name",
                 default: undefined,
+              },
+              age: {
+                name: "age",
+                type: "int",
+                optional: true,
+                indexed: true,
+                mapTo: "age",
+                default: 10,
               },
               bestFriend: {
                 indexed: false,
@@ -126,10 +134,10 @@ describe("Milestone #2", () => {
     it("persists the value", function (this: RealmContext) {
       const charlie = this.realm.objectForPrimaryKey<Person>("Person", "Charlie");
       this.realm.write(() => {
-        charlie.name = "Charles";
-        expect(charlie.name).equals("Charles");
-        charlie.name = "Charlie";
-        expect(charlie.name).equals("Charlie");
+        charlie.age = 11;
+        expect(charlie.age).equals(11);
+        charlie.age = 10;
+        expect(charlie.age).equals(10);
       });
     });
   });
