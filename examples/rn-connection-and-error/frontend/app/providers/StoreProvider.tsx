@@ -19,7 +19,7 @@
 import React, {createContext, useCallback, useContext, useEffect} from 'react';
 import type {PropsWithChildren} from 'react';
 import {BSON, CollectionChangeCallback} from 'realm';
-import {useObject, useQuery, useRealm} from '@realm/react';
+import {useQuery, useRealm} from '@realm/react';
 
 import {SYNC_STORE_ID} from '../atlas-app-services/config';
 import {Kiosk} from '../models/Kiosk';
@@ -33,6 +33,7 @@ import {logger} from '../utils/logger';
  */
 type StoreContextType = {
   store: Store | null;
+  addStore: () => void;
   addKiosk: () => void;
   addProduct: () => void;
   updateProduct: (product: Product) => void;
@@ -44,6 +45,7 @@ type StoreContextType = {
  */
 const StoreContext = createContext<StoreContextType>({
   store: null,
+  addStore: () => {},
   addKiosk: () => {},
   addProduct: () => {},
   updateProduct: () => {},
@@ -57,8 +59,22 @@ const StoreContext = createContext<StoreContextType>({
  */
 export function StoreProvider({children}: PropsWithChildren) {
   const realm = useRealm();
-  const store = useObject(Store, SYNC_STORE_ID);
+  const store = useQuery(Store)[0];
   const products = useQuery(Product);
+
+  /**
+   * Adds a store. This demo app is syncing and using only 1 store with a
+   * specific store ID (see `app/atlas-app-services/config.ts`). Thus, if this
+   * store has already been created, this function will return immediately.
+   */
+  const addStore = useCallback(() => {
+    if (store) {
+      return;
+    }
+    realm.write(() => {
+      realm.create(Store, {_id: SYNC_STORE_ID});
+    });
+  }, [realm, store]);
 
   /**
    * Adds a kiosk to the store, containing all products in that store.
@@ -68,10 +84,8 @@ export function StoreProvider({children}: PropsWithChildren) {
       const kiosk = realm.create(Kiosk, {
         _id: new BSON.ObjectId(),
         storeId: SYNC_STORE_ID,
+        products: [...products],
       });
-      for (const product of products) {
-        kiosk.products.push(product);
-      }
       store?.kiosks.push(kiosk);
     });
   }, [realm, store, products]);
@@ -148,6 +162,7 @@ export function StoreProvider({children}: PropsWithChildren) {
 
   const contextValue = {
     store,
+    addStore,
     addKiosk,
     addProduct,
     updateProduct,

@@ -32,7 +32,7 @@ import {useStore} from '../providers/StoreProvider';
  * as well as buttons for triggering various listeners.
  */
 export function StoreScreen() {
-  const {store, addKiosk, addProduct, updateProduct, removeProduct} =
+  const {store, addStore, addKiosk, addProduct, updateProduct, removeProduct} =
     useStore();
   const {
     isConnected,
@@ -48,70 +48,79 @@ export function StoreScreen() {
       <View style={styles.header}>
         <View>
           <Text style={styles.title}>Store</Text>
-          <Text style={styles.info}>ID: {store?._id.toHexString()}</Text>
+          <Text style={styles.info}>ID: {store?._id.toHexString() || '-'}</Text>
         </View>
         <Button onPress={logOut} text="Log Out" />
       </View>
-      <View style={styles.store}>
-        {store?.kiosks && (
-          <FlatList
-            data={store.kiosks}
-            keyExtractor={kiosk => kiosk._id.toHexString()}
-            renderItem={({item: kiosk}) => (
-              <KioskItem
-                kiosk={kiosk}
-                updateProduct={updateProduct}
-                removeProduct={removeProduct}
+      {store ? (
+        <>
+          <View style={styles.store}>
+            {store?.kiosks && (
+              <FlatList
+                data={store.kiosks}
+                keyExtractor={kiosk => kiosk._id.toHexString()}
+                renderItem={({item: kiosk}) => (
+                  <KioskItem
+                    kiosk={kiosk}
+                    updateProduct={updateProduct}
+                    removeProduct={removeProduct}
+                  />
+                )}
+                ListEmptyComponent={<Text style={styles.info}>No kiosks</Text>}
               />
             )}
-            ListEmptyComponent={<Text style={styles.info}>No kiosks</Text>}
-          />
-        )}
-      </View>
-      <View style={styles.triggersContainer}>
-        <View style={styles.status}>
-          <Text style={styles.statusText}>
-            Status: {isConnected ? 'Connected 🟢' : 'Not connected 🔴'}
-          </Text>
-          <Button
-            extraStyles={[]}
-            isSecondary
-            onPress={isConnected ? disconnect : reconnect}
-            text={isConnected ? 'Disconnect' : 'Connect'}
-          />
+          </View>
+          <View style={styles.triggers}>
+            <View style={styles.status}>
+              <Text style={styles.statusText}>
+                Status: {isConnected ? 'Connected 🟢' : 'Not connected 🔴'}
+              </Text>
+              <Button
+                isSecondary
+                onPress={isConnected ? disconnect : reconnect}
+                text={isConnected ? 'Disconnect' : 'Connect'}
+              />
+            </View>
+            <View style={styles.triggerButtons}>
+              <Button
+                extraStyles={[styles.button]}
+                onPress={addKiosk}
+                text="Add Kiosk"
+              />
+              <Button
+                extraStyles={[styles.button]}
+                onPress={
+                  store?.kiosks.length
+                    ? addProduct
+                    : () => Alert.alert('Add a kiosk first.')
+                }
+                text="Add Product"
+              />
+              <Button
+                extraStyles={[styles.button]}
+                onPress={triggerSyncError}
+                text="Trigger Sync Error"
+              />
+              <Button
+                extraStyles={[styles.button]}
+                onPress={() => Alert.alert('TODO')}
+                text="Trigger Client Reset"
+              />
+              <Button
+                extraStyles={[styles.button]}
+                onPress={refreshAccessToken}
+                text="Refresh Access Token"
+              />
+            </View>
+          </View>
+        </>
+      ) : (
+        // No store has been created yet.
+        <View style={styles.createStore}>
+          <Button onPress={addStore} text="Create Your Store" />
+          <Text style={styles.arrow}>⤴</Text>
         </View>
-        <View style={styles.triggers}>
-          <Button
-            extraStyles={[styles.button]}
-            onPress={addKiosk}
-            text="Add Kiosk"
-          />
-          <Button
-            extraStyles={[styles.button]}
-            onPress={
-              store?.kiosks.length
-                ? addProduct
-                : () => Alert.alert('Add a kiosk first.')
-            }
-            text="Add Product"
-          />
-          <Button
-            extraStyles={[styles.button]}
-            onPress={triggerSyncError}
-            text="Trigger Sync Error"
-          />
-          <Button
-            extraStyles={[styles.button]}
-            onPress={() => Alert.alert('TODO')}
-            text="Trigger Client Reset"
-          />
-          <Button
-            extraStyles={[styles.button]}
-            onPress={refreshAccessToken}
-            text="Refresh Access Token"
-          />
-        </View>
-      </View>
+      )}
     </View>
   );
 }
@@ -131,9 +140,18 @@ const styles = StyleSheet.create({
     borderColor: colors.grayMedium,
     backgroundColor: colors.white,
   },
+  createStore: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  arrow: {
+    marginTop: 20,
+    fontSize: 60,
+  },
   store: {
     flex: 1,
-    paddingTop: 20,
+    paddingTop: 10,
     paddingHorizontal: 20,
   },
   title: {
@@ -146,7 +164,7 @@ const styles = StyleSheet.create({
   info: {
     color: colors.grayDark,
   },
-  triggersContainer: {
+  triggers: {
     padding: 20,
     borderTopWidth: 1,
     borderColor: colors.grayMedium,
@@ -161,12 +179,13 @@ const styles = StyleSheet.create({
   statusText: {
     color: colors.grayDark,
   },
-  triggers: {
+  triggerButtons: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+    gap: 10,
   },
   button: {
-    margin: 5,
+    width: '40%',
     flexGrow: 1,
   },
 });
