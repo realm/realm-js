@@ -39,7 +39,7 @@ export const KioskItem = memo(function ({
   updateProduct,
   removeProduct,
 }: KioskItemProps) {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(true);
 
   const toggleExpanded = () => setExpanded(!expanded);
 

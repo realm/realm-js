@@ -19,7 +19,8 @@
 import type {SyncError} from 'realm';
 
 /**
- * Logger - This is meant to be replaced with a preferred logging implementation.
+ * Logger - This is meant to be replaced with a preferred logging
+ * implementation or service.
  */
 export const logger = {
   info(message: string): void {
@@ -33,11 +34,18 @@ export const logger = {
   },
 };
 
+/**
+ * Formats the error message by displaying its name, message,
+ * and reason.
+ *
+ * @note
+ * To print the entire message as a JSON string you may use e.g.
+ * `JSON.stringify(error, null, 2)` if needed.
+ */
 function formatErrorMessage(error: SyncError): string {
   return (
     `${error.name}:` +
     `\n  Message: ${error.message}.` +
-    `\n  Reason: ${error.reason}` +
-    `\n  ${JSON.stringify(error)}`
+    `\n  Reason: ${error.reason}`
   );
 }

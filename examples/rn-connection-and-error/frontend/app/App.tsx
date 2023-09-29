@@ -96,7 +96,7 @@ function handlePostClientReset(localRealm: Realm, remoteRealm: Realm): void {
 function App() {
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar animated barStyle="light-content" />
+      <StatusBar animated barStyle="dark-content" />
       <AppProvider id={ATLAS_APP_ID}>
         <AuthResultBoundary>
           {/* The component set as the `fallback` prop will be rendered if a user has

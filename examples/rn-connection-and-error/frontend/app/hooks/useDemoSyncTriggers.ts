@@ -104,6 +104,12 @@ export function useDemoSyncTriggers() {
    * is outside of the query filter subscribed to. Since we subscribed
    * to the store with a given ID (see `App.tsx`), attempting to create
    * one with a different ID will generate a sync error.
+   *
+   * @note
+   * You can also trigger sync errors by modifying the permissions of
+   * fields and/or collections, and then try to perform non-permitted
+   * operations from the client. To read more about permissions, see:
+   * https://www.mongodb.com/docs/atlas/app-services/rules/roles/#define-roles---permissions
    */
   const triggerSyncError = useCallback(() => {
     realm.write(() => {
