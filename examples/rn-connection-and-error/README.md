@@ -37,7 +37,7 @@ The following shows the project structure and the most relevant files.
 │   │   │   ├── LoginScreen.tsx           - Login and registration
 │   │   │   └── StoreScreen.tsx           - Shows products and triggers
 │   │   ├── utils
-│   │   │   └── logger                    - Replaceable logger
+│   │   │   └── logger.ts                  - Replaceable logger
 │   │   └── App.tsx                       - Provides the App Services App and Realm
 │   ├── index.ts                          - Entry point
 │   └── package.json                      - Dependencies
