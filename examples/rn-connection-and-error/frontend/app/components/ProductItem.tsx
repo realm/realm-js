@@ -41,9 +41,8 @@ export const ProductItem = memo(function ({
   return (
     <View style={styles.product}>
       <View>
-        <Text style={styles.title}>Product</Text>
+        <Text style={styles.title}>{product.name}</Text>
         <Text style={styles.info}>ID: {product._id.toHexString()}</Text>
-        <Text style={styles.info}>Name: {product.name}</Text>
         <Text style={styles.info}>Price: ${product.price}</Text>
         <Text style={styles.info}>Num in stock: {product.numInStock}</Text>
       </View>

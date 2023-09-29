@@ -51,6 +51,7 @@ export function useDemoSyncTriggers() {
       const disconnected =
         oldState === ConnectionState.Connected &&
         newState === ConnectionState.Disconnected;
+      /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
       const failedReconnecting =
         oldState === ConnectionState.Connecting &&
         newState === ConnectionState.Disconnected;
@@ -184,6 +185,7 @@ export function useDemoSyncTriggers() {
 
     // Remove listeners on unmount.
     return removeListeners;
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, []);
 
   return {

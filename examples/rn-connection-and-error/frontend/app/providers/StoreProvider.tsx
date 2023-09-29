@@ -144,6 +144,7 @@ export function StoreProvider({children}: PropsWithChildren) {
   const handleProductsChange: CollectionChangeCallback<
     Product,
     [number, Product]
+    /* eslint-disable-next-line @typescript-eslint/no-shadow */
   > = useCallback((products, changes) => {
     if (changes.deletions.length) {
       logger.info(`Removed ${changes.deletions.length} product(s).`);
@@ -158,6 +159,7 @@ export function StoreProvider({children}: PropsWithChildren) {
 
   useEffect(() => {
     products.addListener(handleProductsChange);
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, []);
 
   const contextValue = {

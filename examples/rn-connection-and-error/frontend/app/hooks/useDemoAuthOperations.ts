@@ -65,8 +65,8 @@ const INVALID_CREDENTIALS: EmailPasswordCredentials = {
  * such as logging in or registering with valid and invalid credentials.
  *
  * @note
- * These functions are used solely for demoing purposes in order to
- * observe various behavior and error messages.
+ * These functions are used solely for demo purposes in order to observe
+ * various behavior and error messages.
  */
 export function useDemoAuthOperations() {
   const app = useApp();

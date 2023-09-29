@@ -71,10 +71,19 @@ function handleSyncError(
   logger.error(error);
 }
 
+/**
+ * The pre-client reset listener - Will be invoked before sync initiates
+ * a client reset.
+ */
+/* eslint-disable-next-line @typescript-eslint/no-unused-vars */
 function handlePreClientReset(localRealm: Realm): void {
   logger.info('Initiating client reset...');
 }
 
+/**
+ * The post-client reset listener - Will be invoked after a client reset.
+ */
+/* eslint-disable-next-line @typescript-eslint/no-unused-vars */
 function handlePostClientReset(localRealm: Realm, remoteRealm: Realm): void {
   logger.info('Client has been reset.');
 }

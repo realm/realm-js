@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     marginBottom: 20,
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
   },
   separator: {
@@ -140,6 +140,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.grayMedium,
   },
   button: {
-    marginVertical: 10,
+    marginVertical: 8,
   },
 });
