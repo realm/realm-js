@@ -203,7 +203,7 @@ To set this up via the App Services UI:
     * Function name: `triggerClientReset`
       * Authentication: `System`
       * Private: `false`
-      * Code: See [backend function](./backend/functions/createPrivateContent.js)
+      * Code: See [backend function](./backend/functions/triggerClientReset.js)
 
 ### Install Dependencies
 
