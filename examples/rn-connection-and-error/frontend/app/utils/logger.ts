@@ -24,19 +24,25 @@ import type {SyncError} from 'realm';
  */
 export const logger = {
   info(message: string): void {
-    console.log(new Date().toLocaleString(), '|', message);
+    console.log(prefixWithDate(message));
   },
   error(error: string | SyncError): void {
     const message =
       typeof error === 'string' ? error : formatErrorMessage(error);
     // Not using `console.error` here to not print stack trace.
-    console.log(new Date().toLocaleString(), '|', message);
+    console.log(prefixWithDate(message));
   },
 };
 
 /**
- * Formats the error message by displaying its name, message,
- * and reason.
+ * @returns The message prefixed with the current local date and timestamp.
+ */
+function prefixWithDate(message: string): string {
+  return `${new Date().toLocaleString()} | ${message}}`;
+}
+
+/**
+ * @returns A formatted error message with its name, message, and reason.
  *
  * @note
  * To print the entire message as a JSON string you may use e.g.
