@@ -99,7 +99,7 @@ export function StoreProvider({children}: PropsWithChildren) {
         _id: new BSON.ObjectId(),
         storeId: SYNC_STORE_ID,
         name: getRandomProductName(),
-        price: parseFloat(getFloatBetween(5, 15).toFixed(2)),
+        price: parseFloat(getFloatBetween(3, 15).toFixed(2)),
         numInStock: getIntBetween(0, 100),
       });
       for (const kiosk of store?.kiosks || []) {
