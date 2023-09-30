@@ -18,8 +18,7 @@
 
 import React from 'react';
 import {SafeAreaView, StatusBar, StyleSheet} from 'react-native';
-import Realm from 'realm';
-import {ClientResetMode, OpenRealmBehaviorType, SyncError} from 'realm';
+import Realm, {ClientResetMode, OpenRealmBehaviorType, SyncError} from 'realm';
 import {AppProvider, RealmProvider, UserProvider} from '@realm/react';
 
 import {ATLAS_APP_ID, SYNC_STORE_ID} from './atlas-app-services/config';
@@ -32,8 +31,8 @@ import {StoreProvider} from './providers/StoreProvider';
 import {StoreScreen} from './screens/StoreScreen';
 import {logger} from './utils/logger';
 
-// Using log level "all", "trace", or "debug" is okay for debugging during developing.
-// Lower log levels are recommended in production for performance improvement.
+// To diagnose and troubleshoot errors while in development, set the log level to `debug`
+// or `trace`. For production deployments, decrease the log level for improved performance.
 // logLevels = ["all", "trace", "debug", "detail", "info", "warn", "error", "fatal", "off"];
 // You may import `NumericLogLevel` to get them as numbers starting from 0 (`all`).
 Realm.setLogLevel('error');
@@ -49,13 +48,15 @@ Realm.setLogger((logLevel, message) => {
 /**
  * The sync error listener - Will be invoked when various synchronization errors occur.
  *
+ * @note
  * To trigger, for instance, a session level sync error, you may modify the Document
  * Permissions in Atlas App Services to NOT allow `Delete`, then rerun this app and
  * try to delete a product.
  * For how to modify the rules and permissions, see:
  * {@link https://www.mongodb.com/docs/atlas/app-services/rules/roles/#define-roles---permissions}.
  *
- * For detailed error codes, see {@link https://github.com/realm/realm-core/blob/master/doc/protocol.md#error-codes}.
+ * For detailed error codes, see:
+ * {@link https://github.com/realm/realm-core/blob/master/doc/protocol.md#error-codes}.
  * Examples:
  * - 202 (Access token expired)
  * - 225 (Invalid schema change)

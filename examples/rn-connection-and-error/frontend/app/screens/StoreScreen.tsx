@@ -56,7 +56,7 @@ export function StoreScreen() {
       {store ? (
         <>
           <View style={styles.store}>
-            {store?.kiosks && (
+            {store.kiosks && (
               <FlatList
                 data={store.kiosks}
                 keyExtractor={kiosk => kiosk._id.toHexString()}
@@ -116,7 +116,7 @@ export function StoreScreen() {
           </View>
         </>
       ) : (
-        // No store has been created yet.
+        // No store has been created yet (or not yet loaded).
         <View style={styles.createStore}>
           <Button onPress={addStore} text="Create Your Store" />
           <Text style={styles.arrow}>⤴</Text>

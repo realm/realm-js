@@ -17,14 +17,14 @@
 ////////////////////////////////////////////////////////////////////////////
 
 /**
- * @returns a floating point number between `min` and `max`.
+ * @returns A floating point number between `min` and `max`.
  */
 export function getFloatBetween(min: number, max: number): number {
   return min + Math.random() * (max - min);
 }
 
 /**
- * @returns an integer-representing number between `min` and `max`.
+ * @returns An integer-representing number between `min` and `max`.
  */
 export function getIntBetween(min: number, max: number): number {
   return Math.floor(getFloatBetween(min, max));

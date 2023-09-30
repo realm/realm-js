@@ -43,6 +43,10 @@ export function useDemoSyncTriggers() {
   /**
    * The connection listener - Will be invoked when the the underlying sync
    * session changes its connection state.
+   *
+   * @note
+   * Be aware of that there may be a delay from the time of actual disconnect
+   * until this listener is invoked.
    */
   const handleConnectionChange = useCallback(
     (newState: ConnectionState, oldState: ConnectionState) => {
@@ -69,9 +73,6 @@ export function useDemoSyncTriggers() {
         //    (1) oldState: ConnectionState.Disconnected, newState: ConnectionState.Connecting
         //    (2) oldState: ConnectionState.Connecting, newState: ConnectionState.Disconnected
         // Calling `App.Sync.Session.reconnect()` is not needed due to automatic retries.
-
-        // Be aware of that there may be a delay from the time of actual disconnect until this
-        // listener is invoked.
       } /* failedReconnecting */ else {
         logger.info('Failed to reconnect.');
       }
@@ -109,7 +110,7 @@ export function useDemoSyncTriggers() {
    * You can also trigger sync errors by modifying the permissions of
    * fields and/or collections, and then try to perform non-permitted
    * operations from the client. To read more about permissions, see:
-   * https://www.mongodb.com/docs/atlas/app-services/rules/roles/#define-roles---permissions
+   * {@link https://www.mongodb.com/docs/atlas/app-services/rules/roles/#define-roles---permissions}
    */
   const triggerSyncError = useCallback(() => {
     realm.write(() => {
