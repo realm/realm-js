@@ -71,11 +71,11 @@ const productNames = [
   'Chocolate Milkshake',
   'Vanilla Milkshake',
   'Iced Coffee',
-];
+] as const;
 
 /**
  * @returns one of the valid product names.
  */
-export const getRandomProductName = (): string => {
+export function getRandomProductName() {
   return productNames[getIntBetween(0, productNames.length)];
-};
+}

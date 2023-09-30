@@ -18,7 +18,7 @@
 
 import Realm, {BSON, ObjectSchema} from 'realm';
 
-import {Product} from './Product';
+import type {Product} from './Product';
 
 /**
  * A kiosk belonging to a particular store. Each kiosk stores a list

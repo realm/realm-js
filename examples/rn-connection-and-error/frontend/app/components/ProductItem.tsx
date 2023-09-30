@@ -20,7 +20,7 @@ import React, {memo} from 'react';
 import {StyleSheet, Text, View} from 'react-native';
 
 import {Button} from './Button';
-import {Product} from '../models/Product';
+import type {Product} from '../models/Product';
 import {colors} from '../styles/colors';
 import {fonts} from '../styles/fonts';
 
