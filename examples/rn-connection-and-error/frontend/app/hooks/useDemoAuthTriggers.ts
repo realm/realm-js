@@ -30,6 +30,16 @@ type EmailPasswordCredentials = {
 
 const VALID_PASSWORD = '123456';
 
+const NON_EXISTENT_CREDENTIALS: EmailPasswordCredentials = {
+  email: 'non-existent@email.com',
+  password: VALID_PASSWORD,
+};
+
+const INVALID_CREDENTIALS: EmailPasswordCredentials = {
+  email: 'invalid',
+  password: '1',
+};
+
 function generateDummyEmail(): string {
   return `${getIntBetween(0, 100_000)}@email.com`;
 }
@@ -49,16 +59,6 @@ function getExistingCredentials(
     password: VALID_PASSWORD,
   };
 }
-
-const NON_EXISTENT_CREDENTIALS: EmailPasswordCredentials = {
-  email: 'non-existent@email.com',
-  password: VALID_PASSWORD,
-};
-
-const INVALID_CREDENTIALS: EmailPasswordCredentials = {
-  email: 'invalid',
-  password: '1',
-};
 
 /**
  * Hook for providing functions to trigger various auth operations,

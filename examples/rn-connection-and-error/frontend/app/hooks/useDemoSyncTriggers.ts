@@ -24,6 +24,12 @@ import {Store} from '../models/Store';
 import {logger} from '../utils/logger';
 
 /**
+ * The most recent access token is stored in a variable in order to detect
+ * if the token has been refreshed (see `handleUserEventChange()`).
+ */
+let mostRecentAccessToken: string | null = null;
+
+/**
  * Hook for providing functions to trigger various sync listeners,
  * such as connection and user event change listeners.
  *
@@ -34,9 +40,6 @@ export function useDemoSyncTriggers() {
   const realm = useRealm();
   const currentUser = useUser();
   const [isConnected, setIsConnected] = useState(true);
-  // The access token is stored in a local variable in order to detect
-  // if the token has been refreshed (see `handleUserEventChange`).
-  const [accessToken, setAccessToken] = useState<string | null>(null);
 
   /**
    * Trigger the connection listener by reconnecting to the sync session.
@@ -145,25 +148,21 @@ export function useDemoSyncTriggers() {
   }, [currentUser]);
 
   useEffect(() => {
-    // This runs on mount and whenever `accessToken` changes.
-    if (accessToken) {
-      logger.info('New access token.');
-    }
-  }, [accessToken]);
-
-  useEffect(() => {
     /**
      * The user listener - Will be invoked on various user related events including
      * refresh of auth token, refresh token, custom user data, removal, and logout.
      */
     const handleUserEventChange = () => {
-      // As we currently do not provide any arguments to this callback, to be able to
-      // detect whether a token has been refreshed we could use a `useEffect` with the
-      // only dependency being `currentUser.accessToken`. Then we would not need a separate
-      // `accessToken` state to manage. However, a change in `currentUser.accessToken`
-      // does not trigger a rerender (which would allow the `useEffect()` to run), thus
-      // we use a custom `setAccessToken()` to trigger the rerender.
-      setAccessToken(currentUser.accessToken);
+      // As the SDK currently does not provide any arguments to this callback, to be
+      // able to detect whether a token has been refreshed we store the most recent
+      // access token in a variable and compare it against the current one.
+      const isNewAccessToken =
+        currentUser.accessToken &&
+        mostRecentAccessToken !== currentUser.accessToken;
+      if (isNewAccessToken) {
+        logger.info('New access token.');
+        mostRecentAccessToken = currentUser.accessToken;
+      }
 
       switch (currentUser.state) {
         case UserState.LoggedIn:
@@ -171,11 +170,13 @@ export function useDemoSyncTriggers() {
           break;
         case UserState.LoggedOut:
           logger.info(`User (id: ${currentUser.id}) has been logged out.`);
+          mostRecentAccessToken = null;
           break;
         case UserState.Removed:
           logger.info(
             `User (id: ${currentUser.id}) has been removed from the app.`,
           );
+          mostRecentAccessToken = null;
           break;
         default:
           // Should not be reachable.
