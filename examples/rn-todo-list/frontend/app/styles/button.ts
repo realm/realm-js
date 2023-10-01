@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import {StyleSheet} from 'react-native';
+
 import {colors} from './colors';
 
 export const buttonStyles: StyleSheet.NamedStyles<any> = {

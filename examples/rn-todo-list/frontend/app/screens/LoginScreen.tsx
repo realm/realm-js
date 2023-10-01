@@ -17,24 +17,29 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import React, {useEffect, useState} from 'react';
-import {View, Text, StyleSheet, TextInput, Pressable} from 'react-native';
+import {Pressable, StyleSheet, Text, TextInput, View} from 'react-native';
+import {AuthOperationName, useEmailPasswordAuth} from '@realm/react';
+
+import {buttonStyles} from '../styles/button';
 import {colors} from '../styles/colors';
 import {shadows} from '../styles/shadows';
-import {buttonStyles} from '../styles/button';
-import {AuthOperationName, useAuth, useEmailPasswordAuth} from '@realm/react';
 
-export const LoginScreen = () => {
-  const {result, logInWithEmailPassword} = useAuth();
-  const {register} = useEmailPasswordAuth();
+/**
+ * Screen for registering and/or logging in to the App Services App.
+ */
+export function LoginScreen() {
+  // Here we use the email/password auth hook, but you may also use
+  // the `useAuth()` hook for all auth operations.
+  const {logIn, register, result} = useEmailPasswordAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  // Automatically log in after registration
+  // Automatically log in the user after successful registration.
   useEffect(() => {
     if (result.success && result.operation === AuthOperationName.Register) {
-      logInWithEmailPassword({email, password});
+      logIn({email, password});
     }
-  }, [result, logInWithEmailPassword, email, password]);
+  }, [result, logIn, email, password]);
 
   return (
     <View style={styles.content}>
@@ -61,25 +66,23 @@ export const LoginScreen = () => {
           placeholder="Password"
         />
       </View>
-      {result?.error?.operation ===
-        AuthOperationName.LogInWithEmailPassword && (
+      {result.error?.operation === AuthOperationName.LogIn && (
         <Text style={[styles.error]}>
-          There was an error logging in, please try again{' '}
+          There was an error logging in, please try again
         </Text>
       )}
-      {result?.error?.operation === AuthOperationName.Register && (
+      {result.error?.operation === AuthOperationName.Register && (
         <Text style={[styles.error]}>
           There was an error registering, please try again
         </Text>
       )}
       <View style={styles.buttons}>
         <Pressable
-          onPress={() => logInWithEmailPassword({email, password})}
+          onPress={() => logIn({email, password})}
           style={[styles.button, result.pending && styles.buttonDisabled]}
           disabled={result.pending}>
           <Text style={buttonStyles.text}>Login</Text>
         </Pressable>
-
         <Pressable
           onPress={() => register({email, password})}
           style={[
@@ -93,7 +96,7 @@ export const LoginScreen = () => {
       </View>
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   content: {
