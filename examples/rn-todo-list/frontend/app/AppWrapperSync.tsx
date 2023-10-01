@@ -24,7 +24,7 @@ import {AppProvider, RealmProvider, UserProvider} from '@realm/react';
 import {AppSync} from './AppSync';
 import {LoginScreen} from './components/LoginScreen';
 import {Task} from './models/Task';
-import colors from './styles/colors';
+import {colors} from './styles/colors';
 import {schemas} from './models';
 
 type AppWrapperSyncProps = {

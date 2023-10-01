@@ -21,7 +21,7 @@ import Realm from 'realm';
 import {View, Text, Pressable, StyleSheet} from 'react-native';
 
 import {shadows} from '../styles/shadows';
-import colors from '../styles/colors';
+import {colors} from '../styles/colors';
 import {Task} from '../models/Task';
 
 type TaskItemProps = {

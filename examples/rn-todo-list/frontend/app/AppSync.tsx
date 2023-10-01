@@ -24,7 +24,7 @@ import {OfflineModeButton} from './components/OfflineModeButton';
 import {Task} from './models/Task';
 import {TaskManager} from './components/TaskManager';
 import {buttonStyles} from './styles/button';
-import colors from './styles/colors';
+import {colors} from './styles/colors';
 import {shadows} from './styles/shadows';
 
 export function AppSync() {

@@ -21,7 +21,7 @@ import {SafeAreaView, StyleSheet} from 'react-native';
 import {RealmProvider} from '@realm/react';
 
 import {AppNonSync} from './AppNonSync';
-import colors from './styles/colors';
+import {colors} from './styles/colors';
 import {schemas} from './models';
 
 /**

@@ -18,7 +18,7 @@
 
 import React, {useEffect, useState} from 'react';
 import {View, Text, StyleSheet, TextInput, Pressable} from 'react-native';
-import colors from '../styles/colors';
+import {colors} from '../styles/colors';
 import {shadows} from '../styles/shadows';
 import {buttonStyles} from '../styles/button';
 import {AuthOperationName, useAuth, useEmailPasswordAuth} from '@realm/react';

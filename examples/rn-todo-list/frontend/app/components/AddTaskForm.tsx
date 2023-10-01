@@ -27,7 +27,7 @@ import {
 } from 'react-native';
 
 import {buttonStyles} from '../styles/button';
-import colors from '../styles/colors';
+import {colors} from '../styles/colors';
 import {shadows} from '../styles/shadows';
 
 type AddTaskFormProps = {
