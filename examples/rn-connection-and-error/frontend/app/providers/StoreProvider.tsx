@@ -134,33 +134,39 @@ export function StoreProvider({children}: PropsWithChildren) {
     [realm],
   );
 
-  /**
-   * The products collection listener - Will be invoked when the listener is added
-   * and whenever an object in the collection is deleted, inserted, or modified.
-   *
-   * @note
-   * Always handle potential deletions first.
-   */
-  const handleProductsChange: CollectionChangeCallback<
-    Product,
-    [number, Product]
-    /* eslint-disable-next-line @typescript-eslint/no-shadow */
-  > = useCallback((products, changes) => {
-    if (changes.deletions.length) {
-      logger.info(`Removed ${changes.deletions.length} product(s).`);
-    }
-    for (const insertedIndex of changes.insertions) {
-      logger.info(`Product inserted: ${products[insertedIndex].name}`);
-    }
-    for (const modifiedIndex of changes.newModifications) {
-      logger.info(`Product modified: ${products[modifiedIndex].name}`);
-    }
-  }, []);
-
   useEffect(() => {
-    products.addListener(handleProductsChange);
-    /* eslint-disable-next-line react-hooks/exhaustive-deps */
-  }, []);
+    /**
+     * The products collection listener - Will be invoked when the listener is added
+     * and whenever an object in the collection is deleted, inserted, or modified.
+     *
+     * @note
+     * Always handle potential deletions first.
+     */
+    const handleProductsChange: CollectionChangeCallback<
+      Product,
+      [number, Product]
+    > = (collection, changes) => {
+      if (changes.deletions.length) {
+        logger.info(`Removed ${changes.deletions.length} product(s).`);
+      }
+      for (const insertedIndex of changes.insertions) {
+        logger.info(`Product inserted: ${collection[insertedIndex].name}`);
+      }
+      for (const modifiedIndex of changes.newModifications) {
+        logger.info(`Product modified: ${collection[modifiedIndex].name}`);
+      }
+    };
+    // Since the `products` Results returned by `useQuery()` will update its
+    // reference whenever there are changes in the collection, we add the
+    // listener to `realm.objects(Product)` instead of the `products` variable.
+    // Otherwise, the ESLint rules would require this `useEffect()` to add
+    // `products` as a dependency which is not our desired behavior as it
+    // would keep adding and removing the listener on each product update.
+    const nonChangingProductsRef = realm.objects(Product);
+    nonChangingProductsRef.addListener(handleProductsChange);
+
+    return () => nonChangingProductsRef.removeListener(handleProductsChange);
+  }, [realm]);
 
   const contextValue = {
     store,

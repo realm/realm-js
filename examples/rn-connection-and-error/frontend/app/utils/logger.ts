@@ -38,7 +38,7 @@ export const logger = {
  * @returns The message prefixed with the current local date and timestamp.
  */
 function prefixWithDate(message: string): string {
-  return `${new Date().toLocaleString()} | ${message}}`;
+  return `${new Date().toLocaleString()} | ${message}`;
 }
 
 /**

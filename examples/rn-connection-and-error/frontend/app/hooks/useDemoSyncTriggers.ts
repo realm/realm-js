@@ -34,22 +34,37 @@ export function useDemoSyncTriggers() {
   const realm = useRealm();
   const currentUser = useUser();
   const [isConnected, setIsConnected] = useState(true);
-  // The original access token is stored in order to detect if
-  // the token has been refreshed (see `handleUserEventChange`).
-  const [originalAccessToken, setOriginalAccessToken] = useState(
-    () => currentUser.accessToken,
-  );
+  // The access token is stored in a local variable in order to detect
+  // if the token has been refreshed (see `handleUserEventChange`).
+  const [accessToken, setAccessToken] = useState<string | null>(null);
 
   /**
-   * The connection listener - Will be invoked when the the underlying sync
-   * session changes its connection state.
-   *
-   * @note
-   * Be aware of that there may be a delay from the time of actual disconnect
-   * until this listener is invoked.
+   * Trigger the connection listener by reconnecting to the sync session.
    */
-  const handleConnectionChange = useCallback(
-    (newState: ConnectionState, oldState: ConnectionState) => {
+  const reconnect = useCallback(() => {
+    realm.syncSession?.resume();
+  }, [realm]);
+
+  /**
+   * Trigger the connection listener by disconnecting from the sync session.
+   */
+  const disconnect = useCallback(() => {
+    realm.syncSession?.pause();
+  }, [realm]);
+
+  useEffect(() => {
+    /**
+     * The connection listener - Will be invoked when the the underlying sync
+     * session changes its connection state.
+     *
+     * @note
+     * Be aware of that there may be a delay from the time of actual disconnect
+     * until this listener is invoked.
+     */
+    const handleConnectionChange = (
+      newState: ConnectionState,
+      oldState: ConnectionState,
+    ) => {
       const connecting = newState === ConnectionState.Connecting;
       const connected = newState === ConnectionState.Connected;
       const disconnected =
@@ -78,27 +93,12 @@ export function useDemoSyncTriggers() {
       }
 
       setIsConnected(connected);
-    },
-    [],
-  );
-
-  const listenForConnectionChange = useCallback(() => {
+    };
     realm.syncSession?.addConnectionNotification(handleConnectionChange);
-  }, [realm, handleConnectionChange]);
 
-  /**
-   * Trigger the connection listener by reconnecting to the sync session.
-   */
-  const reconnect = useCallback(() => {
-    realm.syncSession?.resume();
-  }, [realm]);
-
-  /**
-   * Trigger the connection listener by disconnecting from the sync session.
-   */
-  const disconnect = useCallback(() => {
-    realm.syncSession?.pause();
-  }, [realm]);
+    return () =>
+      realm.syncSession?.removeConnectionNotification(handleConnectionChange);
+  }, [realm.syncSession]);
 
   /**
    * Trigger the sync error listener by trying to create a `Store` that
@@ -137,43 +137,6 @@ export function useDemoSyncTriggers() {
   }, [currentUser.functions, isConnected, disconnect, reconnect]);
 
   /**
-   * The user listener - Will be invoked on various user related events including
-   * refresh of auth token, refresh token, custom user data, removal, and logout.
-   */
-  const handleUserEventChange = useCallback(() => {
-    // Currently we don't provide any arguments to this callback but we have opened
-    // a ticket for this (see https://github.com/realm/realm-core/issues/6454).
-    // To detect that a token has been refreshed, the original access token can
-    // be saved to a variable and compared against the current one.
-    if (originalAccessToken !== currentUser.accessToken) {
-      logger.info('Refreshed access token.');
-      setOriginalAccessToken(currentUser.accessToken);
-    }
-
-    switch (currentUser.state) {
-      case UserState.LoggedIn:
-        logger.info(`User (id: ${currentUser.id}) has been authenticated.`);
-        break;
-      case UserState.LoggedOut:
-        logger.info(`User (id: ${currentUser.id}) has been logged out.`);
-        break;
-      case UserState.Removed:
-        logger.info(
-          `User (id: ${currentUser.id}) has been removed from the app.`,
-        );
-        break;
-      default:
-        // Should not be reachable.
-        logger.error(`Unknown user state: ${currentUser.state}.`);
-        break;
-    }
-  }, [currentUser, originalAccessToken]);
-
-  const listenForUserEventChange = useCallback(() => {
-    currentUser.addListener(handleUserEventChange);
-  }, [currentUser, handleUserEventChange]);
-
-  /**
    * Trigger the user event listener by refreshing the custom user data
    * and thereby the access token.
    */
@@ -181,19 +144,49 @@ export function useDemoSyncTriggers() {
     await currentUser.refreshCustomData();
   }, [currentUser]);
 
-  const removeListeners = useCallback(() => {
-    realm.syncSession?.removeConnectionNotification(handleConnectionChange);
-    currentUser.removeAllListeners();
-  }, [realm, currentUser, handleConnectionChange]);
+  useEffect(() => {
+    // This runs on mount and whenever `accessToken` changes.
+    if (accessToken) {
+      logger.info('New access token.');
+    }
+  }, [accessToken]);
 
   useEffect(() => {
-    listenForConnectionChange();
-    listenForUserEventChange();
+    /**
+     * The user listener - Will be invoked on various user related events including
+     * refresh of auth token, refresh token, custom user data, removal, and logout.
+     */
+    const handleUserEventChange = () => {
+      // As we currently do not provide any arguments to this callback, to be able to
+      // detect whether a token has been refreshed we could use a `useEffect` with the
+      // only dependency being `currentUser.accessToken`. Then we would not need a separate
+      // `accessToken` state to manage. However, a change in `currentUser.accessToken`
+      // does not trigger a rerender (which would allow the `useEffect()` to run), thus
+      // we use a custom `setAccessToken()` to trigger the rerender.
+      setAccessToken(currentUser.accessToken);
 
-    // Remove listeners on unmount.
-    return removeListeners;
-    /* eslint-disable-next-line react-hooks/exhaustive-deps */
-  }, []);
+      switch (currentUser.state) {
+        case UserState.LoggedIn:
+          logger.info(`User (id: ${currentUser.id}) has been authenticated.`);
+          break;
+        case UserState.LoggedOut:
+          logger.info(`User (id: ${currentUser.id}) has been logged out.`);
+          break;
+        case UserState.Removed:
+          logger.info(
+            `User (id: ${currentUser.id}) has been removed from the app.`,
+          );
+          break;
+        default:
+          // Should not be reachable.
+          logger.error(`Unknown user state: ${currentUser.state}.`);
+          break;
+      }
+    };
+    currentUser.addListener(handleUserEventChange);
+
+    return () => currentUser.removeListener(handleUserEventChange);
+  }, [currentUser]);
 
   return {
     isConnected,

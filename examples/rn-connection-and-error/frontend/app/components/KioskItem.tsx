@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import React, {memo, useState} from 'react';
+import React, {useState} from 'react';
 import {FlatList, Pressable, StyleSheet, Text, View} from 'react-native';
 
 import type {Kiosk} from '../models/Kiosk';
@@ -34,7 +34,7 @@ type KioskItemProps = {
 /**
  * Displays a kiosk list item containing its products.
  */
-export const KioskItem = memo(function ({
+export function KioskItem({
   kiosk,
   updateProduct,
   removeProduct,
@@ -76,7 +76,7 @@ export const KioskItem = memo(function ({
       />
     </View>
   );
-});
+}
 
 const styles = StyleSheet.create({
   kiosk: {

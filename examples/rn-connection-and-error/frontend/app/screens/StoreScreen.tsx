@@ -56,20 +56,18 @@ export function StoreScreen() {
       {store ? (
         <>
           <View style={styles.store}>
-            {store.kiosks && (
-              <FlatList
-                data={store.kiosks}
-                keyExtractor={kiosk => kiosk._id.toHexString()}
-                renderItem={({item: kiosk}) => (
-                  <KioskItem
-                    kiosk={kiosk}
-                    updateProduct={updateProduct}
-                    removeProduct={removeProduct}
-                  />
-                )}
-                ListEmptyComponent={<Text style={styles.info}>No kiosks</Text>}
-              />
-            )}
+            <FlatList
+              data={store.kiosks}
+              keyExtractor={kiosk => kiosk._id.toHexString()}
+              renderItem={({item: kiosk}) => (
+                <KioskItem
+                  kiosk={kiosk}
+                  updateProduct={updateProduct}
+                  removeProduct={removeProduct}
+                />
+              )}
+              ListEmptyComponent={<Text style={styles.info}>No kiosks</Text>}
+            />
           </View>
           <View style={styles.triggers}>
             <View style={styles.status}>

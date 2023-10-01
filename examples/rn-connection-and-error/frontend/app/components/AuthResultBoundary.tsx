@@ -43,7 +43,7 @@ export function AuthResultBoundary({children}: PropsWithChildren) {
     } else if (result.success) {
       logger.info(`Successful operation '${result.operation}'.`);
     }
-  }, [result]);
+  }, [result.error, result.operation, result.success]);
 
   return children;
 }

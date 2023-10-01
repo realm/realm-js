@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import React, {memo} from 'react';
+import React from 'react';
 import {StyleSheet, Text, View} from 'react-native';
 
 import {Button} from './Button';
@@ -33,11 +33,7 @@ type ProductItemProps = {
 /**
  * Displays a product list item.
  */
-export const ProductItem = memo(function ({
-  product,
-  update,
-  remove,
-}: ProductItemProps) {
+export function ProductItem({product, update, remove}: ProductItemProps) {
   return (
     <View style={styles.product}>
       <View>
@@ -52,7 +48,7 @@ export const ProductItem = memo(function ({
       </View>
     </View>
   );
-});
+}
 
 const styles = StyleSheet.create({
   product: {

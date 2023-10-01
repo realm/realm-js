@@ -148,7 +148,7 @@ export function useDemoAuthTriggers() {
     if (result.operation === AuthOperationName.Register && result.success) {
       Alert.alert('🥳 You are now registered and can log in!');
     }
-  }, [result]);
+  }, [result.operation, result.success]);
 
   return {
     logInSuccessfully,
