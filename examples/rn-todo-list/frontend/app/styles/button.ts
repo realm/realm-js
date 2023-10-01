@@ -16,21 +16,23 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-// Polyfill for `crypto.getRandomValues()` used by BSON.
-import 'react-native-get-random-values';
-import React from 'react';
-import {AppRegistry} from 'react-native';
+import {StyleSheet} from 'react-native';
+import colors from './colors';
 
-import {AppWrapperNonSync} from './app/AppWrapperNonSync';
-import {AppWrapperSync} from './app/AppWrapperSync';
-import {SYNC_CONFIG} from './sync.config';
-import {name as appName} from './app.json';
-
-export const App = () =>
-  SYNC_CONFIG.enabled ? (
-    <AppWrapperSync appId={SYNC_CONFIG.appId} />
-  ) : (
-    <AppWrapperNonSync />
-  );
-
-AppRegistry.registerComponent(appName, () => App);
+export const buttonStyles: StyleSheet.NamedStyles<any> = {
+  button: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginHorizontal: 10,
+    borderRadius: 5,
+    backgroundColor: colors.purple,
+  },
+  text: {
+    color: colors.white,
+    textAlign: 'center',
+    fontSize: 17,
+    fontWeight: 'bold',
+  },
+};

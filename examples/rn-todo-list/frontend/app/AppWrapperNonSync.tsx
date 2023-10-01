@@ -16,21 +16,29 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-// Polyfill for `crypto.getRandomValues()` used by BSON.
-import 'react-native-get-random-values';
 import React from 'react';
-import {AppRegistry} from 'react-native';
+import {SafeAreaView, StyleSheet} from 'react-native';
 
-import {AppWrapperNonSync} from './app/AppWrapperNonSync';
-import {AppWrapperSync} from './app/AppWrapperSync';
-import {SYNC_CONFIG} from './sync.config';
-import {name as appName} from './app.json';
+import colors from './styles/colors';
+import {AppNonSync} from './AppNonSync';
 
-export const App = () =>
-  SYNC_CONFIG.enabled ? (
-    <AppWrapperSync appId={SYNC_CONFIG.appId} />
-  ) : (
-    <AppWrapperNonSync />
+import {RealmProvider} from '@realm/react';
+import {schemas} from './models';
+
+export const AppWrapperNonSync = () => {
+  // If sync is disabled, setup the app without any sync functionality and return early
+  return (
+    <SafeAreaView style={styles.screen}>
+      <RealmProvider schema={schemas}>
+        <AppNonSync />
+      </RealmProvider>
+    </SafeAreaView>
   );
+};
 
-AppRegistry.registerComponent(appName, () => App);
+const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: colors.darkBlue,
+  },
+});

@@ -16,21 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-// Polyfill for `crypto.getRandomValues()` used by BSON.
-import 'react-native-get-random-values';
-import React from 'react';
-import {AppRegistry} from 'react-native';
-
-import {AppWrapperNonSync} from './app/AppWrapperNonSync';
-import {AppWrapperSync} from './app/AppWrapperSync';
-import {SYNC_CONFIG} from './sync.config';
-import {name as appName} from './app.json';
-
-export const App = () =>
-  SYNC_CONFIG.enabled ? (
-    <AppWrapperSync appId={SYNC_CONFIG.appId} />
-  ) : (
-    <AppWrapperNonSync />
-  );
-
-AppRegistry.registerComponent(appName, () => App);
+export const SYNC_CONFIG = {
+  // Set `enabled` to `true` to enable sync.
+  enabled: false,
+  // Add your Atlas App ID here if sync is enabled.
+  appId: '<Your App ID>',
+};
