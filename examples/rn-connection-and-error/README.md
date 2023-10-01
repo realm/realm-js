@@ -1,6 +1,6 @@
-# Connection State Change & Error Handling in Realm React Native SDK
+# Connection State Change & Error Handling in Atlas Device SDK for React Native
 
-An example app showcasing how to detect various changes in connection state, user state, sync errors, and product inventory in [MongoDB's Realm React Native SDK](https://www.mongodb.com/docs/realm/sdk/react-native/).
+An example app showcasing how to detect various changes in connection state, user state, sync errors, and product inventory in [MongoDB's Atlas Device SDK for React Native](https://www.mongodb.com/docs/realm/sdk/react-native/) (fka Realm).
 
 ## Screenshots
 
@@ -94,11 +94,6 @@ When opening a Realm, we can specify the behavior in the Realm configuration whe
 This app opens a Realm via `RealmProvider` (see [App.tsx](./frontend/app/App.tsx)) and passes the configuration as props. We use `OpenImmediately` for new and existing Realm files in order to use the app while offline.
 
 > See [OpenRealmBehaviorConfiguration](https://www.mongodb.com/docs/realm-sdks/js/latest/types/OpenRealmBehaviorConfiguration.html) for possible configurations of new and existing Realm file behaviors.
-
-### Realm Details
-
-* RealmJS version: ^12.2.0
-* Device Sync type: [Flexible](https://www.mongodb.com/docs/atlas/app-services/sync/configure/enable-sync/)
 
 ## Background
 
