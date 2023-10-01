@@ -18,12 +18,12 @@
 
 import React, {useState} from 'react';
 import {
-  View,
+  Platform,
+  Pressable,
+  StyleSheet,
   Text,
   TextInput,
-  Pressable,
-  Platform,
-  StyleSheet,
+  View,
 } from 'react-native';
 
 import {buttonStyles} from '../styles/button';
@@ -34,7 +34,10 @@ type AddTaskFormProps = {
   onSubmit: (description: string) => void;
 };
 
-export const AddTaskForm: React.FC<AddTaskFormProps> = ({onSubmit}) => {
+/**
+ * Form for adding a new task.
+ */
+export function AddTaskForm({onSubmit}: AddTaskFormProps) {
   const [description, setDescription] = useState('');
 
   const handleSubmit = () => {
@@ -57,7 +60,7 @@ export const AddTaskForm: React.FC<AddTaskFormProps> = ({onSubmit}) => {
       </Pressable>
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   form: {

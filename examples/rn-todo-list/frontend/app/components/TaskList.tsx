@@ -17,40 +17,43 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import React from 'react';
-import {View, FlatList, StyleSheet} from 'react-native';
-import {Realm} from '@realm/react';
+import {FlatList, StyleSheet, View} from 'react-native';
+import type Realm from 'realm';
 
 import {Task} from '../models/Task';
 import {TaskItem} from './TaskItem';
 
 type TaskListProps = {
-  tasks: Realm.Results<Task & Realm.Object>;
-  onToggleTaskStatus: (task: Task & Realm.Object) => void;
-  onDeleteTask: (task: Task & Realm.Object) => void;
+  tasks: Realm.Results<Task>;
+  onToggleTaskStatus: (task: Task) => void;
+  onDeleteTask: (task: Task) => void;
 };
 
-export const TaskList: React.FC<TaskListProps> = ({
+/**
+ * Displays a list of tasks.
+ */
+export function TaskList({
   tasks,
   onToggleTaskStatus,
   onDeleteTask,
-}) => {
+}: TaskListProps) {
   return (
     <View style={styles.listContainer}>
       <FlatList
         data={tasks}
         keyExtractor={task => task._id.toString()}
-        renderItem={({item}) => (
+        renderItem={({item: task}) => (
           <TaskItem
-            task={item}
-            onToggleStatus={() => onToggleTaskStatus(item)}
-            onDelete={() => onDeleteTask(item)}
+            task={task}
+            onToggleStatus={onToggleTaskStatus}
+            onDelete={onDeleteTask}
             // Don't spread the Realm item as such: {...item}
           />
         )}
       />
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   listContainer: {
@@ -58,5 +61,3 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 });
-
-export default TaskList;

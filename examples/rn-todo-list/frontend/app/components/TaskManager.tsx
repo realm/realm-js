@@ -17,22 +17,29 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import React, {useCallback} from 'react';
-import {View, StyleSheet, Switch, Text} from 'react-native';
-
-import {Task} from '../models/Task';
-import {IntroText} from './IntroText';
-import {AddTaskForm} from './AddTaskForm';
-import TaskList from './TaskList';
-
+import {StyleSheet, Switch, Text, View} from 'react-native';
 import {useRealm} from '@realm/react';
+
+import {AddTaskForm} from './AddTaskForm';
+import {IntroText} from './IntroText';
+import {Task} from '../models/Task';
+import {TaskList} from './TaskList';
 import {shadows} from '../styles/shadows';
 
-export const TaskManager: React.FC<{
-  tasks: Realm.Results<Task & Realm.Object>;
+type TaskManagerProps = {
+  tasks: Realm.Results<Task>;
   userId?: string;
   setShowDone: (showDone: boolean) => void;
   showDone: boolean;
-}> = ({tasks, userId, setShowDone, showDone}) => {
+};
+
+// TODO: Add description
+export function TaskManager({
+  tasks,
+  userId,
+  setShowDone,
+  showDone,
+}: TaskManagerProps) {
   const realm = useRealm();
 
   const handleAddTask = useCallback(
@@ -59,7 +66,7 @@ export const TaskManager: React.FC<{
   );
 
   const handleToggleTaskStatus = useCallback(
-    (task: Task & Realm.Object): void => {
+    (task: Task): void => {
       realm.write(() => {
         // Normally when updating a record in a NoSQL or SQL database, we have to type
         // a statement that will later be interpreted and used as instructions for how
@@ -83,7 +90,7 @@ export const TaskManager: React.FC<{
   );
 
   const handleDeleteTask = useCallback(
-    (task: Task & Realm.Object): void => {
+    (task: Task): void => {
       realm.write(() => {
         realm.delete(task);
 
@@ -114,7 +121,7 @@ export const TaskManager: React.FC<{
       </View>
     </>
   );
-};
+}
 
 const styles = StyleSheet.create({
   content: {

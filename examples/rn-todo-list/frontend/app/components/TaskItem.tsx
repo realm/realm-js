@@ -16,26 +16,28 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import React from 'react';
-import Realm from 'realm';
-import {View, Text, Pressable, StyleSheet} from 'react-native';
+import React, {memo} from 'react';
+import {Pressable, StyleSheet, Text, View} from 'react-native';
 
-import {shadows} from '../styles/shadows';
+import type {Task} from '../models/Task';
 import {colors} from '../styles/colors';
-import {Task} from '../models/Task';
+import {shadows} from '../styles/shadows';
 
 type TaskItemProps = {
-  task: Task & Realm.Object;
-  onToggleStatus: () => void;
-  onDelete: () => void;
+  task: Task;
+  onToggleStatus: (task: Task) => void;
+  onDelete: (task: Task) => void;
 };
 
-export const TaskItem = React.memo<TaskItemProps>(
+/**
+ * Displays a task list item with options to update or delete it.
+ */
+export const TaskItem = memo<TaskItemProps>(
   ({task, onToggleStatus, onDelete}) => {
     return (
       <View style={styles.task}>
         <Pressable
-          onPress={onToggleStatus}
+          onPress={() => onToggleStatus(task)}
           style={[styles.status, task.isComplete && styles.completed]}>
           <Text style={styles.icon}>{task.isComplete ? '✓' : '○'}</Text>
         </Pressable>
@@ -44,7 +46,7 @@ export const TaskItem = React.memo<TaskItemProps>(
             {task.description}
           </Text>
         </View>
-        <Pressable onPress={onDelete} style={styles.deleteButton}>
+        <Pressable onPress={() => onDelete(task)} style={styles.deleteButton}>
           <Text style={styles.deleteText}>Delete</Text>
         </Pressable>
       </View>

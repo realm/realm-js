@@ -17,37 +17,53 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import React from 'react';
-import {View, Text, Pressable, StyleSheet} from 'react-native';
-// @ts-ignore openURLInBrowser will open the url in your machine browser. (This isn't currently typed in React Native)
+import {Pressable, StyleSheet, Text, View} from 'react-native';
+// @ts-ignore `openURLInBrowser` will open the url in your host's browser. This
+// is used for the purpose of this demo. For your own app, to open a URL on the
+// simulator/device, import {Linking} from 'react-native' and use Linking.openURL().
 import openURLInBrowser from 'react-native/Libraries/Core/Devtools/openURLInBrowser';
 
 import {colors} from '../styles/colors';
 
-export const IntroText = () => {
+/**
+ * Information about this example app and the Atlas Device SDK for React Native.
+ */
+export function IntroText() {
   return (
     <View style={styles.content}>
       <Text style={styles.paragraph}>
-        Welcome to the Realm React Native TypeScript Template
+        Welcome to the Atlas Device SDK for React Native!
       </Text>
       <Text style={styles.paragraph}>
         Start adding a task using the form at the top of the screen to see how
-        they are created in Realm. You can also toggle the task status or remove
-        it from the list.
+        they are created. Update a task by toggling its status, or remove it
+        from the list. If using Device Sync, watch the tasks sync across devices
+        or to Atlas in real-time.
       </Text>
-      <Text style={styles.paragraph}>
-        Learn more about the React Native Realm SDK at:
-      </Text>
+      <Text style={styles.paragraph}>Learn more at:</Text>
       <Pressable
         onPress={() =>
-          openURLInBrowser('https://docs.mongodb.com/realm/sdk/react-native/')
+          // Opens the link on the host's browser (used for this demo).
+          // Use `Linking.openURL()` to open on the simulator/device.
+          openURLInBrowser(
+            'https://www.mongodb.com/docs/realm/sdk/react-native/',
+          )
         }>
         <Text style={[styles.paragraph, styles.link]}>
-          docs.mongodb.com/realm/sdk/react-native
+          Atlas Device SDK for React Native
         </Text>
+      </Pressable>
+      <Pressable
+        onPress={() =>
+          openURLInBrowser(
+            'https://www.mongodb.com/atlas/app-services/device-sync',
+          )
+        }>
+        <Text style={[styles.paragraph, styles.link]}>Atlas Device Sync</Text>
       </Pressable>
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   content: {
