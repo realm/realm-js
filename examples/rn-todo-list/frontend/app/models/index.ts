@@ -18,4 +18,6 @@
 
 import {Task} from './Task';
 
+// If you have multiple data models, you can export all of them
+// as a convenience when providing the schema when opening a Realm.
 export const schemas = [Task];

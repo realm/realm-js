@@ -18,17 +18,22 @@
 
 import React from 'react';
 import {SafeAreaView, StyleSheet} from 'react-native';
-
-import colors from './styles/colors';
-import {AppNonSync} from './AppNonSync';
-
 import {RealmProvider} from '@realm/react';
+
+import {AppNonSync} from './AppNonSync';
+import colors from './styles/colors';
 import {schemas} from './models';
 
+/**
+ * The root React component for the local-only app which renders
+ * `@realm/react`'s `RealmProvider` for opening a Realm.
+ */
 export const AppWrapperNonSync = () => {
-  // If sync is disabled, setup the app without any sync functionality and return early
   return (
     <SafeAreaView style={styles.screen}>
+      {/* Define the Realm configuration as props passed to `RealmProvider`.
+      Since this component renders the local-only app, there is no need to
+      set up `AppProvider` or `UserProvider`. */}
       <RealmProvider schema={schemas}>
         <AppNonSync />
       </RealmProvider>

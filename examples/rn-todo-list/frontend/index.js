@@ -26,6 +26,10 @@ import {AppWrapperSync} from './app/AppWrapperSync';
 import {SYNC_CONFIG} from './sync.config';
 import {name as appName} from './app.json';
 
+/**
+ * Renders either the app that uses Device Sync, or the
+ * one only using a local Realm.
+ */
 export const App = () =>
   SYNC_CONFIG.enabled ? (
     <AppWrapperSync appId={SYNC_CONFIG.appId} />

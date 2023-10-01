@@ -16,15 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import React from 'react';
+import React, {useState} from 'react';
+import {useQuery} from '@realm/react';
 
 import {Task} from './models/Task';
 import {TaskManager} from './components/TaskManager';
 
-import {useQuery} from '@realm/react';
-
 export const AppNonSync = () => {
-  const [showDone, setShowDone] = React.useState(true);
+  const [showDone, setShowDone] = useState(true);
   const tasks = useQuery(
     Task,
     collection =>
