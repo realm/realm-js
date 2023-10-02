@@ -1,7 +1,7 @@
 ## vNext (TBD)
 
 ### Deprecations
-* None
+* `Realm.User.providerType` is deprecated, and will be remove in next major version. Use `Realm.User.identities` instead.
 
 ### Enhancements
 * None
