@@ -39,6 +39,13 @@ export function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
+  // To display an error message on the screen whenever an auth
+  // operation returns an error, we first make sure the error is
+  // coming from the auth operation used herein.
+  const hadError =
+    result.error?.operation === AuthOperationName.LogIn ||
+    result.error?.operation === AuthOperationName.Register;
+
   // Automatically log in the user after successful registration.
   useEffect(() => {
     if (result.success && result.operation === AuthOperationName.Register) {
@@ -79,16 +86,7 @@ export function LoginScreen() {
           textContentType="password"
           value={password}
         />
-        {result.error?.operation === AuthOperationName.LogIn && (
-          <Text style={styles.error}>
-            There was an error logging in, please try again
-          </Text>
-        )}
-        {result.error?.operation === AuthOperationName.Register && (
-          <Text style={styles.error}>
-            There was an error registering, please try again
-          </Text>
-        )}
+        {hadError && <Text style={styles.error}>{result.error?.message}</Text>}
         <View style={styles.buttons}>
           <Pressable
             disabled={result.pending}
