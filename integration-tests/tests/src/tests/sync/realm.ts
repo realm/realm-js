@@ -955,7 +955,9 @@ describe("Realmtest", () => {
           const intPrimary = this.realm.objectForPrimaryKey(IntPrimarySchema.name, 1);
           expect(intPrimary).not.to.be.null;
           if (intPrimary) {
-            expect(() => (intPrimary.primaryCol = 2)).to.throw("Cannot change value of primary key outside migration function");
+            expect(() => (intPrimary.primaryCol = 2)).to.throw(
+              "Cannot change value of primary key outside migration function",
+            );
           }
         });
 
