@@ -35,10 +35,10 @@ export function IntroText() {
         Welcome to the Atlas Device SDK for React Native!
       </Text>
       <Text style={styles.paragraph}>
-        Start adding a task using the form at the top of the screen to see how
-        they are created. Update a task by toggling its status, or remove it
-        from the list. If using Device Sync, watch the tasks sync across devices
-        or to Atlas in real-time.
+        Start by adding a task ☝ You can then update it by toggling its status,
+        or remove it by hitting the "x" icon. If using Device Sync, watch the
+        tasks sync across devices or to Atlas in real-time. To see what happens
+        when you make changes while offline, toggle "Pause Sync".
       </Text>
       <Text style={styles.paragraph}>Learn more at:</Text>
       <Pressable
@@ -72,7 +72,7 @@ export function IntroText() {
 const styles = StyleSheet.create({
   content: {
     flex: 1,
-    justifyContent: 'center',
+    marginTop: 50,
     marginHorizontal: 20,
   },
   paragraph: {
