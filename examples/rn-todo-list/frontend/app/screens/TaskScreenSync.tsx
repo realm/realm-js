@@ -25,6 +25,7 @@ import {TaskScreen} from './TaskScreen';
 import {buttonStyles} from '../styles/button';
 import {colors} from '../styles/colors';
 import {shadows} from '../styles/shadows';
+import {useSyncConnection} from '../hooks/useSyncConnection';
 
 /**
  * Displays the list of tasks as well as buttons for performing
@@ -38,6 +39,7 @@ export function TaskScreenSync() {
   const app = useApp();
   const user = useUser();
   const {logOut} = useAuth();
+  const {isConnected, reconnect, disconnect} = useSyncConnection();
 
   return (
     <>
@@ -49,7 +51,10 @@ export function TaskScreenSync() {
             styles.authButtonText
           }>{`Log out ${user?.profile.email}`}</Text>
       </Pressable>
-      <OfflineModeButton />
+      <OfflineModeButton
+        isConnected={isConnected}
+        toggleOfflineMode={isConnected ? disconnect : reconnect}
+      />
     </>
   );
 }

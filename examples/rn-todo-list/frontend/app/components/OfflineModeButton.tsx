@@ -16,36 +16,35 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import React, {useState} from 'react';
+import React from 'react';
 import {StyleSheet, Switch, Text, View} from 'react-native';
-import {useRealm} from '@realm/react';
 
-export function OfflineModeButton() {
-  const realm = useRealm();
+import {colors} from '../styles/colors';
 
-  const [pauseSync, togglePauseSync] = useState(false);
+type OfflineModeButtonProps = {
+  isConnected: boolean;
+  toggleOfflineMode: () => void;
+};
 
+/**
+ * Button for simulating being offline.
+ */
+export function OfflineModeButton({
+  isConnected,
+  toggleOfflineMode,
+}: OfflineModeButtonProps) {
   return (
     <View style={styles.toggleRow}>
-      <Text style={styles.toggleText}>Disable Sync</Text>
-      <Switch
-        onValueChange={() => {
-          if (!pauseSync && realm.syncSession?.state === 'active') {
-            realm.syncSession.pause();
-            togglePauseSync(true);
-          } else if (pauseSync && realm.syncSession?.state === 'inactive') {
-            realm.syncSession.resume();
-            togglePauseSync(false);
-          }
-        }}
-        value={realm.syncSession?.state === 'inactive'}
-      />
+      <Text style={styles.toggleText}>Pause Sync</Text>
+      <Switch onValueChange={toggleOfflineMode} value={!isConnected} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  icon: {padding: 12},
+  icon: {
+    padding: 12,
+  },
   toggleRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -54,7 +53,7 @@ const styles = StyleSheet.create({
   toggleText: {
     flex: 1,
     fontSize: 16,
-    color: '#fff',
+    color: colors.white,
     fontWeight: 'bold',
   },
 });
