@@ -51,12 +51,12 @@ describe("Milestone #2", () => {
                 default: undefined,
               },
               age: {
-                name: "age",
-                type: "int",
-                optional: true,
+                default: 10,
                 indexed: true,
                 mapTo: "age",
-                default: 10,
+                name: "age",
+                optional: true,
+                type: "int",
               },
               bestFriend: {
                 indexed: false,
