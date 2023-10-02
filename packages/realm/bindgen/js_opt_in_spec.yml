@@ -264,6 +264,7 @@ classes:
       - remove_object
       - get_link_target
       - clear
+      - get_primary_key_column
 
   Obj:
     methods:

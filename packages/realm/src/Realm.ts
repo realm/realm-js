@@ -793,6 +793,17 @@ export class Realm {
   }
 
   /**
+   * Indicates if this Realm is in migration.
+   * @returns `true` if in migration, `false` otherwise
+   * @readonly
+   * @since 12.3.0
+   */
+  get isInMigration(): boolean {
+    // TODO: Consider keeping a local state in JS for this
+    return this.internal.isInMigration;
+  }
+
+  /**
    * Indicates if this Realm has been closed.
    * @returns `true` if closed, `false` otherwise.
    * @readonly

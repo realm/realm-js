@@ -89,6 +89,9 @@ const defaultSet =
   (obj: binding.Obj, value: unknown) => {
     assert.inTransaction(realm);
     try {
+      if (!realm.isInMigration && obj.table.getPrimaryKeyColumn() === columnKey) {
+        throw new Error(`Cannot change value of primary key outside migration function`);
+      }
       obj.setAny(columnKey, toBinding(value));
     } catch (err) {
       assert.isValid(obj);
