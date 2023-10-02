@@ -18,7 +18,7 @@
 
 export const SYNC_CONFIG = {
   // Set `enabled` to `true` to enable sync.
-  enabled: false,
+  enabled: true,
   // Add your Atlas App ID here if sync is enabled.
-  appId: '<Your App ID>',
+  appId: 'YOUR_APP_ID',
 };
