@@ -16,19 +16,22 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-// This TS version of the Task model shows how to create Realm objects using
-// TypeScript syntax, using `@realm/babel-plugin`
-// (https://github.com/realm/realm-js/blob/main/packages/babel-plugin/).
-//
-// If you are not using TypeScript and `@realm/babel-plugin`, you instead need
-// to defining a schema on the class - see `Task.js` in the Realm example app
-// for an example of this.
-
 import Realm, {BSON} from 'realm';
 
-// To use a class as a Realm object type in Typescript with the `@realm/babel-plugin` plugin,
-// simply define the properties on the class with the correct type and the plugin will convert
-// it to a Realm schema automatically.
+/**
+ * The `Task` data model.
+ *
+ * @note
+ * This app uses the `@realm/babel-plugin` plugin, thus we can define a Realm
+ * Object by simply defining the properties on the class with the correct types
+ * and have the plugin convert it to a correct Realm schema automatically.
+ * If you are not using the plugin, you need to define a `static schema: ObjectSchema`
+ * on this class in addition to the already defined properties.
+ *
+ * @see
+ * - Define a model: {@link https://www.mongodb.com/docs/realm/sdk/react-native/model-data/define-a-realm-object-model/}
+ * - Babel plugin: {@link https://www.npmjs.com/package/@realm/babel-plugin}
+ */
 export class Task extends Realm.Object {
   _id: BSON.ObjectId = new BSON.ObjectId();
   description!: string;
