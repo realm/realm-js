@@ -42,6 +42,8 @@ export function IntroText() {
       </Text>
       <Text style={styles.paragraph}>Learn more at:</Text>
       <Pressable
+        accessibilityLabel="Open link"
+        accessibilityHint="Opens a link to Atlas Device SDK in your browser"
         onPress={() =>
           // Opens the link on the host's browser (used for this demo).
           // Use `Linking.openURL()` to open on the simulator/device.
@@ -54,6 +56,8 @@ export function IntroText() {
         </Text>
       </Pressable>
       <Pressable
+        accessibilityLabel="Open link"
+        accessibilityHint="Opens a link to Atlas Device Sync in your browser"
         onPress={() =>
           openURLInBrowser(
             'https://www.mongodb.com/atlas/app-services/device-sync',

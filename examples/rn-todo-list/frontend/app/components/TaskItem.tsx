@@ -36,6 +36,9 @@ export const TaskItem = memo<TaskItemProps>(
     return (
       <View style={[styles.task, task.isComplete && styles.taskCompleted]}>
         <Pressable
+          accessibilityLabel={`Mark task as ${
+            task.isComplete ? 'not done' : 'done'
+          }`}
           onPress={() => onToggleStatus(task)}
           style={[styles.status, task.isComplete && styles.statusCompleted]}>
           <Text style={styles.statusIcon}>{task.isComplete ? '✓' : '○'}</Text>
@@ -50,7 +53,10 @@ export const TaskItem = memo<TaskItemProps>(
             {task.description}
           </Text>
         </View>
-        <Pressable onPress={() => onDelete(task)} style={styles.deleteButton}>
+        <Pressable
+          accessibilityLabel="Delete task"
+          onPress={() => onDelete(task)}
+          style={styles.deleteButton}>
           <Text style={styles.deleteIcon}>x</Text>
         </Pressable>
       </View>

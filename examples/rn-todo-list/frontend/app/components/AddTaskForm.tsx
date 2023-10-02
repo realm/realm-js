@@ -39,15 +39,19 @@ export function AddTaskForm({onSubmit}: AddTaskFormProps) {
   return (
     <View style={styles.form}>
       <TextInput
-        value={description}
+        accessibilityLabel="Add a new task"
+        autoCapitalize="none"
+        autoCorrect={false}
+        onChangeText={setDescription}
         placeholder="Add a new task"
         placeholderTextColor={colors.grayDark}
-        onChangeText={setDescription}
-        autoCorrect={false}
-        autoCapitalize="none"
         style={styles.textInput}
+        value={description}
       />
-      <Pressable onPress={handleSubmit} style={styles.submitButton}>
+      <Pressable
+        accessibilityLabel="Add task"
+        onPress={handleSubmit}
+        style={styles.submitButton}>
         <Text style={styles.icon}>＋</Text>
       </Pressable>
     </View>

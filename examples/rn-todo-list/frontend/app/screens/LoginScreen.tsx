@@ -50,32 +50,34 @@ export function LoginScreen() {
     <View style={styles.container}>
       <Image
         alt="Atlas App Services"
+        resizeMode="contain"
         source={require('../assets/atlas-app-services.png')}
         style={styles.logo}
-        resizeMode="contain"
       />
       <Text style={styles.title}>Atlas Device SDK for React Native</Text>
       <View style={styles.form}>
         <TextInput
-          style={styles.input}
-          value={email}
-          onChangeText={setEmail}
-          autoComplete="email"
-          textContentType="emailAddress"
+          accessibilityLabel="Enter email"
           autoCapitalize="none"
+          autoComplete="email"
           autoCorrect={false}
+          onChangeText={setEmail}
           placeholder="Email"
           placeholderTextColor={colors.grayDark}
+          style={styles.input}
+          textContentType="emailAddress"
+          value={email}
         />
         <TextInput
-          style={styles.input}
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
+          accessibilityLabel="Enter password"
           autoComplete="password"
-          textContentType="password"
+          onChangeText={setPassword}
           placeholder="Password"
           placeholderTextColor={colors.grayDark}
+          secureTextEntry
+          style={styles.input}
+          textContentType="password"
+          value={password}
         />
         {result.error?.operation === AuthOperationName.LogIn && (
           <Text style={styles.error}>
@@ -89,15 +91,15 @@ export function LoginScreen() {
         )}
         <View style={styles.buttons}>
           <Pressable
+            disabled={result.pending}
             onPress={() => logIn({email, password})}
-            style={[styles.button, result.pending && styles.disabled]}
-            disabled={result.pending}>
+            style={[styles.button, result.pending && styles.disabled]}>
             <Text style={styles.buttonText}>Log In</Text>
           </Pressable>
           <Pressable
+            disabled={result.pending}
             onPress={() => register({email, password})}
-            style={[styles.button, result.pending && styles.disabled]}
-            disabled={result.pending}>
+            style={[styles.button, result.pending && styles.disabled]}>
             <Text style={styles.buttonText}>Register</Text>
           </Pressable>
         </View>
