@@ -11,7 +11,7 @@
 * Receiving a `write_not_allowed` error from the server would have led to a crash. ([realm/realm-core#6978](https://github.com/realm/realm-core/issues/6978), since v11.5.0)
 * If querying over a geospatial dataset that had some objects with a type property set to something other than `Point` (case insensitive) an exception would have been thrown. Instead of disrupting the query, those objects are now just ignored. ([realm/realm-core#6989](https://github.com/realm/realm-core/issues/6989), since v12.0.0)
 * If a user was logged out while an access token refresh was in progress, the refresh completing would mark the user as logged in again and the user would be in an inconsistent state. ([realm/realm-core#6837](https://github.com/realm/realm-core/pull/6837), since v10.0.0)
-* Logging into a single user using multiple auth providers created a separate `Realm.User` per auth provider. This mostly worked, but had some quirks:
+* Logging in a single user using multiple auth providers created a separate `Realm.User` per auth provider. This mostly worked, but had some quirks:
   - Sync sessions would not necessarily be associated with the specific `Realm.User` used to create them. As a result, querying a user for its sessions could give incorrect results, and logging one user out could close the wrong sessions.
   - Existing local synchronized Realm files created using version of Realm from August - November 2020 would sometimes not be opened correctly and would instead be redownloaded.
   - Removing one of the `Realm.User`s would delete all local Realm files for all `Realm.User`s for that user.
