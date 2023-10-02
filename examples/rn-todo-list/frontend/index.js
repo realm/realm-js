@@ -21,8 +21,8 @@ import 'react-native-get-random-values';
 import React from 'react';
 import {AppRegistry} from 'react-native';
 
-import {AppWrapperNonSync} from './app/AppWrapperNonSync';
-import {AppWrapperSync} from './app/AppWrapperSync';
+import {AppNonSync} from './app/AppNonSync';
+import {AppSync} from './app/AppSync';
 import {SYNC_CONFIG} from './sync.config';
 import {name as appName} from './app.json';
 
@@ -31,10 +31,6 @@ import {name as appName} from './app.json';
  * one only using a local Realm.
  */
 export const App = () =>
-  SYNC_CONFIG.enabled ? (
-    <AppWrapperSync appId={SYNC_CONFIG.appId} />
-  ) : (
-    <AppWrapperNonSync />
-  );
+  SYNC_CONFIG.enabled ? <AppSync appId={SYNC_CONFIG.appId} /> : <AppNonSync />;
 
 AppRegistry.registerComponent(appName, () => App);

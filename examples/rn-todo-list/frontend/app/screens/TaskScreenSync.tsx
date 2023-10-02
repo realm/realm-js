@@ -31,8 +31,8 @@ import {shadows} from '../styles/shadows';
  * sync-related operations.
  *
  * @note
- * This screen is only meant to be used for the sync-enabled part
- * of the app (`AppSync.tsx`).
+ * This screen is only meant to be used for the Device Sync enabled
+ * part of the app (`AppSync.tsx`).
  */
 export function TaskScreenSync() {
   const app = useApp();

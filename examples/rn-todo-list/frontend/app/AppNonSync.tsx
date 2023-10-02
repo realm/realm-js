@@ -17,9 +17,33 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import React from 'react';
+import {SafeAreaView, StyleSheet} from 'react-native';
+import {RealmProvider} from '@realm/react';
 
 import {TaskScreen} from './screens/TaskScreen';
+import {colors} from './styles/colors';
+import {schemas} from './models';
 
+/**
+ * The root React component for the local-only app which renders
+ * `@realm/react`'s `RealmProvider` for opening a Realm.
+ */
 export function AppNonSync() {
-  return <TaskScreen />;
+  return (
+    <SafeAreaView style={styles.screen}>
+      {/* Define the Realm configuration as props passed to `RealmProvider`.
+      Since this component renders the local-only app, there is no need to
+      set up `AppProvider` or `UserProvider`. */}
+      <RealmProvider schema={schemas}>
+        <TaskScreen />
+      </RealmProvider>
+    </SafeAreaView>
+  );
 }
+
+const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: colors.darkBlue,
+  },
+});
