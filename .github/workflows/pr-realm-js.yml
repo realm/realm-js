@@ -232,7 +232,7 @@ jobs:
             packages/realm/react-native/ios/realm-js-ios.xcframework/Info.plist
 
   integration-tests:
-    name: Integration tests (${{matrix.variant.target}}) for ${{ matrix.variant.environment }} on ${{ matrix.variant.os }}
+    name: Test ${{ matrix.variant.environment }} on ${{ matrix.variant.os }} (${{matrix.variant.target}})
     needs: [bundle, build, ios-xcframework]
     if: ${{ success() || failure() }}
     env:
