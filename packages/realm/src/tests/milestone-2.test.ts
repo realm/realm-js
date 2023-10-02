@@ -24,7 +24,7 @@ import { CanonicalObjectSchema, Realm, Object as RealmObject, Results } from "..
 import { REALMS_DIR, RealmContext, closeRealm, generateRandomInteger, generateTempRealmPath } from "./utils";
 
 type Person = { name: string; age?: number };
-type PersonWithFriend = { name: string; bestFriend: Person | null };
+type PersonWithFriend = { name: string; age?: number; bestFriend: Person | null };
 
 const SIMPLE_REALM_PATH = path.resolve(REALMS_DIR, "simple.realm");
 
