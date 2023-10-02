@@ -1,0 +1,23 @@
+{
+    "collection": "Task",
+    "database": "TodoList",
+    "roles": [
+        {
+            "name": "readOwnWriteOwn",
+            "apply_when": {},
+            "document_filters": {
+                "write": {
+                    "userId": "%%user.id"
+                },
+                "read": {
+                    "userId": "%%user.id"
+                }
+            },
+            "read": true,
+            "write": true,
+            "insert": true,
+            "delete": true,
+            "search": true
+        }
+    ]
+}
