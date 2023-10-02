@@ -174,7 +174,7 @@ records:
      - object_name
      - reason
      - primary_key
-  
+
   GeoBox:
     fields:
      - lo
@@ -188,7 +188,7 @@ records:
     fields:
      - center
      - radius_radians
-     
+
   GeoPoint:
     fields:
      - latitude
@@ -277,7 +277,7 @@ classes:
       - get_backlink_count
       - get_backlink_view
       - create_and_set_linked_object
-  
+
   Timestamp:
     methods:
       - make
@@ -420,7 +420,6 @@ classes:
       - all_sessions
       - is_logged_in
       - identity
-      - provider_type
       - access_token
       - refresh_token
       - device_id
@@ -549,7 +548,7 @@ classes:
       - erase_by_name
       - erase_by_query
       - commit
-  
+
   Geospatial:
     methods:
     - make_from_circle

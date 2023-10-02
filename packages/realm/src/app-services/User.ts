@@ -135,13 +135,18 @@ export class User<
   /**
    * The provider type used when authenticating the user.
    * @returns The provider type as an enumerated string.
+   * @deprecated Use {@link identities} instead.
    */
   get providerType(): ProviderType {
-    const type = this.internal.providerType;
-    if (isProviderType(type)) {
-      return type;
+    if (this.internal.identities.length > 0) {
+      const type = this.internal.identities[0].providerType;
+      if (isProviderType(type)) {
+        return type;
+      } else {
+        throw new Error(`Unexpected provider type: ${type}`);
+      }
     } else {
-      throw new Error(`Unexpected provider type: ${type}`);
+      throw new Error("No provider found");
     }
   }
 
