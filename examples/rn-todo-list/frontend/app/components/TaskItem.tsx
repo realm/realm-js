@@ -21,7 +21,6 @@ import {Pressable, StyleSheet, Text, View} from 'react-native';
 
 import type {Task} from '../models/Task';
 import {colors} from '../styles/colors';
-import {shadows} from '../styles/shadows';
 
 type TaskItemProps = {
   task: Task;
@@ -35,19 +34,24 @@ type TaskItemProps = {
 export const TaskItem = memo<TaskItemProps>(
   ({task, onToggleStatus, onDelete}) => {
     return (
-      <View style={styles.task}>
+      <View style={[styles.task, task.isComplete && styles.taskCompleted]}>
         <Pressable
           onPress={() => onToggleStatus(task)}
-          style={[styles.status, task.isComplete && styles.completed]}>
-          <Text style={styles.icon}>{task.isComplete ? '✓' : '○'}</Text>
+          style={[styles.status, task.isComplete && styles.statusCompleted]}>
+          <Text style={styles.statusIcon}>{task.isComplete ? '✓' : '○'}</Text>
         </Pressable>
         <View style={styles.descriptionContainer}>
-          <Text numberOfLines={1} style={styles.description}>
+          <Text
+            numberOfLines={1}
+            style={[
+              styles.description,
+              task.isComplete && styles.descriptionCompleted,
+            ]}>
             {task.description}
           </Text>
         </View>
         <Pressable onPress={() => onDelete(task)} style={styles.deleteButton}>
-          <Text style={styles.deleteText}>Delete</Text>
+          <Text style={styles.deleteIcon}>x</Text>
         </Pressable>
       </View>
     );
@@ -56,13 +60,18 @@ export const TaskItem = memo<TaskItemProps>(
 
 const styles = StyleSheet.create({
   task: {
-    height: 50,
-    alignSelf: 'stretch',
+    height: 55,
     flexDirection: 'row',
-    marginVertical: 8,
-    backgroundColor: colors.white,
+    alignItems: 'center',
+    marginVertical: 10,
     borderRadius: 5,
-    ...shadows,
+    borderWidth: 1,
+    borderColor: colors.grayMedium,
+    backgroundColor: colors.white,
+  },
+  taskCompleted: {
+    borderColor: colors.purple,
+    backgroundColor: colors.purple,
   },
   descriptionContainer: {
     flex: 1,
@@ -70,32 +79,44 @@ const styles = StyleSheet.create({
   },
   description: {
     paddingHorizontal: 10,
-    color: colors.black,
-    fontSize: 17,
+    fontSize: 15,
+    color: colors.grayDark,
+  },
+  descriptionCompleted: {
+    color: colors.white,
   },
   status: {
     width: 50,
     height: '100%',
     justifyContent: 'center',
-    borderTopLeftRadius: 5,
-    borderBottomLeftRadius: 5,
-    backgroundColor: colors.gray,
+    borderRadius: 5,
+    borderRightWidth: 1,
+    borderColor: colors.grayMedium,
+    backgroundColor: colors.white,
   },
-  completed: {
-    backgroundColor: colors.purple,
+  statusCompleted: {
+    borderColor: colors.purple,
   },
-  deleteButton: {
-    justifyContent: 'center',
-  },
-  deleteText: {
-    marginHorizontal: 10,
-    color: colors.gray,
-    fontSize: 17,
-  },
-  icon: {
-    color: colors.white,
+  statusIcon: {
     textAlign: 'center',
     fontSize: 17,
+    color: colors.purple,
+  },
+  deleteButton: {
+    width: 30,
+    height: 30,
+    marginRight: 10,
+    justifyContent: 'center',
+    borderWidth: 0.5,
+    borderRadius: 30,
+    borderColor: colors.white,
+    backgroundColor: colors.red,
+  },
+  deleteIcon: {
+    marginTop: -2,
+    textAlign: 'center',
     fontWeight: 'bold',
+    fontSize: 12,
+    color: colors.white,
   },
 });

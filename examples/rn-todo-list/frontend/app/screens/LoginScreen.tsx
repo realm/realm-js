@@ -17,12 +17,17 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import React, {useEffect, useState} from 'react';
-import {Pressable, StyleSheet, Text, TextInput, View} from 'react-native';
+import {
+  Image,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import {AuthOperationName, useEmailPasswordAuth} from '@realm/react';
 
-import {buttonStyles} from '../styles/button';
 import {colors} from '../styles/colors';
-import {shadows} from '../styles/shadows';
 
 /**
  * Screen for registering and/or logging in to the App Services App.
@@ -42,8 +47,15 @@ export function LoginScreen() {
   }, [result, logIn, email, password]);
 
   return (
-    <View style={styles.content}>
-      <View style={styles.inputContainer}>
+    <View style={styles.container}>
+      <Image
+        alt="Atlas App Services"
+        source={require('../assets/atlas-app-services.png')}
+        style={styles.logo}
+        resizeMode="contain"
+      />
+      <Text style={styles.title}>Atlas Device SDK for React Native</Text>
+      <View style={styles.form}>
         <TextInput
           style={styles.input}
           value={email}
@@ -53,9 +65,8 @@ export function LoginScreen() {
           autoCapitalize="none"
           autoCorrect={false}
           placeholder="Email"
+          placeholderTextColor={colors.grayDark}
         />
-      </View>
-      <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
           value={password}
@@ -64,88 +75,100 @@ export function LoginScreen() {
           autoComplete="password"
           textContentType="password"
           placeholder="Password"
+          placeholderTextColor={colors.grayDark}
         />
-      </View>
-      {result.error?.operation === AuthOperationName.LogIn && (
-        <Text style={[styles.error]}>
-          There was an error logging in, please try again
-        </Text>
-      )}
-      {result.error?.operation === AuthOperationName.Register && (
-        <Text style={[styles.error]}>
-          There was an error registering, please try again
-        </Text>
-      )}
-      <View style={styles.buttons}>
-        <Pressable
-          onPress={() => logIn({email, password})}
-          style={[styles.button, result.pending && styles.buttonDisabled]}
-          disabled={result.pending}>
-          <Text style={buttonStyles.text}>Login</Text>
-        </Pressable>
-        <Pressable
-          onPress={() => register({email, password})}
-          style={[
-            styles.button,
-            result.pending && styles.buttonDisabled,
-            styles.registerButton,
-          ]}
-          disabled={result.pending}>
-          <Text style={buttonStyles.text}>Register</Text>
-        </Pressable>
+        {result.error?.operation === AuthOperationName.LogIn && (
+          <Text style={styles.error}>
+            There was an error logging in, please try again
+          </Text>
+        )}
+        {result.error?.operation === AuthOperationName.Register && (
+          <Text style={styles.error}>
+            There was an error registering, please try again
+          </Text>
+        )}
+        <View style={styles.buttons}>
+          <Pressable
+            onPress={() => logIn({email, password})}
+            style={[styles.button, result.pending && styles.disabled]}
+            disabled={result.pending}>
+            <Text style={styles.buttonText}>Log In</Text>
+          </Pressable>
+          <Pressable
+            onPress={() => register({email, password})}
+            style={[styles.button, result.pending && styles.disabled]}
+            disabled={result.pending}>
+            <Text style={styles.buttonText}>Register</Text>
+          </Pressable>
+        </View>
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  content: {
+  container: {
     flex: 1,
     alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.darkBlue,
+    backgroundColor: colors.grayLight,
   },
-
-  inputContainer: {
-    padding: 10,
-    alignSelf: 'stretch',
-    marginHorizontal: 10,
+  logo: {
+    height: 150,
+    marginTop: 50,
+    marginBottom: 30,
   },
-
-  error: {
+  title: {
+    marginBottom: 50,
     textAlign: 'center',
-    marginTop: 10,
-    marginBottom: 10,
-    fontSize: 14,
-    color: colors.white,
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: colors.black,
   },
-
-  input: {
+  form: {
+    width: '85%',
+    paddingHorizontal: 30,
+    paddingVertical: 40,
+    alignItems: 'center',
     borderWidth: 1,
-    borderColor: colors.gray,
-    padding: 10,
-    height: 50,
-    marginVertical: 8,
-    backgroundColor: colors.white,
     borderRadius: 5,
-    ...shadows,
+    borderColor: colors.grayMedium,
+    backgroundColor: colors.white,
   },
-
+  input: {
+    alignSelf: 'stretch',
+    marginBottom: 20,
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    borderWidth: 1,
+    borderRadius: 5,
+    borderColor: colors.grayMedium,
+    backgroundColor: colors.grayLight,
+    fontSize: 16,
+    color: colors.grayDark,
+  },
+  error: {
+    marginTop: 10,
+    textAlign: 'center',
+    color: colors.grayDark,
+  },
   buttons: {
-    marginTop: 16,
+    marginTop: 100,
     flexDirection: 'row',
   },
-
   button: {
-    ...buttonStyles.button,
-    ...shadows,
+    width: 120,
+    marginHorizontal: 10,
+    paddingVertical: 14,
+    borderRadius: 25,
+    backgroundColor: colors.purple,
   },
-
-  buttonDisabled: {
-    opacity: 0.5,
+  buttonText: {
+    textAlign: 'center',
+    fontWeight: 'bold',
+    fontSize: 16,
+    color: colors.white,
   },
-
-  registerButton: {
-    backgroundColor: colors.purpleDark,
+  disabled: {
+    opacity: 0.8,
   },
 });

@@ -17,18 +17,9 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import React, {useState} from 'react';
-import {
-  Platform,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import {Pressable, StyleSheet, Text, TextInput, View} from 'react-native';
 
-import {buttonStyles} from '../styles/button';
 import {colors} from '../styles/colors';
-import {shadows} from '../styles/shadows';
 
 type AddTaskFormProps = {
   onSubmit: (description: string) => void;
@@ -49,13 +40,14 @@ export function AddTaskForm({onSubmit}: AddTaskFormProps) {
     <View style={styles.form}>
       <TextInput
         value={description}
-        placeholder="Enter new task description"
+        placeholder="Add a new task"
+        placeholderTextColor={colors.grayDark}
         onChangeText={setDescription}
         autoCorrect={false}
         autoCapitalize="none"
         style={styles.textInput}
       />
-      <Pressable onPress={handleSubmit} style={styles.submit}>
+      <Pressable onPress={handleSubmit} style={styles.submitButton}>
         <Text style={styles.icon}>＋</Text>
       </Pressable>
     </View>
@@ -65,28 +57,33 @@ export function AddTaskForm({onSubmit}: AddTaskFormProps) {
 const styles = StyleSheet.create({
   form: {
     height: 50,
+    marginTop: 25,
     marginBottom: 20,
     flexDirection: 'row',
-    ...shadows,
   },
   textInput: {
     flex: 1,
     paddingHorizontal: 15,
-    paddingVertical: Platform.OS === 'ios' ? 15 : 0,
+    paddingVertical: 15,
+    marginRight: 20,
+    borderWidth: 1,
     borderRadius: 5,
+    borderColor: colors.grayMedium,
     backgroundColor: colors.white,
-    fontSize: 17,
+    fontSize: 16,
+    color: colors.grayDark,
   },
-  submit: {
-    ...buttonStyles.button,
+  submitButton: {
     width: 50,
-    height: '100%',
-    paddingHorizontal: 0,
-    paddingVertical: 0,
-    marginLeft: 20,
-    marginRight: 0,
+    height: 50,
+    justifyContent: 'center',
+    borderRadius: 50,
+    backgroundColor: colors.purple,
   },
   icon: {
-    ...buttonStyles.text,
+    textAlign: 'center',
+    fontWeight: 'bold',
+    fontSize: 16,
+    color: colors.white,
   },
 });

@@ -17,9 +17,8 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import React from 'react';
-import {StyleSheet, Switch, Text, View} from 'react-native';
 
-import {colors} from '../styles/colors';
+import {SwitchPanel} from './SwitchPanel';
 
 type OfflineModeButtonProps = {
   isConnected: boolean;
@@ -34,26 +33,10 @@ export function OfflineModeButton({
   toggleOfflineMode,
 }: OfflineModeButtonProps) {
   return (
-    <View style={styles.toggleRow}>
-      <Text style={styles.toggleText}>Pause Sync</Text>
-      <Switch onValueChange={toggleOfflineMode} value={!isConnected} />
-    </View>
+    <SwitchPanel
+      label="Pause Sync"
+      value={!isConnected}
+      onValueChange={toggleOfflineMode}
+    />
   );
 }
-
-const styles = StyleSheet.create({
-  icon: {
-    padding: 12,
-  },
-  toggleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 12,
-  },
-  toggleText: {
-    flex: 1,
-    fontSize: 16,
-    color: colors.white,
-    fontWeight: 'bold',
-  },
-});

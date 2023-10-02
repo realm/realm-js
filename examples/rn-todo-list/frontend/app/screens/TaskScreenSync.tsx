@@ -17,14 +17,12 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import React from 'react';
-import {Pressable, StyleSheet, Text} from 'react-native';
+import {Pressable, StyleSheet, Text, View} from 'react-native';
 import {useApp, useAuth, useUser} from '@realm/react';
 
 import {OfflineModeButton} from '../components/OfflineModeButton';
 import {TaskScreen} from './TaskScreen';
-import {buttonStyles} from '../styles/button';
 import {colors} from '../styles/colors';
-import {shadows} from '../styles/shadows';
 import {useSyncConnection} from '../hooks/useSyncConnection';
 
 /**
@@ -42,34 +40,66 @@ export function TaskScreenSync() {
   const {isConnected, reconnect, disconnect} = useSyncConnection();
 
   return (
-    <>
-      <Text style={styles.idText}>Syncing with app id: {app.id}</Text>
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <View style={styles.titleContainer}>
+          <Text style={styles.title}>{user?.profile.email}</Text>
+          <Text style={styles.info}>{`App ID: ${app.id}`}</Text>
+        </View>
+        <Pressable style={styles.authButton} onPress={logOut}>
+          <Text style={styles.authButtonText}>Log Out</Text>
+        </Pressable>
+      </View>
       <TaskScreen />
-      <Pressable style={styles.authButton} onPress={logOut}>
-        <Text
-          style={
-            styles.authButtonText
-          }>{`Log out ${user?.profile.email}`}</Text>
-      </Pressable>
       <OfflineModeButton
         isConnected={isConnected}
         toggleOfflineMode={isConnected ? disconnect : reconnect}
       />
-    </>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  idText: {
-    color: '#999',
-    paddingHorizontal: 20,
+  container: {
+    flex: 1,
+    borderBottomWidth: 1,
+    borderColor: colors.grayMedium,
+    backgroundColor: colors.grayLight,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 25,
+    paddingVertical: 20,
+    borderBottomWidth: 1,
+    borderColor: colors.grayMedium,
+    backgroundColor: colors.white,
+  },
+  titleContainer: {
+    paddingLeft: 10,
+    borderLeftWidth: 2,
+    borderColor: colors.purple,
+  },
+  title: {
+    marginBottom: 10,
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: colors.grayDark,
+  },
+  info: {
+    fontSize: 13,
+    color: colors.grayDark,
   },
   authButton: {
-    ...buttonStyles.button,
-    ...shadows,
-    backgroundColor: colors.purpleDark,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderWidth: 1,
+    borderRadius: 25,
+    borderColor: colors.grayMedium,
   },
   authButtonText: {
-    ...buttonStyles.text,
+    fontWeight: 'bold',
+    color: colors.grayDark,
   },
 });

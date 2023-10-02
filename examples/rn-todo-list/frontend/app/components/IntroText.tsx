@@ -68,18 +68,18 @@ export function IntroText() {
 const styles = StyleSheet.create({
   content: {
     flex: 1,
-    marginHorizontal: 20,
     justifyContent: 'center',
+    marginHorizontal: 20,
   },
   paragraph: {
     marginVertical: 10,
     textAlign: 'center',
-    color: 'white',
     fontSize: 17,
-    fontWeight: '500',
+    lineHeight: 22,
+    color: colors.black,
   },
   link: {
-    color: colors.purple,
     fontWeight: 'bold',
+    color: colors.purple,
   },
 });

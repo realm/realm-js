@@ -4,7 +4,7 @@ A todo list (task manager) app showcasing how to create, read, update, and delet
 
 ## Screenshots
 
-[TODO]
+![Todo List Screenshot](./frontend/app/assets/screenshot-login-and-tasks.png)
 
 ## Project Structure
 

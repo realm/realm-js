@@ -17,46 +17,41 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import React from 'react';
-import {FlatList, StyleSheet, View} from 'react-native';
-import type Realm from 'realm';
+import {StyleSheet, Switch, Text, View} from 'react-native';
 
-import {Task} from '../models/Task';
-import {TaskItem} from './TaskItem';
+import {colors} from '../styles/colors';
 
-type TaskListProps = {
-  tasks: Realm.Results<Task>;
-  onToggleTaskStatus: (task: Task) => void;
-  onDeleteTask: (task: Task) => void;
+type SwitchPanelProps = {
+  label: string;
+  value: boolean;
+  onValueChange: (value: boolean) => void;
 };
 
 /**
- * Displays a list of tasks.
+ * A panel containing a switch toggle button.
  */
-export function TaskList({
-  tasks,
-  onToggleTaskStatus,
-  onDeleteTask,
-}: TaskListProps) {
+export function SwitchPanel({label, value, onValueChange}: SwitchPanelProps) {
   return (
-    <View style={styles.listContainer}>
-      <FlatList
-        data={tasks}
-        keyExtractor={task => task._id.toString()}
-        renderItem={({item: task}) => (
-          <TaskItem
-            task={task}
-            onToggleStatus={onToggleTaskStatus}
-            onDelete={onDeleteTask}
-            // Don't spread the Realm item as such: {...item}
-          />
-        )}
-      />
+    <View style={styles.panel}>
+      <Text style={styles.label}>{label}</Text>
+      <Switch onValueChange={onValueChange} value={value} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  listContainer: {
-    flex: 1,
+  panel: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 25,
+    paddingVertical: 15,
+    borderTopWidth: 1,
+    borderColor: colors.grayMedium,
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: colors.grayDark,
   },
 });

@@ -44,6 +44,6 @@ export function AppNonSync() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: colors.darkBlue,
+    backgroundColor: colors.white,
   },
 });

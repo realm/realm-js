@@ -22,8 +22,8 @@ import {useQuery, useRealm, useUser} from '@realm/react';
 import {Task} from '../models/Task';
 
 /**
- * Manages changes to the tasks in the Realm, such as adding, updating,
- * and deleting tasks.
+ * Provides functions for managing changes to the tasks in the Realm,
+ * such as adding, updating, and deleting tasks.
  */
 export function useTaskManager() {
   const realm = useRealm();

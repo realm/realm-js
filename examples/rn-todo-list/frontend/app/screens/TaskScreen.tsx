@@ -17,12 +17,12 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import React from 'react';
-import {StyleSheet, Switch, Text, View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 
 import {AddTaskForm} from '../components/AddTaskForm';
 import {IntroText} from '../components/IntroText';
+import {SwitchPanel} from '../components/SwitchPanel';
 import {TaskList} from '../components/TaskList';
-import {shadows} from '../styles/shadows';
 import {useTaskManager} from '../hooks/useTaskManager';
 
 /**
@@ -39,7 +39,7 @@ export function TaskScreen() {
   } = useTaskManager();
 
   return (
-    <>
+    <View style={styles.container}>
       <View style={styles.content}>
         <AddTaskForm onSubmit={addTask} />
         {tasks.length === 0 ? (
@@ -52,32 +52,21 @@ export function TaskScreen() {
           />
         )}
       </View>
-      <View style={styles.switchPanel}>
-        <Text style={styles.switchPanelText}>Show Completed?</Text>
-        <Switch value={showCompleted} onValueChange={toggleShowCompleted} />
-      </View>
-    </>
+      <SwitchPanel
+        label="Show Completed"
+        value={showCompleted}
+        onValueChange={toggleShowCompleted}
+      />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
   content: {
     flex: 1,
-    paddingTop: 20,
-    paddingHorizontal: 20,
-  },
-  switchPanel: {
-    flexDirection: 'row',
-    backgroundColor: '#fff',
-    padding: 10,
-    borderRadius: 5,
-    marginHorizontal: 10,
-    marginBottom: 10,
-    ...shadows,
-  },
-  switchPanelText: {
-    flex: 1,
-    fontSize: 16,
-    padding: 5,
+    paddingHorizontal: 25,
   },
 });
