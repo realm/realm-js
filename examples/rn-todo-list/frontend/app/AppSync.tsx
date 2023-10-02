@@ -16,62 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import React, {useState} from 'react';
-import {Pressable, StyleSheet, Text} from 'react-native';
-import {useApp, useAuth, useQuery, useUser} from '@realm/react';
+import React from 'react';
 
-import {OfflineModeButton} from './components/OfflineModeButton';
-import {Task} from './models/Task';
-import {TaskManager} from './components/TaskManager';
-import {buttonStyles} from './styles/button';
-import {colors} from './styles/colors';
-import {shadows} from './styles/shadows';
+import {TaskScreenSync} from './screens/TaskScreenSync';
 
 export function AppSync() {
-  const user = useUser();
-  const app = useApp();
-  const {logOut} = useAuth();
-  const [showDone, setShowDone] = useState(true);
-  const tasks = useQuery(
-    Task,
-    collection =>
-      showDone
-        ? collection.sorted('createdAt')
-        : collection.filtered('isComplete == false').sorted('createdAt'),
-    [showDone],
-  );
-
-  return (
-    <>
-      <Text style={styles.idText}>Syncing with app id: {app.id}</Text>
-      <TaskManager
-        tasks={tasks}
-        userId={user?.id}
-        setShowDone={setShowDone}
-        showDone={showDone}
-      />
-      <Pressable style={styles.authButton} onPress={logOut}>
-        <Text
-          style={
-            styles.authButtonText
-          }>{`Log out ${user?.profile.email}`}</Text>
-      </Pressable>
-      <OfflineModeButton />
-    </>
-  );
+  return <TaskScreenSync />;
 }
-
-const styles = StyleSheet.create({
-  idText: {
-    color: '#999',
-    paddingHorizontal: 20,
-  },
-  authButton: {
-    ...buttonStyles.button,
-    ...shadows,
-    backgroundColor: colors.purpleDark,
-  },
-  authButtonText: {
-    ...buttonStyles.text,
-  },
-});

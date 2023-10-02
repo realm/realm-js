@@ -16,24 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import React, {useState} from 'react';
-import {useQuery} from '@realm/react';
+import React from 'react';
 
-import {Task} from './models/Task';
-import {TaskManager} from './components/TaskManager';
+import {TaskScreen} from './screens/TaskScreen';
 
-export const AppNonSync = () => {
-  const [showDone, setShowDone] = useState(true);
-  const tasks = useQuery(
-    Task,
-    collection =>
-      showDone
-        ? collection.sorted('createdAt')
-        : collection.filtered('isComplete == false').sorted('createdAt'),
-    [showDone],
-  );
-
-  return (
-    <TaskManager tasks={tasks} setShowDone={setShowDone} showDone={showDone} />
-  );
-};
+export function AppNonSync() {
+  return <TaskScreen />;
+}

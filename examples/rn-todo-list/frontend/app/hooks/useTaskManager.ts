@@ -16,38 +16,33 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import React, {useCallback} from 'react';
-import {StyleSheet, Switch, Text, View} from 'react-native';
-import {useRealm} from '@realm/react';
+import {useCallback, useState} from 'react';
+import {useQuery, useRealm, useUser} from '@realm/react';
 
-import {AddTaskForm} from './AddTaskForm';
-import {IntroText} from './IntroText';
 import {Task} from '../models/Task';
-import {TaskList} from './TaskList';
-import {shadows} from '../styles/shadows';
 
-type TaskManagerProps = {
-  tasks: Realm.Results<Task>;
-  userId?: string;
-  setShowDone: (showDone: boolean) => void;
-  showDone: boolean;
-};
-
-// TODO: Add description
-export function TaskManager({
-  tasks,
-  userId,
-  setShowDone,
-  showDone,
-}: TaskManagerProps) {
+/**
+ * Manages changes to the tasks in the Realm, such as adding, updating,
+ * and deleting tasks.
+ */
+export function useTaskManager() {
   const realm = useRealm();
+  const user = useUser();
+  const [showCompleted, setShowCompleted] = useState(true);
+  const tasks = useQuery(
+    Task,
+    collection =>
+      showCompleted
+        ? collection.sorted('createdAt')
+        : collection.filtered('isComplete == false').sorted('createdAt'),
+    [showCompleted],
+  );
 
-  const handleAddTask = useCallback(
-    (description: string): void => {
+  const addTask = useCallback(
+    (description: string) => {
       if (!description) {
         return;
       }
-
       // Everything in the function passed to "realm.write" is a transaction and will
       // hence succeed or fail together. A transcation is the smallest unit of transfer
       // in Realm so we want to be mindful of how much we put into one single transaction
@@ -56,21 +51,21 @@ export function TaskManager({
       // of sync participants to successfully sync everything in the transaction, otherwise
       // no changes propagate and the transaction needs to start over when connectivity allows.
       realm.write(() => {
-        return realm.create(Task, {
+        realm.create(Task, {
           description,
-          userId: userId ?? 'SYNC_DISABLED',
+          userId: user.id ?? 'SYNC_DISABLED',
         });
       });
     },
-    [realm, userId],
+    [realm, user.id],
   );
 
-  const handleToggleTaskStatus = useCallback(
-    (task: Task): void => {
+  const toggleTaskStatus = useCallback(
+    (task: Task) => {
       realm.write(() => {
         // Normally when updating a record in a NoSQL or SQL database, we have to type
         // a statement that will later be interpreted and used as instructions for how
-        // to update the record. But in RealmDB, the objects are "live" because they are
+        // to update the record. But in Realm, the objects are "live" because they are
         // actually referencing the object's location in memory on the device (memory mapping).
         // So rather than typing a statement, we modify the object directly by changing
         // the property values. If the changes adhere to the schema, Realm will accept
@@ -79,68 +74,38 @@ export function TaskManager({
         task.isComplete = !task.isComplete;
       });
 
-      // Alternatively if passing the ID as the argument to handleToggleTaskStatus:
-      // realm?.write(() => {
-      //   const task = realm?.objectForPrimaryKey('Task', id); // If the ID is passed as an ObjectId
-      //   const task = realm?.objectForPrimaryKey('Task', Realm.BSON.ObjectId(id));  // If the ID is passed as a string
+      // Alternatively if passing the ID as the argument to toggleTaskStatus:
+      // realm.write(() => {
+      //   const task = realm.objectForPrimaryKey('Task', id); // If the ID is passed as an ObjectId
+      //   const task = realm.objectForPrimaryKey('Task', Realm.BSON.ObjectId(id));  // If the ID is passed as a string
       //   task.isComplete = !task.isComplete;
       // });
     },
     [realm],
   );
 
-  const handleDeleteTask = useCallback(
-    (task: Task): void => {
+  const deleteTask = useCallback(
+    (task: Task) => {
       realm.write(() => {
         realm.delete(task);
 
         // Alternatively if passing the ID as the argument to handleDeleteTask:
-        // realm?.delete(realm?.objectForPrimaryKey('Task', id));
+        // realm.delete(realm.objectForPrimaryKey('Task', id));
       });
     },
     [realm],
   );
 
-  return (
-    <>
-      <View style={styles.content}>
-        <AddTaskForm onSubmit={handleAddTask} />
-        {tasks.length === 0 ? (
-          <IntroText />
-        ) : (
-          <TaskList
-            tasks={tasks}
-            onToggleTaskStatus={handleToggleTaskStatus}
-            onDeleteTask={handleDeleteTask}
-          />
-        )}
-      </View>
-      <View style={styles.switchPanel}>
-        <Text style={styles.switchPanelText}>Show Completed?</Text>
-        <Switch value={showDone} onValueChange={() => setShowDone(!showDone)} />
-      </View>
-    </>
-  );
-}
+  const toggleShowCompleted = useCallback(() => {
+    setShowCompleted(!showCompleted);
+  }, [showCompleted]);
 
-const styles = StyleSheet.create({
-  content: {
-    flex: 1,
-    paddingTop: 20,
-    paddingHorizontal: 20,
-  },
-  switchPanel: {
-    flexDirection: 'row',
-    backgroundColor: '#fff',
-    padding: 10,
-    borderRadius: 5,
-    marginHorizontal: 10,
-    marginBottom: 10,
-    ...shadows,
-  },
-  switchPanelText: {
-    flex: 1,
-    fontSize: 16,
-    padding: 5,
-  },
-});
+  return {
+    tasks,
+    addTask,
+    toggleTaskStatus,
+    deleteTask,
+    showCompleted,
+    toggleShowCompleted,
+  };
+}
