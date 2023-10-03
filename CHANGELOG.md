@@ -6,6 +6,27 @@
 ### Enhancements
 * Expose `Realm.App.Configuration.fetchOverride` to enable implementing a custom [`fetch`](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch) function. ([#6159](https://github.com/realm/realm-js/issues/6159))
 
+```js
+const HTTP_METHOD: Record<number, string> = {
+  [0]: "GET",
+  [1]: "POST",
+  [2]: "PUT",
+  [3]: "PATCH",
+  [4]: "DELETE",
+};
+
+const customFetch = async (request: Request) => {
+  const { url, body, ...rest } = request;
+  if (typeof request.method == "number") {
+    rest.method = HTTP_METHOD[request.method];
+  }
+  const response = await fetch(url, rest); // `fetch` is assumed to be compliant with the Fetch API specification
+  return response;
+};
+
+let app = new Realm.App({ id: "my-app-id", fetchOverride: customFetch });
+```
+
 ### Fixed
 * Outside migration functions, it is not possible to change the value of a primary key. ([#6161](https://github.com/realm/realm-js/issues/6161), since v12.0.0)
 * Receiving a `write_not_allowed` error from the server would have led to a crash. ([realm/realm-core#6978](https://github.com/realm/realm-core/issues/6978), since v11.5.0)
