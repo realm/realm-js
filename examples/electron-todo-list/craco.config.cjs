@@ -1,5 +1,5 @@
 
-const path = require("path");
+const path = require("node:path");
 const nodeExternals = require("webpack-node-externals");
 
 module.exports = {
