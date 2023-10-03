@@ -147,6 +147,7 @@ For the App Services logs, you can also choose to [forward the logs to a service
 
 * [Node.js](https://nodejs.org/)
 * [React Native development environment](https://reactnative.dev/docs/environment-setup?guide=native)
+  * Refer to the **"React Native CLI Quickstart"**.
 
 ### Set up an Atlas Database
 
