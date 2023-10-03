@@ -17,17 +17,18 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import {useCallback, useState} from 'react';
-import {useQuery, useRealm, useUser} from '@realm/react';
+import {useQuery, useRealm} from '@realm/react';
 
 import {Task} from '../models/Task';
 
 /**
  * Provides functions for managing changes to the tasks in the Realm,
  * such as adding, updating, and deleting tasks.
+ *
+ * @param userId The App user's ID if sync is enabled.
  */
-export function useTaskManager() {
+export function useTaskManager(userId = 'SYNC_DISABLED') {
   const realm = useRealm();
-  const user = useUser();
   const [showCompleted, setShowCompleted] = useState(true);
   const tasks = useQuery(
     Task,
@@ -44,20 +45,17 @@ export function useTaskManager() {
         return;
       }
       // Everything in the function passed to "realm.write" is a transaction and will
-      // hence succeed or fail together. A transcation is the smallest unit of transfer
+      // hence succeed or fail together. A transaction is the smallest unit of transfer
       // in Realm so we want to be mindful of how much we put into one single transaction
       // and split them up if appropriate (more commonly seen server side). Since clients
       // may occasionally be online during short time spans we want to increase the probability
       // of sync participants to successfully sync everything in the transaction, otherwise
       // no changes propagate and the transaction needs to start over when connectivity allows.
       realm.write(() => {
-        realm.create(Task, {
-          description,
-          userId: user.id ?? 'SYNC_DISABLED',
-        });
+        realm.create(Task, {description, userId});
       });
     },
-    [realm, user.id],
+    [realm, userId],
   );
 
   const toggleTaskStatus = useCallback(

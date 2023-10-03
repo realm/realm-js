@@ -50,7 +50,7 @@ export function TaskScreenSync() {
           <Text style={styles.authButtonText}>Log Out</Text>
         </Pressable>
       </View>
-      <TaskScreen />
+      <TaskScreen userId={user.id} />
       <OfflineModeButton
         isConnected={isConnected}
         toggleOfflineMode={isConnected ? disconnect : reconnect}

@@ -23,12 +23,17 @@ import {AddTaskForm} from '../components/AddTaskForm';
 import {IntroText} from '../components/IntroText';
 import {SwitchPanel} from '../components/SwitchPanel';
 import {TaskList} from '../components/TaskList';
+import {colors} from '../styles/colors';
 import {useTaskManager} from '../hooks/useTaskManager';
+
+type TaskScreenProps = {
+  userId?: string;
+};
 
 /**
  * Displays the list of tasks and a form to add new tasks.
  */
-export function TaskScreen() {
+export function TaskScreen({userId}: TaskScreenProps) {
   const {
     tasks,
     addTask,
@@ -36,7 +41,7 @@ export function TaskScreen() {
     deleteTask,
     showCompleted,
     toggleShowCompleted,
-  } = useTaskManager();
+  } = useTaskManager(userId);
 
   return (
     <View style={styles.container}>
@@ -64,6 +69,7 @@ export function TaskScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: colors.grayLight,
   },
   content: {
     flex: 1,
