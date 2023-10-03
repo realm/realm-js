@@ -145,6 +145,7 @@ export type AppConfiguration = {
   /**
    * Specify a custom `fetch` implementation.
    * @since 12.3.0
+   * @experimental This API is experimental and may change or be removed.
    */
   fetchOverride?: unknown;
 };
