@@ -23,6 +23,9 @@ import { AuthOperationName, useApp, useEmailPasswordAuth } from '@realm/react';
 import logo from '../assets/logo.png';
 import styles from '../styles/LoginPage.module.css';
 
+/**
+ * Screen for registering and/or logging in to the App Services App.
+ */
 export function LoginPage() {
   const atlasApp = useApp();
   const { register, logIn, result } = useEmailPasswordAuth();
@@ -30,6 +33,7 @@ export function LoginPage() {
   const [password, setPassword] = useState('');
   const [authRequest, setAuthRequest] = useState<'login' | 'register'>('login');
 
+  // Automatically log in the user after successful registration.
   useEffect(() => {
     if (result.operation === AuthOperationName.Register && result.success) {
       logIn({ email, password });
@@ -58,28 +62,28 @@ export function LoginPage() {
   return (
     <div className={styles.container}>
       <img
+        alt='Atlas Device Sync'
         src={logo}
-        alt='Realm by MongoDB'
       />
       <h1>
-        Log in to try out Realm in Electron & Atlas Device Sync
+        Log in to try out Atlas Device Sync
       </h1>
       <form onSubmit={handleSubmit} className={styles.form}>
         <input
-          className={styles.input}
-          type='text'
-          placeholder='Email'
-          value={email}
-          onChange={(event) => setEmail(event.currentTarget.value)}
           autoCorrect='off'     // Safari only
           autoCapitalize='none' // Safari only
+          className={styles.input}
+          onChange={(event) => setEmail(event.currentTarget.value)}
+          placeholder='Email'
+          type='text'
+          value={email}
         />
         <input
           className={styles.input}
-          type='password'
-          placeholder='Password (min. 6 chars)'
-          value={password}
           onChange={(event) => setPassword(event.currentTarget.value)}
+          placeholder='Password (min. 6 chars)'
+          type='password'
+          value={password}
         />
         {result.error && (
           <p className={styles.error}>
@@ -89,17 +93,17 @@ export function LoginPage() {
         <div className={styles.buttons}>
           <button
             className={styles.button}
+            onClick={handleButtonClicked}
             type='submit'
             value='login'
-            onClick={handleButtonClicked}
           >
             Log In
           </button>
           <button
             className={styles.button}
+            onClick={handleButtonClicked}
             type='submit'
             value='register'
-            onClick={handleButtonClicked}
           >
             Register
           </button>

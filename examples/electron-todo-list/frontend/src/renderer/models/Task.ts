@@ -18,7 +18,13 @@
 
 import Realm, { BSON, ObjectSchema } from 'realm';
 
-export class Task extends Realm.Object<Task> {
+/**
+ * The `Task` data model.
+ *
+ * @see
+ * - Define a model: {@link https://www.mongodb.com/docs/realm/sdk/react-native/model-data/define-a-realm-object-model/}
+ */
+export class Task extends Realm.Object {
   _id!: BSON.ObjectId;
   description!: string;
   isComplete!: boolean;

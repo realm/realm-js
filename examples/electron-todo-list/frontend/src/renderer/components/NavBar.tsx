@@ -21,18 +21,21 @@ import { useAuth } from '@realm/react';
 import logo from '../assets/logo.png';
 import styles from '../styles/NavBar.module.css';
 
+/**
+ * Nav bar providing a button for logging out.
+ */
 export function NavBar() {
   const { logOut } = useAuth();
 
   return (
     <nav className={styles.nav}>
       <img
+        alt='Atlas Device Sync'
         className={styles.logo}
         src={logo}
-        alt='Realm by MongoDB'
       />
       <button className={styles.button} onClick={logOut}>
-        Log out
+        Log Out
       </button>
     </nav>
   );

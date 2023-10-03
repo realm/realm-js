@@ -24,6 +24,9 @@ type AddTaskFormProps = {
   onSubmit: (description: string) => void;
 };
 
+/**
+ * Form for adding a new task.
+ */
 export function AddTaskForm({ onSubmit }: AddTaskFormProps) {
   const [description, setDescription] = useState('');
 
@@ -36,12 +39,12 @@ export function AddTaskForm({ onSubmit }: AddTaskFormProps) {
   return (
     <form className={styles.form} onSubmit={handleSubmit}>
       <input
-        className={styles.input}
-        type='text'
-        placeholder='Add a new task'
-        value={description}
-        onChange={(event) => setDescription(event.currentTarget.value)}
         autoCapitalize='none' // Safari only
+        className={styles.input}
+        onChange={(event) => setDescription(event.currentTarget.value)}
+        placeholder='Add a new task'
+        type='text'
+        value={description}
       />
       <button className={styles.button} type='submit'>
         ＋

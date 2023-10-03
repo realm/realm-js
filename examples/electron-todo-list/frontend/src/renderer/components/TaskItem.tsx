@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Task } from '../models/Task';
+import type { Task } from '../models/Task';
 import styles from '../styles/TaskItem.module.css';
 
 type TaskItemProps = {
@@ -25,6 +25,9 @@ type TaskItemProps = {
   onDelete: (task: Task) => void;
 };
 
+/**
+ * Displays a task list item with options to update or delete it.
+ */
 export function TaskItem({ task, onToggleStatus, onDelete }: TaskItemProps) {
   return (
     <div className={task.isComplete ? [styles.task, styles.completed].join(' ') : styles.task}>

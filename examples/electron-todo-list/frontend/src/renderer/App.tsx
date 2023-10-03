@@ -43,6 +43,10 @@ const router = createHashRouter([
   }
 ]);
 
+/**
+ * The root React component which renders `@realm/react`'s `AppProvider`
+ * for instantiation an Atlas App Services App.
+ */
 function App() {
   return (
     <div className={styles.container}>
