@@ -89,6 +89,7 @@ This app opens a Realm via `RealmProvider` (see [AppSync.tsx](./frontend/app/App
 
 * [Node.js](https://nodejs.org/)
 * [React Native development environment](https://reactnative.dev/docs/environment-setup?guide=native)
+  * Refer to the **"React Native CLI Quickstart"**.
 
 ### Set up an Atlas Database
 
