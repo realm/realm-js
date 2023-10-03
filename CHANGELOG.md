@@ -1,14 +1,23 @@
 ## vNext (TBD)
 
 ### Deprecations
-* None
+* `Realm.User.providerType` is deprecated, and will be remove in next major version. Use `Realm.User.identities` instead.
 
 ### Enhancements
 * None
 
 ### Fixed
 * Outside migration functions, it is not possible to change the value of a primary key. ([#6161](https://github.com/realm/realm-js/issues/6161), since v12.0.0)
-* None
+* Receiving a `write_not_allowed` error from the server would have led to a crash. ([realm/realm-core#6978](https://github.com/realm/realm-core/issues/6978), since v11.5.0)
+* If querying over a geospatial dataset that had some objects with a type property set to something other than `Point` (case insensitive) an exception would have been thrown. Instead of disrupting the query, those objects are now just ignored. ([realm/realm-core#6989](https://github.com/realm/realm-core/issues/6989), since v12.0.0)
+* If a user was logged out while an access token refresh was in progress, the refresh completing would mark the user as logged in again and the user would be in an inconsistent state. ([realm/realm-core#6837](https://github.com/realm/realm-core/pull/6837), since v10.0.0)
+* Logging in a single user using multiple auth providers created a separate `Realm.User` per auth provider. This mostly worked, but had some quirks:
+  - Sync sessions would not necessarily be associated with the specific `Realm.User` used to create them. As a result, querying a user for its sessions could give incorrect results, and logging one user out could close the wrong sessions.
+  - Existing local synchronized Realm files created using version of Realm from August - November 2020 would sometimes not be opened correctly and would instead be redownloaded.
+  - Removing one of the `Realm.User`s would delete all local Realm files for all `Realm.User`s for that user.
+  - Deleting the server-side user via one of the `Realm.User`s left the other `Realm.User`s in an invalid state.
+  - A `Realm.User` which was originally created via anonymous login and then linked to an identity would still be treated as an anonymous users and removed entirely on logout.
+  - [realm/realm-core#6837](https://github.com/realm/realm-core/pull/6837), since v10.0.0
 
 ### Compatibility
 * React Native >= v0.71.4
@@ -16,7 +25,7 @@
 * File format: generates Realms with format v23 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-* Using Realm Core v13.20.1.
+* Upgraded Realm Core from v13.20.1 to v13.22.0. ([#6158](https://github.com/realm/realm-js/issues/6158))
 
 ## 12.2.0 (2023-09-24)
 
