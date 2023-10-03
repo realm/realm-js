@@ -60,9 +60,9 @@ It specifically addresses the following points:
 * Allowing users to only read and write to their own tasks via [data access rules/permissions](https://www.mongodb.com/docs/atlas/app-services/rules/roles/#define-roles---permissions).
   * See [Set Data Access Permissions](#set-data-access-permissions) further below.
 * The app demonstrates both how to use *either*:
-  * A local-only app (see [AppNonSync.tsx](./frontend/app/AppNonSync.tsx)).
-  * A [Device Sync](https://www.mongodb.com/atlas/app-services/device-sync) enabled app (see [AppSync.tsx](./frontend/app/AppSync.tsx)).
-  * (Choose which one to use via [sync.config.js](./frontend/sync.config.js).)
+  * A) A local-only app (see [AppNonSync.tsx](./frontend/app/AppNonSync.tsx)).
+  * B) A [Device Sync](https://www.mongodb.com/atlas/app-services/device-sync) enabled app (see [AppSync.tsx](./frontend/app/AppSync.tsx)).
+  * Choose which one to use via [sync.config.js](./frontend/sync.config.js).
 
 ### Note: Offline Support
 
@@ -121,7 +121,7 @@ realm-cli push --local <path to backend directory>
 To sync data used in this app you must first:
 
 1. [Create an App Services App](https://www.mongodb.com/docs/atlas/app-services/manage-apps/create/create-with-ui/).
-2. [Enable Email/Password Authentication](https://www.mongodb.com/docs/atlas/app-services/authentication/email-password/) and [Anonymous Authentication](https://www.mongodb.com/docs/atlas/app-services/authentication/anonymous/).
+2. [Enable Email/Password Authentication](https://www.mongodb.com/docs/atlas/app-services/authentication/email-password/).
     * For this example app, we automatically confirm users' emails.
 3. [Enable Flexible Sync](https://www.mongodb.com/docs/atlas/app-services/sync/configure/enable-sync/) with **Development Mode** enabled.
     * When Development Mode is enabled, [queryable fields](https://www.mongodb.com/docs/atlas/app-services/sync/configure/sync-settings/#queryable-fields) will be added **automatically**, and schemas will be inferred based on the client Realm data models.
@@ -174,7 +174,7 @@ npm run android
 
 > If you set up your App Services App [via a CLI](#via-a-cli-recommended), you can **skip this step** as the permissions should already be defined for you.
 
-After running the client app for the first time, [modify the rules](https://www.mongodb.com/docs/atlas/app-services/rules/roles/#define-roles---permissions) for the collection in the App Services UI for increased security.
+After running the client app for the first time, [modify the rules](https://www.mongodb.com/docs/atlas/app-services/rules/roles/#define-roles---permissions) for the collection in the App Services UI.
 
 * Collection: `Task`
   * Permissions: `readOwnWriteOwn` (see [corresponding json](./backend/data_sources/mongodb-atlas/TodoList/Task/rules.json))
