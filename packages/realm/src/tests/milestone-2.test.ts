@@ -51,7 +51,7 @@ describe("Milestone #2", () => {
                 default: undefined,
               },
               age: {
-                default: 10,
+                default: undefined,
                 indexed: true,
                 mapTo: "age",
                 name: "age",
@@ -90,7 +90,7 @@ describe("Milestone #2", () => {
 
     it("returns a spreadable object", function (this: RealmContext) {
       const alice = this.realm.objectForPrimaryKey<PersonWithFriend>("Person", "Alice");
-      expect(alice.keys()).deep.equals(["name", "bestFriend"]);
+      expect(alice.keys()).deep.equals(["name", "bestFriend", "age"]);
       const spread = { ...alice };
       expect(Object.keys(spread)).deep.equals(alice.keys());
       expect(spread.name).deep.equals(alice.name);
