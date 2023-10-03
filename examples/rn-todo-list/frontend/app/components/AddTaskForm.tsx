@@ -39,7 +39,7 @@ export function AddTaskForm({onSubmit}: AddTaskFormProps) {
   return (
     <View style={styles.form}>
       <TextInput
-        accessibilityLabel="Add a new task"
+        accessibilityLabel="Enter a task description"
         autoCapitalize="none"
         autoCorrect={false}
         onChangeText={setDescription}
