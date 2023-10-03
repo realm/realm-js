@@ -15,7 +15,7 @@
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.15.0",
     "react-scripts": "5.0.1",
-    "realm": "^12.1.0"
+    "realm": "^12.2.0"
   },
   "scripts": {
     "build": "craco build",
