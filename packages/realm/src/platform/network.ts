@@ -26,7 +26,7 @@ export type { FetchHeaders, Request };
 const debug = extendDebug("network");
 const transport = new DefaultNetworkTransport();
 
-type NetworkType = {
+export type NetworkType = {
   fetch(request: Request): Promise<FetchResponse>;
   fetch(request: binding.Request): Promise<FetchResponse>;
 };

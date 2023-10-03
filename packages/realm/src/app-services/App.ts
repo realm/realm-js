@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { inject } from "src/platform/network";
+import { NetworkType, inject } from "src/platform/network";
 import {
   AnyUser,
   Credentials,
@@ -31,7 +31,6 @@ import {
   createNetworkTransport,
   deviceInfo,
   fs,
-  network,
 } from "../internal";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -147,7 +146,7 @@ export type AppConfiguration = {
    * Specify a custom `fetch` implementation.
    * @since 12.3.0
    */
-  fetchOverride?: any;
+  fetchOverride?: unknown;
 };
 
 /**
@@ -287,7 +286,7 @@ export class App<
     }
 
     if (fetchOverride) {
-      inject({ fetch: fetchOverride });
+      inject({ fetch: fetchOverride } as NetworkType);
     }
 
     fs.ensureDirectoryForFile(fs.joinPaths(baseFilePath || fs.getDefaultDirectoryPath(), "mongodb-realm"));
