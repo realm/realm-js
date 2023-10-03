@@ -1,0 +1,28 @@
+{
+    "properties": {
+        "_id": {
+            "bsonType": "objectId"
+        },
+        "createdAt": {
+            "bsonType": "date"
+        },
+        "description": {
+            "bsonType": "string"
+        },
+        "isComplete": {
+            "bsonType": "bool"
+        },
+        "userId": {
+            "bsonType": "string"
+        }
+    },
+    "required": [
+        "_id",
+        "createdAt",
+        "description",
+        "isComplete",
+        "userId"
+    ],
+    "title": "Task",
+    "type": "object"
+}
