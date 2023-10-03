@@ -27,16 +27,3 @@ const {getDefaultConfig, mergeConfig} = require('@react-native/metro-config');
 const config = {};
 
 module.exports = mergeConfig(getDefaultConfig(__dirname), config);
-
-
-// TODO:
-// =================== PREVIOUSLY USED CONFIGS: ===================
-
-// const config = require('@realm/metro-config')({projectRoot: __dirname});
-
-// // Prevent .js versions of files from being loaded in preference to TS
-// config.resolver.sourceExts = ['json', 'ts', 'tsx', 'js', 'jsx'];
-
-// module.exports = config;
-
-// ================================================================
