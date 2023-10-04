@@ -16,14 +16,43 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import { SyncError } from "realm";
+
 /**
- * Logger - This is meant to be replaced with a preferred logging implementation.
+ * Logger - This is meant to be replaced with a preferred logging
+ * implementation or service.
  */
 export const logger = {
-  info(message: string) {
-    console.info(new Date().toLocaleString(), '|', message);
+  info(message: string): void {
+    console.log(prefixWithDate(message));
   },
-  error(message: string) {
-    console.error(new Date().toLocaleString(), '|', message);
+  error(error: string | SyncError): void {
+    const message =
+      typeof error === 'string' ? error : formatErrorMessage(error);
+    // Not using `console.error` here to not print stack trace.
+    console.log(prefixWithDate(message));
   },
 };
+
+/**
+ * @returns The message prefixed with the current local date and timestamp.
+ */
+function prefixWithDate(message: string): string {
+  return `${new Date().toLocaleString()} | ${message}`;
+}
+
+/**
+ * @returns A formatted error message with its name, message, and reason.
+ *
+ * @note
+ * To print the entire message as a JSON string you may use e.g.
+ * `JSON.stringify(error, null, 2)` if needed.
+ */
+function formatErrorMessage(error: SyncError): string {
+  return (
+    `${error.name}:` +
+    `\n  Message: ${error.message}.` +
+    `\n  Reason: ${error.reason}` +
+    `\n  Code: ${error.code}`
+  );
+}
