@@ -108,7 +108,7 @@ In this demo app, a client reset is triggered by calling a [custom Atlas Functio
 
 App Services logs all incoming requests and application events such as Device Sync operations and user authentication. In this demo app, we log messages to the `console` when certain changes and activities are detected, but you can replace the logger used with your preferred logging mechanism or service.
 
-To modify the [log level and logger](https://www.mongodb.com/docs/realm/sdk/react-native/logging/#std-label-react-native-logging) used by Realm, we use `Realm.setLogLevel()` and `Realm.setLogger()` in [getAtlasApp.ts](./node/src/atlas-app-services/getAtlasApp.ts).
+To modify the [log level and logger](https://www.mongodb.com/docs/realm/sdk/react-native/logging/#std-label-react-native-logging) used by Realm, we use `Realm.setLogLevel()` and `Realm.setLogger()` in [app.ts](./node/src/app.ts).
 
 For the App Services logs, you can also choose to [forward the logs to a service](https://www.mongodb.com/docs/atlas/app-services/activity/forward-logs/). To read more about monitoring app activity, please see the [docs](https://www.mongodb.com/docs/atlas/app-services/activity/).
 

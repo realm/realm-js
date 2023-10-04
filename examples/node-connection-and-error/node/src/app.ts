@@ -25,6 +25,21 @@ import {
   triggerUserEventChange,
 } from "./realm-auth";
 import { addDummyData, updateDummyData, deleteDummyData, getStore } from "./realm-query";
+import { logger } from "./logger";
+
+// To diagnose and troubleshoot errors while in development, set the log level to `debug`
+// or `trace`. For production deployments, decrease the log level for improved performance.
+// logLevels = ["all", "trace", "debug", "detail", "info", "warn", "error", "fatal", "off"];
+// You may import `NumericLogLevel` to get them as numbers starting from 0 (`all`).
+Realm.setLogLevel("error");
+Realm.setLogger((logLevel, message) => {
+  const formattedMessage = `Log level: ${logLevel} - Log message: ${message}`;
+  if (logLevel === 'error' || logLevel === 'fatal') {
+    logger.error(formattedMessage);
+  } else {
+    logger.info(formattedMessage);
+  }
+});
 
 const exampleEmail = "john@doe.com";
 const examplePassword = "123456";
