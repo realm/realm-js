@@ -23,7 +23,7 @@ import { logger } from "../logger";
 
 let app: Realm.App | null = null;
 
-export const getAtlasApp = function getAtlasApp() {
+export function getAtlasApp(): Realm.App {
   if (!app) {
     if (ATLAS_APP_ID === "YOUR_APP_ID") {
       throw new Error(
@@ -33,13 +33,18 @@ export const getAtlasApp = function getAtlasApp() {
 
     app = new Realm.App({ id: ATLAS_APP_ID });
 
-    // Using log level "all", "trace", or "debug" is good for debugging during developing.
-    // Lower log levels are recommended in production for performance improvement.
+    // To diagnose and troubleshoot errors while in development, set the log level to `debug`
+    // or `trace`. For production deployments, decrease the log level for improved performance.
     // logLevels = ["all", "trace", "debug", "detail", "info", "warn", "error", "fatal", "off"];
     // You may import `NumericLogLevel` to get them as numbers starting from 0 (`all`).
     Realm.setLogLevel("error");
     Realm.setLogger((logLevel, message) => {
-      logger.info(`Log level: ${logLevel} - Log message: ${message}`);
+      const formattedMessage = `Log level: ${logLevel} - Log message: ${message}`;
+      if (logLevel === 'error' || logLevel === 'fatal') {
+        logger.error(formattedMessage);
+      } else {
+        logger.info(formattedMessage);
+      }
     });
   }
 
