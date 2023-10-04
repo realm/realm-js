@@ -5,7 +5,7 @@
   "main": "src/app.ts",
   "scripts": {
     "build": "tsc",
-    "start": "npm run build && node dist/src/app.js",
+    "start": "npm run build && node dist/app.js",
     "rm-local-db": "rm -rf mongodb-realm/",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
