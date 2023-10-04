@@ -1,11 +1,11 @@
 {
   "name": "@realm/node-connection-and-error",
   "version": "1.0.0",
-  "description": "A skeleton app to be used as a reference for how to use the Realm Node.js SDK specifically around detecting various changes in e.g. connection state, user state, and sync errors",
-  "main": "src/index.ts",
+  "description": "An example app using Atlas Device Sync for showcasing how to detect various changes in connection state, user state, sync errors, and product inventory.",
+  "main": "src/app.ts",
   "scripts": {
     "build": "tsc",
-    "start": "npm run build && node dist/src/index.js",
+    "start": "npm run build && node dist/src/app.js",
     "rm-local-db": "rm -rf mongodb-realm/",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
