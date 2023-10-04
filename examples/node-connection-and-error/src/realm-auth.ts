@@ -153,14 +153,7 @@ export function triggerConnectionChange(disconnectAfterMs: number, reconnectAfte
  * - 225 (Invalid schema change)
  */
 function handleSyncError(session: Realm.App.Sync.SyncSession, error: SyncError): void {
-  if (error.code >= 100 && error.code < 200) {
-    logger.error(`Connection level and protocol error: ${error.message}. ${JSON.stringify(error)}`);
-  } else if (error.code >= 200 && error.code < 300) {
-    logger.error(`Session level error: ${error.message}. ${JSON.stringify(error)}`);
-  } else {
-    // Should not be reachable.
-    logger.error(`Unexpected error code: ${error.code}. ${JSON.stringify(error)}`);
-  }
+  logger.error(error);
 }
 
 function handlePreClientReset(localRealm: Realm): void {
