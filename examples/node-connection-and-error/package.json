@@ -1,5 +1,5 @@
 {
-  "name": "@realm/node-connection-and-error",
+  "name": "@realm/example-node-connection-and-error",
   "version": "1.0.0",
   "description": "An example app using Atlas Device Sync for showcasing how to detect various changes in connection state, user state, sync errors, and product inventory.",
   "main": "src/app.ts",
