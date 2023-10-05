@@ -1,10 +1,7 @@
-## vNext (TBD)
+## 12.2.1 (2023-10-05)
 
 ### Deprecations
 * `Realm.User.providerType` is deprecated, and will be remove in next major version. Use `Realm.User.identities` instead.
-
-### Enhancements
-* None
 
 ### Fixed
 * Outside migration functions, it is not possible to change the value of a primary key. ([#6161](https://github.com/realm/realm-js/issues/6161), since v12.0.0)
