@@ -25,7 +25,7 @@ export const debug = createDebug("realm:telemetry");
 import * as Realm from "realm";
 import { MachineInfo } from "./models/MachineInfo";
 import { SensorReading } from "./models/SensorReading";
-import { config } from "./config";
+import { config } from "./atlas-app-services/config";
 
 const INSERT_DATA_INTERVAL = 10_000 as const;
 
