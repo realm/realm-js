@@ -1,6 +1,6 @@
-# A Netflix-Like App with Multiple Realms in Realm React Native SDK
+# A Netflix-Like App with Multiple Realms Using Atlas Device SDK for React Native
 
-A Netflix-like example app showcasing how to use different Realms in [MongoDB's Realm React Native SDK](https://www.mongodb.com/docs/realm/sdk/react-native/). All users can browse (not play) movies from MongoDB's [Mflix sample dataset](https://www.mongodb.com/docs/atlas/sample-data/sample-mflix/#std-label-mflix-movies), but only users who register with email and password are able to sync, read, add, and remove movies saved to "My List".
+A Netflix-like example app showcasing how to use different Realms in [MongoDB's Atlas Device SDK for React Native](https://www.mongodb.com/docs/realm/sdk/react-native/). All users can browse (not play) movies from MongoDB's [Mflix sample dataset](https://www.mongodb.com/docs/atlas/sample-data/sample-mflix/#std-label-mflix-movies), but only users who register with email and password are able to sync, read, add, and remove movies saved to "My List".
 
 > This example app does not support playing any movies.
 
@@ -22,33 +22,43 @@ The following shows the project structure and the most relevant files.
 ```
 ├── backend                           - App Services App
 │   └── (see link above)
+│
 ├── frontend                          - React Native App
 │   ├── app
 │   │   ├── atlas-app-services
 │   │   │   └── config.ts             - Add App ID
+│   │   │
 │   │   ├── components
 │   │   │   ├── MovieItem.tsx         - Movie list item
 │   │   │   ├── MovieList.tsx         - Horizontal movie list
 │   │   │   └── PublicLogin.tsx       - Logs in public/anonymous users
+│   │   │
 │   │   ├── hooks
 │   │   │   └── useAccountInfo.ts     - Provides account info
+│   │   │
 │   │   ├── models
 │   │   │   ├── Movie.ts              - Mflix movie data model
 │   │   │   └── PrivateContent.ts     - Data for private users
+│   │   │
 │   │   ├── navigation
 │   │   │   ├── MoviesNavigator.tsx   - Navigates movie screens
 │   │   │   ├── RootNavigator.tsx     - Navigates bottom tabs
 │   │   │   └── routes.ts             - Available routes
+│   │   │
 │   │   ├── providers
 │   │   │   └── MovieProvider.tsx     - Queries and updates data
+│   │   │
 │   │   ├── screens
 │   │   │   ├── AccountScreen.tsx     - Login and account info
 │   │   │   ├── MovieInfoScreen.tsx   - Movie info and add to My List
 │   │   │   └── MoviesScreen.tsx      - Movies grouped by category
+│   │   │
 │   │   ├── App.tsx                   - Provides the App Services App
 │   │   └── AuthenticatedApp.tsx      - Opens different Realms
-│   ├── index.ts                      - Entry point
+│   │
+│   ├── index.js                      - Entry point
 │   └── package.json                  - Dependencies
+│
 └── README.md                         - Instructions and info
 ```
 
@@ -80,11 +90,13 @@ This app uses multiple Realms, but only one Realm is kept open at any given time
 
 This app uses synced Realms as it needs to load the Mflix dataset from Atlas. Thus, for logging in, a network connection is required.
 
-Users who have logged in at least once will have their credentials cached on the client. Data that was previously synced to the device will also exist locally in the Realm database. From this point on, users can be offline and still query and update data. Any changes made offline will be synced automatically to Atlas and any other devices once a network connection is established.
+Users who have logged in at least once will have their credentials cached on the client. Thus, a logged in user who restarts the app will remain logged in. [@realm/react's](https://www.npmjs.com/package/@realm/react) `UserProvider` automatically handles this for you by checking if the `app.currentUser` already exists.
+
+Data that was previously synced to the device will also exist locally in the Realm database. From this point on, users can be offline and still query and update data. Any changes made offline will be synced automatically to Atlas and any other devices once a network connection is established. If multiple users modify the same data either while online or offline, those conflicts are [automatically resolved](https://www.mongodb.com/docs/atlas/app-services/sync/details/conflict-resolution/) before being synced.
 
 #### Realm Configuration
 
-When opening a Realm, we can specify the behavior in the Realm configuration when opening it for the first time (via `newRealmFileBehavior`) and for subsequent ones (via `existingRealmFileBehavior`). We can either:
+When [opening a Realm](https://www.mongodb.com/docs/realm/sdk/react-native/sync-data/configure-a-synced-realm/), we can specify the behavior in the Realm configuration when opening it for the first time (via `newRealmFileBehavior`) and for subsequent ones (via `existingRealmFileBehavior`). We can either:
 * `OpenRealmBehaviorType.OpenImmediately`
   * Opens the Realm file immediately if it exists, otherwise it first creates a new empty Realm file then opens it.
   * This lets users use the app with the existing data, while syncing any changes to the device in the background.
@@ -99,17 +111,13 @@ This app opens a Realm via `RealmProvider` (see [AuthenticatedApp.tsx](./fronten
 
 Each movie poster is loaded from a remote source and is not cached on the client for this example app. Therefore, if the user is offline, only the placeholder image will be shown as the poster.
 
-### Realm Details
-
-* RealmJS version: ^12.1.0
-* Device Sync type: [Flexible](https://www.mongodb.com/docs/atlas/app-services/sync/configure/enable-sync/)
-
 ## Getting Started
 
 ### Prerequisites
 
 * [Node.js](https://nodejs.org/)
 * [React Native development environment](https://reactnative.dev/docs/environment-setup?guide=native)
+  * Refer to the **"React Native CLI Quickstart"**.
 
 ### Set up an Atlas Database with a Sample Dataset
 
