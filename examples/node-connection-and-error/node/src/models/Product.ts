@@ -18,10 +18,14 @@
 
 import Realm, { BSON, ObjectSchema } from "realm";
 
+import { getIntBetween } from "../utils/random";
+
 /**
  * Current information and inventory about a type of product in a particular store.
- * (This is simplified to refer to a complete product (e.g. a sandwich, rather than
- * e.g. bread, cheese, lettuce, etc.)
+ *
+ * @note
+ * This is simplified to refer to a complete product (e.g. a complete sandwich,
+ * rather than individual pieces such as bread, cheese, lettuce, etc.).
  */
 export class Product extends Realm.Object {
   _id!: BSON.ObjectId;
@@ -41,4 +45,37 @@ export class Product extends Realm.Object {
       numInStock: "int",
     },
   };
+}
+
+/**
+ * A dummy list of product names to use when creating a product.
+ */
+const productNames = [
+  "Fresh Salad",
+  "Hoagie",
+  "Burrito",
+  "Quesadilla",
+  "Bagel",
+  "Panini",
+  "Pizza",
+  "Chicken Sandwich",
+  "Fish Soup",
+  "Chicken Soup",
+  "Noodle Soup",
+  "Blueberry Muffin",
+  "Chocolate Chip Muffin",
+  "Brownie",
+  "Coke",
+  "Diet Coke",
+  "Strawberry Milkshake",
+  "Chocolate Milkshake",
+  "Vanilla Milkshake",
+  "Iced Coffee",
+] as const;
+
+/**
+ * @returns one of the valid product names.
+ */
+export function getRandomProductName() {
+  return productNames[getIntBetween(0, productNames.length)];
 }
