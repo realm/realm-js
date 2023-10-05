@@ -5,7 +5,14 @@
   "main": "src/app.ts",
   "scripts": {
     "build": "tsc",
-    "start": "npm run build && node dist/app.js",
+    "start": "npm run success",
+    "success": "npm run build && node dist/app.js success",
+    "register-invalid": "npm run build && node dist/app.js register-invalid",
+    "register-email-in-use": "npm run build && node dist/app.js register-email-in-use",
+    "login-invalid": "npm run build && node dist/app.js login-invalid",
+    "login-non-existent-email": "npm run build && node dist/app.js login-non-existent-email",
+    "sync-error": "npm run build && node dist/app.js sync-error",
+    "client-reset": "npm run build && node dist/app.js client-reset",
     "rm-local-db": "rm -rf mongodb-realm/",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

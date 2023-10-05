@@ -16,16 +16,26 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import Realm from "realm";
+
 import {
-  register,
-  logIn,
-  logOut,
+  addDummyData,
+  updateDummyData,
+  deleteDummyData,
+  getStore,
   openRealm,
-  triggerConnectionChange,
-  triggerUserEventChange,
-} from "./realm-auth";
-import { addDummyData, updateDummyData, deleteDummyData, getStore } from "./realm-query";
-import { logger } from "./logger";
+} from "./store-manager";
+import {
+  registerSuccessfully,
+  registerWithInvalidCredentials,
+  registerWithEmailAlreadyInUse,
+  logInSuccessfully,
+  logInWithInvalidCredentials,
+  logInWithNonExistentCredentials,
+  refreshAccessToken,
+} from "./demo-auth-triggers";
+import { triggerClientReset, triggerSyncError } from "./demo-sync-triggers";
+import { logger } from "./utils/logger";
 
 // To diagnose and troubleshoot errors while in development, set the log level to `debug`
 // or `trace`. For production deployments, decrease the log level for improved performance.
@@ -41,42 +51,130 @@ Realm.setLogger((logLevel, message) => {
   }
 });
 
-const exampleEmail = "john@doe.com";
-const examplePassword = "123456";
+/**
+ * Command options for triggering various scenarios and error messages.
+ */
+const enum CommandOption {
+  /**
+   * Successfully register and log in a user and run the app.
+   */
+  Success = "success",
+  /**
+   * Register a user with invalid credentials.
+   */
+  RegisterInvalid = "register-invalid",
+  /**
+   * Register a user with an email already in use.
+   */
+  RegisterEmailInUse = "register-email-in-use",
+  /**
+   * Log in a user with invalid credentials.
+   */
+  LoginInvalid = "login-invalid",
+  /**
+   * Log in a user with an email that does not exist (but valid credentials).
+   */
+  LoginNonExistentEmail = "login-non-existent-email",
+  /**
+   * Log in a user and trigger a sync error.
+   */
+  SyncError = "sync-error",
+  /**
+   * Log in a user and trigger a client reset.
+   */
+  ClientReset = "client-reset",
+};
 
 /**
- * Illustrates the flow of using a synced Realm.
+ * Entry point.
  */
 async function main(): Promise<void> {
-  let success = await register(exampleEmail, examplePassword);
+  let [,, action] = process.argv;
+  switch (action) {
+    case CommandOption.Success:
+      await successScenario();
+      return;
+    case CommandOption.RegisterInvalid:
+      await registerWithInvalidCredentials();
+      return exit(1);
+    case CommandOption.RegisterEmailInUse:
+      await registerWithEmailAlreadyInUse();
+      return exit(1);
+    case CommandOption.LoginInvalid:
+      await logInWithInvalidCredentials();
+      return exit(1);
+    case CommandOption.LoginNonExistentEmail:
+      await logInWithNonExistentCredentials();
+      return exit(1);
+    case CommandOption.SyncError:
+      await syncErrorScenario();
+      return;
+    case CommandOption.ClientReset:
+      await clientResetScenario();
+      return;
+    default:
+      throw new Error(`Invalid option passed: ${action}.`);
+  }
+}
+
+/**
+ * Illustrates the flow of successfully registering, logging in,
+ * and opening a Realm.
+ */
+async function logInAndOpenRealm(): Promise<void> {
+  let success = await registerSuccessfully();
   if (!success) {
-    return;
+    exit(1);
   }
 
-  success = await logIn(exampleEmail, examplePassword);
+  success = await logInSuccessfully();
   if (!success) {
-    return;
+    exit(1);
   }
 
   await openRealm();
+}
+
+/**
+ * Invokes operations for modifying data and triggering listeners.
+ */
+async function successScenario(): Promise<void> {
+  await logInAndOpenRealm();
 
   // Cleaning the DB for this example before continuing.
   deleteDummyData();
   addDummyData();
-  updateDummyData();
 
   // Print a kiosk and its products.
-  const store = getStore();
-  const firstKiosk = store?.kiosks[0];
+  const firstKiosk = getStore()?.kiosks[0];
   if (firstKiosk) {
-    console.log("Printing the first Kiosk:");
-    console.log(JSON.stringify(firstKiosk, null, 2));
+    logger.info("Printing the first Kiosk:");
+    logger.info(JSON.stringify(firstKiosk, null, 2));
   }
 
   // Manually trigger specific listeners.
-  const TRIGGER_LISTENER_AFTER_MS = 4000;
-  triggerUserEventChange(TRIGGER_LISTENER_AFTER_MS);
-  triggerConnectionChange(TRIGGER_LISTENER_AFTER_MS * 2, TRIGGER_LISTENER_AFTER_MS * 4);
+  updateDummyData();
+  await refreshAccessToken();
+}
+
+/**
+ * Triggers a sync error.
+ */
+async function syncErrorScenario(): Promise<void> {
+  await logInAndOpenRealm();
+  triggerSyncError();
+}
+
+/**
+ * Triggers a client reset.
+ */
+async function clientResetScenario(): Promise<void> {
+  await logInAndOpenRealm();
+  await triggerClientReset();
+}
+
+function exit(code: number): never {
+  return process.exit(code);
 }
 
 main();
