@@ -2,9 +2,11 @@
 
 A todo list (task manager) app showcasing how to create, read, update, and delete data while offline using [MongoDB's Atlas Device SDK for Electron](https://www.mongodb.com/docs/realm/sdk/node/integrations/electron-cra/) (fka Realm).
 
+> **TIP:** This app can be run together with the corresponding [React Native example app](../rn-todo-list/) using the same [App Services App](./backend/).
+
 ## Screenshots
 
-![Tasks Page](./src/renderer/assets/screenshot-realm-web-sync-tasks.png)
+![Tasks Page](./frontend/src/renderer/assets/screenshot-realm-web-sync-tasks.png)
 
 ## Project Structure
 
@@ -153,7 +155,7 @@ npm install
 ### Run the App
 
 1. Copy your [Atlas App ID](https://www.mongodb.com/docs/atlas/app-services/reference/find-your-project-or-app-id/#std-label-find-your-app-id) from the App Services UI.
-2. Paste the copied ID as the value of the existing field `ATLAS_APP_ID` in [src/renderer/atlas-app-services/config.json](./src/renderer/atlas-app-services/config.json):
+2. Paste the copied ID as the value of the existing field `ATLAS_APP_ID` in [src/renderer/atlas-app-services/config.json](./frontend/src/renderer/atlas-app-services/config.json):
 ```js
 {
   "ATLAS_APP_ID": "YOUR_APP_ID"
