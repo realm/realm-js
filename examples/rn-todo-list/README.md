@@ -2,6 +2,8 @@
 
 A todo list (task manager) app showcasing how to create, read, update, and delete data while offline using [MongoDB's Atlas Device SDK for React Native](https://www.mongodb.com/docs/realm/sdk/react-native/) (fka Realm).
 
+> **TIP:** This app can be run together with the corresponding [Electron example app](../electron-todo-list/) using the same [App Services App](./backend/).
+
 ## Screenshots
 
 ![Todo List Screenshot](./frontend/app/assets/screenshot-login-and-tasks.png)
@@ -15,6 +17,7 @@ The following shows the project structure and the most relevant files.
 ```
 ├── backend                               - App Services App
 │   └── (see link above)
+│
 ├── frontend                              - React Native App
 │   ├── app
 │   │   ├── components
@@ -22,20 +25,26 @@ The following shows the project structure and the most relevant files.
 │   │   │   ├── OfflineModeButton.tsx     - Pauses/resumes the sync session
 │   │   │   ├── TaskItem.tsx              - Updates or deletes a task
 │   │   │   └── TaskList.tsx              - Displays all tasks
+│   │   │
 │   │   ├── hooks
 │   │   │   ├── useSyncConnection.ts      - Functions for re/disconnecting
 │   │   │   └── useTaskManager.ts         - Functions for managing (CRUD) tasks
+│   │   │
 │   │   ├── models
 │   │   │   ├── index.ts                  - Exports all (1) models
 │   │   │   └── Task.ts                   - Data model
+│   │   │
 │   │   ├── screens
 │   │   │   ├── LoginScreen.tsx           - Login and registration
 │   │   │   ├── TaskScreen.tsx            - Display task components
 │   │   │   └── TaskScreenSync.tsx        - Task screen with sync-related ops
+│   │   │
 │   │   ├── AppNonSync.tsx                - Local-only app and opens Realm
 │   │   └── AppSync.tsx                   - Sync-enabled app and opens Realm
+│   │
 │   ├── index.js                          - Entry point
 │   └── package.json                      - Dependencies
+│
 ├── README.md                             - Instructions and info
 └── sync.config.js                        - Option to use Device Sync enabled app
 ```
