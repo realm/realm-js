@@ -70,6 +70,25 @@ It specifically addresses the following points:
   * The Realm is opened immediately without waiting for downloads from the server.
     * See [Offline Support](#note-offline-support) below.
 
+### Note: Offline Support
+
+Users who have logged in at least once will have their credentials cached on the client. Thus, a logged in user who restarts the app will remain logged in. This app handles that in `logIn()` in [demo-auth-triggers.ts](./node/src/demo-auth-triggers.ts) by checking if the `app.currentUser` already exists.
+
+Data that was previously synced to the device will also exist locally in the Realm database. From this point on, users can be offline and still query and update data. Any changes made offline will be synced automatically to Atlas and any other devices once a network connection is established. If multiple users modify the same data either while online or offline, those conflicts are [automatically resolved](https://www.mongodb.com/docs/atlas/app-services/sync/details/conflict-resolution/) before being synced.
+
+#### Realm Configuration
+
+When [opening a Realm](https://www.mongodb.com/docs/realm/sdk/node/sync/configure-and-open-a-synced-realm/#open-a-synced-realm-while-offline), we can specify the behavior in the Realm configuration when opening it for the first time (via `newRealmFileBehavior`) and for subsequent ones (via `existingRealmFileBehavior`). We can either:
+* `OpenRealmBehaviorType.OpenImmediately`
+  * Opens the Realm file immediately if it exists, otherwise it first creates a new empty Realm file then opens it.
+  * This lets users use the app with the existing data, while syncing any changes to the device in the background.
+* `OpenRealmBehaviorType.DownloadBeforeOpen`
+  * If there is data to be downloaded, this waits for the data to be fully synced before opening the Realm.
+
+This app opens a Realm in [store-manager.ts](./node/src/store-manager.ts). We use `OpenImmediately` for new and existing Realm files in order to use the app while offline.
+
+> See [OpenRealmBehaviorConfiguration](https://www.mongodb.com/docs/realm-sdks/js/latest/types/OpenRealmBehaviorConfiguration.html) for possible configurations of new and existing Realm file behaviors.
+
 ## Background
 
 ### Sync Error Handling
