@@ -3,7 +3,7 @@
   "description": "Test harness running the Realm JS tests in the Electron renderer process.",
   "version": "0.1.0",
   "author": {
-    "name": "Realm",
+    "name": "MongoDB",
     "email": "help@realm.io",
     "url": "https://www.mongodb.com/docs/realm/"
   },
