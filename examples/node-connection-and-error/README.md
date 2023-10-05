@@ -9,28 +9,31 @@ The following shows the project structure and the most relevant files.
 > To learn more about the backend file structure, see [App Configuration](https://www.mongodb.com/docs/atlas/app-services/reference/config/).
 
 ```
-├── backend                         - App Services App
+├── backend                           - App Services App
 │   └── (see link above)
 │
-├── node                            - Node App
+├── node                              - Node App
 │   ├── src
-│   │   ├── atlas-app-services      - Configure Atlas App
+│   │   ├── atlas-app-services        - Configure Atlas App
 │   │   │   ├── config.ts
 │   │   │   └── getAtlasApp.ts
 │   │   │
-│   │   ├── models                  - Simplified data model
+│   │   ├── models                    - Simplified data model
 │   │   │   ├── Kiosk.ts
 │   │   │   ├── Product.ts
 │   │   │   └── Store.ts
 │   │   │
-│   │   ├── app.ts                  - Entry point
-│   │   ├── logger.ts               - Replaceable logger
-│   │   ├── realm-auth.ts           - Main Realm auth usage examples
-│   │   └── realm-query.ts          - Queries and updates store data
+│   │   ├── utils
+│   │   │   └── logger.ts             - Replaceable logger
+│   │   │
+│   │   ├── app.ts                    - Entry point
+│   │   ├── demo-auth-triggers.ts     - Triggers for various auth listeners
+│   │   ├── demo-sync-triggers.ts     - Triggers for various sync listeners
+│   │   └── store-manager.ts          - Queries and updates store data
 │   │
-│   └── package.json                - Dependencies
+│   └── package.json                  - Dependencies
 │
-└── README.md                       - Instructions and info
+└── README.md                         - Instructions and info
 ```
 
 ## Use Cases
@@ -66,7 +69,6 @@ It specifically addresses the following points:
   * Initial subscriptions are added to allow syncing of a subset of data to the device (i.e. the kiosks and products belonging to a specific store).
   * The Realm is opened immediately without waiting for downloads from the server.
     * See [Offline Support](#note-offline-support) below.
-* Note that an over-simplified data model is used. This app also writes data to confirm the functionality.
 
 ## Background
 
@@ -98,7 +100,7 @@ By default, refresh tokens expire 60 days after they are issued. In the Admin UI
 
 ### Client Reset
 
-The server will [reset the client](https://www.mongodb.com/docs/atlas/app-services/sync/error-handling/client-resets/) whenever there is a discrepancy in the data history that cannot be resolved. By default, Realm will try to recover any unsynced changes from the client while resetting. However, there are other strategies available: You can discard the changes or do a [manual recovery](https://www.mongodb.com/docs/realm/sdk/node/advanced/client-reset-data-recovery/).
+The server will [reset the client](https://www.mongodb.com/docs/atlas/app-services/sync/error-handling/client-resets/) whenever there is a discrepancy in the data history that cannot be resolved. By default, Realm will try to recover any unsynced changes from the client while resetting. However, there are other [strategies available](https://www.mongodb.com/docs/realm/sdk/node/sync/handle-sync-errors/#handle-client-reset-errors): You can discard the changes or do a manual recovery.
 
 In this demo app, a client reset is triggered by calling a [custom Atlas Function](#add-an-atlas-function) that deletes the client files for the current user. Another way to simulate a client reset is to terminate and re-enable Device Sync.
 
@@ -188,10 +190,29 @@ npm install
 export const ATLAS_APP_ID = "YOUR_APP_ID";
 ```
 
-3. Start the script.
+3. Invoke various scenarios:
 
 ```sh
-npm start
+# Successfully register and log in a user and run the app.
+npm run success
+
+# Register a user with invalid credentials.
+npm run register-invalid
+
+# Register a user with an email already in use.
+npm run register-email-in-use
+
+# Log in a user with invalid credentials.
+npm run login-invalid
+
+# Log in a user with an email that does not exist.
+npm run login-non-existent-email
+
+# Log in a user and trigger a sync error.
+npm run sync-error
+
+# Log in a user and trigger a client reset.
+npm run client-reset
 ```
 
 ### Set Data Access Permissions
