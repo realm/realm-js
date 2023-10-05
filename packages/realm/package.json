@@ -3,7 +3,7 @@
   "version": "12.2.0",
   "description": "Realm is a mobile database: an alternative to SQLite and key-value stores",
   "license": "apache-2.0",
-  "homepage": "https://realm.io",
+  "homepage": "https://www.mongodb.com/docs/realm/",
   "keywords": [
     "database",
     "db",
@@ -18,9 +18,9 @@
     "realm"
   ],
   "author": {
-    "name": "Realm",
+    "name": "MongoDB",
     "email": "help@realm.io",
-    "url": "https://realm.io"
+    "url": "https://www.mongodb.com/docs/realm/"
   },
   "types": "./types.d.cts",
   "main": "./index.node.js",
