@@ -12,9 +12,9 @@
   },
   "keywords": [],
   "author": {
-    "name": "Realm",
+    "name": "MongoDB",
     "email": "help@realm.io",
-    "url": "https://realm.io"
+    "url": "https://www.mongodb.com/docs/realm/"
   },
   "license": "apache-2.0",
   "dependencies": {

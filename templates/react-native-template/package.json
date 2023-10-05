@@ -11,9 +11,9 @@
     "directory": "packages/react-native-template"
   },
   "author": {
-    "name": "Realm",
+    "name": "MongoDB",
     "email": "realm-help@mongodb.com",
-    "url": "https://realm.io"
+    "url": "https://www.mongodb.com/docs/realm/"
   },
   "license": "Apache-2.0"
 }

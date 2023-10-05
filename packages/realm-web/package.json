@@ -68,9 +68,9 @@
     "browser"
   ],
   "author": {
-    "name": "Realm",
+    "name": "MongoDB",
     "email": "help@realm.io",
-    "url": "https://realm.io"
+    "url": "https://www.mongodb.com/docs/realm/"
   },
   "repository": {
     "type": "git",

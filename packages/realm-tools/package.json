@@ -41,9 +41,9 @@
     "tool"
   ],
   "author": {
-    "name": "Realm",
+    "name": "MongoDB",
     "email": "help@realm.io",
-    "url": "https://realm.io"
+    "url": "https://www.mongodb.com/docs/realm/"
   },
   "contributors": [
     "Kenneth Geisshirt <kenneth.geisshirt@mongodb.com> (https://github.com/kneth)"
