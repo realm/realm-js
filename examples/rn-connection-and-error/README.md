@@ -16,31 +16,41 @@ The following shows the project structure and the most relevant files.
 ```
 ├── backend                               - App Services App
 │   └── (see link above)
+│
 ├── frontend                              - React Native App
 │   ├── app
 │   │   ├── atlas-app-services
 │   │   │   └── config.ts                 - Add App ID
+│   │   │
 │   │   ├── components
 │   │   │   ├── AuthResultBoundary.tsx    - Captures and logs auth result changes
 │   │   │   ├── KioskItem.tsx             - Kiosk list item with products
 │   │   │   └── ProductItem.tsx           - Product list item
+│   │   │
 │   │   ├── hooks
 │   │   │   ├── useDemoSyncTriggers.ts    - Triggers for various sync listeners
 │   │   │   └── useDemoAuthTriggers.ts    - Triggers for various auth listeners
+│   │   │
 │   │   ├── models
 │   │   │   ├── Kiosk.ts                  - Simplified data models
 │   │   │   ├── Product.ts
 │   │   │   └── Store.ts
+│   │   │
 │   │   ├── providers
 │   │   │   └── StoreProvider.tsx         - Queries and updates store data
+│   │   │
 │   │   ├── screens
 │   │   │   ├── LoginScreen.tsx           - Login and registration
 │   │   │   └── StoreScreen.tsx           - Shows products and triggers
+│   │   │
 │   │   ├── utils
 │   │   │   └── logger.ts                 - Replaceable logger
+│   │   │
 │   │   └── App.tsx                       - Provides the App Services App and Realm
+│   │
 │   ├── index.js                          - Entry point
 │   └── package.json                      - Dependencies
+│
 └── README.md                             - Instructions and info
 ```
 
@@ -86,7 +96,7 @@ Data that was previously synced to the device will also exist locally in the Rea
 
 #### Realm Configuration
 
-When opening a Realm, we can specify the behavior in the Realm configuration when opening it for the first time (via `newRealmFileBehavior`) and for subsequent ones (via `existingRealmFileBehavior`). We can either:
+When [opening a Realm](https://www.mongodb.com/docs/realm/sdk/node/sync/configure-and-open-a-synced-realm/#open-a-synced-realm-while-offline), we can specify the behavior in the Realm configuration when opening it for the first time (via `newRealmFileBehavior`) and for subsequent ones (via `existingRealmFileBehavior`). We can either:
 * `OpenRealmBehaviorType.OpenImmediately`
   * Opens the Realm file immediately if it exists, otherwise it first creates a new empty Realm file then opens it.
   * This lets users use the app with the existing data, while syncing any changes to the device in the background.
@@ -121,13 +131,13 @@ Be aware of that there may be a delay from the time of actual disconnect until t
 
 User event changes can be detected by adding a listener callback to the logged in user. The callback will be invoked on various user related events including refresh of auth token, refresh token, custom user data, removal, and logout.
 
-Access tokens are created once a user logs in and are refreshed automatically by the SDK when needed. Manually refreshing the token is [only required](https://www.mongodb.com/docs/realm/sdk/node/examples/authenticate-users/#get-a-user-access-token) if requests are sent outside of the SDK.
+Access tokens are created once a user logs in and are refreshed automatically by the SDK when needed. Manually refreshing the token is [only required](https://www.mongodb.com/docs/realm/sdk/react-native/manage-users/authenticate-users/#get-a-user-access-token) if requests are sent outside of the SDK.
 
 By default, refresh tokens expire 60 days after they are issued. In the Admin UI, you can [configure](https://www.mongodb.com/docs/atlas/app-services/users/sessions/#configure-refresh-token-expiration) this time for your App's refresh tokens to be anywhere between 30 minutes and 180 days, whereafter you can observe the relevant client listeners being fired.
 
 ### Client Reset
 
-The server will [reset the client](https://www.mongodb.com/docs/atlas/app-services/sync/error-handling/client-resets/) whenever there is a discrepancy in the data history that cannot be resolved. By default, Realm will try to recover any unsynced changes from the client while resetting. However, there are other strategies available: You can discard the changes or do a [manual recovery](https://www.mongodb.com/docs/realm/sdk/react-native/sync-data/client-reset-data-recovery/).
+The server will [reset the client](https://www.mongodb.com/docs/atlas/app-services/sync/error-handling/client-resets/) whenever there is a discrepancy in the data history that cannot be resolved. By default, Realm will try to recover any unsynced changes from the client while resetting. However, there are other [strategies available](https://www.mongodb.com/docs/realm/sdk/react-native/sync-data/handle-sync-errors/#handle-client-reset-errors): You can discard the changes or do a manual recovery.
 
 In this demo app, a client reset is triggered by calling a [custom Atlas Function](#add-an-atlas-function) that deletes the client files for the current user. Another way to simulate a client reset is to terminate and re-enable Device Sync.
 
