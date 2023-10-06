@@ -28,11 +28,6 @@ export function IntroText() {
         Welcome to the Atlas Device SDK for Electron!
       </p>
       <p>
-        Add a task using the form at the top of the screen. It will create a
-        task and store it in an in-memory realm, then sync it to MongoDB Atlas
-        and any other apps connected to the same Atlas App.
-      </p>
-      <p>
         Start by adding a task ☝ You can then update it by toggling its status,
         or remove it by hitting the "x" icon. If using Device Sync, watch the
         tasks sync across devices or to Atlas in real-time. To see what happens

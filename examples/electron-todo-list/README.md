@@ -6,7 +6,7 @@ A todo list (task manager) app showcasing how to create, read, update, and delet
 
 ## Screenshots
 
-![Tasks Page](./frontend/src/renderer/assets/screenshot-realm-web-sync-tasks.png)
+![Tasks Page](./frontend/src/renderer/assets/screenshot-electron-tasks.png)
 
 ## Project Structure
 

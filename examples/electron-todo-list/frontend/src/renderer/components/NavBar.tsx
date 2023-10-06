@@ -16,24 +16,23 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { useAuth } from '@realm/react';
+import { useApp, useAuth } from '@realm/react';
 
-import logo from '../assets/logo.png';
 import styles from '../styles/NavBar.module.css';
 
 /**
  * Nav bar providing a button for logging out.
  */
 export function NavBar() {
+  const app = useApp();
   const { logOut } = useAuth();
 
   return (
     <nav className={styles.nav}>
-      <img
-        alt='Atlas Device Sync'
-        className={styles.logo}
-        src={logo}
-      />
+      <div className={styles.titleContainer}>
+        <p className={styles.title}>{app.currentUser?.profile.email}</p>
+        <p className={styles.info}>{`App ID: ${app.id}`}</p>
+      </div>
       <button className={styles.button} onClick={logOut}>
         Log Out
       </button>

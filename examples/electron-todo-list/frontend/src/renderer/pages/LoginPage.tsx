@@ -20,7 +20,7 @@ import { FormEvent, useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { AuthOperationName, useApp, useEmailPasswordAuth } from '@realm/react';
 
-import logo from '../assets/logo.png';
+import logo from '../assets/atlas-app-services.png';
 import styles from '../styles/LoginPage.module.css';
 
 /**
@@ -63,10 +63,11 @@ export function LoginPage() {
     <div className={styles.container}>
       <img
         alt='Atlas Device Sync'
+        className={styles.logo}
         src={logo}
       />
       <h1>
-        Log in to try out Atlas Device Sync
+        Atlas Device SDK for Electron
       </h1>
       <form onSubmit={handleSubmit} className={styles.form}>
         <input
