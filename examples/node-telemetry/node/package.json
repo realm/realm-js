@@ -21,7 +21,7 @@
   "dependencies": {
     "debug": "^4.3.4",
     "node-machine-id": "^1.1.12",
-    "realm": "^12.1.0"
+    "realm": "^12.2.0"
   },
   "devDependencies": {
     "@types/debug": "^4.1.8",
