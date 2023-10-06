@@ -71,7 +71,7 @@ To sync data used in this app you must first:
 1. [Create an App Services App](https://www.mongodb.com/docs/atlas/app-services/manage-apps/create/create-with-ui/).
 2. [Enable Anonymous Authentication](https://www.mongodb.com/docs/atlas/app-services/authentication/anonymous/).
 3. [Enable Flexible Sync](https://www.mongodb.com/docs/atlas/app-services/sync/configure/enable-sync/) with **Development Mode** enabled.
-    * When Development Mode is enabled, schemas will be inferred based on the client Realm data models.
+    * When Development Mode is enabled, schemas and Data Ingest will be inferred based on the client Realm data models.
     * (Development Mode should be turned off in production.)
 4. Don't forget to click `Review Draft and Deploy`.
 
@@ -92,26 +92,30 @@ const config: Config = {
   appId: "<YOUR-APP-ID>",
 };
 ```
-3. Start the script:
+3. Start the script.
+
+After running the below command, the app will start reading sensor data every few seconds. To modify the interval duration, update `INSERT_DATA_INTERVAL` in [src/app.ts](./node/src/app.ts).
+
 ```sh
 npm start
 ```
 
-You can also enable debug messages:
-
-```sh
-# Only debug messages for the app.
-DEBUG=realm:telemetry node dist/app.js
-
-# Debug messages for many Realm operations - WARNING: much output.
-DEBUG=realm:* node dist/app.js
-```
+> DEBUG mode is enabled by default when running this app via `npm start`.
+> Options available:
+> ```sh
+> # Only debug messages for the app.
+> DEBUG=realm:telemetry node dist/app.js
+> 
+> # Debug messages for many Realm operations.
+> # - WARNING: Much output.
+> DEBUG=realm:* node dist/app.js
+> ```
 
 ### Set Data Access Permissions
 
 > If you set up your App Services App [via a CLI](#via-a-cli-recommended), you can **skip this step** as the permissions should already be defined for you.
 
-After running the client app for the first time, [check the rules](https://www.mongodb.com/docs/atlas/app-services/rules/roles/#define-roles---permissions) for the collections in the App Services UI and make sure all collections have `readAndWriteAll` permissions (see [corresponding json](TODO)).
+After running the client app for the first time, [check the rules](https://www.mongodb.com/docs/atlas/app-services/rules/roles/#define-roles---permissions) for the collections in the App Services UI and make sure all collections have `readAndWriteAll` permissions (see [corresponding json](./backend/data_sources/mongodb-atlas/Telemetry/SensorReading/rules.json)).
 
 > To learn more and see examples of permissions depending on a certain use case, see [Device Sync Permissions Guide](https://www.mongodb.com/docs/atlas/app-services/sync/app-builder/device-sync-permissions-guide/#std-label-flexible-sync-permissions-guide) and [Data Access Role Examples](https://www.mongodb.com/docs/atlas/app-services/rules/examples/).
 
