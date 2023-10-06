@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { SyncError } from "realm";
+import type { SyncError } from "realm";
 
 /**
  * Logger - This is meant to be replaced with a preferred logging
@@ -27,10 +27,8 @@ export const logger = {
     console.log(prefixWithDate(message));
   },
   error(error: string | SyncError): void {
-    const message =
-      typeof error === 'string' ? error : formatErrorMessage(error);
-    // Not using `console.error` here to not print stack trace.
-    console.log(prefixWithDate(message));
+    const message = typeof error === 'string' ? error : formatErrorMessage(error);
+    console.error(prefixWithDate(message));
   },
 };
 
