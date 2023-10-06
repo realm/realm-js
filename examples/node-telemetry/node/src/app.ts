@@ -16,13 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import * as os from "node:os";
+import os from "node:os";
 import { machineId } from "node-machine-id";
-
+import Realm from "realm";
 import createDebug from "debug";
 export const debug = createDebug("realm:telemetry");
 
-import * as Realm from "realm";
 import { MachineInfo } from "./models/MachineInfo";
 import { SensorReading } from "./models/SensorReading";
 import { config } from "./atlas-app-services/config";
@@ -30,8 +29,8 @@ import { config } from "./atlas-app-services/config";
 const INSERT_DATA_INTERVAL = 10_000 as const;
 
 /**
- * Samples system's load and memory
- * @returns sensor readings
+ * Samples system's load and memory.
+ * @returns sensor readings.
  */
 function readSensorData() {
   const loadAvg = os.loadavg();
@@ -42,8 +41,8 @@ function readSensorData() {
 
 /**
  * Computes a unique identifier for the computer and looks up
- * the platform/operating system and its version/release
- * @returns machine identifier, platform, and version/release
+ * the platform/operating system and its version/release.
+ * @returns machine identifier, platform, and version/release.
  */
 async function readMachineInfo(): Promise<MachineInfo> {
   const identifier = await machineId();
@@ -52,6 +51,9 @@ async function readMachineInfo(): Promise<MachineInfo> {
   return { identifier, platform, release } as MachineInfo;
 }
 
+/**
+ * Entry point.
+ */
 async function main() {
   // Initialize the app using the App ID. To copy it, see:
   // https://www.mongodb.com/docs/atlas/app-services/apps/metadata/#std-label-find-your-app-id
@@ -80,25 +82,30 @@ async function main() {
   const intervalId = setInterval(() => {
     const now = new Date();
     const measurement = readSensorData();
-    const obj = {
-      timestamp: now,
-      machineInfo,
-      ...measurement,
-    } as unknown as SensorReading;
     debug("Writing new sensor reading");
-    realm.write(() => realm.create(SensorReading, obj));
+    realm.write(() => {
+      realm.create(SensorReading, {
+        timestamp: now,
+        machineInfo,
+        ...measurement,
+      });
+    });
   }, INSERT_DATA_INTERVAL);
 
-  // Catch CTRL-C in a nice way
   process.stdin.resume();
+
+  // Catch CTRL-C in a nice way
   process.on("SIGINT", async () => {
-    debug("Shutting down.");
-    debug("Remove periodic sensor readings");
+    debug("Shutting down");
+    debug("Removing periodic sensor readings");
     clearInterval(intervalId);
-    debug("Sync any outstanding changes");
+
+    debug("Syncing any outstanding changes");
     await realm.syncSession?.uploadAllLocalChanges();
-    debug("Closing Realm");
+
+    debug("Closing the Realm");
     realm.close();
+
     debug(`Logging out user ${user.id}`);
     await user.logOut();
     process.exit(0);

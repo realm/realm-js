@@ -16,23 +16,25 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import * as Realm from "realm";
+import Realm, { BSON, ObjectSchema } from "realm";
+
 import { MachineInfo } from "./MachineInfo";
 
 export class SensorReading extends Realm.Object {
-  _id!: Realm.BSON.ObjectId;
+  _id!: BSON.ObjectId;
   timestamp!: Date;
   uptime!: number;
   freemem!: number;
   loadAvg!: Realm.List<number>;
   machineInfo!: MachineInfo;
 
-  static schema: Realm.ObjectSchema = {
+  static schema: ObjectSchema = {
     name: "SensorReading",
+    // Mark the object as asymmetric to enable Data Ingest.
     asymmetric: true,
     primaryKey: "_id",
     properties: {
-      _id: { type: "objectId", default: () => new Realm.BSON.ObjectId() },
+      _id: { type: "objectId", default: () => new BSON.ObjectId() },
       timestamp: "date",
       uptime: "float",
       freemem: "int",

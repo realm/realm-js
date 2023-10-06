@@ -16,14 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import * as Realm from "realm";
+import Realm, { ObjectSchema } from "realm";
 
 export class MachineInfo extends Realm.Object {
   identifier!: string;
   platform!: string;
   release!: string;
 
-  static schema: Realm.ObjectSchema = {
+  static schema: ObjectSchema = {
     name: "MachineInfo",
     embedded: true,
     properties: {
