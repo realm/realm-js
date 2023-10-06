@@ -1,10 +1,4 @@
-## vNext (TBD)
-
-### Deprecations
-* None
-
-### Enhancements
-* None
+## 0.6.1 (2023-10-06)
 
 ### Fixed
 * `useObject` will now re-render if the result of `objectForPrimaryKey` is `null` or `undefined`. ([#6101](https://github.com/realm/realm-js/issues/6101))
