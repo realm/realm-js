@@ -19,7 +19,8 @@
   },
   "scripts": {
     "build": "craco build",
-    "start": "electron ."
+    "start": "electron .",
+    "rm-local-db": "rm -rf mongodb-realm/"
   },
   "eslintConfig": {
     "extends": [

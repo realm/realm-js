@@ -86,7 +86,7 @@ Data that was previously synced to the device will also exist locally in the Rea
 
 #### Realm Configuration
 
-When opening a Realm, we can specify the behavior in the Realm configuration when opening it for the first time (via `newRealmFileBehavior`) and for subsequent ones (via `existingRealmFileBehavior`). We can either:
+When [opening a Realm](https://www.mongodb.com/docs/realm/sdk/react-native/sync-data/configure-a-synced-realm/), we can specify the behavior in the Realm configuration when opening it for the first time (via `newRealmFileBehavior`) and for subsequent ones (via `existingRealmFileBehavior`). We can either:
 * `OpenRealmBehaviorType.OpenImmediately`
   * Opens the Realm file immediately if it exists, otherwise it first creates a new empty Realm file then opens it.
   * This lets users use the app with the existing data, while syncing any changes to the device in the background.
@@ -161,11 +161,11 @@ npm install
   "ATLAS_APP_ID": "YOUR_APP_ID"
 }
 ```
-3. Build the application
+3. Build the application:
 ```sh
 npm run build
 ```
-4. Start electron
+4. Start Electron:
 ```sh
 npm start
 ```
@@ -193,3 +193,13 @@ If permission is denied:
   * Make sure your IP address is on the [IP Access List](https://www.mongodb.com/docs/atlas/app-services/security/network/#ip-access-list) for your App.
   * Make sure you have the correct data access permissions for the collections.
     * See [Set Data Access Permissions](#set-data-access-permissions) further above.
+
+### Removing the Local Realm Database
+
+Removing the local database can be useful for certain errors. When running the app, the local database will exist in the directory `mongodb-realm/`.
+
+From the [frontend directory](./frontend/), run:
+
+```sh
+npm run rm-local-db
+```
