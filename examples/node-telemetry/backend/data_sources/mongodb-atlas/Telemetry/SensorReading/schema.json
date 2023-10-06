@@ -1,0 +1,50 @@
+{
+    "properties": {
+        "_id": {
+            "bsonType": "objectId"
+        },
+        "freemem": {
+            "bsonType": "long"
+        },
+        "loadAvg": {
+            "bsonType": "array",
+            "items": {
+                "bsonType": "float"
+            }
+        },
+        "machineInfo": {
+            "properties": {
+                "identifier": {
+                    "bsonType": "string"
+                },
+                "platform": {
+                    "bsonType": "string"
+                },
+                "release": {
+                    "bsonType": "string"
+                }
+            },
+            "required": [
+                "identifier",
+                "platform",
+                "release"
+            ],
+            "title": "MachineInfo",
+            "type": "object"
+        },
+        "timestamp": {
+            "bsonType": "date"
+        },
+        "uptime": {
+            "bsonType": "float"
+        }
+    },
+    "required": [
+        "_id",
+        "freemem",
+        "timestamp",
+        "uptime"
+    ],
+    "title": "SensorReading",
+    "type": "object"
+}
