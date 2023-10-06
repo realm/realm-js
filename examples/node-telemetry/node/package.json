@@ -5,9 +5,9 @@
   "description": "A demonstration of how to use data ingest to store and visualize sensor data",
   "main": "src/app.ts",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc",
     "lint": "eslint --ext .js,.mjs,.ts .",
-    "start": "npm run build && node dist/app.js",
+    "start": "npm run build && DEBUG=realm:telemetry node dist/app.js",
     "rm-local-db": "rm -rf mongodb-realm/",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
