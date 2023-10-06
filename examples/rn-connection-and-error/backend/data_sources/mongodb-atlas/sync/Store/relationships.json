@@ -1,0 +1,8 @@
+{
+    "kiosks": {
+        "ref": "#/relationship/mongodb-atlas/sync/Kiosk",
+        "source_key": "kiosks",
+        "foreign_key": "_id",
+        "is_list": true
+    }
+}
