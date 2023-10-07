@@ -1,6 +1,6 @@
 # An Offline-First Todo List App Using Atlas Device SDK for Web
 
-A todo list (task manager) app showcasing how to create, read, update, and delete data while offline using [MongoDB's Atlas Device SDK for Web](https://www.mongodb.com/docs/realm/web/sync/) (fka Realm).
+A React todo list (task manager) app showcasing how to create, read, update, and delete data while offline using [MongoDB's Atlas Device SDK for Web](https://www.mongodb.com/docs/realm/web/sync/) (fka Realm).
 
 > **TIP:** This app can be run together with the corresponding [Electron example app](https://github.com/realm/realm-js/tree/main/examples/electron-todo-list) and [React Native example app](https://github.com/realm/realm-js/tree/main/examples/rn-todo-list) using the same backend [App Services App](https://github.com/realm/realm-js/tree/main/examples/electron-todo-list/backend).
 
@@ -129,7 +129,7 @@ npm install
 ```sh
 npm run build
 ```
-4. Start the app (this should automatically open your default browser; but if not, open [http://localhost:3000](http://localhost:3000)):
+4. Start the React app (this should automatically open your default browser; but if not, open [http://localhost:3000](http://localhost:3000)):
 ```sh
 npm start
 ```
