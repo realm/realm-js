@@ -18,7 +18,10 @@
 
 import Realm, { BSON, ObjectSchema } from 'realm';
 
-export class Task extends Realm.Object<Task> {
+/**
+ * The `Task` data model.
+ */
+export class Task extends Realm.Object {
   _id!: BSON.ObjectId;
   description!: string;
   isComplete!: boolean;

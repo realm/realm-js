@@ -22,6 +22,10 @@ import { TaskList } from '../components/TaskList';
 import { useTaskManager } from '../hooks/useTaskManager';
 import styles from '../styles/TaskPage.module.css';
 
+/**
+ * Displays the list of tasks as well as buttons for performing
+ * sync-related operations.
+ */
 export function TaskPage() {
   const {
     tasks,

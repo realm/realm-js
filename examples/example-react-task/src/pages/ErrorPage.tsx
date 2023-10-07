@@ -20,6 +20,9 @@ import { isRouteErrorResponse, useNavigate, useRouteError } from 'react-router-d
 
 import styles from '../styles/ErrorPage.module.css';
 
+/**
+ * Page shown when navigating to a non-existent route.
+ */
 export function ErrorPage() {
   const navigate = useNavigate();
   const error = useRouteError();

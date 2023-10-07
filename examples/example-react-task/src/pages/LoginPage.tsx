@@ -20,9 +20,12 @@ import { FormEvent, useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { AuthOperationName, useApp, useEmailPasswordAuth } from '@realm/react';
 
-import logo from '../assets/logo.png';
+import logo from '../assets/atlas-app-services.png';
 import styles from '../styles/LoginPage.module.css';
 
+/**
+ * Screen for registering and/or logging in to the App Services App.
+ */
 export function LoginPage() {
   const atlasApp = useApp();
   const { register, logIn, result } = useEmailPasswordAuth();
@@ -30,6 +33,7 @@ export function LoginPage() {
   const [password, setPassword] = useState('');
   const [authRequest, setAuthRequest] = useState<'login' | 'register'>('login');
 
+  // Automatically log in the user after successful registration.
   useEffect(() => {
     if (result.operation === AuthOperationName.Register && result.success) {
       logIn({ email, password });
@@ -58,11 +62,12 @@ export function LoginPage() {
   return (
     <div className={styles.container}>
       <img
+        alt='Atlas Device Sync'
+        className={styles.logo}
         src={logo}
-        alt='Realm by MongoDB'
       />
       <h1>
-        Log in to try out Realm Web & Sync
+      Atlas Device SDK for Web
       </h1>
       <form onSubmit={handleSubmit} className={styles.form}>
         <input

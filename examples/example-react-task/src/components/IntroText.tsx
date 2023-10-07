@@ -18,16 +18,20 @@
 
 import styles from '../styles/IntroText.module.css';
 
+/**
+ * Information about this example app and the Atlas Device SDK for React Native.
+ */
 export function IntroText() {
   return (
     <div className={styles.container}>
       <p>
-        Welcome to a MongoDB Realm, WASM, and Sync app!
+        Welcome to the Atlas Device SDK for Web!
       </p>
       <p>
-        Add a task using the form at the top of the screen. It will create a
-        task and store it in an in-memory realm, then sync it to MongoDB Atlas
-        and any other apps connected to the same Atlas App.
+        Start by adding a task ☝ You can then update it by toggling its status,
+        or remove it by hitting the "x" icon. If using Device Sync, watch the
+        tasks sync across devices or to Atlas in real-time. To see what happens
+        when you make changes while offline, toggle "Pause Sync".
       </p>
     </div>
   );
