@@ -23,9 +23,9 @@ jobs:
           - ios
           - android
         realm-version:
-          # - v10 # Enable if we feel the need
+          - v11 # Enable if we feel the need
           - latest
-          - next
+          # - next
         react-native-version:
           - latest
           - next
@@ -41,7 +41,8 @@ jobs:
           # - 14.0.1
           - 13.1
         node:
-          - 16
+          # RN bumped minimum Node version: https://github.com/huntie/react-native/blob/6cb6b81dd1c6b74a0f4bac5b06fa5aef93b48fe4/CHANGELOG.md?plain=1#L15
+          - 18
     env:
       DEVELOPER_DIR: /Applications/Xcode_${{ matrix.xcode }}.app
     steps:
