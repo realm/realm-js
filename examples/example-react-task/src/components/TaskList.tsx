@@ -18,7 +18,7 @@
 
 import { Results } from 'realm';
 
-import { Task } from '../models/Task';
+import type { Task } from '../models/Task';
 import { TaskItem } from './TaskItem';
 import styles from '../styles/TaskList.module.css';
 
@@ -28,6 +28,9 @@ type TaskListProps = {
   onDeleteTask: (task: Task) => void;
 };
 
+/**
+ * Displays a list of tasks.
+ */
 export function TaskList({ tasks, onToggleTaskStatus, onDeleteTask }: TaskListProps) {
   return (
     <div className={styles.tasks}>

@@ -24,6 +24,9 @@ type AddTaskFormProps = {
   onSubmit: (description: string) => void;
 };
 
+/**
+ * Form for adding a new task.
+ */
 export function AddTaskForm({ onSubmit }: AddTaskFormProps) {
   const [description, setDescription] = useState('');
 
