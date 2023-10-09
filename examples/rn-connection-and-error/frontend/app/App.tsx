@@ -24,6 +24,7 @@ import {AppProvider, RealmProvider, UserProvider} from '@realm/react';
 import {ATLAS_APP_ID, SYNC_STORE_ID} from './atlas-app-services/config';
 import {AuthResultBoundary} from './components/AuthResultBoundary';
 import {Kiosk} from './models/Kiosk';
+import {Loading} from './components/Loading';
 import {LoginScreen} from './screens/LoginScreen';
 import {Product} from './models/Product';
 import {Store} from './models/Store';
@@ -107,6 +108,8 @@ function App() {
             Note that `user` does not need to be defined in the `sync` config
             since the `RealmProvider` will set it for you once authenticated. */}
             <RealmProvider
+              // The fallback component will be rendered until the realm is opened.
+              fallback={Loading}
               schema={[Store, Kiosk, Product]}
               sync={{
                 flexible: true,
@@ -156,7 +159,7 @@ function App() {
                 // (`OpenRealmBehaviorType.OpenImmediately`), or (b) wait for any non-synced
                 // data to be fully downloaded (`OpenRealmBehaviorType.DownloadBeforeOpen`).
                 newRealmFileBehavior: {
-                  type: OpenRealmBehaviorType.OpenImmediately,
+                  type: OpenRealmBehaviorType.DownloadBeforeOpen,
                 },
                 existingRealmFileBehavior: {
                   type: OpenRealmBehaviorType.OpenImmediately,

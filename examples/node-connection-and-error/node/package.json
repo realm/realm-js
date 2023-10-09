@@ -1,0 +1,28 @@
+{
+  "name": "@realm/example-node-connection-and-error",
+  "version": "1.0.0",
+  "description": "An example app using Atlas Device Sync for showcasing how to detect various changes in connection state, user state, sync errors, and product inventory.",
+  "main": "src/app.ts",
+  "scripts": {
+    "build": "tsc",
+    "start": "npm run success",
+    "success": "npm run build && node dist/app.js success",
+    "register-invalid": "npm run build && node dist/app.js register-invalid",
+    "register-email-in-use": "npm run build && node dist/app.js register-email-in-use",
+    "login-invalid": "npm run build && node dist/app.js login-invalid",
+    "login-non-existent-email": "npm run build && node dist/app.js login-non-existent-email",
+    "sync-error": "npm run build && node dist/app.js sync-error",
+    "client-reset": "npm run build && node dist/app.js client-reset",
+    "rm-local-db": "rm -rf mongodb-realm/",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "dependencies": {
+    "realm": "^12.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.5.7",
+    "typescript": "^5.1.6"
+  }
+}

@@ -88,7 +88,7 @@ When opening a Realm, we can specify the behavior in the Realm configuration whe
 * `OpenRealmBehaviorType.DownloadBeforeOpen`
   * If there is data to be downloaded, this waits for the data to be fully synced before opening the Realm.
 
-This app opens a Realm via `RealmProvider` (see [AppSync.tsx](./frontend/app/AppSync.tsx)) and passes the configuration as props. We use `OpenImmediately` for new and existing Realm files in order to use the app while offline.
+This app opens a Realm via `RealmProvider` (see [AppSync.tsx](./frontend/app/AppSync.tsx)) and passes the configuration as props. We use `DownloadBeforeOpen` for new Realm files (first-time opens) in order to show a loading indicator (via `RealmProvider`'s `fallback` prop) until the data has been synced. We use `OpenImmediately` for existing Realm files in order to use the app while offline if the user has logged in at least once before.
 
 > See [OpenRealmBehaviorConfiguration](https://www.mongodb.com/docs/realm-sdks/js/latest/types/OpenRealmBehaviorConfiguration.html) for possible configurations of new and existing Realm file behaviors.
 

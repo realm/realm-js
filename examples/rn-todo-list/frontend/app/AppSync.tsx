@@ -21,6 +21,7 @@ import {SafeAreaView, StyleSheet} from 'react-native';
 import {OpenRealmBehaviorType} from 'realm';
 import {AppProvider, RealmProvider, UserProvider} from '@realm/react';
 
+import {Loading} from './components/Loading';
 import {LoginScreen} from './screens/LoginScreen';
 import {Task} from './models/Task';
 import {TaskScreenSync} from './screens/TaskScreenSync';
@@ -48,6 +49,8 @@ export function AppSync({appId}: AppSyncProps) {
           Note that `user` does not need to be defined in the `sync` config
           since the `RealmProvider` will set it for you once authenticated. */}
           <RealmProvider
+            // The fallback component will be rendered until the realm is opened.
+            fallback={Loading}
             schema={schemas}
             sync={{
               flexible: true,
@@ -67,7 +70,7 @@ export function AppSync({appId}: AppSyncProps) {
               // For more possible configurations of new and existing Realm file behaviors, see:
               // https://www.mongodb.com/docs/realm-sdks/js/latest/types/OpenRealmBehaviorConfiguration.html
               newRealmFileBehavior: {
-                type: OpenRealmBehaviorType.OpenImmediately,
+                type: OpenRealmBehaviorType.DownloadBeforeOpen,
               },
               existingRealmFileBehavior: {
                 type: OpenRealmBehaviorType.OpenImmediately,
