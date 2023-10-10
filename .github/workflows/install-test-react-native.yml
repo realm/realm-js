@@ -21,20 +21,20 @@ jobs:
       matrix:
         platform:
           - ios
-          #- android
+          - android
         realm-version:
-          #- v11 # Enable if we feel the need
+          - v11 # Enable if we feel the need
           - latest
           # - next
         react-native-version:
-          #- latest
+          - latest
           - next
           # - nightly # Enable if it's not too noizy
         new-architecture:
-          #- true
+          - true
           - false
         engine:
-          #- jsc
+          - jsc
           - hermes
         # See https://github.com/actions/runner-images/blob/main/images/macos/macos-12-Readme.md#xcode
         xcode:
