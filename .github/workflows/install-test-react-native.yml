@@ -62,9 +62,9 @@ jobs:
         run: ccache --set-config="compiler_check=content"
 
       # TODO: Remove if this becomes unneeded in the future
-      - name: Invoke the simulator (making subsequent "open -a Simulator" calls work)
-        if: ${{ matrix.platform == 'ios' }}
-        run: open -a /Applications/Xcode_${{ matrix.xcode }}/Contents/Developer/Applications/Simulator.app/Contents/MacOS/Simulator
+      # - name: Invoke the simulator (making subsequent "open -a Simulator" calls work)
+      #   if: ${{ matrix.platform == 'ios' }}
+      #   run: open -a /Applications/Xcode_${{ matrix.xcode }}/Contents/Developer/Applications/Simulator.app/Contents/MacOS/Simulator
 
       - name: Install dependencies of the CLI
         run: npm ci
