@@ -38,8 +38,8 @@ jobs:
           - hermes
         # See https://github.com/actions/runner-images/blob/main/images/macos/macos-12-Readme.md#xcode
         xcode:
-          # - 14.0.1
-          - 13.1
+          - 14.2
+          #- 13.1
         node:
           # RN bumped minimum Node version: https://github.com/huntie/react-native/blob/6cb6b81dd1c6b74a0f4bac5b06fa5aef93b48fe4/CHANGELOG.md?plain=1#L15
           - 18
