@@ -1,14 +1,4 @@
-## vNext (TBD)
-
-### Deprecations
-* None
-
-### Enhancements
-* None
-
-### Fixed
-* User deletion did not rerender
-* None
+## realm-react-v0.6.2-rc.1 (2023-10-10)
 
 ### Compatibility
 * React Native >= v0.71.4
