@@ -14,7 +14,7 @@ defaults:
 jobs:
   install:
     name: Install Test on React Native ${{ matrix.platform == 'ios' && 'iOS' || 'Android' }} realm@${{ matrix.realm-version }}, react-native@${{ matrix.react-native-version }} new architecture ${{ matrix.new-architecture && 'enabled' || 'disabled' }} running ${{ matrix.engine }}
-    runs-on: macos-12
+    runs-on: macos-13
     timeout-minutes: 120
     strategy:
       fail-fast: false
@@ -38,7 +38,7 @@ jobs:
           - hermes
         # See https://github.com/actions/runner-images/blob/main/images/macos/macos-12-Readme.md#xcode
         xcode:
-          - 14.2
+          - 15.0
           #- 13.1
         node:
           # RN bumped minimum Node version: https://github.com/huntie/react-native/blob/6cb6b81dd1c6b74a0f4bac5b06fa5aef93b48fe4/CHANGELOG.md?plain=1#L15
