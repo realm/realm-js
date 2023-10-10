@@ -30,7 +30,6 @@ const __dirname = new URL(".", import.meta.url).pathname;
 const DEFAULT_APP_PATH = path.resolve(__dirname, "app");
 const PATCHES_PATH = path.resolve(__dirname, "patches");
 const APP_JS_PATH = path.resolve(PATCHES_PATH, "App.js");
-const GEMFILE_PATCH_PATH = path.resolve(PATCHES_PATH, "Gemfile.patch");
 const CCACHE_PODFILE_PATCH_PATH = path.resolve(PATCHES_PATH, "ccache-Podfile.patch");
 const CCACHE_PODFILE_PATCH_PATH_PRE_73 = path.resolve(PATCHES_PATH, "ccache-Podfile-pre-73.patch");
 const PORT = 3000;
@@ -163,13 +162,6 @@ yargs(hideBin(process.argv))
       const { version: resolvedReactNativeVersion } = readPackageJson(
         path.resolve(appPath, "node_modules/react-native"),
       );
-
-      // At the time of development, there was a bug with the latest Cocoapods (https://github.com/CocoaPods/CocoaPods/pull/12082)
-      // This patch will correct this and can most likely be removed by the time you read this.
-      const gemfilePath = path.resolve(appPath, "Gemfile");
-      console.log(`Patching Gemfile to use pin activesupport to supported version (${gemfilePath})`);
-
-      applyPatch(GEMFILE_PATCH_PATH, gemfilePath);
 
       const podfilePath = path.resolve(appPath, "ios", "Podfile");
       console.log(`Patching podfile to use ccache (${podfilePath})`);
