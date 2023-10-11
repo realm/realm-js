@@ -14,7 +14,7 @@ defaults:
 jobs:
   install:
     name: Install Test on React Native ${{ matrix.platform == 'ios' && 'iOS' || 'Android' }} realm@${{ matrix.realm-version }}, react-native@${{ matrix.react-native-version }} new architecture ${{ matrix.new-architecture && 'enabled' || 'disabled' }} running ${{ matrix.engine }}
-    runs-on: macos-13-xlarge
+    runs-on: macos-13
     timeout-minutes: 120
     strategy:
       fail-fast: false
