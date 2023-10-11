@@ -288,10 +288,14 @@ yargs(hideBin(process.argv))
         }
       } finally {
         // Kill metro, in silence
+        console.log("exiting metro...");
         metro.removeListener("exit", prematureExitCallback);
         metro.kill();
+        console.log("shuting down server...");
         // Stop listening for the app
         server.close();
+        console.log("test complete");
+        process.exit();
       }
     },
   )
