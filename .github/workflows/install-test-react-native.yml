@@ -27,8 +27,8 @@ jobs:
           - latest
           #- next
         react-native-version:
-          #- latest
-          - next
+          - latest
+          #- next
           # - nightly # Enable if it's not too noizy
         new-architecture:
           #- true
@@ -42,7 +42,7 @@ jobs:
           #- 13.1
         node:
           # RN bumped minimum Node version: https://github.com/huntie/react-native/blob/6cb6b81dd1c6b74a0f4bac5b06fa5aef93b48fe4/CHANGELOG.md?plain=1#L15
-          - 18
+          - 16
     # env:
     #   DEVELOPER_DIR: /Applications/Xcode_${{ matrix.xcode }}.app
     steps:
