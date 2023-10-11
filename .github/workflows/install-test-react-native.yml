@@ -93,7 +93,7 @@ jobs:
         if: ${{ matrix.platform == 'android' }}
         with:
           distribution: 'zulu'
-          java-version: '11'
+          java-version: '17'
 
       - name: Run test (iOS)
         if: ${{ matrix.platform == 'ios' }}
