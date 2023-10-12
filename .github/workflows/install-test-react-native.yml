@@ -107,7 +107,7 @@ jobs:
           api-level: 29
           target: google_apis
           script: npm test -- --platform android
-          emulator-options: -no-snapshot-load -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
           working-directory: install-tests/react-native
 
