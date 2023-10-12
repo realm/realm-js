@@ -290,6 +290,17 @@ yargs(hideBin(process.argv))
         // Kill metro, in silence
         metro.removeListener("exit", prematureExitCallback);
         metro.kill();
+
+        // Ensure metro is really dead
+        const METRO_PORT = 8081;
+        cp.exec(`lsof -i :${METRO_PORT} | grep LISTEN | awk '{print $2}' | xargs kill -9`, (error) => {
+          if (error) {
+            console.error(`Failed to kill process on port ${PORT}:`, error);
+          } else {
+            console.log(`Killed process on port ${PORT}`);
+          }
+        });
+
         // Stop listening for the app
         server.close(() => process.exit());
       }
