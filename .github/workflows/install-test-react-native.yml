@@ -14,6 +14,7 @@ defaults:
 jobs:
   install:
     name: Install Test on React Native ${{ matrix.platform == 'ios' && 'iOS' || 'Android' }} realm@${{ matrix.realm-version }}, react-native@${{ matrix.react-native-version }} new architecture ${{ matrix.new-architecture && 'enabled' || 'disabled' }} running ${{ matrix.engine }}
+    # macos-13-xlarge is an M1 mac (which has no Android SDK)
     runs-on: ${{ matrix.platform == 'ios' && 'macos-13-xlarge' || 'macos-13-large' }}
     timeout-minutes: 120
     strategy:
@@ -23,9 +24,9 @@ jobs:
           - ios
           - android
         realm-version:
-          #- v11 # Enable if we feel the need
+          - v11 # For the last major version
           - latest
-          - next
+          #- next # For release candidateds
         react-native-version:
           - latest
           - next
@@ -39,12 +40,9 @@ jobs:
         # See https://github.com/actions/runner-images/blob/main/images/macos/macos-12-Readme.md#xcode
         xcode:
           - 15.0
-          #- 13.1
         node:
           # RN bumped minimum Node version: https://github.com/huntie/react-native/blob/6cb6b81dd1c6b74a0f4bac5b06fa5aef93b48fe4/CHANGELOG.md?plain=1#L15
           - 18
-    # env:
-    #   DEVELOPER_DIR: /Applications/Xcode_${{ matrix.xcode }}.app
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
@@ -61,29 +59,17 @@ jobs:
       - name: Configure ccache
         run: ccache --set-config="compiler_check=content"
 
-      # TODO: Remove if this becomes unneeded in the future
+      # Invoke a specific iPhone simulator to ensure AppleTV is not chosen as the default simulator
       - uses: futureware-tech/simulator-action@v2
         if: ${{ matrix.platform == 'ios' }}
         with:
           model: "iPhone 14"
-      # - name: Invoke the simulator (making subsequent "open -a Simulator" calls work)
-      #   if: ${{ matrix.platform == 'ios' }}
-      #   run: open -a /Applications/Xcode_${{ matrix.xcode }}/Contents/Developer/Applications/Simulator.app/Contents/MacOS/Simulator
 
       - name: Install dependencies of the CLI
         run: npm ci
 
       - name: Initialize app
-        # Using "--skip-bundle-install" to let the setup-ruby action install the bundle
-        # Using "--skip-pod-install" to ensure it happens after setup-ruby has executed
         run: npm run init -- --skip-bundle-install --skip-pod-install --realm-version ${{ matrix.realm-version }} --react-native-version ${{ matrix.react-native-version }} --engine ${{ matrix.engine }} --new-architecture ${{ matrix.new-architecture }}
-
-      # - uses: ruby/setup-ruby@v1
-      #   if: ${{ matrix.platform == 'ios' }}
-      #   with:
-      #     ruby-version: '3.0'
-      #     bundler-cache: true
-      #     working-directory: install-tests/react-native/app
 
       - if: ${{ matrix.platform == 'ios' }}
         run: pod install

@@ -224,6 +224,7 @@ yargs(hideBin(process.argv))
         process.exit(code || 1);
       }
 
+      // --no-interactive was added to turn off the dev menu, which was throwing an EIO error when the process was killed
       const metro = cp.spawn("npx", ["react-native", "start", "--no-interactive"], { cwd: appPath, stdio: "inherit" });
       metro.addListener("exit", prematureExitCallback);
 
@@ -292,6 +293,7 @@ yargs(hideBin(process.argv))
         metro.kill();
 
         // Ensure metro is really dead
+        // If this is removed, it's highly likely the android emulator runner will not shut down correctly
         const METRO_PORT = 8081;
         cp.exec(`lsof -i :${METRO_PORT} | grep LISTEN | awk '{print $2}' | xargs kill -9`, (error) => {
           if (error) {
