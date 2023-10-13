@@ -26,7 +26,7 @@ jobs:
         realm-version:
           - v11 # For the last major version
           - latest
-          #- next # For release candidateds
+          #- next # For release candidates
         react-native-version:
           - latest
           - next
