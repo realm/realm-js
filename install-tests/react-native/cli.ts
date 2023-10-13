@@ -31,8 +31,7 @@ const DEFAULT_APP_PATH = path.resolve(__dirname, "app");
 const PATCHES_PATH = path.resolve(__dirname, "patches");
 const APP_JS_PATH = path.resolve(PATCHES_PATH, "App.js");
 const CCACHE_PODFILE_PATCH_PATH = path.resolve(PATCHES_PATH, "ccache-Podfile.patch");
-const JSC_PODFILE_PATCH_PATH = path.resolve(PATCHES_PATH, "jsc-Podfile.patch");
-const JSC_BUILD_GRADLE_PATCH_PATH = path.resolve(PATCHES_PATH, "jsc-build.gradle.patch");
+const CCACHE_PODFILE_PATCH_PATH_PRE_73 = path.resolve(PATCHES_PATH, "ccache-Podfile-pre-73.patch");
 const PORT = 3000;
 const TIMEOUT = 5 * 60 * 1000; // 5 min should be plenty of time from app has launched until message gets received
 
@@ -160,26 +159,17 @@ yargs(hideBin(process.argv))
       // We're using force to succeed on peer dependency issues
       exec("npm", ["install", `realm@${realmVersion}`, "--force"], { cwd: appPath });
 
-      const podfilePath = path.resolve(appPath, "ios", "Podfile");
-      console.log(`Patching podfile to use ccache (${podfilePath})`);
-      applyPatch(CCACHE_PODFILE_PATCH_PATH, podfilePath);
-
       const { version: resolvedReactNativeVersion } = readPackageJson(
         path.resolve(appPath, "node_modules/react-native"),
       );
 
-      // TODO: Delete this once 0.71.0 or above is latest
-      if (semver.satisfies(resolvedReactNativeVersion, "<0.71.0")) {
-        if (engine === "jsc") {
-          console.log(`Patching Podfile to use JSC (${podfilePath})`);
-          applyPatch(JSC_PODFILE_PATCH_PATH, podfilePath);
+      const podfilePath = path.resolve(appPath, "ios", "Podfile");
+      console.log(`Patching podfile to use ccache (${podfilePath})`);
 
-          const appGradleBuildPath = path.resolve(appPath, "android", "app", "build.gradle");
-          console.log(`Patching app/build.gradle to use JSC (${appGradleBuildPath})`);
-          applyPatch(JSC_BUILD_GRADLE_PATCH_PATH, appGradleBuildPath);
-        }
+      if (semver.satisfies(resolvedReactNativeVersion, "<0.73.0")) {
+        applyPatch(CCACHE_PODFILE_PATCH_PATH_PRE_73, podfilePath);
       } else {
-        console.log("Skipping patch of Podfile to use JSC, relying on USE_HERMES env variable instead");
+        applyPatch(CCACHE_PODFILE_PATCH_PATH, podfilePath);
       }
 
       // Store Gradle properties for RN >=0.71.0
@@ -234,7 +224,8 @@ yargs(hideBin(process.argv))
         process.exit(code || 1);
       }
 
-      const metro = cp.spawn("npx", ["react-native", "start"], { cwd: appPath, stdio: "inherit" });
+      // --no-interactive was added to turn off the dev menu, which was throwing an EIO error when the process was killed
+      const metro = cp.spawn("npx", ["react-native", "start", "--no-interactive"], { cwd: appPath, stdio: "inherit" });
       metro.addListener("exit", prematureExitCallback);
 
       const server = createServer().listen(PORT);
@@ -300,8 +291,20 @@ yargs(hideBin(process.argv))
         // Kill metro, in silence
         metro.removeListener("exit", prematureExitCallback);
         metro.kill();
+
+        // Ensure metro is really dead
+        // If this is removed, it's highly likely the android emulator runner will not shut down correctly
+        const METRO_PORT = 8081;
+        cp.exec(`lsof -i :${METRO_PORT} | grep LISTEN | awk '{print $2}' | xargs kill -9`, (error) => {
+          if (error) {
+            console.error(`Failed to kill process on port ${PORT}:`, error);
+          } else {
+            console.log(`Killed process on port ${PORT}`);
+          }
+        });
+
         // Stop listening for the app
-        server.close();
+        server.close(() => process.exit());
       }
     },
   )
