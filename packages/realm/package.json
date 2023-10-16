@@ -16,7 +16,8 @@
     "asyncstorage",
     "rocksdb",
     "leveldb",
-    "realm"
+    "realm",
+    "mongodb"
   ],
   "author": {
     "name": "MongoDB",
