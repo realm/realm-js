@@ -1,21 +1,29 @@
 {
   "name": "realm",
   "version": "12.2.1",
-  "description": "Realm is a mobile database: an alternative to SQLite and key-value stores",
+  "description": "Realm by MongoDB is an offline-first mobile database: an alternative to SQLite and key-value stores",
   "license": "apache-2.0",
   "homepage": "https://www.mongodb.com/docs/realm/",
   "keywords": [
     "database",
     "db",
+    "storage",
     "react",
     "react-native",
     "persistence",
+    "local storage",
     "localstorage",
     "sqlite",
+    "async storage",
     "asyncstorage",
     "rocksdb",
     "leveldb",
-    "realm"
+    "realm",
+    "mongodb",
+    "offline first",
+    "offlinefirst",
+    "localfirst",
+    "local first"
   ],
   "author": {
     "name": "MongoDB",
