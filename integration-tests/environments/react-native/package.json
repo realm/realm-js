@@ -172,6 +172,7 @@
   },
   "dependencies": {
     "@react-native-community/art": "^1.2.0",
+    "@realm/app-importer": "*",
     "@realm/integration-tests": "*",
     "mocha-junit-reporter": "^2.0.0",
     "mocha-remote-client": "^1.6.1",
@@ -182,7 +183,6 @@
     "react-native-polyfill-globals": "^3.1.0",
     "react-native-progress": "^4.1.2",
     "realm": "*",
-    "@realm/app-importer": "*",
     "text-encoding": "^0.7.0"
   },
   "devDependencies": {
@@ -201,6 +201,7 @@
     "metro-react-native-babel-preset": "0.76.8",
     "mocha-github-actions-reporter": "^0.2.3",
     "mocha-remote-cli": "^1.6.1",
+    "pod-install": "^0.1.39",
     "react-test-renderer": "18.2.0",
     "typescript": "4.8.4"
   }
