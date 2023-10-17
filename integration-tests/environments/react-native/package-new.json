@@ -1,5 +1,5 @@
 {
-  "name": "@realm/example-rn-connection-and-error",
+  "name": "RealmReactNativeTests",
   "version": "0.0.1",
   "private": true,
   "scripts": {
@@ -10,11 +10,8 @@
     "test": "jest"
   },
   "dependencies": {
-    "@realm/react": "^0.6.0",
     "react": "18.2.0",
-    "react-native": "0.72.6",
-    "react-native-get-random-values": "^1.9.0",
-    "realm": "^12.2.0"
+    "react-native": "0.72.6"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
