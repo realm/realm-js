@@ -11,13 +11,19 @@
     "react",
     "react-native",
     "persistence",
+    "local storage",
     "localstorage",
     "sqlite",
+    "async storage",
     "asyncstorage",
     "rocksdb",
     "leveldb",
     "realm",
-    "mongodb"
+    "mongodb",
+    "offline first",
+    "offlinefirst",
+    "localfirst",
+    "local first"
   ],
   "author": {
     "name": "MongoDB",
