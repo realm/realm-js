@@ -24,6 +24,7 @@ import { generatePartition } from "../../utils/generators";
 import { baseUrl } from "../../utils/import-app";
 import { select } from "../../utils/select";
 import { buildAppConfig } from "../../utils/build-app-config";
+import { deleteRealm } from "../../utils/delete-realm";
 
 const TestObjectSchema: Realm.ObjectSchema = {
   primaryKey: "_id",
@@ -321,7 +322,8 @@ describe("App", () => {
           _sessionStopPolicy: "immediately", // Make it safe to delete files after realm.close()
         },
       };
-      Realm.deleteFile(realmConfig);
+      await deleteRealm(realmConfig);
+
       const realm = await Realm.open(realmConfig);
       expect(nCalls).equals(1);
       realm.write(() => {
@@ -344,7 +346,7 @@ describe("App", () => {
       expect(realm.objects("Dog").length).equals(2);
       realm.close();
 
-      Realm.deleteFile(realmConfig);
+      await deleteRealm(realmConfig);
 
       const realm2 = await Realm.open(realmConfig);
       expect(nCalls).equals(2);

@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import Realm, { User } from "realm";
+import { deleteRealm } from "../utils/delete-realm";
 
 import { openRealm, OpenRealmConfiguration } from "../utils/open-realm";
 
@@ -50,7 +51,7 @@ export function openRealmHook(config: OpenRealmConfiguration = {}) {
         // Get rid of the Realm in any case
         delete this.realm;
         if (deleteFile) {
-          Realm.deleteFile(actualConfig);
+          await deleteRealm(actualConfig);
         }
         if (clearTestState) {
           Realm.clearTestState();

@@ -23,6 +23,7 @@ import { importAppBefore, openRealmBeforeEach } from "../../hooks";
 import { expectArraysEqual, expectDecimalEqual } from "../../utils/comparisons";
 import { sleep } from "../../utils/sleep";
 import { buildAppConfig } from "../../utils/build-app-config";
+import { deleteRealm } from "../../utils/delete-realm";
 
 const CarSchema: Realm.ObjectSchema = {
   name: "Car",
@@ -1472,26 +1473,26 @@ describe("Realmtest", () => {
         Realm.clearTestState();
       });
 
-      function expectDeletion(path?: string) {
+      async function expectDeletion(path?: string) {
         // Create the Realm with a schema
         const realm = new Realm({ path, schema: [PersonSchema, DogSchema] });
         realm.close();
         // Delete the Realm
-        Realm.deleteFile({ path });
+        await deleteRealm({ path });
         // Re-open the Realm without a schema and expect it to be empty
         const reopenedRealm = new Realm({ path });
         expect(reopenedRealm.schema).deep.equals([]);
       }
 
-      it("deletes the default Realm", () => {
-        expectDeletion();
+      it("deletes the default Realm", async () => {
+        await expectDeletion();
       });
 
       // TODO: Fix the issue on Android that prevents this from passing
       // @see https://github.com/realm/realm-js-private/issues/507
 
-      it.skipIf(environment.android, "deletes a Realm with a space in its path", () => {
-        expectDeletion("my realm.realm");
+      it.skipIf(environment.android, "deletes a Realm with a space in its path", async () => {
+        await expectDeletion("my realm.realm");
       });
     });
   });
@@ -1569,7 +1570,7 @@ describe("Realmtest", () => {
       Realm.clearTestState();
     });
 
-    it("onFirstOpen properly initializes data", () => {
+    it("onFirstOpen properly initializes data", async () => {
       const data = [1, 2, 3];
       const initializer = (r: Realm) => {
         data.forEach((n) => r.create(IntOnlySchema.name, { intCol: n }));
@@ -1579,7 +1580,7 @@ describe("Realmtest", () => {
         schema: [IntOnlySchema],
         onFirstOpen: initializer,
       };
-      Realm.deleteFile(config);
+      await deleteRealm(config);
 
       const validateRealm = (realm: Realm) => {
         let pass = 1;
@@ -2071,7 +2072,7 @@ describe("Realmtest", () => {
       Realm.clearTestState();
     });
 
-    it("data is deleted on realm with defaultpath", function (this: RealmContext) {
+    it("data is deleted on realm with defaultpath", async function (this: RealmContext) {
       const config = { schema: [TestObjectSchema] };
       const realm = new Realm(config);
 
@@ -2082,14 +2083,14 @@ describe("Realmtest", () => {
       expect(realm.objects("TestObject").length).equals(1);
       realm.close();
 
-      Realm.deleteFile(config);
+      await deleteRealm(config);
 
       const realm2 = new Realm(config);
       expect(realm2.objects("TestObject").length).equals(0);
       realm2.close();
     });
 
-    it("data is deleted on realm with custom path", function (this: RealmContext) {
+    it("data is deleted on realm with custom path", async function (this: RealmContext) {
       const config = { schema: [TestObjectSchema], path: "test-realm-delete-file.realm" };
       const realm = new Realm(config);
 
@@ -2100,7 +2101,7 @@ describe("Realmtest", () => {
       expect(realm.objects("TestObject").length).equals(1);
       realm.close();
 
-      Realm.deleteFile(config);
+      await deleteRealm(config);
 
       const realm2 = new Realm(config);
       expect(realm2.objects("TestObject").length).equals(0);
@@ -2111,7 +2112,7 @@ describe("Realmtest", () => {
   describe.skipIf(environment.missingServer, "with sync", () => {
     importAppBefore(buildAppConfig("with-anon").anonAuth().partitionBasedSync());
 
-    it("data is deleted on realm with custom path", function (this: RealmContext & AppContext) {
+    it("data is deleted on realm with custom path", async function (this: RealmContext & AppContext) {
       return this.app.logIn(Realm.Credentials.anonymous()).then(async (user) => {
         const config = {
           schema: [TestObjectWithPkSchema],
@@ -2122,7 +2123,7 @@ describe("Realmtest", () => {
         realm.close();
         const pathExistBeforeDelete = await fs.exists(path);
         expect(pathExistBeforeDelete).to.be.true;
-        Realm.deleteFile(config);
+        await deleteRealm(config);
         const pathExistAfterDelete = await fs.exists(path);
         expect(pathExistAfterDelete).to.be.false;
       });
