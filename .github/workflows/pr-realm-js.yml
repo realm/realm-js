@@ -60,9 +60,9 @@ jobs:
           - { os: android, runner: ubuntu-latest, arch: x86, artifact-path: packages/realm/react-native/android/src/main/jniLibs }
           - { os: darwin, runner: macos-latest, arch: x64, artifact-path: packages/realm/prebuilds, test-node: true, test-electron: true }
           - { os: darwin, runner: macos-latest, arch: arm64, artifact-path: packages/realm/prebuilds, test-node: true, test-electron: true }
-          - { os: ios, runner: macos-latest, arch: simulator, artifact-path: packages/realm/react-native/ios/realm-js-ios.xcframework }
-          - { os: ios, runner: macos-latest, arch: catalyst, artifact-path: packages/realm/react-native/ios/realm-js-ios.xcframework }
-          - { os: ios, runner: macos-latest, arch: ios, artifact-path: packages/realm/react-native/ios/realm-js-ios.xcframework }
+          - { os: ios, runner: macos-latest-xlarge, arch: simulator, artifact-path: packages/realm/react-native/ios/realm-js-ios.xcframework }
+          - { os: ios, runner: macos-latest-xlarge, arch: catalyst, artifact-path: packages/realm/react-native/ios/realm-js-ios.xcframework }
+          - { os: ios, runner: macos-latest-xlarge, arch: ios, artifact-path: packages/realm/react-native/ios/realm-js-ios.xcframework }
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -72,7 +72,7 @@ jobs:
       - name: Setup node version
         uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 18
           cache: npm
 
       - name: Get NPM cache directory
@@ -244,7 +244,7 @@ jobs:
       SPAWN_LOGCAT: true
       BAAS_TAG: latest
       # Pin the Xcode version
-      DEVELOPER_DIR: /Applications/Xcode_13.4.1.app
+      DEVELOPER_DIR: /Applications/Xcode_14.3.1.app
     runs-on: ${{ matrix.variant.runner }}
     strategy:
       fail-fast: false
@@ -259,8 +259,8 @@ jobs:
           - { os: darwin, target: "test:ci:main", runner: macos-latest, environment: electron }
           - { os: darwin, target: "test:ci:renderer", runner: macos-latest, environment: electron }
           - { os: darwin, target: "test:ci", runner: macos-latest, environment: node }
-          - { os: android, target: "test:ci:android", runner: macos-latest, environment: react-native, arch: "armeabi-v7a" }
-          - { os: ios, target: "test:ci:ios", runner: macos-latest, environment: react-native, arch: "ios" }
+          - { os: android, target: "test:ci:android", runner: macos-latest-large, environment: react-native, arch: "armeabi-v7a" }
+          - { os: ios, target: "test:ci:ios", runner: macos-latest-xlarge, environment: react-native, arch: "ios" }
           #- { os: ios, target: "test:ci:catalyst", runner: macos-latest, environment: react-native, arch: "catalyst" }
     timeout-minutes: 60
     steps:
@@ -272,7 +272,7 @@ jobs:
       - name: Setup node version
         uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 18
           cache: npm
 
       - name: Generate server configuration
@@ -409,7 +409,7 @@ jobs:
         if: ${{ (matrix.variant.os == 'android') }}
         with:
           distribution: 'zulu' # See 'Supported distributions' for available options
-          java-version: '11'
+          java-version: '17'
 
       - name: Run ${{matrix.variant.target}} (${{ matrix.variant.os}} / ${{ matrix.variant.environment }})
         if: ${{ (matrix.variant.os == 'android') }}
