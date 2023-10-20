@@ -18,7 +18,7 @@
 
 import React from 'react';
 import {Alert, FlatList, StyleSheet, Text, View} from 'react-native';
-import {useAuth, useApp, useUser} from '@realm/react';
+import {useAuth} from '@realm/react';
 
 import {Button} from '../components/Button';
 import {KioskItem} from '../components/KioskItem';
@@ -41,11 +41,9 @@ export function StoreScreen() {
     triggerSyncError,
     triggerClientReset,
     refreshAccessToken,
+    deleteUser,
   } = useDemoSyncTriggers();
   const {logOut} = useAuth();
-  const user = useUser();
-  const app = useApp();
-
 
   return (
     <View style={styles.container}>
@@ -115,10 +113,7 @@ export function StoreScreen() {
               />
               <Button
                 extraStyles={[styles.button]}
-                onPress={() => {
-                  app.deleteUser(user);
-                  app.removeUser(user);
-                }}
+                onPress={deleteUser}
                 text="Delete User"
               />
             </View>
