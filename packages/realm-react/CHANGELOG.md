@@ -7,13 +7,12 @@
 * None
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None
+* Improved type generation, which fixed an issue with the `Realm.User` return from `useUser` ([#6196](https://github.com/realm/realm-js/issues/6196))
+* `UserProvider` will now always return a new `user` reference on change events. ([#6186](https://github.com/realm/realm-js/issues/6186))
 
 ### Compatibility
 * React Native >= v0.71.4
-* Realm Studio v14.0.0.
-* File format: generates Realms with format v23 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
+* Realm >= 11.0.0
 
 ### Internal
 <!-- * Either mention core version or upgrade -->
