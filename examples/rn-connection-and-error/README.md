@@ -71,6 +71,7 @@ It specifically addresses the following points:
       * With invalid password
       * With non-existent email
 * Listening (and triggering) when a user gets logged out.
+* Listening (and triggering) when a user gets removed.
 * Listening (and triggering) when a user's tokens are refreshed.
 * Listening (and triggering) when the underlying sync session:
   * Tries to connect
