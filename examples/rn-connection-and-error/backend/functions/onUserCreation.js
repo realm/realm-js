@@ -2,9 +2,6 @@
 
 /**
  * Adds custom user data to the Users collection when a new user is created.
- *
- * @note
- * WARNING: THIS FUNCTION EXISTS FOR DEMO PURPOSES AND SHOULD NOT BE USED IN PRODUCTION!
  */
 exports = async function onUserCreation(user) {
   const customUserDataCollection = context.services.get("mongodb-atlas").db("AuthExample").collection("Users");
