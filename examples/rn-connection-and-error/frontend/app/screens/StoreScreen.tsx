@@ -18,7 +18,7 @@
 
 import React from 'react';
 import {Alert, FlatList, StyleSheet, Text, View} from 'react-native';
-import {useAuth} from '@realm/react';
+import {useAuth, useUser} from '@realm/react';
 
 import {Button} from '../components/Button';
 import {KioskItem} from '../components/KioskItem';
@@ -44,6 +44,7 @@ export function StoreScreen() {
     deleteUser,
   } = useDemoSyncTriggers();
   const {logOut} = useAuth();
+  const user = useUser();
 
   return (
     <View style={styles.container}>
@@ -81,6 +82,11 @@ export function StoreScreen() {
                 text={isConnected ? 'Disconnect' : 'Connect'}
               />
             </View>
+            <View style={styles.status}>
+              <Text style={styles.statusText}>
+                Team: {user.customData?.team || '-'}
+              </Text>
+            </View>
             <View style={styles.triggerButtons}>
               <Button
                 extraStyles={[styles.button]}
@@ -115,6 +121,13 @@ export function StoreScreen() {
                 extraStyles={[styles.button]}
                 onPress={deleteUser}
                 text="Delete User"
+              />
+              <Button
+                extraStyles={[styles.button]}
+                onPress={() => {
+                  user.refreshCustomData();
+                }}
+                text="Refresh User Data"
               />
             </View>
           </View>
