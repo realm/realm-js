@@ -46,7 +46,6 @@ export function StoreScreen() {
   const user = useUser();
   const app = useApp();
 
-
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -82,6 +81,11 @@ export function StoreScreen() {
                 onPress={isConnected ? disconnect : reconnect}
                 text={isConnected ? 'Disconnect' : 'Connect'}
               />
+            </View>
+            <View style={styles.status}>
+              <Text style={styles.statusText}>
+                Team: {user.customData?.team || '-'}
+              </Text>
             </View>
             <View style={styles.triggerButtons}>
               <Button
@@ -120,6 +124,13 @@ export function StoreScreen() {
                   app.removeUser(user);
                 }}
                 text="Delete User"
+              />
+              <Button
+                extraStyles={[styles.button]}
+                onPress={() => {
+                  user.refreshCustomData();
+                }}
+                text="Refresh User Data"
               />
             </View>
           </View>
