@@ -49,9 +49,6 @@ export const UserProvider: React.FC<UserProviderProps> = ({ fallback: Fallback, 
 
   useEffect(() => {
     const event = () => {
-      console.log("UserProvider: user changed");
-      console.log("UserProvider: app.currentUser", app.currentUser);
-      console.log("UserProvider: app.currentUser.id", app.currentUser);
       setUser(app.currentUser);
     };
     user?.addListener(event);
