@@ -54,7 +54,17 @@ function getPartitionValue() {
 }
 
 async function triggerClientReset(app: App, user: User): Promise<void> {
-  await user.functions.triggerClientReset(app.id, user.id);
+  const maxAttempts = 5;
+  let deleted = false;
+  let count = maxAttempts;
+  while (count > 0) {
+    deleted = await user.functions.triggerClientReset(app.id, user.id) as boolean;
+    if (deleted) {
+      return;
+    }
+    count--;
+  }
+  throw new Error(`Cannot trigger client reset in ${maxAttempts} attempts`);
 }
 
 async function waitServerSideClientResetDiscardUnsyncedChangesCallbacks(
@@ -194,8 +204,8 @@ async function waitSimulatedClientResetDiscardUnsyncedChangesCallbacks(
   if (useFlexibleSync) {
     addSubscriptions(realm);
   }
-
   await realm.syncSession?.uploadAllLocalChanges();
+
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore calling undocumented method _simulateError
   realm.syncSession?._simulateError(211, "Simulate Client Reset", "realm::sync::ProtocolError", false); // 211 -> diverging histories
@@ -226,7 +236,7 @@ async function waitSimulatedClientResetRecoverCallbacks(
           afterCalled = true;
           actionAfter(before, after);
           if (beforeCalled) {
-            resetHandle.resolve();
+           resetHandle.resolve();
           }
         },
         onBefore: (realm: Realm) => {
@@ -283,7 +293,7 @@ function getSchema(useFlexibleSync: boolean) {
 }
 
 // FIXME: testing flexible sync is currently disabled as it is timing out
-[false /*,  true*/].forEach((useFlexibleSync) => {
+[false/*, true*/].forEach((useFlexibleSync) => {
   describe.skipIf(
     environment.missingServer,
     `client reset handling (${getPartialTestTitle(useFlexibleSync)} sync)`,
@@ -291,8 +301,8 @@ function getSchema(useFlexibleSync: boolean) {
       this.longTimeout(); // client reset with flexible sync can take quite some time
       importAppBefore(
         useFlexibleSync
-          ? buildAppConfig("with-flx").anonAuth().flexibleSync()
-          : buildAppConfig("with-pbs").anonAuth().partitionBasedSync(),
+        ? buildAppConfig("with-flx").anonAuth().flexibleSync().triggerClientResetFunction()
+          : buildAppConfig("with-pbs").anonAuth().partitionBasedSync().triggerClientResetFunction(),
       );
       authenticateUserBefore();
 
@@ -417,7 +427,7 @@ function getSchema(useFlexibleSync: boolean) {
         });
       });
 
-      it.skip(`client reset fails, the error handler is called (${getPartialTestTitle(
+      it(`client reset fails, the error handler is called (${getPartialTestTitle(
         useFlexibleSync,
       )})`, async function (this: RealmContext) {
         // if client reset fails, the error handler is called
@@ -456,9 +466,10 @@ function getSchema(useFlexibleSync: boolean) {
         });
       });
 
-      it.skip(`handles discard local simulated client reset with ${getPartialTestTitle(
+      it(`handles discard local simulated client reset with ${getPartialTestTitle(
         useFlexibleSync,
       )} sync enabled`, async function (this: RealmContext) {
+        this.timeout(120 * 1000);
         // (i)   using a client reset in "DiscardUnsyncedChanges" mode, a fresh copy
         //       of the Realm will be downloaded (resync)
         // (ii)  two callback will be called, while the sync error handler is not
@@ -481,7 +492,7 @@ function getSchema(useFlexibleSync: boolean) {
         );
       });
 
-      it.skip(`handles simulated client reset with recovery with ${getPartialTestTitle(
+      it(`handles simulated client reset with recovery with ${getPartialTestTitle(
         useFlexibleSync,
       )} sync enabled`, async function (this: RealmContext) {
         const clientResetBefore = (realm: Realm): void => {
@@ -501,7 +512,7 @@ function getSchema(useFlexibleSync: boolean) {
         );
       });
 
-      it.skip(`handles discard local client reset with ${getPartialTestTitle(
+      it(`handles discard local client reset with ${getPartialTestTitle(
         useFlexibleSync,
       )} sync enabled`, async function (this: RealmContext) {
         // (i)   using a client reset in "DiscardUnsyncedChanges" mode, a fresh copy
@@ -527,7 +538,7 @@ function getSchema(useFlexibleSync: boolean) {
         );
       });
 
-      it.skip(`handles recovery client reset with ${getPartialTestTitle(
+      it(`handles recovery client reset with ${getPartialTestTitle(
         useFlexibleSync,
       )} sync enabled`, async function (this: RealmContext) {
         // (i)   using a client reset in "Recovery" mode, a fresh copy

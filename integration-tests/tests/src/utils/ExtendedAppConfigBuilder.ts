@@ -178,7 +178,7 @@ export class ExtendedAppConfigBuilder extends AppConfigBuilder {
   }
 
   triggerClientResetFunction() {
-    this.function({
+    return this.function({
       name: "triggerClientReset",
       private: false,
       run_as_system: true,

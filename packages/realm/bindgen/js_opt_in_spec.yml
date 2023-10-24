@@ -77,6 +77,9 @@ records:
       - ssl_verify_callback
       - cancel_waits_on_nonfatal_error
       - proxy_config
+      - client_resync_mode
+      - notify_before_client_reset
+      - notify_after_client_reset
 
   SyncProxyConfig:
     fields:

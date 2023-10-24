@@ -7,8 +7,7 @@
 * None
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None
+* Callbacks during client reset were not called. ([#6201](https://github.com/realm/realm-js/issues/6201), since v12.0.0)
 
 ### Compatibility
 * React Native >= v0.71.4
@@ -19,6 +18,7 @@
 <!-- * Either mention core version or upgrade -->
 <!-- * Using Realm Core vX.Y.Z -->
 <!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
+* Some disabled tests for client reset (partition based sync) have been abled. ([#6201](https://github.com/realm/realm-js/issues/6201)
 
 ## 12.2.1 (2023-10-05)
 
