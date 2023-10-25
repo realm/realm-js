@@ -178,7 +178,7 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
       writable: false,
       value: mixedToBinding.bind(undefined, realm.internal),
     });
-    // See https://tc39.es/ecma262/multipage/fundamental-objects.html#sec-symbol.unscopables
+    // See https://tc39.es/ecma262/multipage/indexed-collections.html#sec-array.prototype-@@unscopables
     Object.defineProperty(this, Symbol.unscopables, {
       enumerable: false,
       configurable: true,
