@@ -145,12 +145,13 @@ export PATH=<ccache location>/libexec:$PATH
 
 ## Cloning the repository
 
-To clone the RealmJS repository and install git submodules:
+To clone the RealmJS repository and install git submodules and dependencies.
 
 ```sh
 git clone https://github.com/realm/realm-js.git
 cd realm-js
 git submodule update --init --recursive
+npm install
 ```
 
 In order to improve the accuracy of `git blame` locally by ignoring commits in which the code was reformatted by an automated tool, run: `git config blame.ignoreRevsFile .gitignore-revs` from inside the repository.
