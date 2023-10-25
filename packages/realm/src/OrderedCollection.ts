@@ -178,6 +178,12 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
       writable: false,
       value: mixedToBinding.bind(undefined, realm.internal),
     });
+    // See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/@@unscopables#value
+    Object.defineProperty(this, Symbol.unscopables, {
+      enumerable: false,
+      configurable: true,
+      writable: false,
+    });
     return proxied;
   }
 
@@ -625,6 +631,43 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
   [Symbol.iterator](): IterableIterator<T> {
     return this.values();
   }
+
+  /**
+   * An Object whose truthy properties are properties that are excluded from the 'with'
+   * environment bindings of the associated objects.
+   */
+  readonly [Symbol.unscopables] = Object.assign(
+    // Using `Object.assign(Object.create(null), /* ... */)`
+    // rather than `{ __proto__: null, /* ... */ }` due to
+    // TypeScript incompatibilities with using `__proto__`.
+    // https://github.com/microsoft/TypeScript/issues/38385
+
+    // Make the object have `null` prototype to prevent
+    // `Object.prototype` methods from being unscopable.
+    Object.create(null),
+
+    // The default Array properties that are ignored for
+    // `with` statement-binding purposes:
+    // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/@@unscopables#description
+    {
+      at: true,
+      copyWithin: true,
+      entries: true,
+      fill: true,
+      find: true,
+      findIndex: true,
+      findLast: true,
+      findLastIndex: true,
+      flat: true,
+      flatMap: true,
+      includes: true,
+      keys: true,
+      toReversed: true,
+      toSorted: true,
+      toSpliced: true,
+      values: true,
+    },
+  );
 
   // Other methods
 
