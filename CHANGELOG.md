@@ -7,8 +7,7 @@
 * None
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None
+* `Symbol.unscopables` has been implemented on the base class of `Realm.Results`, `Realm.List`, and `Realm.Set`. ([#6215](https://github.com/realm/realm-js/pull/6215))
 
 ### Compatibility
 * React Native >= v0.71.4
