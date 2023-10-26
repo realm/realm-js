@@ -469,7 +469,6 @@ function getSchema(useFlexibleSync: boolean) {
       it(`handles discard local simulated client reset with ${getPartialTestTitle(
         useFlexibleSync,
       )} sync enabled`, async function (this: RealmContext) {
-        this.timeout(120 * 1000);
         // (i)   using a client reset in "DiscardUnsyncedChanges" mode, a fresh copy
         //       of the Realm will be downloaded (resync)
         // (ii)  two callback will be called, while the sync error handler is not
