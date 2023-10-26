@@ -58,7 +58,7 @@ async function triggerClientReset(app: App, user: User): Promise<void> {
   let deleted = false;
   let count = maxAttempts;
   while (count > 0) {
-    deleted = await user.functions.triggerClientReset(app.id, user.id) as boolean;
+    deleted = (await user.functions.triggerClientReset(app.id, user.id)) as boolean;
     if (deleted) {
       return;
     }
@@ -236,7 +236,7 @@ async function waitSimulatedClientResetRecoverCallbacks(
           afterCalled = true;
           actionAfter(before, after);
           if (beforeCalled) {
-           resetHandle.resolve();
+            resetHandle.resolve();
           }
         },
         onBefore: (realm: Realm) => {
@@ -293,7 +293,7 @@ function getSchema(useFlexibleSync: boolean) {
 }
 
 // FIXME: testing flexible sync is currently disabled as it is timing out
-[false/*, true*/].forEach((useFlexibleSync) => {
+[false /*, true*/].forEach((useFlexibleSync) => {
   describe.skipIf(
     environment.missingServer,
     `client reset handling (${getPartialTestTitle(useFlexibleSync)} sync)`,
@@ -301,7 +301,7 @@ function getSchema(useFlexibleSync: boolean) {
       this.longTimeout(); // client reset with flexible sync can take quite some time
       importAppBefore(
         useFlexibleSync
-        ? buildAppConfig("with-flx").anonAuth().flexibleSync().triggerClientResetFunction()
+          ? buildAppConfig("with-flx").anonAuth().flexibleSync().triggerClientResetFunction()
           : buildAppConfig("with-pbs").anonAuth().partitionBasedSync().triggerClientResetFunction(),
       );
       authenticateUserBefore();
