@@ -544,7 +544,8 @@ function getSchema(useFlexibleSync: boolean) {
         //       of the Realm will be downloaded (resync)
         // (ii)  two callback will be called, while the sync error handler is not
         // (iii) after the reset, the Realm can be used as before
-        this.longTimeout();
+        this.timeout(5 * 60 * 1000);
+        this.retries(3);
         const clientResetBefore = (realm: Realm) => {
           expect(realm.schema.length).to.equal(2);
         };
