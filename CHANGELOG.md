@@ -8,6 +8,7 @@
 
 ### Fixed
 * The `onBefore`, `onAfter`, and `onFallback` client reset callbacks were not called. ([#6201](https://github.com/realm/realm-js/issues/6201), since v12.0.0)
+* `Symbol.unscopables` has been implemented on the base class of `Realm.Results`, `Realm.List`, and `Realm.Set`. ([#6215](https://github.com/realm/realm-js/pull/6215))
 
 ### Compatibility
 * React Native >= v0.71.4

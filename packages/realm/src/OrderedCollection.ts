@@ -178,6 +178,12 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
       writable: false,
       value: mixedToBinding.bind(undefined, realm.internal),
     });
+    // See https://tc39.es/ecma262/multipage/indexed-collections.html#sec-array.prototype-@@unscopables
+    Object.defineProperty(this, Symbol.unscopables, {
+      enumerable: false,
+      configurable: true,
+      writable: false,
+    });
     return proxied;
   }
 
@@ -625,6 +631,12 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
   [Symbol.iterator](): IterableIterator<T> {
     return this.values();
   }
+
+  /**
+   * An Object whose truthy properties are properties that are excluded from the 'with'
+   * environment bindings of the associated objects.
+   */
+  readonly [Symbol.unscopables] = Array.prototype[Symbol.unscopables];
 
   // Other methods
 
