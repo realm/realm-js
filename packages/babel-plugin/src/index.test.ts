@@ -390,6 +390,49 @@ describe("Babel plugin", () => {
       expect(transformCode).not.toContain("_applyDecoratedDescriptor");
     });
 
+    it('handles `@index("full-text")` decorators', () => {
+      const transformCode = transformProperty(`@index("full-text") name: Realm.Types.String;`);
+      const parsedSchema = extractSchema(transformCode);
+
+      expect((parsedSchema?.properties.name as PropertySchema).indexed).toEqual("full-text");
+    })
+
+    it('handles `@index("full-text")` decorators from the Realm import', () => {
+      const transformCode = transform({
+        source: `import Realm, { Types, BSON, List, Set, Dictionary, Mixed } from "realm";
+        export class Person extends Realm.Object { @Realm.index("full-text") name: Realm.Types.String; }`,
+      });
+      const parsedSchema = extractSchema(transformCode);
+
+      expect((parsedSchema?.properties.name as PropertySchema).indexed).toEqual("full-text");
+    });
+
+    it('ignores `@index("full-text")` decorators not imported from `realm`', () => {
+      const transformCode = transform({
+        source: `import Realm, { Types, BSON, List, Set, Dictionary, Mixed } from "realm";
+        export class Person extends Realm.Object { @index("full-text") name: Realm.Types.String; }`,
+      });
+      const parsedSchema = extractSchema(transformCode);
+
+      expect((parsedSchema?.properties.name as PropertySchema).indexed).toBeUndefined();
+    });
+
+    it('ignores `@index()` decorators with invalid parameters', () => {
+      const transformCode = transform({
+        source: `import Realm, { Types, BSON, List, Set, Dictionary, Mixed } from "realm";
+        export class Person extends Realm.Object { @Realm.index("fulltext") name: Realm.Types.String; }`,
+      });
+      const parsedSchema = extractSchema(transformCode);
+
+      expect((parsedSchema?.properties.name as PropertySchema).indexed).toBeUndefined();
+    })
+
+    it('removes `@index("full-text")` decorators from the source', () => {
+      const transformCode = transformProperty(`@index("full-text") name: Realm.Types.String;`);
+      // This is what Babel outputs for transformed decorators
+      expect(transformCode).not.toContain("_applyDecoratedDescriptor");
+    });
+
     it("handles `@mapTo` decorators", () => {
       const transformCode = transformProperty(`@mapTo("rename") name: Realm.Types.String;`);
       const parsedSchema = extractSchema(transformCode);

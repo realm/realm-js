@@ -206,10 +206,10 @@ Note that use of decorators requires using the `@babel/plugin-proposal-decorator
 
 This table shows the available decorators:
 
-| Decorator | Parameters                    | Notes                                                                                                |
-| --------- | ----------------------------- | ---------------------------------------------------------------------------------------------------- |
-| `index`   | none                          | Specifies that the decorated property should be indexed by Realm.                                    |
-| `mapTo`   | `(realmPropertyName: string)` | Specifies that the decorated property should be stored as `realmPropertyName` in the Realm database. |
+| Decorator | Parameters                    | Notes                                                                                                                                                                           |
+|-----------|-------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `index`   | none or `("full-text")`       | Specifies that the decorated property should be indexed by Realm. Providing the string "full-text" specifies that the property should be indexed for full-text search by Realm. |
+| `mapTo`   | `(realmPropertyName: string)` | Specifies that the decorated property should be stored as `realmPropertyName` in the Realm database.                                                                            |
 
 The example below shows both decorators in use:
 
@@ -219,8 +219,11 @@ import { mapTo, index } from "@realm/babel-plugin";
 
 export class Task extends Realm.Object {
   _id!: Realm.BSON.ObjectId;
-  // Add an index to the `description` property
+  // Add an index to the `assignee` property
   @index
+  assignee!: string;
+  // Specify that the `description` property should be indexed for full-text search
+  @index("full-text")
   description!: string;
   // Specify that the `isComplete` property should be stored as `complete` in the Realm database
   @mapTo("complete")
