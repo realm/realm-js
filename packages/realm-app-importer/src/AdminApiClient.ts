@@ -386,6 +386,7 @@ export class AdminApiClient {
         // Setting additional options to signal to the RN fetch polyfill that it shouldn't consider the response a "blob"
         // see https://github.com/react-native-community/fetch/issues/15
         reactNative: { textStreaming: true },
+        timeoutMs: 5000,
       } as FetchRequestInit);
       if (response.ok) {
         if (response.headers.get("content-type") === "application/json") {
