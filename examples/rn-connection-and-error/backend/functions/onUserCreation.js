@@ -7,9 +7,9 @@ exports = async function onUserCreation(user) {
   const customUserDataCollection = context.services.get("mongodb-atlas").db("AuthExample").collection("Users");
   try {
     await customUserDataCollection.insertOne({
-      // Save the user's account ID to your configured user_id_field
+      // Save the user's account ID to your configured user_id field.
       user_id: user.id,
-      // Store any other user data you want
+      // Store any other user data you want.
       team: "service",
     });
   } catch (e) {
