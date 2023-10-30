@@ -1,0 +1,29 @@
+{
+    "collection": "Users",
+    "database": "AuthExample",
+    "roles": [
+        {
+            "name": "ThisUser",
+            "apply_when": {
+                "roles": [
+                    {
+                        "name": "ThisUser",
+                        "apply_when": {
+                            "user_id": "%%user.id%%"
+                        },
+                        "insert": false,
+                        "read": true,
+                        "write": true,
+                        "search": false,
+                        "delete": false
+                    }
+                ],
+                "filters": []
+            },
+            "document_filters": {
+                "write": {},
+                "read": {}
+            }
+        }
+    ]
+}
