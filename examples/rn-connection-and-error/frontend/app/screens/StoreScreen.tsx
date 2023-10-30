@@ -28,6 +28,18 @@ import {useDemoSyncTriggers} from '../hooks/useDemoSyncTriggers';
 import {useStore} from '../providers/StoreProvider';
 
 /**
+ * The properties used as custom user data.
+ *
+ * @note
+ * Our backend function `onUserCreation()` adds these fields
+ * when the user registers.
+ */
+type CustomUserData = {
+  user_id: string;
+  team: string;
+};
+
+/**
  * Screen for showing the kiosks and products in the store,
  * as well as buttons for triggering various listeners.
  */
@@ -44,7 +56,7 @@ export function StoreScreen() {
     deleteUser,
   } = useDemoSyncTriggers();
   const {logOut} = useAuth();
-  const user = useUser();
+  const user = useUser<{}, CustomUserData, {}>();
 
   return (
     <View style={styles.container}>
@@ -84,7 +96,7 @@ export function StoreScreen() {
             </View>
             <View style={styles.status}>
               <Text style={styles.statusText}>
-                Team: {user.customData?.team || '-'}
+                Team: {user.customData.team}
               </Text>
             </View>
             <View style={styles.triggerButtons}>
