@@ -86,6 +86,11 @@ export function StoreScreen() {
           <View style={styles.triggers}>
             <View style={styles.status}>
               <Text style={styles.statusText}>
+                Team: {user.customData.team}
+              </Text>
+            </View>
+            <View style={styles.status}>
+              <Text style={styles.statusText}>
                 Status: {isConnected ? 'Connected 🟢' : 'Not connected 🔴'}
               </Text>
               <Button
@@ -93,11 +98,6 @@ export function StoreScreen() {
                 onPress={isConnected ? disconnect : reconnect}
                 text={isConnected ? 'Disconnect' : 'Connect'}
               />
-            </View>
-            <View style={styles.status}>
-              <Text style={styles.statusText}>
-                Team: {user.customData.team}
-              </Text>
             </View>
             <View style={styles.triggerButtons}>
               <Button
