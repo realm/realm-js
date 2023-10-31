@@ -18,7 +18,7 @@
 
 import React from 'react';
 import {Alert, FlatList, StyleSheet, Text, View} from 'react-native';
-import {useAuth} from '@realm/react';
+import {useAuth, useUser} from '@realm/react';
 
 import {Button} from '../components/Button';
 import {KioskItem} from '../components/KioskItem';
@@ -26,6 +26,18 @@ import {colors} from '../styles/colors';
 import {fonts} from '../styles/fonts';
 import {useDemoSyncTriggers} from '../hooks/useDemoSyncTriggers';
 import {useStore} from '../providers/StoreProvider';
+
+/**
+ * The properties used as custom user data.
+ *
+ * @note
+ * Our backend function `onUserCreation()` adds these fields
+ * when the user registers.
+ */
+type CustomUserData = {
+  user_id: string;
+  team: string;
+};
 
 /**
  * Screen for showing the kiosks and products in the store,
@@ -44,6 +56,7 @@ export function StoreScreen() {
     deleteUser,
   } = useDemoSyncTriggers();
   const {logOut} = useAuth();
+  const user = useUser<{}, CustomUserData, {}>();
 
   return (
     <View style={styles.container}>
@@ -71,6 +84,11 @@ export function StoreScreen() {
             />
           </View>
           <View style={styles.triggers}>
+            <View style={styles.status}>
+              <Text style={styles.statusText}>
+                Team: {user.customData.team}
+              </Text>
+            </View>
             <View style={styles.status}>
               <Text style={styles.statusText}>
                 Status: {isConnected ? 'Connected 🟢' : 'Not connected 🔴'}
@@ -109,7 +127,7 @@ export function StoreScreen() {
               <Button
                 extraStyles={[styles.button]}
                 onPress={refreshAccessToken}
-                text="Refresh Access Token"
+                text="Refresh Access Token / User Data"
               />
               <Button
                 extraStyles={[styles.button]}
