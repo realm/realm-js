@@ -71,7 +71,8 @@ It specifically addresses the following points:
       * With invalid password
       * With non-existent email
 * Listening (and triggering) when a user gets logged out.
-* Listening (and triggering) when a user's tokens are refreshed.
+* Listening (and triggering) when a user gets removed.
+* Listening (and triggering) when a user's tokens and custom data are refreshed.
 * Listening (and triggering) when the underlying sync session:
   * Tries to connect
   * Gets connected
@@ -201,17 +202,21 @@ To sync data used in this app you must first:
 
 ### Add an Atlas Function
 
-> If you set up your App Services App [via a CLI](#via-a-cli-recommended), you can **skip this step** as the function should already be defined for you.
+> If you set up your App Services App [via a CLI](#via-a-cli-recommended), you can **skip this step** as these functions should already be defined for you.
 
-We will add a function for forcing a client reset. The function is solely used for demo purposes and should not be used in production.
+We will add a function for forcing a client reset. The function is solely used for demo purposes and should not be used in production. We will also add a function to be run on user creation that adds fields to the user's [custom user data](https://www.mongodb.com/docs/atlas/app-services/users/custom-metadata/) document.
 
 To set this up via the App Services UI:
 
-1. [Define a function](https://www.mongodb.com/docs/atlas/app-services/functions/#define-a-function) with the following configurations:
+1. [Define two functions](https://www.mongodb.com/docs/atlas/app-services/functions/#define-a-function) with the following configurations:
     * Function name: `triggerClientReset`
       * Authentication: `System`
       * Private: `false`
       * Code: See [backend function](./backend/functions/triggerClientReset.js)
+    * Function name: `onUserCreation`
+      * Authentication: `Application Authentication`
+      * Private: `false`
+      * Code: See [backend function](./backend/functions/onUserCreation.js)
 
 ### Install Dependencies
 
@@ -253,7 +258,16 @@ npm run android
 
 > If you set up your App Services App [via a CLI](#via-a-cli-recommended), you can **skip this step** as the permissions should already be defined for you.
 
-After running the client app for the first time, [check the rules](https://www.mongodb.com/docs/atlas/app-services/rules/roles/#define-roles---permissions) for the collections in the App Services UI and make sure all collections have `readAndWriteAll` permissions (see [corresponding json](./backend/data_sources/mongodb-atlas/sync/Product/rules.json)).
+After running the client app for the first time, [modify the rules](https://www.mongodb.com/docs/atlas/app-services/rules/roles/#define-roles---permissions) for the collections in the App Services UI.
+
+* Collections: `Kiosk`, `Product`, `Store`
+  * Permissions: `readAndWriteAll` (see [corresponding json](./backend/data_sources/mongodb-atlas/sync/Product/rules.json))
+  * Explanation:
+    * All users will be able to read and write to the above collections.
+* Collection: `Users`
+  * Permissions: `ThisUser` (see [corresponding json](./backend/data_sources/mongodb-atlas/AuthExample/Users/rules.json))
+  * Explanation:
+    * Users who have registered each have a `Users` document as custom user data. A user will be able to read and write to their own document (i.e. when `Users.user_id === <App User ID>`), but not anyone else's (see [Secure Custom User Data](https://www.mongodb.com/docs/atlas/app-services/users/custom-metadata/#secure-custom-user-data)).
 
 > To learn more and see examples of permissions depending on a certain use case, see [Device Sync Permissions Guide](https://www.mongodb.com/docs/atlas/app-services/sync/app-builder/device-sync-permissions-guide/#std-label-flexible-sync-permissions-guide) and [Data Access Role Examples](https://www.mongodb.com/docs/atlas/app-services/rules/examples/).
 

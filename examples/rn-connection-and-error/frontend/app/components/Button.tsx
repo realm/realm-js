@@ -64,6 +64,7 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     borderColor: colors.purple,
     backgroundColor: colors.purple,
+    justifyContent: 'center',
   },
   buttonSecondary: {
     paddingVertical: 6,

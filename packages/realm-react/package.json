@@ -16,7 +16,7 @@
   },
   "wireit": {
     "bundle": {
-      "command": "rollup --config",
+      "command": "rollup --config && tsc -p tsconfig.types.json",
       "dependencies": [
         "../realm:bundle",
         "../realm-common:bundle"
@@ -71,7 +71,6 @@
     "react-native": "0.72.6",
     "react-test-renderer": "18.2.0",
     "realm": "*",
-    "rollup-plugin-dts": "^5.0.0",
     "ts-jest": "^29.0.5"
   },
   "peerDependencies": {

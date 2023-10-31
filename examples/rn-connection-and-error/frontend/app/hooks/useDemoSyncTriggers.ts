@@ -18,7 +18,7 @@
 
 import {useCallback, useEffect, useState} from 'react';
 import {BSON, ConnectionState, UserState} from 'realm';
-import {useRealm, useUser} from '@realm/react';
+import {useApp, useRealm, useUser} from '@realm/react';
 
 import {Store} from '../models/Store';
 import {logger} from '../utils/logger';
@@ -37,6 +37,7 @@ let mostRecentAccessToken: string | null = null;
  * You can also add a listener to the App (via `useApp()`).
  */
 export function useDemoSyncTriggers() {
+  const app = useApp();
   const realm = useRealm();
   const currentUser = useUser();
   const [isConnected, setIsConnected] = useState(true);
@@ -147,6 +148,18 @@ export function useDemoSyncTriggers() {
     await currentUser.refreshCustomData();
   }, [currentUser]);
 
+  /**
+   * Trigger the user event listener by removing the user from the app.
+   */
+  const deleteUser = useCallback(() => {
+    // TODO: Update to use only `deleteUser`.
+    // We currently call both `deleteUser` (deletes from server and client) and
+    // `removeUser` (deletes from client) due to a bug in `deleteUser` where the
+    // `currentUser` is not updated to `null`.
+    app.deleteUser(currentUser);
+    app.removeUser(currentUser);
+  }, [app, currentUser]);
+
   useEffect(() => {
     /**
      * The user listener - Will be invoked on various user related events including
@@ -196,5 +209,6 @@ export function useDemoSyncTriggers() {
     triggerSyncError,
     triggerClientReset,
     refreshAccessToken,
+    deleteUser,
   };
 }

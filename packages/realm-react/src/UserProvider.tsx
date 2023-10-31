@@ -49,9 +49,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ fallback: Fallback, 
 
   useEffect(() => {
     const event = () => {
-      if (app.currentUser?.id != user?.id) {
-        setUser(app.currentUser);
-      }
+      setUser(app.currentUser);
     };
     user?.addListener(event);
     app?.addListener(event);
