@@ -9,12 +9,12 @@
     "dist"
   ],
   "scripts": {
-    "build": "wireit",
+    "prepack": "wireit",
     "lint": "eslint --ext .js,.ts .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "wireit": {
-    "build": {
+    "prepack": {
       "command": "tsc -p tsconfig.build.json",
       "dependencies": [
         "../realm:bundle"

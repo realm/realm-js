@@ -9,6 +9,7 @@
   "source": "src/index.tsx",
   "scripts": {
     "bundle": "wireit",
+    "prepack": "npm run bundle",
     "start": "npm run bundle -- --watch",
     "test": "wireit",
     "lint": "eslint --ext .tsx .",
@@ -18,6 +19,7 @@
     "bundle": {
       "command": "rollup --config && tsc -p tsconfig.types.json",
       "dependencies": [
+        "generate-types",
         "../realm:bundle",
         "../realm-common:bundle"
       ],
@@ -28,6 +30,16 @@
       ],
       "output": [
         "dist"
+      ]
+    },
+    "generate-types": {
+      "command": "tsc -p tsconfig.types.json",
+      "files": [
+        "src/**/*.ts"
+      ],
+      "output": [
+        "dist/**/*.d.ts",
+        "dist/**/*.d.ts.map"
       ]
     },
     "test": {

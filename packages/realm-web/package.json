@@ -11,8 +11,7 @@
     "./dist/bundle.es.js": "./dist/bundle.dom.es.js"
   },
   "scripts": {
-    "prepack": "npm run build",
-    "bundle": "wireit",
+    "prepack": "wireit",
     "start": "npm run build -- --watch",
     "lint": "eslint --ext .js,.ts .",
     "test": "mocha 'src/tests/**/*.test.ts'",
@@ -20,7 +19,7 @@
     "docs": "wireit"
   },
   "wireit": {
-    "bundle": {
+    "prepack": {
       "command": "rollup --config",
       "dependencies": [
         "generate-types"

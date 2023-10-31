@@ -11,6 +11,7 @@
     "./dist/bundle.d.ts": "./dist/bundle.dom.d.ts"
   },
   "scripts": {
+    "prepack": "npm run bundle",
     "bundle": "wireit",
     "lint": "eslint --ext .js,.ts .",
     "test": "mocha 'src/**/*.test.ts'"

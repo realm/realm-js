@@ -97,8 +97,8 @@ jobs:
     - name: Install node modules
       run: npm ci --ignore-scripts
 
-    - name: Bundle package
-      run: npm run bundle --workspace=${{env.PACKAGE_NAME}}
+    - name: Prepack package
+      run: npm run prepack --workspace=${{env.PACKAGE_NAME}}
 
     - name: Read version
       id: get-version
