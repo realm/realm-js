@@ -382,7 +382,7 @@ export class AdminApiClient {
       console.log("FISK 111", { ...rest, body: JSON.stringify(body), headers, reactNative: { textStreaming: true } });
       const response = await DefaultNetworkTransport.fetch(url, {
         ...rest,
-        body: JSON.stringify(body + "\n"),
+        body: JSON.stringify(body),
         headers,
         // Setting additional options to signal to the RN fetch polyfill that it shouldn't consider the response a "blob"
         // see https://github.com/react-native-community/fetch/issues/15
