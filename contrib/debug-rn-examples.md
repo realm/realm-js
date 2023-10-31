@@ -2,8 +2,8 @@
 
 ## Steps to link local `realm` and `@realm/react` to examples
 
-### 1. Add example to `workspaces` in `packages.json`
-For example, to add `rn-todo-list` on would add it like so:
+### 1. Add example to `workspaces` in `package.json`
+For example, to add `rn-todo-list` one would add it to the root `package.json` file like so:
 ```json
 ...
 "workspaces": [
@@ -16,6 +16,8 @@ For example, to add `rn-todo-list` on would add it like so:
 
 ### 2. Update relative paths to `node-modules` in native configurations
 
+The following shows how to point to the root `node_modules` directory, rather than to the example's local one.
+
 #### iOS as of `react-native@0.72.6`
 
 Open the `xcworkspace` in Xcode:
@@ -23,7 +25,7 @@ Open the `xcworkspace` in Xcode:
 open ios/*.xcworkspace
 ```
 
-Open the build phase settings as shown in the following screen shot:
+Open the build phase settings as shown in the following screenshot:
 
 ![Build Phases](./assets/ios-build-phase-settings.png)
 
@@ -67,7 +69,7 @@ lines 2 and 4 should be updated
 ```
 
 ### 3. Apply our custom `metro` config
-We have a custom `metro` configuration which will help find any linked dependencies in the mono-repo.  First add it to the `devDependencies` in the projects `package.json`:
+We have a custom `metro` configuration which will help find any linked dependencies in the mono-repo.  First add it to the `devDependencies` in the example's `package.json`:
 
 ```json
 devDependencies: {
@@ -98,6 +100,10 @@ npm run ios
 npm run android
 ```
 
+## Don't Commit Changes
+
+Since we want to keep the simplicity for our users, changes made in order to debug (such as modifications to `node_modules` paths) should only be made locally and are not to be committed.
+
 ## Common Issues
 
 ### Android or iOS doesn't find Realm.
@@ -115,10 +121,10 @@ npm run build:android --workspace=realm
 
 ### Building failed
 If React Native was upgraded, it's possible building will.  This is a great opportunity
-for you to help the team out and create an update to this document! Do a search in the `android` or `ios` directory for any refernces to `node_modules` and make sure they are relative paths to the root `node_modules` directory.
+for you to help the team out and create an update to this document! Do a search in the `android` or `ios` directory for any references to `node_modules` and make sure they are relative paths to the root `node_modules` directory.
 
 ### Bundler can't find React Native or other source files
 If React Native or any of its dependencies were updated in our mono-repo, then this needs to happen
 in the rest of the packages in order for this version to land in the root `node_modules`, which is what
-our patch expects.  Make sure the examples React Native version is the same as the rest of the mono-repo,
-otherwise React Native will be placed in the local examples `node_modules`.
+our patch expects.  Make sure the examples' React Native version is the same as the rest of the mono-repo,
+otherwise React Native will be placed in the local examples' `node_modules`.
