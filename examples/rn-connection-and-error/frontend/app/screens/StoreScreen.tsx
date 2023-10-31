@@ -127,19 +127,12 @@ export function StoreScreen() {
               <Button
                 extraStyles={[styles.button]}
                 onPress={refreshAccessToken}
-                text="Refresh Access Token"
+                text="Refresh Access Token / User Data"
               />
               <Button
                 extraStyles={[styles.button]}
                 onPress={deleteUser}
                 text="Delete User"
-              />
-              <Button
-                extraStyles={[styles.button]}
-                onPress={() => {
-                  user.refreshCustomData();
-                }}
-                text="Refresh User Data"
               />
             </View>
           </View>
