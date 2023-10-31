@@ -22,14 +22,7 @@ export type LocalConfiguration = Omit<Configuration, "sync"> & { sync?: never };
 export type SyncedConfiguration = Omit<Configuration, "sync"> & {
   sync?: Partial<SyncConfiguration>;
 };
-import Realm, {
-  Configuration,
-  User,
-  BSON,
-  ConfigurationWithSync,
-  ConfigurationWithoutSync,
-  SyncConfiguration,
-} from "realm";
+import Realm, { Configuration, BSON, ConfigurationWithSync, ConfigurationWithoutSync, SyncConfiguration } from "realm";
 
 type ConfigurationWithSyncPartial = Omit<ConfigurationWithSync, "sync"> & {
   sync: Partial<SyncConfiguration>;
