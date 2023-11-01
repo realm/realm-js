@@ -4,12 +4,15 @@
 * None
 
 ### Enhancements
-* None
+* Allow collections of non-embedded links in asymmetric objects. ([realm/realm-core#7003](https://github.com/realm/realm-core/pull/7003))
 
 ### Fixed
 * The `onBefore`, `onAfter`, and `onFallback` client reset callbacks were not called. ([#6201](https://github.com/realm/realm-js/issues/6201), since v12.0.0)
 * `Symbol.unscopables` has been implemented on the base class of `Realm.Results`, `Realm.List`, and `Realm.Set`. ([#6215](https://github.com/realm/realm-js/pull/6215))
-
+* Deleting an object in an asymmetric table would cause a crash. ([realm/realm-kotlin#1537](https://github.com/realm/realm-kotlin/issues/1537), since v10.19.0)
+* Updating subscriptions did not trigger Realm auto-refreshes, sometimes resulting in async refresh hanging until another write was performed by something else. ([realm/realm-core#7031](https://github.com/realm/realm-core/pull/7031))
+* Fix inter-process locking for concurrent Realm file access resulting in an inter-process deadlock on FAT32/exFAT file systems. ([realm/realm-core#6959](https://github.com/realm/realm-core/pull/6959))
+  
 ### Compatibility
 * React Native >= v0.71.4
 * Realm Studio v14.0.0.
@@ -17,6 +20,7 @@
 
 ### Internal
 * Some disabled tests for client reset (partition based sync) have been enabled. ([#6201](https://github.com/realm/realm-js/issues/6201)
+* Upgraded Realm Core from v13.22.0 to v13.23.2. ([#6220](https://github.com/realm/realm-js/issues/6220))
 
 ## 12.2.1 (2023-10-05)
 
