@@ -293,6 +293,8 @@ function getSchema(useFlexibleSync: boolean) {
 }
 
 // FIXME: testing flexible sync is currently disabled as it is timing out
+// FIXME: ngrok reports "Syntax Error" when tiggerClientResetFunction() is used.
+// Once ngrok behaves nicely, the skipped tests can be enabled.
 [false /*, true*/].forEach((useFlexibleSync) => {
   describe.skipIf(
     environment.missingServer,
@@ -301,8 +303,8 @@ function getSchema(useFlexibleSync: boolean) {
       this.longTimeout(); // client reset with flexible sync can take quite some time
       importAppBefore(
         useFlexibleSync
-          ? buildAppConfig("with-flx").anonAuth().flexibleSync().triggerClientResetFunction()
-          : buildAppConfig("with-pbs").anonAuth().partitionBasedSync().triggerClientResetFunction(),
+          ? buildAppConfig("with-flx").anonAuth().flexibleSync() /* .triggerClientResetFunction() */
+          : buildAppConfig("with-pbs").anonAuth().partitionBasedSync() /* .triggerClientResetFunction() */,
       );
       authenticateUserBefore();
 
@@ -511,7 +513,7 @@ function getSchema(useFlexibleSync: boolean) {
         );
       });
 
-      it(`handles discard local client reset with ${getPartialTestTitle(
+      it.skip(`handles discard local client reset with ${getPartialTestTitle(
         useFlexibleSync,
       )} sync enabled`, async function (this: RealmContext) {
         // (i)   using a client reset in "DiscardUnsyncedChanges" mode, a fresh copy
@@ -537,7 +539,7 @@ function getSchema(useFlexibleSync: boolean) {
         );
       });
 
-      it(`handles recovery client reset with ${getPartialTestTitle(
+      it.skip(`handles recovery client reset with ${getPartialTestTitle(
         useFlexibleSync,
       )} sync enabled`, async function (this: RealmContext) {
         // (i)   using a client reset in "Recovery" mode, a fresh copy
