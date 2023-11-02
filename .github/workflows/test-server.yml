@@ -28,7 +28,7 @@ jobs:
           echo "subdomain=${subdomain}" >> $GITHUB_OUTPUT;
           echo "hostname=${subdomain}.ngrok.io" >> $GITHUB_OUTPUT;
       - name: Start Ngrok
-        run: docker run --detach --network host --env NGROK_AUTHTOKEN ngrok/ngrok http --log-level debug --log stderr --subdomain ${{ steps.ngrok-config.outputs.subdomain }} 9090
+        run: docker run --detach --network host --env NGROK_AUTHTOKEN ngrok/ngrok http --subdomain ${{ steps.ngrok-config.outputs.subdomain }} 9090
         env:
           NGROK_AUTHTOKEN: ${{ secrets.NGROK_AUTHTOKEN }}
       - name: Preparing server entrypoint

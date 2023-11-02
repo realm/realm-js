@@ -284,7 +284,7 @@ jobs:
           echo "url=https://${subdomain}.ngrok.io" >> $GITHUB_OUTPUT;
 
       - name: Trigger the test server workflow to start the server
-        run: gh workflow run test-server.yml -f ngrok_subdomain=${{ steps.baas-config.outputs.subdomain }} -f run_id=${{ github.run_id }} -f server_tag=${{ env.BAAS_TAG }
+        run: gh workflow run test-server.yml -f ngrok_subdomain=${{ steps.baas-config.outputs.subdomain }} -f run_id=${{ github.run_id }} -f server_tag=${{ env.BAAS_TAG }}
         env:
           GH_TOKEN: ${{ github.token }}
 
