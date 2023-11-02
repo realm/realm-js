@@ -718,7 +718,7 @@ export class Realm {
    * @since 1.10.0
    */
   get isEmpty(): boolean {
-    return binding.Helpers.isEmptyRealm(this.internal);
+    return this.internal.isEmpty;
   }
 
   /**

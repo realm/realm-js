@@ -234,7 +234,6 @@ classes:
       - get_or_create_object_with_primary_key
       - make_network_transport
       - delete_data_for_object
-      - is_empty_realm
       - base64_decode
       - make_logger_factory
       - make_logger
@@ -330,6 +329,7 @@ classes:
       - is_in_transaction
       - is_in_migration
       - is_closed
+      - is_empty
       - sync_session
       - get_latest_subscription_set
       - begin_transaction

@@ -127,7 +127,6 @@ export function normalizeObjectSchema(arg: RealmObjectConstructor | ObjectSchema
     !primaryKeyFieldIsMissing,
     objectError(name, `'${primaryKey}' is set as the primary key field but was not found in 'properties'.`),
   );
-  assert(!asymmetric || !embedded, objectError(name, "Cannot be both asymmetric and embedded."));
 
   return {
     name,
