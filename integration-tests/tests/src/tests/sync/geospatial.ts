@@ -135,7 +135,7 @@ const expectQueryException = async (
  * For example: (r, "Obj", "intCol" [[3, 4], "intCol > 2]) => querying "intCol > 2" should
  * return results whose elements' intCol property values are 3 and 4.
  */
-const expectQueryResultValues = async (
+const expectQueryResultValues = (
   realm: Realm,
   objectSchema: Realm.ObjectClass,
   propertyToCompare: string,
@@ -143,8 +143,7 @@ const expectQueryResultValues = async (
 ) => {
   return Promise.all(
     queryResultPairs.map(async ([expectedResults, queryString, ...queryArgs]) => {
-      let results = realm.objects(objectSchema);
-      results = results.filtered(queryString, ...queryArgs);
+      const results = realm.objects(objectSchema).filtered(queryString, ...queryArgs);
       await results.subscribe({ behavior: WaitForSync.Always });
       expect(results.length).to.equal(expectedResults.length);
       expect(results.map((el) => (el as any)[propertyToCompare])).to.deep.equal(
