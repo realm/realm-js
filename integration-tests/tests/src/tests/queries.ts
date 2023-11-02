@@ -1061,7 +1061,11 @@ describe("Queries", () => {
         expect(bobs.length).to.equal(1);
 
         const many = persons.filtered("name in $0", ["Alice", "Dennis", "Bob"]);
-        expect(many.length).to.equal(2);
+        expect(many.length).equal(2);
+
+        expect(() => persons.filtered("$0 IN name", ["Alice", "Bob"])).throw(
+          "The keypath following 'IN' must contain a list. Found 'name'",
+        );
       });
 
       it("array of primitive types", () => {
@@ -1234,7 +1238,7 @@ describe("Queries", () => {
         expect(primitives.filtered("s == $0 OR i == $1", unicornString, 3).length).to.equal(1);
       });
 
-      it("primititive types - AND operator", () => {
+      it("primitive types - AND operator", () => {
         const unicornString = "Here is a Unicorn 🦄 today";
         const fooString = "foo";
 
