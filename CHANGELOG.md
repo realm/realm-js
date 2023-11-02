@@ -4,7 +4,7 @@
 * None
 
 ### Enhancements
-* Allow collections of non-embedded links in asymmetric objects. ([realm/realm-core#7003](https://github.com/realm/realm-core/pull/7003))
+* Allow asymmetric objects to contain fields with non-embedded (top-level) links (rather than only embedded links). ([realm/realm-core#7003](https://github.com/realm/realm-core/pull/7003))
 
 ### Fixed
 * The `onBefore`, `onAfter`, and `onFallback` client reset callbacks were not called. ([#6201](https://github.com/realm/realm-js/issues/6201), since v12.0.0)
