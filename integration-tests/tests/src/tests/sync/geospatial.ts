@@ -94,7 +94,6 @@ const expectQueryLength = (realm: Realm, objectSchema: Realm.ObjectClass, queryL
   return Promise.all(
     queryLengthPairs.map(async ([expectedLength, queryString, ...queryArgs]) => {
       const filtered = realm.objects(objectSchema).filtered(queryString, ...queryArgs);
-
       await filtered.subscribe({ behavior: WaitForSync.Always });
       expect(filtered.length).to.equal(
         expectedLength,
@@ -143,16 +142,16 @@ const expectQueryResultValues = (
 ) => {
   return Promise.all(
     queryResultPairs.map(async ([expectedResults, queryString, ...queryArgs]) => {
-      const results = realm.objects(objectSchema).filtered(queryString, ...queryArgs);
-      await results.subscribe({ behavior: WaitForSync.Always });
-      expect(results.length).to.equal(expectedResults.length);
-      expect(results.map((el) => (el as any)[propertyToCompare])).to.deep.equal(
+      const filtered = realm.objects(objectSchema).filtered(queryString, ...queryArgs);
+      await filtered.subscribe({ behavior: WaitForSync.Always });
+      expect(filtered.length).to.equal(expectedResults.length);
+      expect(filtered.map((el) => (el as any)[propertyToCompare])).to.deep.equal(
         expectedResults,
         `
       Expected results not returned from query: ${queryString} ${JSON.stringify(queryArgs)},
     `,
       );
-      await tearDownSubscription(results, realm);
+      await tearDownSubscription(filtered, realm);
     }),
   );
 };

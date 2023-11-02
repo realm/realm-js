@@ -145,29 +145,14 @@ type QueryResultsPair = [ExpectedResults: any[], Query: string, ...QueryArgs: Ar
  * Helper method which runs an array of queries and asserts them to given expected length
  * For example: (r, "Obj", [1, "intCol == 0"]) => querying "intCol == 0" should return 1 elements.
  */
-const expectQueryLength = async (
-  realm: Realm,
-  objectSchema: Realm.ObjectClass,
-  queryLengthPairs: QueryLengthPair[],
-  useFlexibleSync = false,
-) => {
-  return Promise.all(
-    queryLengthPairs.map(async ([expectedLength, queryString, ...queryArgs]) => {
-      const filtered = realm.objects(objectSchema).filtered(queryString, ...queryArgs);
-      if (useFlexibleSync) {
-        await filtered.subscribe({ behavior: WaitForSync.Always });
-      }
-      expect(filtered.length).equal(
-        expectedLength,
-        `Expected length ${expectedLength} for query: ${queryString} ${JSON.stringify(queryArgs)}`,
-      );
-      if (useFlexibleSync) {
-        filtered.unsubscribe();
-        await realm.syncSession?.downloadAllServerChanges();
-        expect(filtered.length).to.equal(0);
-      }
-    }),
-  );
+const expectQueryLength = (realm: Realm, objectSchema: Realm.ObjectClass, queryLengthPairs: QueryLengthPair[]) => {
+  queryLengthPairs.map(([expectedLength, queryString, ...queryArgs]) => {
+    const filtered = realm.objects(objectSchema).filtered(queryString, ...queryArgs);
+    expect(filtered.length).to.equal(
+      expectedLength,
+      `Expected length ${expectedLength} for query: ${queryString} ${JSON.stringify(queryArgs)}`,
+    );
+  });
 };
 
 /**
@@ -202,19 +187,16 @@ const expectQueryResultValues = async (
   propertyToCompare: string,
   queryResultPairs: QueryResultsPair[],
 ) => {
-  return Promise.all(
-    queryResultPairs.map(async ([expectedResults, queryString, ...queryArgs]) => {
-      let results = realm.objects(objectSchema);
-      results = results.filtered(queryString, ...queryArgs);
-      expect(results.length).to.equal(expectedResults.length);
-      expect(results.map((el) => (el as any)[propertyToCompare])).to.deep.equal(
-        expectedResults,
-        `
+  queryResultPairs.map(([expectedResults, queryString, ...queryArgs]) => {
+    const filtered = realm.objects(objectSchema).filtered(queryString, ...queryArgs);
+    expect(filtered.length).to.equal(expectedResults.length);
+    expect(filtered.map((el) => (el as any)[propertyToCompare])).to.deep.equal(
+      expectedResults,
+      `
       Expected results not returned from query: ${queryString} ${JSON.stringify(queryArgs)},
     `,
-      );
-    }),
-  );
+    );
+  });
 };
 
 const expectQueryResultValuesByName = (
@@ -223,19 +205,16 @@ const expectQueryResultValuesByName = (
   propertyToCompare: string,
   queryResultPairs: QueryResultsPair[],
 ) => {
-  return Promise.all(
-    queryResultPairs.map(async ([expectedResults, queryString, ...queryArgs]) => {
-      let results = realm.objects(objectSchemaName);
-      results = results.filtered(queryString, ...queryArgs);
-      expect(results.length).to.equal(expectedResults.length);
-      expect(results.map((el) => (el as any)[propertyToCompare])).to.deep.equal(
-        expectedResults,
-        `
+  queryResultPairs.map(([expectedResults, queryString, ...queryArgs]) => {
+    const filtered = realm.objects(objectSchemaName).filtered(queryString, ...queryArgs);
+    expect(filtered.length).to.equal(expectedResults.length);
+    expect(filtered.map((el) => (el as any)[propertyToCompare])).to.deep.equal(
+      expectedResults,
+      `
       Expected results not returned from query: ${queryString} ${JSON.stringify(queryArgs)},
     `,
-      );
-    }),
-  );
+    );
+  });
 };
 
 describe("Queries", () => {
@@ -1040,63 +1019,63 @@ describe("Queries", () => {
 
     describe("All objects", () => {
       it("properties and primitive types", () => {
-        expect(persons.length).equal(3);
-        expect(persons[0].name).equal("Alice");
-        expect(persons[0].age).equal(15);
+        expect(persons.length).to.equal(3);
+        expect(persons[0].name).to.equal("Alice");
+        expect(persons[0].age).to.equal(15);
       });
 
       it("array of primitive types", () => {
-        expect(contacts.length).equal(3);
-        expect(contacts[0].phones.length).equal(1);
-        expect(contacts[1].phones.length).equal(2);
-        expect(contacts[2].phones.length).equal(0);
+        expect(contacts.length).to.equal(3);
+        expect(contacts[0].phones.length).to.equal(1);
+        expect(contacts[1].phones.length).to.equal(2);
+        expect(contacts[2].phones.length).to.equal(0);
       });
 
       // https://github.com/realm/realm-js/issues/4844
       it("emoiji and contains", () => {
         const text = "unicorn 🦄 today";
-        expect(primitives.length).equal(2);
+        expect(primitives.length).to.equal(2);
         const unicorn1 = primitives.filtered("s CONTAINS 'unicorn 🦄 today'");
         const unicorn2 = primitives.filtered("s CONTAINS[c] 'unicorn 🦄 today'");
         const unicorn3 = primitives.filtered("s CONTAINS $0", text);
         const unicorn4 = primitives.filtered("s CONTAINS[c] $0", text);
-        expect(unicorn1.length).equal(0);
-        expect(unicorn2.length).equal(1);
-        expect(unicorn3.length).equal(0);
-        expect(unicorn4.length).equal(1);
+        expect(unicorn1.length).to.equal(0);
+        expect(unicorn2.length).to.equal(1);
+        expect(unicorn3.length).to.equal(0);
+        expect(unicorn4.length).to.equal(1);
       });
     });
 
     describe("IN operator", () => {
       it("properties and array of values", () => {
         const aged14Or15 = persons.filtered("age IN {14, 15}");
-        expect(aged14Or15.length).equal(2);
+        expect(aged14Or15.length).to.equal(2);
 
         const aged17 = persons.filtered("age IN $0", [17]);
-        expect(aged17.length).equal(1);
+        expect(aged17.length).to.equal(1);
 
         const dennis = persons.filtered("name in {'Dennis'}");
-        expect(dennis.length).equal(0);
+        expect(dennis.length).to.equal(0);
 
         const bobs = persons.filtered("name in $0", ["Bob"]);
-        expect(bobs.length).equal(1);
+        expect(bobs.length).to.equal(1);
 
         const many = persons.filtered("name in $0", ["Alice", "Dennis", "Bob"]);
-        expect(many.length).equal(2);
+        expect(many.length).to.equal(2);
       });
 
       it("array of primitive types", () => {
         const hasTwoPhones = contacts.filtered("phones.@count = 2");
-        expect(hasTwoPhones.length).equal(1);
-        expect(hasTwoPhones[0].name).equal("Bob");
+        expect(hasTwoPhones.length).to.equal(1);
+        expect(hasTwoPhones[0].name).to.equal("Bob");
 
-        expect(contacts.filtered("'555-1234-567' IN phones").length).equal(2);
-        expect(contacts.filtered("'123-4567-890' IN phones").length).equal(0);
-        expect(contacts.filtered("ANY {'555-1234-567', '123-4567-890'} IN phones").length).equal(2);
-        expect(contacts.filtered("ALL {'555-1234-567', '123-4567-890'} IN phones").length).equal(0);
-        expect(contacts.filtered("NONE {'555-1234-567', '123-4567-890'} IN phones").length).equal(1);
-        expect(contacts.filtered("NONE {'555-1122-333', '555-1234-567'} IN phones").length).equal(1);
-        expect(contacts.filtered("ALL {'555-1122-333', '555-1234-567'} IN phones").length).equal(1);
+        expect(contacts.filtered("'555-1234-567' IN phones").length).to.equal(2);
+        expect(contacts.filtered("'123-4567-890' IN phones").length).to.equal(0);
+        expect(contacts.filtered("ANY {'555-1234-567', '123-4567-890'} IN phones").length).to.equal(2);
+        expect(contacts.filtered("ALL {'555-1234-567', '123-4567-890'} IN phones").length).to.equal(0);
+        expect(contacts.filtered("NONE {'555-1234-567', '123-4567-890'} IN phones").length).to.equal(1);
+        expect(contacts.filtered("NONE {'555-1122-333', '555-1234-567'} IN phones").length).to.equal(1);
+        expect(contacts.filtered("ALL {'555-1122-333', '555-1234-567'} IN phones").length).to.equal(1);
       });
     });
 
@@ -1122,11 +1101,11 @@ describe("Queries", () => {
         });
 
         const range = realm.objects<IntObject>(IntObjectSchema.name).filtered("intCol BETWEEN {5, 8}"); // 5, 6, 7, 8
-        expect(range.length).equals(4);
-        expect(range[0].intCol).equals(5);
-        expect(range[1].intCol).equals(6);
-        expect(range[2].intCol).equals(7);
-        expect(range[3].intCol).equals(8);
+        expect(range.length).to.equals(4);
+        expect(range[0].intCol).to.equals(5);
+        expect(range[1].intCol).to.equals(6);
+        expect(range[2].intCol).to.equals(7);
+        expect(range[3].intCol).to.equals(8);
 
         realm.close();
       });
@@ -1166,7 +1145,7 @@ describe("Queries", () => {
 
         // objectForPrimaryKey tests
         const nonExisting = realm.objectForPrimaryKey(primUuidSchema.name, new BSON.UUID(nonExistingStringUuid));
-        expect(nonExisting).equals(
+        expect(nonExisting).to.equals(
           null,
           `objectForPrimaryKey should return undefined for new BSON.UUID("${nonExistingStringUuid}")`,
         );
@@ -1178,21 +1157,24 @@ describe("Queries", () => {
             `objectForPrimaryKey should return a Realm.Object for new BSON.UUID("${uuidStr}")`,
           );
           //@ts-expect-error _id is part of schema.
-          expect(obj._id.toString()).equals(uuidStr);
+          expect(obj._id.toString()).to.equals(uuidStr);
         });
 
         // results.filtered tests
         const emptyFiltered = realm
           .objects(primUuidSchema.name)
           .filtered("_id == $0", new BSON.UUID(nonExistingStringUuid));
-        expect(emptyFiltered.length).equals(
+        expect(emptyFiltered.length).to.equals(
           0,
           `filtered objects should contain 0 elements when filtered by new BSON.UUID("${nonExistingStringUuid}")`,
         );
 
         testStringUuids.forEach((uuidStr) => {
           const filtered = realm.objects(primUuidSchema.name).filtered("_id == $0", new BSON.UUID(uuidStr));
-          expect(filtered.length).equals(1, `filtered objects should contain exactly 1 of new BSON.UUID("${uuidStr}")`);
+          expect(filtered.length).to.equals(
+            1,
+            `filtered objects should contain exactly 1 of new BSON.UUID("${uuidStr}")`,
+          );
         });
       });
 
@@ -1219,19 +1201,19 @@ describe("Queries", () => {
         });
         const numbers = realm.objects(DecimalNumbersObject);
 
-        expect(numbers.filtered("f == 10e-12 AND d == 5e10").length).equal(1);
-        expect(numbers.filtered("f == 10e-12 AND d == 5e9").length).equal(0);
-        expect(numbers.filtered("f == 6e-6").length).equal(0);
-        expect(numbers.filtered("d == 9e32").length).equal(0);
+        expect(numbers.filtered("f == 10e-12 AND d == 5e10").length).to.equal(1);
+        expect(numbers.filtered("f == 10e-12 AND d == 5e9").length).to.equal(0);
+        expect(numbers.filtered("f == 6e-6").length).to.equal(0);
+        expect(numbers.filtered("d == 9e32").length).to.equal(0);
 
-        expect(numbers.filtered("f == 100e-13").length).equal(1);
-        expect(numbers.filtered("f > 10e-12").length).equal(2);
-        expect(numbers.filtered("f > 10e-50").length).equal(4);
+        expect(numbers.filtered("f == 100e-13").length).to.equal(1);
+        expect(numbers.filtered("f > 10e-12").length).to.equal(2);
+        expect(numbers.filtered("f > 10e-50").length).to.equal(4);
 
-        expect(numbers.filtered("d > 8e32").length).equal(0);
-        expect(numbers.filtered("d >= 8e32").length).equal(1);
+        expect(numbers.filtered("d > 8e32").length).to.equal(0);
+        expect(numbers.filtered("d >= 8e32").length).to.equal(1);
 
-        expect(numbers.filtered("(f > 10e-12 AND f <= 10e10) AND (d >= 3e10 AND d <= 8e10)").length).equal(2);
+        expect(numbers.filtered("(f > 10e-12 AND f <= 10e10) AND (d >= 3e10 AND d <= 8e10)").length).to.equal(2);
       });
     });
 
@@ -1240,30 +1222,30 @@ describe("Queries", () => {
         const unicornString = "Here is a Unicorn 🦄 today";
         const fooString = "foo";
 
-        expect(primitives.filtered(`s == "${unicornString}" OR s == "bar"`).length).equal(1);
-        expect(primitives.filtered("s == $0 OR s == $1", unicornString, "bar").length).equal(1);
+        expect(primitives.filtered(`s == "${unicornString}" OR s == "bar"`).length).to.equal(1);
+        expect(primitives.filtered("s == $0 OR s == $1", unicornString, "bar").length).to.equal(1);
 
-        expect(primitives.filtered(`s == "${unicornString}" OR s == "${fooString}"`).length).equal(2);
-        expect(primitives.filtered("s == $0 OR s == $1", unicornString, fooString).length).equal(2);
+        expect(primitives.filtered(`s == "${unicornString}" OR s == "${fooString}"`).length).to.equal(2);
+        expect(primitives.filtered("s == $0 OR s == $1", unicornString, fooString).length).to.equal(2);
 
-        expect(primitives.filtered(`s == "${unicornString}" OR i == 44`).length).equal(1);
-        expect(primitives.filtered("s == $0 OR i == $1", unicornString, 44).length).equal(1);
-        expect(primitives.filtered("s == $0 OR i == $1", unicornString, 2).length).equal(2);
-        expect(primitives.filtered("s == $0 OR i == $1", unicornString, 3).length).equal(1);
+        expect(primitives.filtered(`s == "${unicornString}" OR i == 44`).length).to.equal(1);
+        expect(primitives.filtered("s == $0 OR i == $1", unicornString, 44).length).to.equal(1);
+        expect(primitives.filtered("s == $0 OR i == $1", unicornString, 2).length).to.equal(2);
+        expect(primitives.filtered("s == $0 OR i == $1", unicornString, 3).length).to.equal(1);
       });
 
       it("primititive types - AND operator", () => {
         const unicornString = "Here is a Unicorn 🦄 today";
         const fooString = "foo";
 
-        expect(primitives.filtered(`s == "${unicornString}" AND s == "bar"`).length).equal(0);
-        expect(primitives.filtered("s == $0 AND s == $1", unicornString, "bar").length).equal(0);
+        expect(primitives.filtered(`s == "${unicornString}" AND s == "bar"`).length).to.equal(0);
+        expect(primitives.filtered("s == $0 AND s == $1", unicornString, "bar").length).to.equal(0);
 
-        expect(primitives.filtered(`s == "${unicornString}" AND s == "${fooString}"`).length).equal(0);
-        expect(primitives.filtered("s == $0 AND s == $1", unicornString, fooString).length).equal(0);
+        expect(primitives.filtered(`s == "${unicornString}" AND s == "${fooString}"`).length).to.equal(0);
+        expect(primitives.filtered("s == $0 AND s == $1", unicornString, fooString).length).to.equal(0);
 
-        expect(primitives.filtered(`s == "${unicornString}" AND i == 44`).length).equal(1);
-        expect(primitives.filtered("s == $0 AND i == $1", unicornString, 44).length).equal(1);
+        expect(primitives.filtered(`s == "${unicornString}" AND i == 44`).length).to.equal(1);
+        expect(primitives.filtered("s == $0 AND i == $1", unicornString, 44).length).to.equal(1);
       });
     });
   });
