@@ -379,6 +379,7 @@ export class AdminApiClient {
       if (typeof body === "object") {
         headers["content-type"] = "application/json";
       }
+      console.log("FISK 111", { ...rest, body: JSON.stringify(body), headers, reactNative: { textStreaming: true } });
       const response = await DefaultNetworkTransport.fetch(url, {
         ...rest,
         body: JSON.stringify(body),
