@@ -84,6 +84,9 @@ export function useDemoAuthTriggers() {
     return pendingEmail || allUsers[allUsers.length - 1]?.profile.email;
   }, [app.allUsers, pendingEmail]);
 
+  // Password is always the same
+  const registeredPassword = VALID_PASSWORD;
+
   /**
    * Logs a message using a preferred logging mechanism before
    * proceeding to log in the user to the App.
@@ -157,5 +160,7 @@ export function useDemoAuthTriggers() {
     registerSuccessfully,
     registerWithInvalidCredentials,
     registerWithEmailAlreadyInUse,
+    registeredEmail,
+    registeredPassword,
   };
 }

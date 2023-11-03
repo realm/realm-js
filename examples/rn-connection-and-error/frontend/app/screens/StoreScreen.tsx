@@ -16,15 +16,16 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {Alert, FlatList, StyleSheet, Text, View} from 'react-native';
-import {useAuth, useUser} from '@realm/react';
+import {useApp, useAuth, useUser} from '@realm/react';
 
 import {Button} from '../components/Button';
 import {KioskItem} from '../components/KioskItem';
 import {colors} from '../styles/colors';
 import {fonts} from '../styles/fonts';
 import {useDemoSyncTriggers} from '../hooks/useDemoSyncTriggers';
+import {useDemoAuthTriggers} from '../hooks/useDemoAuthTriggers';
 import {useStore} from '../providers/StoreProvider';
 
 /**
@@ -55,8 +56,20 @@ export function StoreScreen() {
     refreshAccessToken,
     deleteUser,
   } = useDemoSyncTriggers();
+  const [verifyResult, setVerifyResult] = useState(false);
   const {logOut} = useAuth();
+  const app = useApp();
   const user = useUser<{}, CustomUserData, {}>();
+  const {
+    registeredEmail,
+    registeredPassword,
+    registerSuccessfully,
+    logInSuccessfully,
+  } = useDemoAuthTriggers();
+
+  useEffect(() => {
+    console.log('Current verify result: ', verifyResult);
+  }, [verifyResult]);
 
   return (
     <View style={styles.container}>
@@ -87,6 +100,11 @@ export function StoreScreen() {
             <View style={styles.status}>
               <Text style={styles.statusText}>
                 Team: {user.customData.team}
+              </Text>
+            </View>
+            <View style={styles.status}>
+              <Text style={styles.statusText}>
+                UserId: {app.currentUser?.id.toString()}
               </Text>
             </View>
             <View style={styles.status}>
@@ -133,6 +151,40 @@ export function StoreScreen() {
                 extraStyles={[styles.button]}
                 onPress={deleteUser}
                 text="Delete User"
+              />
+              <Button
+                extraStyles={[styles.button]}
+                onPress={() => {
+                  const verify = async () => {
+                    try {
+                      const credentials = Realm.Credentials.emailPassword({
+                        email: registeredEmail!,
+                        password: registeredPassword,
+                      });
+                      console.log('Verifying credentials...');
+                      await app.logIn(credentials); // app freezes here
+                      console.log('Credentials verified!');
+                      setVerifyResult(true);
+                    } catch (error) {
+                      console.log('Credentials verification failed!');
+                      console.error(error);
+                      setVerifyResult(false);
+                    }
+                  };
+                  verify();
+                }}
+                text="Verify Credentials"
+              />
+              <Button
+                extraStyles={[styles.button]}
+                onPress={() => {
+                  const switchUser = async () => {
+                    await registerSuccessfully();
+                    await logInSuccessfully();
+                  };
+                  switchUser();
+                }}
+                text="Switch User"
               />
             </View>
           </View>
