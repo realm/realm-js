@@ -1,7 +1,4 @@
-## vNext (TBD)
-
-### Deprecations
-* None
+## 12.3.0 (2023-11-03)
 
 ### Enhancements
 * Allow asymmetric objects to contain fields with non-embedded (top-level) links (rather than only embedded links). ([realm/realm-core#7003](https://github.com/realm/realm-core/pull/7003))
