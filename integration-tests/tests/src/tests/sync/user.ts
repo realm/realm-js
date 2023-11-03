@@ -319,6 +319,26 @@ describe.skipIf(environment.missingServer, "User", () => {
         await user2.logOut();
       });
 
+      it.only("double login", async function (this: AppContext & RealmContext) {
+        expect(this.app.currentUser, "No users").to.be.null;
+
+        const validEmail = randomVerifiableEmail();
+        const validPassword = "test1234567890";
+        await this.app.emailPasswordAuth.registerUser({ email: validEmail, password: validPassword });
+
+        const user1 = await this.app.logIn(
+          Realm.Credentials.emailPassword({ email: validEmail, password: validPassword }),
+        );
+
+        const user2 = await this.app.logIn(
+          Realm.Credentials.emailPassword({ email: validEmail, password: validPassword }),
+        );
+        expectIsSameUser(user1, user2);
+
+        await user2.logOut();
+        await user1.logOut();
+      });
+
       it("can delete a user", async function (this: AppContext & RealmContext) {
         expect(this.app.currentUser, "No users").to.be.null;
 
