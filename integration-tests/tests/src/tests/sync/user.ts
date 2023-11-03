@@ -319,7 +319,7 @@ describe.skipIf(environment.missingServer, "User", () => {
         await user2.logOut();
       });
 
-      it.only("double login", async function (this: AppContext & RealmContext) {
+      it("double login", async function (this: AppContext & RealmContext) {
         expect(this.app.currentUser, "No users").to.be.null;
 
         const validEmail = randomVerifiableEmail();

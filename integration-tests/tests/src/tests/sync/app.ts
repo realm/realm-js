@@ -201,7 +201,7 @@ describe("App", () => {
       expect(Object.keys(users).length).equals(nUsers);
     });
 
-    it.only("double login", async function (this: Mocha.Context & AppContext & RealmContext) {
+    it("double login - anonymous", async function (this: Mocha.Context & AppContext & RealmContext) {
       const credentials = Realm.Credentials.anonymous();
       const user1 = await this.app.logIn(credentials);
       const user2 = await this.app.logIn(credentials);
