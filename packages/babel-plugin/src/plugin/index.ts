@@ -294,7 +294,6 @@ function visitRealmClassProperty(path: NodePath<types.ClassProperty>) {
   const indexCall =
     indexDecoratorCall
       && types.isStringLiteral(indexDecoratorCall.callExpression.arguments[0])
-      && indexDecoratorCall.callExpression.arguments[0].value === 'full-text'
         ? indexDecoratorCall.callExpression.arguments[0].value
         : undefined;
 

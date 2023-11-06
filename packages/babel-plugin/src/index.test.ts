@@ -417,16 +417,6 @@ describe("Babel plugin", () => {
       expect((parsedSchema?.properties.name as PropertySchema).indexed).toBeUndefined();
     });
 
-    it('ignores `@index()` decorators with invalid parameters', () => {
-      const transformCode = transform({
-        source: `import Realm, { Types, BSON, List, Set, Dictionary, Mixed } from "realm";
-        export class Person extends Realm.Object { @Realm.index("fulltext") name: Realm.Types.String; }`,
-      });
-      const parsedSchema = extractSchema(transformCode);
-
-      expect((parsedSchema?.properties.name as PropertySchema).indexed).toBeUndefined();
-    })
-
     it('removes `@index("full-text")` decorators from the source', () => {
       const transformCode = transformProperty(`@index("full-text") name: Realm.Types.String;`);
       // This is what Babel outputs for transformed decorators
