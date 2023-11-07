@@ -9,6 +9,7 @@
 ### Fixed
 * Improved type generation, which fixed an issue with the `Realm.User` return from `useUser` ([#6196](https://github.com/realm/realm-js/issues/6196))
 * `UserProvider` will now always return a new `user` reference on change events. ([#6186](https://github.com/realm/realm-js/issues/6186))
+* Fix `useQuery` re-render when updating the given `type`. ([#6235](https://github.com/realm/realm-js/issues/6186))
 
 ### Compatibility
 * React Native >= v0.71.4
