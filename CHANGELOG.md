@@ -7,8 +7,10 @@
 * None
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None
+* Fixed FLX subscriptions not being sent to the server if the session was interrupted during bootstrapping. ([realm/realm-core#7077](https://github.com/realm/realm-core/issues/7077), since v10.12.0)
+* Fixed FLX subscriptions not being sent to the server if an upload message was sent immediately after a subscription was committed. ([realm/realm-core#7076](https://github.com/realm/realm-core/issues/7076), since v12.3.0)
+* Fixed application crash with `KeyNotFound` exception when subscriptions are marked complete after a client reset. ([realm/realm-core#7090](https://github.com/realm/realm-core/issues/7090), since v10.19.0)
+
 
 ### Compatibility
 * React Native >= v0.71.4
@@ -16,9 +18,7 @@
 * File format: generates Realms with format v23 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-<!-- * Either mention core version or upgrade -->
-<!-- * Using Realm Core vX.Y.Z -->
-<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
+* Upgraded Realm Core from v13.23.2 to v13.23.3. ([#6234](https://github.com/realm/realm-js/issues/6234))
 
 ## 12.3.0 (2023-11-03)
 
