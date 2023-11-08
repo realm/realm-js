@@ -18,7 +18,8 @@
 
 import { createContext } from "react";
 import Realm from "realm";
-import { createUseRealm } from "./useRealm";
+
+import { UseRealmHook, createUseRealm } from "./useRealm";
 import { createUseQuery } from "./useQuery";
 import { createUseObject } from "./useObject";
 import { createRealmProvider } from "./RealmProvider";
@@ -58,7 +59,7 @@ type RealmContext = {
    * ```
    * @returns a realm instance
    */
-  useRealm: ReturnType<typeof createUseRealm>;
+  useRealm: UseRealmHook;
   /**
    * Returns a {@link Realm.Collection} of {@link Realm.Object}s from a given type.
    * The hook will update on any changes to any object in the collection
@@ -169,7 +170,7 @@ export const RealmProvider = defaultContext.RealmProvider;
  * ```
  * @returns a realm instance
  */
-export const useRealm = defaultContext.useRealm;
+export const useRealm: UseRealmHook = defaultContext.useRealm;
 
 /**
  * Returns a {@link Realm.Collection} of {@link Realm.Object}s from a given type.

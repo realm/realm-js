@@ -18,19 +18,28 @@
 import Realm from "realm";
 import { useContext } from "react";
 
+/** Hook that is used to gain access to the {@link Realm} instance */
+export type UseRealmHook = {
+  (throwWhenMissing?: true): Realm;
+  (throwWhenMissing: false): Realm | null;
+};
+
 /**
  * Generates a `useRealm` hook given a RealmContext.  This allows access to the {@link Realm}
  * instance anywhere within the RealmProvider.
  * @param RealmContext - The context containing the {@link Realm} instance
  * @returns useRealm - Hook that is used to gain access to the {@link Realm} instance
  */
-export const createUseRealm = (RealmContext: React.Context<Realm | null>) => {
-  return function useRealm(): Realm {
+export const createUseRealm = (RealmContext: React.Context<Realm | null>): UseRealmHook => {
+  function useRealm(throwWhenMissing?: true): Realm;
+  function useRealm(throwWhenMissing: false): Realm | null;
+  function useRealm(throwWhenMissing = true) {
     // This is the context setup by `createRealmContext`
     const context = useContext(RealmContext);
-    if (context === null) {
-      throw new Error("Realm context not found.  Did you call useRealm() within a <RealmProvider/>?");
+    if (context === null && throwWhenMissing) {
+      throw new Error("Realm context not found. Did you call useRealm() within a <RealmProvider/>?");
     }
     return context;
-  };
+  }
+  return useRealm;
 };
