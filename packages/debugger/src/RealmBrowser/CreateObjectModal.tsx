@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Button, StyleSheet, Text, View } from "react-native";
+import React, { useState, useRef, useEffect, useMemo } from "react";
+import { Button, StyleSheet, Text, TextInput, View } from "react-native";
 import json5 from "json5";
 import { CanonicalObjectSchema } from "realm";
 import { useRealm } from "@realm/react";
@@ -36,7 +36,8 @@ export type CreateObjectModalProps = {
 
 export function CreateObjectModal({ visible, objectSchema, onCreate, onCancel }: CreateObjectModalProps) {
   const realm = useRealm();
-  const [[code, error], setJsonResult] = useState<JsonResult>(["{\n\n}", undefined]);
+  const [[code, error], setJsonResult] = useState<JsonResult>(["{\n  \n}", "Start typing ..."]);
+  const editorRef = useRef<TextInput>(null);
 
   function handleCreate() {
     const values = json5.parse(code);
@@ -51,7 +52,6 @@ export function CreateObjectModal({ visible, objectSchema, onCreate, onCancel }:
   }
 
   function handleCancel() {
-    setJsonResult(["{\n\n}", undefined]);
     onCancel();
   }
 
@@ -63,14 +63,22 @@ export function CreateObjectModal({ visible, objectSchema, onCreate, onCancel }:
     .filter(([, property]) => !property.optional && property.type !== "list")
     .map(([name]) => name);
 
+  useEffect(() => {
+    if (editorRef.current) {
+      /* @ts-expect-error TODO: Create a PR to update the types */
+      editorRef.current.setSelection(4, 4);
+    }
+  }, [editorRef]);
+
   return (
-    <SafeAreaModal visible={visible}>
+    <SafeAreaModal visible={visible} marginVertical={40} marginHorizontal={10}>
       <Text style={styles.hint}>{error || "Click 'Create'"}</Text>
       <JsonInput
         style={styles.input}
         code={code}
         requiredPropertyNames={requiredPropertyNames}
         onChange={handleChangeText}
+        ref={editorRef}
       />
       <View style={styles.controls}>
         <Button title="Cancel" onPress={handleCancel} />

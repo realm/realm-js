@@ -11,8 +11,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#00000005",
   },
   container: {
-    margin: 20,
     flex: 1,
+    margin: 20,
     shadowRadius: 10,
     shadowColor: "black",
     shadowOpacity: 0.33,
@@ -24,13 +24,17 @@ const styles = StyleSheet.create({
   },
 });
 
-export type SafeAreaModalProps = PropsWithChildren<{ visible: boolean }>;
+export type SafeAreaModalProps = PropsWithChildren<{
+  visible: boolean;
+  marginVertical?: number;
+  marginHorizontal?: number;
+}>;
 
-export function SafeAreaModal({ children, visible }: SafeAreaModalProps) {
+export function SafeAreaModal({ children, visible, marginVertical, marginHorizontal }: SafeAreaModalProps) {
   return (
     <Modal style={styles.modal} visible={visible} transparent={true}>
       <SafeAreaView style={styles.safeArea}>
-        <View style={styles.container}>{children}</View>
+        <View style={[styles.container, { marginVertical, marginHorizontal }]}>{children}</View>
       </SafeAreaView>
     </Modal>
   );

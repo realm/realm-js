@@ -16,10 +16,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#eee",
   },
   text: {
-    fontFamily: Platform.select({
-      ios: "Courier New",
-      default: "monospace",
-    }),
+    fontFamily: Platform.OS === "ios" ? "Menlo-Regular" : "monospace",
   },
   controls: {
     flexDirection: "row",

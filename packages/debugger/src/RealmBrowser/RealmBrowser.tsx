@@ -32,14 +32,16 @@ function ClassControls({ objectSchema }: ClassControlsProps) {
   const [createModalVisible, setCreateModalVisible] = useState(false);
   return (
     <View>
-      <CreateObjectModal
-        objectSchema={objectSchema}
-        visible={createModalVisible}
-        onCreate={() => {
-          setCreateModalVisible(false);
-        }}
-        onCancel={() => setCreateModalVisible(false)}
-      />
+      {createModalVisible && (
+        <CreateObjectModal
+          objectSchema={objectSchema}
+          visible={createModalVisible}
+          onCreate={() => {
+            setCreateModalVisible(false);
+          }}
+          onCancel={() => setCreateModalVisible(false)}
+        />
+      )}
       <Button title={`Create ${objectSchema.name}`} onPress={() => setCreateModalVisible(true)} />
     </View>
   );
@@ -63,6 +65,9 @@ export function RealmBrowser() {
       <EditObjectModal
         object={selectedObject}
         onEdit={() => {
+          setSelectedObject(undefined);
+        }}
+        onDelete={() => {
           setSelectedObject(undefined);
         }}
         onCancel={() => {

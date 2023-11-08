@@ -15,6 +15,7 @@
     "build": "tsc"
   },
   "dependencies": {
+    "@rivascva/react-native-code-editor": "^1.2.2",
     "json5": "^2.2.3"
   },
   "peerDependencies": {

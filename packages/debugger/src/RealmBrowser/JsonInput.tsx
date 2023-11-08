@@ -1,14 +1,11 @@
-import React from "react";
+import React, { forwardRef } from "react";
 import { TextInput, StyleSheet, TextInputProps, Platform } from "react-native";
 import json5 from "json5";
 
 const styles = StyleSheet.create({
   input: {
     padding: 5,
-    fontFamily: Platform.select({
-      ios: "Courier New",
-      default: "monospace",
-    }),
+    fontFamily: Platform.OS === "ios" ? "Menlo-Regular" : "monospace",
   },
 });
 
@@ -16,11 +13,14 @@ export type CodeInputProps = {
   code: string;
   onChange(code: string, err: string | undefined): void;
   requiredPropertyNames: string[];
-} & Omit<TextInputProps, "value" | "onChangeText" | "onChange">;
+} & Omit<TextInputProps, "value" | "onChangeText" | "onChange" | "ref">;
 
 export type JsonResult = [string, string | undefined];
 
-export function JsonInput({ code, onChange, requiredPropertyNames, ...rest }: CodeInputProps) {
+export const JsonInput = forwardRef(function JsonInput(
+  { code, onChange, requiredPropertyNames, style, ...rest }: CodeInputProps,
+  ref: React.ForwardedRef<TextInput>,
+) {
   function handleChangeText(value: string) {
     const cleanCode = value.replaceAll("“", '"').replaceAll("”", '"').replaceAll("’", "'");
 
@@ -42,7 +42,7 @@ export function JsonInput({ code, onChange, requiredPropertyNames, ...rest }: Co
 
   return (
     <TextInput
-      style={styles.input}
+      style={[styles.input, style]}
       value={code}
       onChangeText={handleChangeText}
       autoFocus={true}
@@ -53,6 +53,7 @@ export function JsonInput({ code, onChange, requiredPropertyNames, ...rest }: Co
       spellCheck={false}
       selectTextOnFocus={false}
       {...rest}
+      ref={ref}
     />
   );
-}
+});

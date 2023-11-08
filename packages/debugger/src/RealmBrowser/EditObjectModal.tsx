@@ -13,7 +13,7 @@ const styles = StyleSheet.create({
     color: "gray",
     flexBasis: 20,
   },
-  input: {
+  editor: {
     flexGrow: 1,
   },
   controls: {
@@ -30,10 +30,11 @@ export type Values = Record<string, unknown>;
 export type EditObjectModalProps = {
   object: Realm.Object<any> | undefined;
   onEdit: () => void;
+  onDelete: () => void;
   onCancel: () => void;
 };
 
-export function EditObjectModal({ object, onEdit, onCancel }: EditObjectModalProps) {
+export function EditObjectModal({ object, onEdit, onDelete, onCancel }: EditObjectModalProps) {
   const realm = useRealm();
   const [[code, error], setJsonResult] = useState<JsonResult>(() => {
     return [json5.stringify(object, null, 2), undefined];
@@ -58,6 +59,17 @@ export function EditObjectModal({ object, onEdit, onCancel }: EditObjectModalPro
     onEdit();
   }
 
+  function handleDelete() {
+    if (objectSchema) {
+      realm.write(() => {
+        realm.delete(object);
+      });
+    } else {
+      throw new Error("Expected a selected object schema");
+    }
+    onDelete();
+  }
+
   function handleCancel() {
     setJsonResult(["{\n\n}", undefined]);
     onCancel();
@@ -72,16 +84,17 @@ export function EditObjectModal({ object, onEdit, onCancel }: EditObjectModalPro
     .map(([name]) => name);
 
   return (
-    <SafeAreaModal visible={visible}>
+    <SafeAreaModal visible={visible} marginVertical={40} marginHorizontal={10}>
       <Text style={styles.hint}>{error || "Click 'Save'"}</Text>
       <JsonInput
-        style={styles.input}
+        style={styles.editor}
         code={code}
         requiredPropertyNames={requiredPropertyNames}
         onChange={handleChangeText}
       />
       <View style={styles.controls}>
         <Button title="Cancel" onPress={handleCancel} />
+        <Button title="Delete" onPress={handleDelete} />
         <Button title="Save" onPress={handleSave} disabled={!!error} />
       </View>
     </SafeAreaModal>
