@@ -54,6 +54,8 @@
   "workspaces": [
     "packages/realm/bindgen/",
     "packages/realm/bindgen/vendor/realm-core/",
+    "packages/debugger",
+    "packages/debugger-app",
     "packages/babel-plugin",
     "packages/realm",
     "packages/realm-web",

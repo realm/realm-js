@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "expo-realm-debugger",
-    "slug": "expo-realm-debugger",
+    "name": "Realm Debugger",
+    "slug": "realm-debugger-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -16,14 +16,14 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.mongodb.realmdebugger"
+      "bundleIdentifier": "com.mongodb.realm.debugger"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.mongodb.realmdebugger"
+      "package": "com.mongodb.realm.debugger"
     },
     "web": {
       "favicon": "./assets/favicon.png"
