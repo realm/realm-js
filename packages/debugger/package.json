@@ -1,0 +1,30 @@
+{
+  "name": "@realm/debugger",
+  "version": "0.1.0",
+  "description": "React Native component to help you debug Realm",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "default": "./src/index.ts",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "json5": "^2.2.3"
+  },
+  "peerDependencies": {
+    "react-native": "*"
+  },
+  "eslintConfig": {
+    "root": true,
+    "extends": "@react-native",
+    "rules": {
+      "quotes": "off"
+    }
+  }
+}

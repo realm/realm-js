@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "module": "ES2022",
+    "moduleResolution": "Node",
+    "outDir": "dist",
+    "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true,
+    "emitDeclarationOnly": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "jsx": "react-native",
+    "lib": [
+      "ES2022"
+    ],
+    "types": [
+      "@realm/react",
+      "json5",
+      "react-native"
+    ]
+  }
+}
