@@ -44,7 +44,7 @@ export function createUseQuery(useRealm: () => Realm) {
   function useQuery<T extends Realm.Object<any>>(
     type: string | RealmClassType<T>,
     query: QueryCallback<T> = (collection: Realm.Results<T>) => collection,
-    deps: DependencyList = [type],
+    deps: DependencyList = [],
   ): Realm.Results<T> {
     const realm = useRealm();
 
