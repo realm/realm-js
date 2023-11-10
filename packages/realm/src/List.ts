@@ -97,7 +97,7 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
     // TODO: Consider a more performant way to determine if the list is embedded
     internal.setAny(
       index,
-      toBinding(value, isEmbedded ? { createObj: () => [internal.insertEmbedded(index), true] } : undefined),
+      toBinding(value, isEmbedded ? { createObj: () => [internal.setEmbedded(index), true] } : undefined),
     );
   }
 

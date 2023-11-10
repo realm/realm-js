@@ -376,6 +376,7 @@ classes:
       - insert_any
       - insert_embedded
       - set_any
+      - set_embedded
 
   Set:
     methods:
