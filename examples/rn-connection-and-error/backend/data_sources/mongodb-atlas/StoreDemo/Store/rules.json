@@ -1,0 +1,23 @@
+{
+    "database": "StoreDemo",
+    "collection": "Store",
+    "roles": [
+        {
+            "name": "readAndWriteAll",
+            "apply_when": {},
+            "document_filters": {
+                "read": {
+                    "_id": "%%user.custom_data.storeId"
+                },
+                "write": {
+                    "_id": "%%user.custom_data.storeId"
+                }
+            },
+            "insert": true,
+            "delete": true,
+            "search": true,
+            "read": true,
+            "write": true
+        }
+    ]
+}

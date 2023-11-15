@@ -491,7 +491,7 @@ PODS:
     - React-jsi (= 0.72.6)
     - React-logger (= 0.72.6)
     - React-perflogger (= 0.72.6)
-  - RealmJS (12.2.0):
+  - RealmJS (12.3.0):
     - React
   - SocketRocket (0.6.1)
   - Yoga (1.14.0)
@@ -723,7 +723,7 @@ SPEC CHECKSUMS:
   React-runtimescheduler: f23e337008403341177fc52ee4ca94e442c17ede
   React-utils: fa59c9a3375fb6f4aeb66714fd3f7f76b43a9f16
   ReactCommon: dd03c17275c200496f346af93a7b94c53f3093a4
-  RealmJS: a480cb21d4b0ba82c843c77c3a211770411eec75
+  RealmJS: 4c52a15602e70b64cd9230b0a17a9c12741371f4
   SocketRocket: f32cd54efbe0f095c4d7594881e52619cfe80b17
   Yoga: b76f1acfda8212aa16b7e26bcce3983230c82603
   YogaKit: f782866e155069a2cca2517aafea43200b01fd5a

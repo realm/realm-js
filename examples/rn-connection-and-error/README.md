@@ -88,6 +88,7 @@ It specifically addresses the following points:
   * Initial subscriptions are added to allow syncing of a subset of data to the device (i.e. the kiosks and products belonging to a specific store).
   * The Realm is opened immediately without waiting for downloads from the server.
     * See [Offline Support](#note-offline-support) below.
+* Tying custom user data to document permissions.
 
 ### Note: Offline Support
 
@@ -142,8 +143,6 @@ The server will [reset the client](https://www.mongodb.com/docs/atlas/app-servic
 
 In this demo app, a client reset is triggered by calling a [custom Atlas Function](#add-an-atlas-function) that deletes the client files for the current user. Another way to simulate a client reset is to terminate and re-enable Device Sync.
 
-> ⚠️ At the time of writing (Realm JS version 12.2.0), pre and post client reset listeners are not fired as expected. Instead, the sync error callback is invoked with an error named `ClientReset`. This will be fixed as soon as possible.
-
 ### Logging and App Activity Monitoring
 
 App Services logs all incoming requests and application events such as Device Sync operations and user authentication. In this demo app, we log messages to the `console` when certain changes and activities are detected, but you can replace the logger used with your preferred logging mechanism or service.
@@ -151,6 +150,13 @@ App Services logs all incoming requests and application events such as Device Sy
 To modify the [log level and logger](https://www.mongodb.com/docs/realm/sdk/react-native/logging/#std-label-react-native-logging) used by Realm, we use `Realm.setLogLevel()` and `Realm.setLogger()` in [App.tsx](./frontend/app/App.tsx).
 
 For the App Services logs, you can also choose to [forward the logs to a service](https://www.mongodb.com/docs/atlas/app-services/activity/forward-logs/). To read more about monitoring app activity, please see the [docs](https://www.mongodb.com/docs/atlas/app-services/activity/).
+
+### Tying Custom User Data to Schema Rules
+When a new user is created, they are automatically attached to the first store in the collection (or a new one if it doesn't exist).  The schemas for Store, Kiosk and Products have rules set to only be accessible if the users `storeId` field matches with the appropriate field in each model.  There is a function that can be triggered to switch the store for the current user.  Updating the custom user data and refreshing the session will create a client reset, which will automatically update the UI with the newly selected Store.
+
+To perform this in the application, after creating a new user and viewing the store page, one can press `Trigger Store Change`, which will call the `switchStore` function. At this point the UI will not be updated, as a refresh of both the session and the current users custom data must be performed.  To do this, press `Refresh Access Token/User Data`.  The refresh of the session will update the rules in the backend and the refresh of the custom user data will update the UI with the correct store Id.
+
+If the refresh session does not happen automatically, one can either press `Refresh Session` or click `Disconnect` followed by `Reconnect`.  If this is done without refreshing the user data, no store will be shown as the rules will be updated to the new store, but the UI will not be updated with the new store Id.
 
 ## Getting Started
 
@@ -204,19 +210,46 @@ To sync data used in this app you must first:
 
 > If you set up your App Services App [via a CLI](#via-a-cli-recommended), you can **skip this step** as these functions should already be defined for you.
 
-We will add a function for forcing a client reset. The function is solely used for demo purposes and should not be used in production. We will also add a function to be run on user creation that adds fields to the user's [custom user data](https://www.mongodb.com/docs/atlas/app-services/users/custom-metadata/) document.
+We will add functions for the following:
+  * Forcing a client reset.
+    * This function is solely used for demo purposes and should not be used in production.
+  * Setting the default `storeId` for a user on creation on the associated [custom user data](https://www.mongodb.com/docs/atlas/app-services/users/custom-metadata/) document.
+    * An [authentication trigger](https://www.mongodb.com/docs/atlas/app-services/triggers/authentication-triggers/) will need to be created and configured to call this function.
+  * Switching the associated Store for the current user.
+  * Creating a new store document and getting all store documents.
+    * These are used to check if the demo stores already exist and create them if not.
+    * The functions need to be system calls, as the associated user will not have permissions to read or write any other store.
 
 To set this up via the App Services UI:
 
-1. [Define two functions](https://www.mongodb.com/docs/atlas/app-services/functions/#define-a-function) with the following configurations:
+1. [Define five functions](https://www.mongodb.com/docs/atlas/app-services/functions/#define-a-function) with the following configurations:
     * Function name: `triggerClientReset`
       * Authentication: `System`
       * Private: `false`
       * Code: See [backend function](./backend/functions/triggerClientReset.js)
-    * Function name: `onUserCreation`
+    * Function name: `setUserDefaultStoreId`
       * Authentication: `Application Authentication`
       * Private: `false`
-      * Code: See [backend function](./backend/functions/onUserCreation.js)
+      * Code: See [backend function](./backend/functions/setUserDefaultStoreId.js)
+    * Function name: `switchStore`
+      * Authentication: `Application Authentication`
+      * Private: `false`
+      * Code: See [backend function](./backend/functions/switchStore.js)
+    * Function name: `createNewStore`
+      * Authentication: `System`
+      * Private: `true`
+      * Code: See [backend function](./backend/functions/createNewStore.js)
+    * Function name: `getAllStores`
+      * Authentication: `Application Authentication`
+      * Private: `true`
+      * Code: See [backend function](./backend/functions/getAllStores.js)
+2. [Define an authentication trigger](https://www.mongodb.com/docs/atlas/app-services/triggers/authentication-triggers/#create-an-authentication-trigger)
+    * Trigger type: `Authentication`
+    * Trigger name: `onUserCreation`
+    * Action type: `Create`
+    * Providers: `Email/Password`
+    * EventType: `Function`
+    * Function: `setUserDefaultStoreId`
 
 ### Install Dependencies
 

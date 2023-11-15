@@ -19,9 +19,8 @@
 import React, {createContext, useCallback, useContext, useEffect} from 'react';
 import type {PropsWithChildren} from 'react';
 import {BSON, CollectionChangeCallback} from 'realm';
-import {useQuery, useRealm} from '@realm/react';
+import {useObject, useQuery, useRealm, useUser} from '@realm/react';
 
-import {SYNC_STORE_ID} from '../atlas-app-services/config';
 import {Kiosk} from '../models/Kiosk';
 import {Product, getRandomProductName} from '../models/Product';
 import {Store} from '../models/Store';
@@ -59,8 +58,11 @@ const StoreContext = createContext<StoreContextType>({
  */
 export function StoreProvider({children}: PropsWithChildren) {
   const realm = useRealm();
-  const store = useQuery(Store)[0];
+  const user = useUser<{}, {storeId: BSON.ObjectId}, {}>();
+  const store = useObject(Store, user.customData.storeId);
   const products = useQuery(Product);
+
+  logger.info(`Users current store Id: ${user.customData.storeId}`);
 
   /**
    * Adds a store. This demo app is syncing and using only 1 store with a
@@ -72,7 +74,7 @@ export function StoreProvider({children}: PropsWithChildren) {
       return;
     }
     realm.write(() => {
-      realm.create(Store, {_id: SYNC_STORE_ID});
+      realm.create(Store, {});
     });
   }, [realm, store]);
 
@@ -83,12 +85,12 @@ export function StoreProvider({children}: PropsWithChildren) {
     realm.write(() => {
       const kiosk = realm.create(Kiosk, {
         _id: new BSON.ObjectId(),
-        storeId: SYNC_STORE_ID,
+        storeId: user.customData.storeId,
         products: [...products],
       });
       store?.kiosks.push(kiosk);
     });
-  }, [realm, store, products]);
+  }, [realm, store, products, user]);
 
   /**
    * Adds a product and then adds it to all kiosks in the store.
@@ -97,7 +99,7 @@ export function StoreProvider({children}: PropsWithChildren) {
     realm.write(() => {
       const product = realm.create(Product, {
         _id: new BSON.ObjectId(),
-        storeId: SYNC_STORE_ID,
+        storeId: user.customData.storeId,
         name: getRandomProductName(),
         price: parseFloat(getFloatBetween(3, 15).toFixed(2)),
         numInStock: getIntBetween(0, 100),
@@ -106,7 +108,7 @@ export function StoreProvider({children}: PropsWithChildren) {
         kiosk.products.push(product);
       }
     });
-  }, [realm, store]);
+  }, [realm, store, user]);
 
   /**
    * Updates a product by changing the number in stock.

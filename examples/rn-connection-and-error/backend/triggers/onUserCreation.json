@@ -1,0 +1,18 @@
+{
+    "name": "onUserCreation",
+    "type": "AUTHENTICATION",
+    "disabled": false,
+    "config": {
+        "operation_type": "CREATE",
+        "providers": [
+            "local-userpass"
+        ]
+    },
+    "event_processors": {
+        "FUNCTION": {
+            "config": {
+                "function_name": "setUserDefaultStoreId"
+            }
+        }
+    }
+}

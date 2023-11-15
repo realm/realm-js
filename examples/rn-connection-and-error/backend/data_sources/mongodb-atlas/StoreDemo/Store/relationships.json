@@ -1,6 +1,6 @@
 {
     "kiosks": {
-        "ref": "#/relationship/mongodb-atlas/sync/Kiosk",
+        "ref": "#/relationship/mongodb-atlas/StoreDemo/Kiosk",
         "source_key": "kiosks",
         "foreign_key": "_id",
         "is_list": true

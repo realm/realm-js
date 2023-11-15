@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import {useCallback, useEffect, useState} from 'react';
+import {useCallback, useEffect, useRef, useState} from 'react';
 import {BSON, ConnectionState, UserState} from 'realm';
 import {useApp, useRealm, useUser} from '@realm/react';
 
@@ -41,6 +41,11 @@ export function useDemoSyncTriggers() {
   const realm = useRealm();
   const currentUser = useUser();
   const [isConnected, setIsConnected] = useState(true);
+
+  // This ref is used by the refresh method, which contains a promise that
+  // would otherwise view a closure of stale state from isConnected and not know
+  // when to call `resume()`.
+  const isConnectedRef = useRef(isConnected);
 
   /**
    * Trigger the connection listener by reconnecting to the sync session.
@@ -97,6 +102,7 @@ export function useDemoSyncTriggers() {
       }
 
       setIsConnected(connected);
+      isConnectedRef.current = connected;
     };
     realm.syncSession?.addConnectionNotification(handleConnectionChange);
 
@@ -147,6 +153,40 @@ export function useDemoSyncTriggers() {
   const refreshAccessToken = useCallback(async () => {
     await currentUser.refreshCustomData();
   }, [currentUser]);
+
+  /**
+   * Pause and resume the session in order to apply new rules to schemas.
+   */
+  const refreshSession = useCallback(async () => {
+    logger.info('Pausing Session...');
+    realm.syncSession?.pause();
+
+    // Before calling resume, we should ensure we have disconnected.
+    // Poll the isConnectedRef until it's false.
+    try {
+      await new Promise<void>((resolve, reject) => {
+        let attempts = 0;
+        const checkStatus = () => {
+          attempts++;
+          if (!isConnectedRef.current) {
+            clearInterval(intervalId);
+            resolve();
+          }
+          if (attempts > 100) {
+            clearInterval(intervalId);
+            reject();
+          }
+        };
+        const intervalId = setInterval(checkStatus, 100);
+      });
+    } catch {
+      logger.error('Pausing session failed');
+      return;
+    }
+
+    logger.info('Resuming Session...');
+    realm.syncSession?.resume();
+  }, [realm]);
 
   /**
    * Trigger the user event listener by removing the user from the app.
@@ -209,6 +249,7 @@ export function useDemoSyncTriggers() {
     triggerSyncError,
     triggerClientReset,
     refreshAccessToken,
+    refreshSession,
     deleteUser,
   };
 }

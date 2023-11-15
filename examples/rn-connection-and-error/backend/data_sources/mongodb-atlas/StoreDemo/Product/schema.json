@@ -1,5 +1,13 @@
 {
-    "bsonType": "object",
+    "title": "Product",
+    "type": "object",
+    "required": [
+        "_id",
+        "name",
+        "numInStock",
+        "price",
+        "storeId"
+    ],
     "properties": {
         "_id": {
             "bsonType": "objectId"
@@ -16,13 +24,5 @@
         "storeId": {
             "bsonType": "objectId"
         }
-    },
-    "required": [
-        "_id",
-        "storeId",
-        "name",
-        "price",
-        "numInStock"
-    ],
-    "title": "Product"
+    }
 }

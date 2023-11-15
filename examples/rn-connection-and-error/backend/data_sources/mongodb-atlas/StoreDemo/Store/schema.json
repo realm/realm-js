@@ -1,5 +1,9 @@
 {
-    "bsonType": "object",
+    "title": "Store",
+    "type": "object",
+    "required": [
+        "_id"
+    ],
     "properties": {
         "_id": {
             "bsonType": "objectId"
@@ -10,9 +14,5 @@
                 "bsonType": "objectId"
             }
         }
-    },
-    "required": [
-        "_id"
-    ],
-    "title": "Store"
+    }
 }

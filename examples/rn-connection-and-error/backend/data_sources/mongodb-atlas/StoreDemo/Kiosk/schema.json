@@ -1,5 +1,10 @@
 {
-    "bsonType": "object",
+    "title": "Kiosk",
+    "type": "object",
+    "required": [
+        "_id",
+        "storeId"
+    ],
     "properties": {
         "_id": {
             "bsonType": "objectId"
@@ -13,10 +18,5 @@
         "storeId": {
             "bsonType": "objectId"
         }
-    },
-    "required": [
-        "_id",
-        "storeId"
-    ],
-    "title": "Kiosk"
+    }
 }

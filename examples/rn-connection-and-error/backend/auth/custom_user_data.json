@@ -1,8 +1,8 @@
 {
     "enabled": true,
     "mongo_service_name": "mongodb-atlas",
-    "database_name": "AuthExample",
+    "database_name": "StoreDemo",
     "collection_name": "Users",
-    "user_id_field": "user_id",
-    "on_user_creation_function_name": "onUserCreation"
+    "user_id_field": "userId",
+    "on_user_creation_function_name": "setUserDefaultStoreId"
 }

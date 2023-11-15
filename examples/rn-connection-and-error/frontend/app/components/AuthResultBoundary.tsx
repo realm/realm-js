@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import {useEffect} from 'react';
+import React, {useEffect} from 'react';
 import type {PropsWithChildren} from 'react';
 import {useAuth} from '@realm/react';
 
@@ -45,5 +45,5 @@ export function AuthResultBoundary({children}: PropsWithChildren) {
     }
   }, [result.error, result.operation, result.success]);
 
-  return children;
+  return <>{children}</>;
 }
