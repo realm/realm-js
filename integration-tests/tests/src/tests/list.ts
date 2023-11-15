@@ -2128,7 +2128,7 @@ describe("Lists", () => {
         }).throws(Error);
 
         ib.addresses.push({ street: "Njalsgade", city: "Islands Brygge" });
-        expect(3).equals(ib.addresses.length);
+        expect(ib.addresses.length).equals(3);
       });
 
       // update/replace one embedded child object
@@ -2136,8 +2136,8 @@ describe("Lists", () => {
         ib.addresses[0] = { street: "Nørregade", city: "Vesterled" };
       });
 
-      expect(3).equals(ib.addresses.length);
-      expect("Nørregade").equals(ib.addresses[0].street);
+      expect(ib.addresses.length).equals(3);
+      expect(ib.addresses[0].street).equals("Nørregade");
     });
 
     it("querying embedded objects throws", function () {

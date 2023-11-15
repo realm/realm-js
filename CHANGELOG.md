@@ -13,6 +13,7 @@
 * Fixed a crash at a very specific time during a `DiscardLocal` client reset on a FLX Realm could leave subscriptions in an invalid state. ([realm/realm-core#7110](https://github.com/realm/realm-core/pull/7110), since v10.19.4)
 * Fixed an error "Invalid schema change (UPLOAD): cannot process AddColumn instruction for non-existent table" when using automatic client reset with recovery in dev mode to recover schema changes made locally while offline. ([realm/realm-core#7042](https://github.com/realm/realm-core/pull/7042))
 * When place an embedded object would create a new object and keep the original object too. ([#6239](https://github.com/realm/realm-js/issues/6239), since v12.0.0)
+* When setting an embedded object in a `Realm.List` by index, the new object would be inserted at the end rather than replacing the existing object at the given index. ([#6239](https://github.com/realm/realm-js/issues/6239), since v12.0.0)
 
 ### Compatibility
 * React Native >= v0.71.4
