@@ -48,6 +48,10 @@ export function createUseQuery(useRealm: () => Realm) {
   ): Realm.Results<T> {
     const realm = useRealm();
 
+    // We need to add the type to the deps, so that if the type changes, the query will be re-run.
+    // This will be saved in an array which will be spread into the provided deps.
+    const requiredDeps = [type];
+
     // Create a forceRerender function for the cachedCollection to use as its updateCallback, so that
     // the cachedCollection can force the component using this hook to re-render when a change occurs.
     const [, forceRerender] = useReducer((x) => x + 1, 0);
@@ -58,7 +62,7 @@ export function createUseQuery(useRealm: () => Realm) {
     // We want the user of this hook to be able pass in the `query` function inline (without the need to `useCallback` on it)
     // This means that the query function is unstable and will be a redefined on each render of the component where `useQuery` is used
     // Therefore we use the `deps` array to memoize the query function internally, and only use the returned `queryCallback`
-    const queryCallback = useCallback(query, deps);
+    const queryCallback = useCallback(query, [...deps, ...requiredDeps]);
 
     // If the query function changes, we need to update the cachedCollection
     if (queryCallbackRef.current !== queryCallback) {
