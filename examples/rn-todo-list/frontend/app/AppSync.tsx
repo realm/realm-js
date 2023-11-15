@@ -20,6 +20,7 @@ import React from 'react';
 import {SafeAreaView, StyleSheet} from 'react-native';
 import {OpenRealmBehaviorType} from 'realm';
 import {AppProvider, RealmProvider, UserProvider} from '@realm/react';
+import {RealmDebuggerModal} from '@realm/debugger';
 
 import {Loading} from './components/Loading';
 import {LoginScreen} from './screens/LoginScreen';
@@ -77,6 +78,7 @@ export function AppSync({appId}: AppSyncProps) {
               },
             }}>
             <TaskScreenSync />
+            <RealmDebuggerModal />
           </RealmProvider>
         </UserProvider>
       </AppProvider>
