@@ -1,10 +1,4 @@
-## vNext (TBD)
-
-### Deprecations
-* None
-
-### Enhancements
-* None
+## 0.6.2 (2023-11-15)
 
 ### Fixed
 * Improved type generation, which fixed an issue with the `Realm.User` return from `useUser` ([#6196](https://github.com/realm/realm-js/issues/6196))
