@@ -10,7 +10,8 @@
 * Fixed FLX subscriptions not being sent to the server if the session was interrupted during bootstrapping. ([realm/realm-core#7077](https://github.com/realm/realm-core/issues/7077), since v10.12.0)
 * Fixed FLX subscriptions not being sent to the server if an upload message was sent immediately after a subscription was committed. ([realm/realm-core#7076](https://github.com/realm/realm-core/issues/7076), since v12.3.0)
 * Fixed application crash with `KeyNotFound` exception when subscriptions are marked complete after a client reset. ([realm/realm-core#7090](https://github.com/realm/realm-core/issues/7090), since v10.19.0)
-
+* Fixed a crash at a very specific time during a `DiscardLocal` client reset on a FLX Realm could leave subscriptions in an invalid state. ([realm/realm-core#7110](https://github.com/realm/realm-core/pull/7110), since v10.19.4)
+* Fixed an error "Invalid schema change (UPLOAD): cannot process AddColumn instruction for non-existent table" when using automatic client reset with recovery in dev mode to recover schema changes made locally while offline. ([realm/realm-core#7042](https://github.com/realm/realm-core/pull/7042))
 
 ### Compatibility
 * React Native >= v0.71.4
@@ -18,7 +19,7 @@
 * File format: generates Realms with format v23 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-* Upgraded Realm Core from v13.23.2 to v13.23.3. ([#6234](https://github.com/realm/realm-js/issues/6234))
+* Upgraded Realm Core from v13.23.2 to v13.23.4. ([#6234](https://github.com/realm/realm-js/issues/6234) and [#6253](https://github.com/realm/realm-js/issues/6253))
 
 ## 12.3.0 (2023-11-03)
 
