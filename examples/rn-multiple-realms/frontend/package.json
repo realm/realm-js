@@ -16,6 +16,7 @@
     "@realm/react": "^0.6.1",
     "react": "18.2.0",
     "react-native": "0.72.6",
+    "react-native-config": "^1.5.1",
     "react-native-safe-area-context": "^4.7.2",
     "react-native-screens": "^3.25.0",
     "react-native-vector-icons": "^10.0.0",
