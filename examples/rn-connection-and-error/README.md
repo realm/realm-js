@@ -152,11 +152,11 @@ To modify the [log level and logger](https://www.mongodb.com/docs/realm/sdk/reac
 For the App Services logs, you can also choose to [forward the logs to a service](https://www.mongodb.com/docs/atlas/app-services/activity/forward-logs/). To read more about monitoring app activity, please see the [docs](https://www.mongodb.com/docs/atlas/app-services/activity/).
 
 ### Tying Custom User Data to Schema Rules
-When a new user is created, they are automatically attached to the first store in the collection (or a new one if it doesn't exist).  The schemas for Store, Kiosk and Products have rules set to only be accessible if the users `storeId` field matches with the appropriate field in each model.  There is a function that can be triggered to switch the store for the current user.  Updating the custom user data and refreshing the session will create a client reset, which will automatically update the UI with the newly selected Store.
+When a new user is created, they are automatically attached to the first store in the collection (or a new store if it doesn't exist).  The schemas for Store, Kiosk and Products have rules set to only be accessible if the users `storeId` field matches with the appropriate field in each model.  There is a function that can be triggered to switch the store for the current user.  Updating the custom user data and refreshing the session will trigger a client reset, which will automatically update the UI with the newly selected Store.
 
-To perform this in the application, after creating a new user and viewing the store page, one can press `Trigger Store Change`, which will call the `switchStore` function. At this point the UI will not be updated, as a refresh of both the session and the current users custom data must be performed.  To do this, press `Refresh Access Token/User Data`.  The refresh of the session will update the rules in the backend and the refresh of the custom user data will update the UI with the correct store Id.
+To switch store in the application, after creating a new user and viewing the store page, one can press `Trigger Store Change`, which will call the `switchStore` function. At this point the UI will not be updated, as a refresh of both the session and the current users custom data must be performed.  To do this, press `Refresh Access Token/User Data`.  The refresh of the session will update the rules in the backend and the refresh of the custom user data will update the UI with the correct store Id.
 
-If the refresh session does not happen automatically, one can either press `Refresh Session` or click `Disconnect` followed by `Reconnect`.  If this is done without refreshing the user data, no store will be shown as the rules will be updated to the new store, but the UI will not be updated with the new store Id.
+If the refresh of the session does not happen automatically, one can either press `Refresh Session` or click `Disconnect` followed by `Reconnect`.  If this is done without refreshing the user data, no store will be shown as the rules will be updated to the new store, but the UI will not be updated with the new store Id.
 
 ## Getting Started
 
@@ -212,7 +212,7 @@ To sync data used in this app you must first:
 
 We will add functions for the following:
   * Forcing a client reset.
-    * This function is solely used for demo purposes and should not be used in production.
+    * This function is solely used for demo purposes and should **never** be used in production.
   * Setting the default `storeId` for a user on creation on the associated [custom user data](https://www.mongodb.com/docs/atlas/app-services/users/custom-metadata/) document.
     * An [authentication trigger](https://www.mongodb.com/docs/atlas/app-services/triggers/authentication-triggers/) will need to be created and configured to call this function.
   * Switching the associated Store for the current user.
