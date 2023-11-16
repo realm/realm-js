@@ -110,8 +110,11 @@ function createObjects(user: Realm.User, partition: string): Promise<Realm> {
         resolve(realm);
       }
     };
-    //@ts-expect-error TYPEBUG: enums not exposed in realm namespace
-    session?.addProgressNotification("upload", "forCurrentlyOutstandingWork", callback);
+    session?.addProgressNotification(
+      Realm.ProgressDirection.Upload,
+      Realm.ProgressMode.ForCurrentlyOutstandingWork,
+      callback,
+    );
   });
 }
 
@@ -313,7 +316,7 @@ describe("SessionTest", () => {
       await new Promise<void>((resolve, reject) => {
         let syncFinished = false;
         let failOnCall = false;
-        const progressCallback = (transferred: number, total: number) => {
+        const progressCallback = (transferred: number, total: number, estimate?: number) => {
           unregisterFunc = () => {
             realm.syncSession?.removeProgressNotification(progressCallback);
           };
@@ -325,22 +328,28 @@ describe("SessionTest", () => {
           if (syncFinished) {
             failOnCall = true;
             unregisterFunc();
-            //use second callback to wait for sync finished
-            //@ts-expect-error TYPEBUG: enums not exposed in realm namespace
-            realm.syncSession?.addProgressNotification("upload", "reportIndefinitely", (transferred, transferable) => {
-              if (transferred === transferable) {
-                resolve();
-              }
-            });
+            // use second callback to wait for sync finished
+            realm.syncSession?.addProgressNotification(
+              Realm.ProgressDirection.Upload,
+              Realm.ProgressMode.ReportIndefinitely,
+              (transferred, transferable, estimate) => {
+                if (transferred === transferable) {
+                  resolve();
+                }
+              },
+            );
             writeDataFunc();
           }
         };
-        //@ts-expect-error TYPEBUG: enums not exposed in realm namespace
-        realm.syncSession?.addProgressNotification("upload", "reportIndefinitely", progressCallback);
+        realm.syncSession?.addProgressNotification(
+          Realm.ProgressDirection.Upload,
+          Realm.ProgressMode.ReportIndefinitely,
+          progressCallback,
+        );
         writeDataFunc();
       });
-      await realm.close();
-      user.logOut();
+      realm.close();
+      await user.logOut();
     });
   });
 

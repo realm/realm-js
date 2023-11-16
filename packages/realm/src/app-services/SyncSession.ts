@@ -57,8 +57,10 @@ export type ProgressNotificationCallback =
   /**
    * @param transferred - The current number of bytes already transferred
    * @param transferable - The total number of transferable bytes (i.e. the number of bytes already transferred plus the number of bytes pending transfer)
+   * @param progressEstimate - An estimate in the range [0.0; 1.0] on the progress. The estimate is only set for flexible sync, and it is only useful
+   *                           during bootstrap. Once steady-state has been reached, the value will remain 1.0.
    */
-  (transferred: number, transferable: number) => void;
+  (transferred: number, transferable: number, progressEstimate?: number) => void;
 
 export enum ConnectionState {
   Disconnected = "disconnected",
