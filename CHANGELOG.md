@@ -14,6 +14,7 @@
 * Fixed an error "Invalid schema change (UPLOAD): cannot process AddColumn instruction for non-existent table" when using automatic client reset with recovery in dev mode to recover schema changes made locally while offline. ([realm/realm-core#7042](https://github.com/realm/realm-core/pull/7042))
 * When place an embedded object would create a new object and keep the original object too. ([#6239](https://github.com/realm/realm-js/issues/6239), since v12.0.0)
 * When setting an embedded object in a `Realm.List` by index, the new object would be inserted at the end rather than replacing the existing object at the given index. ([#6239](https://github.com/realm/realm-js/issues/6239), since v12.0.0)
+* When `SyncConfiguration.clientReset` was `undefined`, no client reset mode were set which could lead an app crash with the message `m_mode != ClientResyncMode::Manual`. The default mode is `RecoverOrDiscardUnsyncedChanges` and not callbacks are defined. ([#6260](https://github.com/realm/realm-js/issues/6260), since v12.0.0)
 
 ### Compatibility
 * React Native >= v0.71.4
