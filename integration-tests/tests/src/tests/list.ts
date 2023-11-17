@@ -2095,6 +2095,7 @@ describe("Lists", () => {
       // check that we have successfully added a Group
       expect(divisions[0]["groups"].length).equals(2);
     });
+
     it("creating standalone embedded object throws", function () {
       // creating standalone embedded object is not allowed
       this.realm.write(() => {
@@ -2103,7 +2104,9 @@ describe("Lists", () => {
         }).throws(Error);
       });
     });
+
     it("supports adding embedded objects", function () {
+      // create a parent object with two embedded child objects
       this.realm.write(() => {
         this.realm.create(HouseOwnerSchema.name, {
           name: "Ib",
@@ -2117,6 +2120,7 @@ describe("Lists", () => {
       const ib = this.realm.objectForPrimaryKey(HouseOwnerSchema.name, "Ib");
       expect(ib.addresses.length).equals(2);
 
+      // add new embedded object
       this.realm.write(() => {
         expect(() => {
           //standalone object throws
@@ -2124,15 +2128,25 @@ describe("Lists", () => {
         }).throws(Error);
 
         ib.addresses.push({ street: "Njalsgade", city: "Islands Brygge" });
-        expect(3).equals(ib.addresses.length);
+        expect(ib.addresses.length).equals(3);
       });
+
+      // update/replace one embedded child object
+      this.realm.write(() => {
+        ib.addresses[0] = { street: "Nørregade", city: "Vesterled" };
+      });
+
+      expect(ib.addresses.length).equals(3);
+      expect(ib.addresses[0].street).equals("Nørregade");
     });
+
     it("querying embedded objects throws", function () {
       expect(() => {
         this.realm.objects(AddressSchema.name);
       }).throws(Error);
     });
   });
+
   describe("objects and classes", () => {
     openRealmBeforeEach({ schema: [TodoList, TodoItem] });
     it("supports constructing objects with lists and pushing objects to it", function () {
