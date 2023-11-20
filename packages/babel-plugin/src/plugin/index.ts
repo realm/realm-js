@@ -290,6 +290,13 @@ function visitRealmClassProperty(path: NodePath<types.ClassProperty>) {
   }
   const index = Boolean(indexDecorator);
 
+  const indexDecoratorCall = findDecoratorCall(decoratorsPath, "index");
+  const indexCall =
+    indexDecoratorCall
+      && types.isStringLiteral(indexDecoratorCall.callExpression.arguments[0])
+        ? indexDecoratorCall.callExpression.arguments[0].value
+        : undefined;
+
   const mapToDecorator = findDecoratorCall(decoratorsPath, "mapTo");
   const mapTo =
     mapToDecorator && types.isStringLiteral(mapToDecorator.callExpression.arguments[0])
@@ -299,6 +306,7 @@ function visitRealmClassProperty(path: NodePath<types.ClassProperty>) {
   // Remove the decorators from the final source as they are only for schema annotation purposes.
   // Decorator implementations will throw to prevent usage outside of the plugin.
   if (indexDecorator) indexDecorator.remove();
+  if (indexDecoratorCall) indexDecoratorCall.decoratorNode.remove();
   if (mapToDecorator) mapToDecorator.decoratorNode.remove();
 
   if (keyPath.isIdentifier()) {
@@ -334,6 +342,10 @@ function visitRealmClassProperty(path: NodePath<types.ClassProperty>) {
 
       if (index) {
         properties.push(types.objectProperty(types.identifier("indexed"), types.booleanLiteral(true)));
+      }
+
+      if (indexCall) {
+        properties.push(types.objectProperty(types.identifier("indexed"), types.stringLiteral(indexCall)))
       }
 
       if (mapTo) {
