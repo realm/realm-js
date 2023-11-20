@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import { NetworkType, inject } from "src/platform/network";
 import {
   AnyUser,
   Credentials,
@@ -140,6 +141,13 @@ export type AppConfiguration = {
    * @since 12.2.0
    */
   metadata?: Metadata;
+
+  /**
+   * Specify a custom `fetch` implementation.
+   * @since 12.3.0
+   * @experimental This API is experimental and may change or be removed.
+   */
+  fetchOverride?: unknown;
 };
 
 /**
@@ -261,7 +269,8 @@ export class App<
   constructor(configOrId: AppConfiguration | string) {
     const config: AppConfiguration = typeof configOrId === "string" ? { id: configOrId } : configOrId;
     assert.object(config, "config");
-    const { id, baseUrl, app, timeout, multiplexSessions = true, baseFilePath, metadata } = config;
+    const { id, baseUrl, app, timeout, multiplexSessions = true, baseFilePath, metadata, fetchOverride } = config;
+
     assert.string(id, "id");
     if (timeout !== undefined) {
       assert.number(timeout, "timeout");
@@ -275,6 +284,10 @@ export class App<
       if (metadata.mode === MetadataMode.Encryption) {
         assert(metadata.encryptionKey, "encryptionKey is required");
       }
+    }
+
+    if (fetchOverride) {
+      inject({ fetch: fetchOverride } as NetworkType);
     }
 
     fs.ensureDirectoryForFile(fs.joinPaths(baseFilePath || fs.getDefaultDirectoryPath(), "mongodb-realm"));

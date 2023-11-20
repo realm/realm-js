@@ -26,7 +26,7 @@ export type { FetchHeaders, Request };
 const debug = extendDebug("network");
 const transport = new DefaultNetworkTransport();
 
-type NetworkType = {
+export type NetworkType = {
   fetch(request: Request): Promise<FetchResponse>;
   fetch(request: binding.Request): Promise<FetchResponse>;
 };
@@ -60,5 +60,5 @@ export const network: NetworkType = {
 };
 
 export function inject(injected: NetworkType) {
-  Object.freeze(Object.assign(network, injected));
+  Object.assign(network, injected);
 }

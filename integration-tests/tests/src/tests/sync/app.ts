@@ -21,9 +21,11 @@ import Realm, { AppConfiguration, BSON, MetadataMode } from "realm";
 
 import { importAppBefore } from "../../hooks";
 import { generatePartition } from "../../utils/generators";
-import { baseUrl } from "../../utils/import-app";
+import { baseUrl, Response } from "../../utils/import-app";
 import { select } from "../../utils/select";
 import { buildAppConfig } from "../../utils/build-app-config";
+import { Fetch, Request } from "@realm/network-transport";
+import { fetch } from "../../utils/fetch";
 
 const TestObjectSchema: Realm.ObjectSchema = {
   primaryKey: "_id",

@@ -20,5 +20,6 @@
 
 import "./analytics";
 import "./clean-exit";
+import "./custom-fetch";
 import "./path";
 import "./sync-proxy";
