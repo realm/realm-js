@@ -367,6 +367,10 @@ function visitRealmClassStatic(path: NodePath<types.ClassProperty>) {
 
 function visitRealmClass(path: NodePath<types.ClassDeclaration>) {
   path.addComment("leading", " Modified by @realm/babel-plugin", true);
+  if (!path.node.id) {
+    throw new Error("Expected a class name");
+  }
+
   const className = path.node.id.name;
   // Transform properties to a static schema object
   const classProperties = path

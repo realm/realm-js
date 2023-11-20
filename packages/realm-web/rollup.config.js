@@ -26,6 +26,7 @@ import pkg from "./package.json";
 
 const replacer = replace({
   __SDK_VERSION__: JSON.stringify(pkg.version),
+  preventAssignment: false,
 });
 
 export default [
