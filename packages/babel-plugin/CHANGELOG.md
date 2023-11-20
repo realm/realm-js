@@ -1,16 +1,8 @@
-## X.Y.Z
-
-### Breaking changes
-* None
+## 0.2.0 (2023-11-20)
 
 ### Enhancements
 * Support full-text index decorator ()`@index("full-text")`). Thanks to @atdyer. ([#5800](https://github.com/realm/realm-js/issues/5800))
 
-### Fixed
-* None
-
-### Internal
-* None
 
 ## 0.1.1 (2022-12-06)
 
