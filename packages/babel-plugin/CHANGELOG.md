@@ -1,16 +1,8 @@
-## 0.1.1 (2022-12-06)
-
-### Breaking changes
-* None
-
-### Enhancements
-* None
+## 0.1.1 (2023-11-20)
 
 ### Fixed
 * When a property has dynamical default value, the function was called twice. ([#5140](https://github.com/realm/realm-js/issues/5140), since v0.1.0)
 
-### Internal
-* None
 
 ## 0.1.0 (2022-10-18)
 
