@@ -70,7 +70,7 @@ export default [
         outputToFilesystem: true,
       }),
     ],
-    external: ["bson", "debug", "node-fetch", "node:module", "node:fs", "node:path", "realm/realm-constants.json"],
+    external: ["bson", "debug", "node-fetch", "node:module", "node:fs", "node:path"],
   },
   {
     input: "src/platform/react-native/index.ts",
@@ -94,7 +94,7 @@ export default [
         outputToFilesystem: true,
       }),
     ],
-    external: ["bson", "debug", "react-native", "realm/realm-constants.json"],
+    external: ["bson", "debug", "react-native"],
   },
   {
     input: "src/index.ts",
@@ -111,6 +111,6 @@ export default [
         },
       }),
     ],
-    external: ["bson", "realm/realm-constants.json"],
+    external: ["bson"],
   },
 ];
