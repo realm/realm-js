@@ -167,7 +167,7 @@ export const SYNC_CONFIG = {
   appId: Config.ATLAS_APP_ID || 'YOUR_APP_ID',
 };
 ```
--  Alternatively you can add a `.env` to your project with the following contents:
+-  Alternatively you can add a `.env` file to your project with the following contents:
    ```bash
    ATLAS_APP_ID=your_app_id
    ```

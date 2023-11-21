@@ -1,7 +1,7 @@
 apply plugin: "com.android.application"
 apply plugin: "com.facebook.react"
 
-// CUSTOM CODE: This adds support for the `.env` environemnt variables with react-native-config
+// CUSTOM CODE: This adds support for the `.env` environment variables with react-native-config
 apply from: project(':react-native-config').projectDir.getPath() + "/dotenv.gradle"
 
 /**
