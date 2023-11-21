@@ -15,6 +15,8 @@
 * When place an embedded object would create a new object and keep the original object too. ([#6239](https://github.com/realm/realm-js/issues/6239), since v12.0.0)
 * When setting an embedded object in a `Realm.List` by index, the new object would be inserted at the end rather than replacing the existing object at the given index. ([#6239](https://github.com/realm/realm-js/issues/6239), since v12.0.0)
 * When `SyncConfiguration.clientReset` was `undefined`, no client reset mode was set which could lead to an app crash with the message `m_mode != ClientResyncMode::Manual`. The default mode is now `RecoverUnsyncedChanges` and no callbacks are defined. ([#6260](https://github.com/realm/realm-js/issues/6260), since v12.0.0)
+* Fixed writing the `realm-constants.json` file used for analytics / telemetry, which used to cause errors such as `Unable to resolve module ../realm-constants.json` for users installing the package into a mono-repo. We're now storing this information in the `realm/package.json` file instead. ([#6144](https://github.com/realm/realm-js/issues/6144), since v12.0.0-rc.2)
+
 
 ### Compatibility
 * React Native >= v0.71.4
