@@ -25,12 +25,36 @@ type RealmClassType<T = any> = { new (...args: any): T };
 type QueryCallback<T> = (collection: Realm.Results<T>) => Realm.Results<T>;
 type DependencyList = ReadonlyArray<unknown>;
 
+function simplifyArguments<T extends Realm.Object<any>>(
+  typeOrQuery: string | RealmClassType<T> | QueryCallback<T>,
+  queryOrDeps: QueryCallback<T> | DependencyList = (collection: Realm.Results<T>) => collection,
+  depsOrType: DependencyList | string | RealmClassType<T> = [],
+): { type: string | RealmClassType<T>; query: QueryCallback<T>; deps: DependencyList } {
+  if (Array.isArray(queryOrDeps)) {
+    return {
+      type: depsOrType as unknown as string | RealmClassType<T>,
+      query: typeOrQuery as unknown as QueryCallback<T>,
+      deps: queryOrDeps as unknown as DependencyList,
+    };
+  }
+  return {
+    type: typeOrQuery as unknown as string | RealmClassType<T>,
+    query: queryOrDeps as unknown as QueryCallback<T>,
+    deps: depsOrType as unknown as DependencyList,
+  };
+}
 /**
  * Generates the `useQuery` hook from a given `useRealm` hook.
  * @param useRealm - Hook that returns an open Realm instance
  * @returns useObject - Hook that is used to gain access to a {@link Realm.Collection}
  */
 export function createUseQuery(useRealm: () => Realm) {
+  function useQuery<T>(query: QueryCallback<T>, deps: DependencyList, type: string): Realm.Results<T & Realm.Object<T>>;
+  function useQuery<T extends Realm.Object<any>>(
+    query: QueryCallback<T>,
+    deps: DependencyList,
+    type: RealmClassType<T>,
+  ): Realm.Results<T & Realm.Object<T>>;
   function useQuery<T>(
     type: string,
     query?: QueryCallback<T>,
@@ -42,10 +66,11 @@ export function createUseQuery(useRealm: () => Realm) {
     deps?: DependencyList,
   ): Realm.Results<T>;
   function useQuery<T extends Realm.Object<any>>(
-    type: string | RealmClassType<T>,
-    query: QueryCallback<T> = (collection: Realm.Results<T>) => collection,
-    deps: DependencyList = [],
+    typeOrQuery: string | RealmClassType<T> | QueryCallback<T>,
+    queryOrDeps: QueryCallback<T> | DependencyList = (collection: Realm.Results<T>) => collection,
+    depsOrType: DependencyList | string | RealmClassType<T> = [],
   ): Realm.Results<T> {
+    const { type, query, deps } = simplifyArguments(typeOrQuery, queryOrDeps, depsOrType);
     const realm = useRealm();
 
     // We need to add the type to the deps, so that if the type changes, the query will be re-run.
