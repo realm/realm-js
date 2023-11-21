@@ -237,8 +237,15 @@ npx pod-install
 1. [Copy your Atlas App ID](https://www.mongodb.com/docs/atlas/app-services/reference/find-your-project-or-app-id/#std-label-find-your-app-id) from the App Services UI.
 2. Paste the copied ID as the value of the existing variable `ATLAS_APP_ID` in [app/atlas-app-services/config.ts](./frontend/app/atlas-app-services/config.ts):
 ```js
-export const ATLAS_APP_ID = 'YOUR_APP_ID';
+import Config from 'react-native-config';
+
+export const ATLAS_APP_ID = Config.ATLAS_APP_ID || 'YOUR_APP_ID';
 ```
+-  Alternatively you can add a `.env` file to your project with the following contents:
+   ```bash
+   ATLAS_APP_ID=your_app_id
+   ```
+   This file is included in the `.gitignore` so that it won't be committed to any code repositories.
 3. Start Metro (the JavaScript bundler) in its own terminal:
 ```sh
 npm start
