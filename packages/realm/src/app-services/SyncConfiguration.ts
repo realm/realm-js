@@ -366,7 +366,7 @@ function toSSLVerifyCallbackWithListArguments(verifyCallback: SSLVerifyCallback)
 function parseClientResetConfig(clientReset: ClientResetConfig | undefined, onError: ErrorCallback | undefined) {
   if (!clientReset) {
     return {
-      clientResyncMode: toBindingClientResetMode(ClientResetMode.RecoverUnsyncedChanges),
+      clientResyncMode: binding.ClientResetMode.Recover,
       notifyBeforeClientReset: undefined,
       notifyAfterClientReset: undefined,
       errorHandler: onError ? toBindingErrorHandler(onError) : undefined,
