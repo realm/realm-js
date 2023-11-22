@@ -26,5 +26,10 @@
         "private": true,
         "run_as_system": true,
         "disable_arg_logs": true
+    },
+    {
+        "name": "deleteCustomUserDataDoc",
+        "private": true,
+        "disable_arg_logs": true
     }
 ]
