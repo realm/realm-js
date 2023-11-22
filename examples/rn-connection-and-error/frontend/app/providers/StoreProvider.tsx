@@ -89,7 +89,7 @@ export function StoreProvider({children}: PropsWithChildren) {
       return;
     }
     realm.write(() => {
-      realm.create(Store, {});
+      realm.create(Store, {_id: new BSON.ObjectId()});
     });
   }, [realm, store]);
 
