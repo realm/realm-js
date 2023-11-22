@@ -204,6 +204,7 @@ export function useDemoSyncTriggers() {
    * subscribing to a store with a specific ID).
    */
   const switchStore = useCallback(() => {
+    logger.info('Switching store...');
     currentUser.functions.switchStore();
   }, [currentUser]);
 
