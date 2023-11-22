@@ -81,9 +81,8 @@ export function StoreProvider({children}: PropsWithChildren) {
   }
 
   /**
-   * Adds a store. This demo app is syncing and using only 1 store with a
-   * specific store ID (see `app/atlas-app-services/config.ts`). Thus, if this
-   * store has already been created, this function will return immediately.
+   * Adds a store. This demo app is syncing only 1 store at a time. Thus, if
+   * a store has already been created, this function will return immediately.
    */
   const addStore = useCallback(() => {
     if (store) {
