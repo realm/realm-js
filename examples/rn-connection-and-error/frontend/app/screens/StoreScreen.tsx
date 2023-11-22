@@ -116,7 +116,12 @@ export function StoreScreen() {
               />
               <Button
                 extraStyles={[styles.button]}
-                onPress={switchStore}
+                onPress={() => {
+                  switchStore();
+                  Alert.alert(
+                    'The associated store has been changed. Click "Refresh User Data" to update the UI.',
+                  );
+                }}
                 text="Trigger Store Change"
               />
               <Button
