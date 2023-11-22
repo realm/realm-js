@@ -62,8 +62,8 @@ export function StoreScreen() {
         </View>
         <Button onPress={logOut} text="Log Out" />
       </View>
-      <>
-        {store ? (
+      {store ? (
+        <>
           <View style={styles.store}>
             <FlatList
               data={store.kiosks}
@@ -78,79 +78,73 @@ export function StoreScreen() {
               ListEmptyComponent={<Text style={styles.info}>No kiosks</Text>}
             />
           </View>
-        ) : (
-          // Store isn't yet loaded, perhaps while switching stores
-          <View style={styles.createStore}>
-            <Loading />
+          <View style={styles.triggers}>
+            <View style={styles.status}>
+              <Text style={styles.statusText}>
+                Status: {isConnected ? 'Connected 🟢' : 'Not connected 🔴'}
+              </Text>
+              <Button
+                isSecondary
+                onPress={isConnected ? disconnect : reconnect}
+                text={isConnected ? 'Disconnect' : 'Connect'}
+              />
+            </View>
+            <View style={styles.triggerButtons}>
+              <Button
+                extraStyles={[styles.button]}
+                onPress={addKiosk}
+                text="Add Kiosk"
+              />
+              <Button
+                extraStyles={[styles.button]}
+                onPress={
+                  store?.kiosks.length
+                    ? addProduct
+                    : () => Alert.alert('Add a kiosk first.')
+                }
+                text="Add Product"
+              />
+              <Button
+                extraStyles={[styles.button]}
+                onPress={triggerSyncError}
+                text="Trigger Sync Error"
+              />
+              <Button
+                extraStyles={[styles.button]}
+                onPress={triggerClientReset}
+                text="Trigger Client Reset"
+              />
+              <Button
+                extraStyles={[styles.button]}
+                onPress={deleteUser}
+                text="Delete User"
+              />
+              <Button
+                extraStyles={[styles.button]}
+                onPress={() => {
+                  user.functions.switchStore();
+                }}
+                text="Trigger Store Change"
+              />
+              <Button
+                extraStyles={[styles.button]}
+                onPress={refreshAccessToken}
+                text="Refresh Access Token / User Data"
+              />
+              <Button
+                extraStyles={[styles.button]}
+                onPress={refreshSession}
+                text="Refresh Session"
+              />
+            </View>
           </View>
-        )}
-        <View style={styles.triggers}>
-          <View style={styles.status}>
-            <Text style={styles.statusText}>
-              Status: {isConnected ? 'Connected 🟢' : 'Not connected 🔴'}
-            </Text>
-            <Button
-              isSecondary
-              onPress={isConnected ? disconnect : reconnect}
-              text={isConnected ? 'Disconnect' : 'Connect'}
-            />
-          </View>
-          <View style={styles.triggerButtons}>
-            {store && (
-              <>
-                <Button
-                  extraStyles={[styles.button]}
-                  onPress={addKiosk}
-                  text="Add Kiosk"
-                />
-                <Button
-                  extraStyles={[styles.button]}
-                  onPress={
-                    store?.kiosks.length
-                      ? addProduct
-                      : () => Alert.alert('Add a kiosk first.')
-                  }
-                  text="Add Product"
-                />
-                <Button
-                  extraStyles={[styles.button]}
-                  onPress={triggerSyncError}
-                  text="Trigger Sync Error"
-                />
-                <Button
-                  extraStyles={[styles.button]}
-                  onPress={triggerClientReset}
-                  text="Trigger Client Reset"
-                />
-                <Button
-                  extraStyles={[styles.button]}
-                  onPress={deleteUser}
-                  text="Delete User"
-                />
-                <Button
-                  extraStyles={[styles.button]}
-                  onPress={() => {
-                    user.functions.switchStore();
-                  }}
-                  text="Trigger Store Change"
-                />
-              </>
-            )}
-            <Button
-              extraStyles={[styles.button]}
-              onPress={refreshAccessToken}
-              text="Refresh Access Token / User Data"
-            />
-            <Button
-              extraStyles={[styles.button]}
-              onPress={() => {
-                refreshSession();
-              }}
-              text="Refresh Session"
-            />
-          </View>
+        </>
+      ) : (
+        // Store isn't yet loaded, perhaps while switching stores
+        <View style={styles.createStore}>
+          <Loading />
         </View>
-      </>
+      )}
     </View>
   );
 }
