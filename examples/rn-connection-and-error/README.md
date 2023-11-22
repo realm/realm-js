@@ -89,6 +89,7 @@ It specifically addresses the following points:
   * The Realm is opened immediately without waiting for downloads from the server.
     * See [Offline Support](#note-offline-support) below.
 * Tying custom user data to document permissions.
+  * See [upcoming section](#tying-custom-user-data-to-collection-rules).
 
 ### Note: Offline Support
 
@@ -151,12 +152,18 @@ To modify the [log level and logger](https://www.mongodb.com/docs/realm/sdk/reac
 
 For the App Services logs, you can also choose to [forward the logs to a service](https://www.mongodb.com/docs/atlas/app-services/activity/forward-logs/). To read more about monitoring app activity, please see the [docs](https://www.mongodb.com/docs/atlas/app-services/activity/).
 
-### Tying Custom User Data to Schema Rules
-When a new user is created, they are automatically attached to the first store in the collection (or a new store if it doesn't exist).  The schemas for Store, Kiosk and Products have rules set to only be accessible if the users `storeId` field matches with the appropriate field in each model.  There is a function that can be triggered to switch the store for the current user.  Updating the custom user data and refreshing the session will trigger a client reset, which will automatically update the UI with the newly selected Store.
+### Tying Custom User Data to Collection Rules
 
-To switch store in the application, after creating a new user and viewing the store page, one can press `Trigger Store Change`, which will call the `switchStore` function. At this point the UI will not be updated, as a refresh of both the session and the current users custom data must be performed.  To do this, press `Refresh Access Token/User Data`.  The refresh of the session will update the rules in the backend and the refresh of the custom user data will update the UI with the correct store Id.
+When a new user is created, their [custom user data](https://www.mongodb.com/docs/realm/sdk/react-native/manage-users/custom-user-data/#std-label-react-native-access-custom-user-data) document automatically gets updated to include the ID of the first store in the collection (or a new store if it doesn't exist). The `Store`, `Kiosk`, and `Product` collections have [rules](#set-data-access-permissions) set to only be accessible if the user's `storeId` field matches the corresponding field in each model. There is a [function](#add-an-atlas-function) that can be triggered via the UI to switch the store for the current user. Updating the custom user data and refreshing the session will trigger a client reset, which will automatically update the UI with the newly selected store.
 
-If the refresh of the session does not happen automatically, one can either press `Refresh Session` or click `Disconnect` followed by `Reconnect`.  If this is done without refreshing the user data, no store will be shown as the rules will be updated to the new store, but the UI will not be updated with the new store Id.
+To switch store in the application, after creating a new user and viewing the store page, one can press `Trigger Store Change`, which will call the `switchStore` function. At this point the UI will not be updated, as a refresh of both the session and the current user's custom data must be performed. To do this, press `Refresh Access Token/User Data`. The refresh of the session will update the rules in the backend and the refresh of the custom user data will update the UI with the correct store ID.
+
+If the refresh of the session does not happen automatically, one can either press `Refresh Session` or click `Disconnect` followed by `Reconnect`. If this is done without refreshing the user data, no store will be shown as the rules will be updated to the new store, but the UI will not be updated with the new store ID.
+
+> Switching stores in this way (i.e. by modifying permissions via custom user data) is
+> demonstrated here for developers who currently have such a use case. Normally, this
+> can simply be achieved by updating the subscriptions used on the client (e.g. only
+> subscribing to a store with a specific ID).
 
 ## Getting Started
 
@@ -189,7 +196,7 @@ To import and deploy changes from your local directory to App Services you can u
 ```sh
 realm-cli push --local <path to backend directory>
 ```
-4. Once pushed, verify that your App shows up in the App Services UI.
+4. Once pushed, verify that your App shows up in the App Services UI and that the trigger has the status `Enabled`.
 5. 🥳 You can now go ahead and [install dependencies and run the React Native app](#install-dependencies).
 
 #### Via the App Services UI
@@ -214,22 +221,24 @@ We will add functions for the following:
   * Forcing a client reset.
     * This function is solely used for demo purposes and should **never** be used in production.
   * Setting the default `storeId` for a user on creation on the associated [custom user data](https://www.mongodb.com/docs/atlas/app-services/users/custom-metadata/) document.
-    * An [authentication trigger](https://www.mongodb.com/docs/atlas/app-services/triggers/authentication-triggers/) will need to be created and configured to call this function.
+    * An [authentication trigger](https://www.mongodb.com/docs/atlas/app-services/triggers/authentication-triggers/) will need to be created and configured to call this function (see below).
   * Switching the associated Store for the current user.
   * Creating a new store document and getting all store documents.
     * These are used to check if the demo stores already exist and create them if not.
     * The functions need to be system calls, as the associated user will not have permissions to read or write any other store.
+  * Deleting a custom user data document.
+    * If a user triggers `Delete User` from the client, we also remove the associated custom user data document from Atlas.
 
 To set this up via the App Services UI:
 
-1. [Define five functions](https://www.mongodb.com/docs/atlas/app-services/functions/#define-a-function) with the following configurations:
+1. [Define functions](https://www.mongodb.com/docs/atlas/app-services/functions/#define-a-function) with the following configurations:
     * Function name: `triggerClientReset`
       * Authentication: `System`
       * Private: `false`
       * Code: See [backend function](./backend/functions/triggerClientReset.js)
     * Function name: `setUserDefaultStoreId`
       * Authentication: `Application Authentication`
-      * Private: `false`
+      * Private: `true`
       * Code: See [backend function](./backend/functions/setUserDefaultStoreId.js)
     * Function name: `switchStore`
       * Authentication: `Application Authentication`
@@ -240,16 +249,26 @@ To set this up via the App Services UI:
       * Private: `true`
       * Code: See [backend function](./backend/functions/createNewStore.js)
     * Function name: `getAllStores`
-      * Authentication: `Application Authentication`
+      * Authentication: `System`
       * Private: `true`
       * Code: See [backend function](./backend/functions/getAllStores.js)
-2. [Define an authentication trigger](https://www.mongodb.com/docs/atlas/app-services/triggers/authentication-triggers/#create-an-authentication-trigger)
-    * Trigger type: `Authentication`
+    * Function name: `deleteCustomUserDataDoc`
+      * Authentication: `Application Authentication`
+      * Private: `true`
+      * Code: See [backend function](./backend/functions/deleteCustomUserDataDoc.js)
+2. [Define authentication triggers](https://www.mongodb.com/docs/atlas/app-services/triggers/authentication-triggers/#create-an-authentication-trigger) with the following configurations:
     * Trigger name: `onUserCreation`
-    * Action type: `Create`
-    * Providers: `Email/Password`
-    * EventType: `Function`
-    * Function: `setUserDefaultStoreId`
+      * Trigger type: `Authentication`
+      * Action type: `Create`
+      * Providers: `Email/Password`
+      * EventType: `Function`
+      * Function: `setUserDefaultStoreId`
+    * Trigger name: `onDeletedUser`
+      * Trigger type: `Authentication`
+      * Action type: `Delete`
+      * Providers: `Email/Password`
+      * EventType: `Function`
+      * Function: `deleteCustomUserDataDoc`
 
 ### Install Dependencies
 
@@ -301,13 +320,13 @@ npm run android
 After running the client app for the first time, [modify the rules](https://www.mongodb.com/docs/atlas/app-services/rules/roles/#define-roles---permissions) for the collections in the App Services UI.
 
 * Collections: `Kiosk`, `Product`, `Store`
-  * Permissions: `readAndWriteAll` (see [corresponding json](./backend/data_sources/mongodb-atlas/sync/Product/rules.json))
+  * Permissions: `readAndWriteSpecificStore` (see [corresponding json](./backend/data_sources/mongodb-atlas/sync/Product/rules.json))
   * Explanation:
-    * All users will be able to read and write to the above collections.
+    * The current user will be able to read and write to the above collections if the document's store ID matches the store ID in the user's custom user data document.
 * Collection: `Users`
-  * Permissions: `ThisUser` (see [corresponding json](./backend/data_sources/mongodb-atlas/AuthExample/Users/rules.json))
+  * Permissions: `ThisUser` (see [corresponding json](./backend/data_sources/mongodb-atlas/StoreDemo/Users/rules.json))
   * Explanation:
-    * Users who have registered each have a `Users` document as custom user data. A user will be able to read and write to their own document (i.e. when `Users.user_id === <App User ID>`), but not anyone else's (see [Secure Custom User Data](https://www.mongodb.com/docs/atlas/app-services/users/custom-metadata/#secure-custom-user-data)).
+    * Users who have registered each have a `Users` document as custom user data. A user will be able to read and write to their own document (i.e. when `Users.userId === <App User ID>`), but not anyone else's (see [Secure Custom User Data](https://www.mongodb.com/docs/atlas/app-services/users/custom-metadata/#secure-custom-user-data)).
 
 > To learn more and see examples of permissions depending on a certain use case, see [Device Sync Permissions Guide](https://www.mongodb.com/docs/atlas/app-services/sync/app-builder/device-sync-permissions-guide/#std-label-flexible-sync-permissions-guide) and [Data Access Role Examples](https://www.mongodb.com/docs/atlas/app-services/rules/examples/).
 
