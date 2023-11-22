@@ -18,7 +18,7 @@
 
 import React from 'react';
 import {Alert, FlatList, StyleSheet, Text, View} from 'react-native';
-import {useAuth, useUser} from '@realm/react';
+import {useAuth} from '@realm/react';
 
 import {Button} from '../components/Button';
 import {KioskItem} from '../components/KioskItem';
@@ -26,12 +26,7 @@ import {colors} from '../styles/colors';
 import {fonts} from '../styles/fonts';
 import {useDemoSyncTriggers} from '../hooks/useDemoSyncTriggers';
 import {useStore} from '../providers/StoreProvider';
-import {AppServicesFunction} from 'realm';
 import {Loading} from '../components/Loading';
-
-type UserFunctions = {
-  switchStore: AppServicesFunction<void, []>;
-};
 
 /**
  * Screen for showing the kiosks and products in the store,
@@ -47,11 +42,11 @@ export function StoreScreen() {
     triggerSyncError,
     triggerClientReset,
     refreshAccessToken,
-    deleteUser,
     refreshSession,
+    switchStore,
+    deleteUser,
   } = useDemoSyncTriggers();
   const {logOut} = useAuth();
-  const user = useUser<UserFunctions, {}, {}>();
 
   return (
     <View style={styles.container}>
@@ -121,9 +116,7 @@ export function StoreScreen() {
               />
               <Button
                 extraStyles={[styles.button]}
-                onPress={() => {
-                  user.functions.switchStore();
-                }}
+                onPress={switchStore}
                 text="Trigger Store Change"
               />
               <Button

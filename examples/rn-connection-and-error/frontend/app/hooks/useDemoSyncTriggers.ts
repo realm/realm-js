@@ -17,11 +17,19 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import {useCallback, useEffect, useState} from 'react';
-import {BSON, ConnectionState, UserState} from 'realm';
+import {AppServicesFunction, BSON, ConnectionState, UserState} from 'realm';
 import {useApp, useRealm, useUser} from '@realm/react';
 
 import {Store} from '../models/Store';
 import {logger} from '../utils/logger';
+
+/**
+ * Atlas Functions set up on the backend that are callable from the client.
+ */
+type UserFunctions = {
+  switchStore: AppServicesFunction<void, []>;
+  triggerClientReset: AppServicesFunction<void, []>;
+};
 
 /**
  * The most recent access token is stored in a variable in order to detect
@@ -44,7 +52,7 @@ let reconnectAfterDisconnect = false;
 export function useDemoSyncTriggers() {
   const app = useApp();
   const realm = useRealm();
-  const currentUser = useUser();
+  const currentUser = useUser<UserFunctions, {}, {}>();
   const [isConnected, setIsConnected] = useState(true);
 
   /**
@@ -180,6 +188,26 @@ export function useDemoSyncTriggers() {
   }, [disconnect]);
 
   /**
+   * Trigger a store change by calling a custom Atlas Function (see
+   * `backend/functions/switchStore.js`) that updates the `storeId` field in the custom
+   * user data document for the current user. Since the `Store` collection permissions
+   * are tied to that `storeId` field, it will determine what gets synced to the device.
+   *
+   * @note
+   * You will need to trigger a refresh of the custom user data via the UI after calling
+   * this function to see the effects of the store change.
+   *
+   * @note
+   * Switching stores in this way (i.e. by modifying permissions via custom user data) is
+   * demonstrated here for developers who currently have such a use case. Normally, this
+   * can simply be achieved by updating the subscriptions used on the client (e.g. only
+   * subscribing to a store with a specific ID).
+   */
+  const switchStore = useCallback(() => {
+    currentUser.functions.switchStore();
+  }, [currentUser]);
+
+  /**
    * Trigger the user event listener by removing the user from the app.
    */
   const deleteUser = useCallback(() => {
@@ -241,6 +269,7 @@ export function useDemoSyncTriggers() {
     triggerClientReset,
     refreshAccessToken,
     refreshSession,
+    switchStore,
     deleteUser,
   };
 }
