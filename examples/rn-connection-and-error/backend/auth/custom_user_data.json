@@ -3,6 +3,5 @@
     "mongo_service_name": "mongodb-atlas",
     "database_name": "StoreDemo",
     "collection_name": "Users",
-    "user_id_field": "userId",
-    "on_user_creation_function_name": "setUserDefaultStoreId"
+    "user_id_field": "userId"
 }
