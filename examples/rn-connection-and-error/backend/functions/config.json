@@ -7,7 +7,7 @@
     },
     {
         "name": "setUserDefaultStoreId",
-        "private": false,
+        "private": true,
         "disable_arg_logs": true
     },
     {
