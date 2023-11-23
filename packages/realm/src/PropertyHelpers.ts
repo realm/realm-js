@@ -334,7 +334,7 @@ export function createPropertyHelpers(property: PropertyContext, options: Helper
   const collectionType = property.type & binding.PropertyType.Collection;
   const typeOptions: TypeOptions = {
     realm: options.realm,
-    name: property.name,
+    name: property.publicName || property.name,
     getClassHelpers: options.getClassHelpers,
     objectType: property.objectType,
     objectSchemaName: property.objectSchemaName,

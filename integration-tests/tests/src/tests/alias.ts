@@ -25,6 +25,14 @@ type ObjectA = {
   age?: number;
 };
 
+type Person = {
+  _name: string;
+  address: string;
+  age: number;
+  _married: boolean;
+  _children: Realm.List<Person>;
+};
+
 function addTestObjects(realm: Realm) {
   realm.write(() => {
     realm.create("ObjectA", {
@@ -34,6 +42,20 @@ function addTestObjects(realm: Realm) {
     realm.create("ObjectA", {
       otherName: "Bar",
       age: 42,
+    });
+
+    realm.create("Person", {
+      _name: "Donald",
+      address: "Elm Street",
+      age: 42.0,
+      _married: false,
+      _children: [
+        {
+          _name: "Nancy",
+          age: 14.0,
+          address: "Elm Street",
+        },
+      ],
     });
   });
 }
@@ -93,6 +115,23 @@ describe("Aliasing property names using mapTo", () => {
       // Using the internal name instead of the alias throws an exception.
       expect(() => realm.create("ObjectA", { name: "Boom" })).to.throw();
     });
+
+    // Create objects with links - must use alias
+    realm.write(() => {
+      realm.create("Person", {
+        _name: "Donald",
+        address: "Elm Street",
+        age: 42.0,
+        _married: false,
+        _children: [
+          {
+            _name: "Nancy",
+            age: 14.0,
+            address: "Elm Street",
+          },
+        ],
+      });
+    });
   });
 
   it("supports updating objects", function (this: Mocha.Context & RealmContext) {
@@ -130,6 +169,17 @@ describe("Aliasing property names using mapTo", () => {
     for (const key in obj) {
       expect(key).not.equals("name");
     }
+
+    const donald = realm.objects<Person>("Person")[0] as Person;
+    expect(donald).not.equals(undefined);
+
+    // @ts-expect-error This should be undefined
+    expect(donald.name).equals(undefined);
+    expect(donald._name).equals("Donald");
+
+    // @ts-expect-error This should be undefined
+    expect(donald.children).equals(undefined);
+    expect(donald._children.length).equals(1);
   });
 
   it("supports aliases in queries", function (this: Mocha.Context & RealmContext) {
