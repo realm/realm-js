@@ -123,7 +123,7 @@ export function createRealmProvider(
       if (realmRef) {
         realmRef.current = realm;
       }
-    }, [realm]);
+    }, [realm, realmRef]);
 
     useEffect(() => {
       const realmRef = currentRealm.current;

@@ -112,4 +112,22 @@ describe("useQueryHook", () => {
 
     expect(collection[99]).toBe(undefined);
   });
+
+  it("should support reversed order of arguments for exhausive deps", () => {
+    // Eslint will trigger warning here with
+    // 120:92  warning  React Hook useQuery has a missing dependency: 'gender'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+    // which is correct behaviour.
+    const { result } = renderHook(
+      ({ gender }) => useQuery<IDog>((objects) => objects.filtered("gender = $0", gender), [], "dog"),
+      {
+        initialProps: { gender: "male" },
+      },
+    );
+    const collection = result.current;
+
+    expect(collection).not.toBeNull();
+    expect(collection.length).toBe(2);
+    expect(collection[0]).toMatchObject(testDataSet[0]);
+    expect(collection[1]).toMatchObject(testDataSet[3]);
+  });
 });
