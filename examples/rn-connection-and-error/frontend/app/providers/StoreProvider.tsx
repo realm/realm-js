@@ -52,12 +52,6 @@ const StoreContext = createContext<StoreContextType>({
 });
 
 /**
- * The most recent store ID is stored in a variable in order to log
- * when a new ID is used.
- */
-let mostRecentStoreId: BSON.ObjectId | null = null;
-
-/**
  * Queries and provides the relevant store using `@realm/react`, as well
  * as adding listeners and providing functions for adding, updating, and
  * removing products in the store.
@@ -67,18 +61,6 @@ export function StoreProvider({children}: PropsWithChildren) {
   const user = useUser<{}, {storeId: BSON.ObjectId}, {}>();
   const store = useObject(Store, user.customData.storeId);
   const products = useQuery(Product);
-
-  // This is only used for logging when the store ID has changed.
-  // (Having `useEffect` rely on `user.customData.storeId` will not
-  // be sufficient in this case as the `storeId` is an `ObjectId`
-  // whose reference will change on each store update.)
-  const customDataStoreId = user.customData.storeId;
-  const storeIdChanged =
-    mostRecentStoreId?.toHexString() !== customDataStoreId.toHexString();
-  if (storeIdChanged) {
-    logger.info(`User's current store ID: ${customDataStoreId}`);
-    mostRecentStoreId = customDataStoreId;
-  }
 
   /**
    * Adds a store. This demo app is syncing only 1 store at a time. Thus, if
