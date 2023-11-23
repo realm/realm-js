@@ -127,9 +127,10 @@ export function useDemoSyncTriggers() {
 
   /**
    * Trigger the sync error listener by trying to create a `Store` that
-   * is outside of the query filter subscribed to. Since we subscribed
-   * to the store with a given ID (see `App.tsx`), attempting to create
-   * one with a different ID will generate a sync error.
+   * is outside of the query filter subscribed to. Since we are subscribed
+   * to one store at a time (determined by our collection permissions,
+   * see README.md), attempting to create one with a different ID will
+   * generate a sync error.
    *
    * @note
    * You can also trigger sync errors by modifying the permissions of
