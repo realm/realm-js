@@ -61,6 +61,7 @@ export { collectPlatformData };
 // emulate old __dirname: https://flaviocopes.com/fix-dirname-not-defined-es-module-scope/
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const realmPackagePath = path.resolve(__dirname, "..");
 
 /**
  * Path and credentials required to submit analytics through the webhook.
@@ -102,10 +103,17 @@ function getProjectRoot() {
  * Finds and read package.json
  * @returns package.json as a JavaScript object
  */
-function getPackageJson(packagePath) {
+function readPackageJson(packagePath) {
   const packageJsonPath = path.resolve(packagePath, "package.json");
-  const packageJson = fs.readFileSync(packageJsonPath, "utf-8");
-  return JSON.parse(packageJson);
+  return JSON.parse(fs.readFileSync(packageJsonPath, "utf-8"));
+}
+
+/**
+ * Finds and write package.json
+ */
+function writePackageJson(packagePath, content) {
+  const packageJsonPath = path.resolve(packagePath, "package.json");
+  fs.writeFileSync(packageJsonPath, JSON.stringify(content, null, 2), "utf-8");
 }
 
 /**
@@ -127,9 +135,7 @@ function isAnalyticsDisabled() {
 }
 
 function getRealmVersion() {
-  const packageJsonPath = path.resolve(__dirname, "..", "package.json");
-  const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf-8"));
-  return packageJson["version"];
+  return readPackageJson(realmPackagePath)["version"];
 }
 
 /**
@@ -138,7 +144,7 @@ function getRealmVersion() {
  * @returns the Realm Core version as a string
  */
 function getRealmCoreVersion() {
-  const dependenciesListPath = path.resolve(__dirname, "../dependencies.list");
+  const dependenciesListPath = path.resolve(realmPackagePath, "dependencies.list");
   const dependenciesList = fs
     .readFileSync(dependenciesListPath)
     .toString()
@@ -151,11 +157,13 @@ function getRealmCoreVersion() {
  * Save the anonymized bundle ID for later usage at runtime.
  */
 function saveBundleId(anonymizedBundleId) {
-  const localPath = path.resolve(path.join(getProjectRoot(), "node_modules", "realm"));
-  fs.mkdirSync(localPath, { recursive: true });
-  const realmConstantsFile = path.resolve(path.join(localPath, "realm-constants.json"));
-  const realmConstants = { REALM_ANONYMIZED_BUNDLE_ID: anonymizedBundleId };
-  fs.writeFileSync(realmConstantsFile, JSON.stringify(realmConstants));
+  const packageJson = readPackageJson(realmPackagePath);
+  // Initialize an object if it's missing
+  if (typeof packageJson.config !== "object") {
+    packageJson.config = {};
+  }
+  packageJson.config.anonymizedBundleId = anonymizedBundleId;
+  writePackageJson(realmPackagePath, packageJson);
 }
 
 /**
@@ -164,7 +172,11 @@ function saveBundleId(anonymizedBundleId) {
  */
 function getInstallationMethod() {
   const userAgent = process.env["npm_config_user_agent"];
-  return userAgent.split(" ")[0].split("/");
+  if (userAgent) {
+    return userAgent.split(" ")[0].split("/");
+  } else {
+    return "unknown";
+  }
 }
 
 /**
@@ -189,7 +201,7 @@ async function collectPlatformData(packagePath = getProjectRoot()) {
   let jsEngine = "v8";
   let bundleId = "unknown";
 
-  const packageJson = getPackageJson(packagePath);
+  const packageJson = readPackageJson(packagePath);
 
   if (packageJson.name) {
     bundleId = packageJson["name"];

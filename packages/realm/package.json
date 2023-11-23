@@ -30,6 +30,9 @@
     "email": "help@realm.io",
     "url": "https://www.mongodb.com/docs/realm/"
   },
+  "config": {
+    "anonymizedBundleId": "XTm00/yIvWo3KdyQ9XpE8JyUGe8sEekoBYSSPyvwdUg="
+  },
   "types": "./types.d.cts",
   "main": "./index.node.js",
   "react-native": "./index.react-native.js",
@@ -42,8 +45,7 @@
     },
     "./scripts/submit-analytics": "./scripts/submit-analytics.mjs",
     "./react-native.config.js": "./react-native.config.js",
-    "./package.json": "./package.json",
-    "./realm-constants.json": "./realm-constants.json"
+    "./package.json": "./package.json"
   },
   "files": [
     "dependencies.list",
