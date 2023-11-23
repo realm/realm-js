@@ -1,10 +1,4 @@
-## vNext (TBD)
-
-### Deprecations
-* None
-
-### Enhancements
-* None
+## 12.3.1 (2023-11-23)
 
 ### Fixed
 * Fixed FLX subscriptions not being sent to the server if the session was interrupted during bootstrapping. ([realm/realm-core#7077](https://github.com/realm/realm-core/issues/7077), since v10.12.0)
