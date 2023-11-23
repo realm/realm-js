@@ -32,7 +32,6 @@ import {logger} from '../utils/logger';
  */
 type StoreContextType = {
   store: Store | null;
-  addStore: () => void;
   addKiosk: () => void;
   addProduct: () => void;
   updateProduct: (product: Product) => void;
@@ -44,7 +43,6 @@ type StoreContextType = {
  */
 const StoreContext = createContext<StoreContextType>({
   store: null,
-  addStore: () => {},
   addKiosk: () => {},
   addProduct: () => {},
   updateProduct: () => {},
@@ -59,21 +57,13 @@ const StoreContext = createContext<StoreContextType>({
 export function StoreProvider({children}: PropsWithChildren) {
   const realm = useRealm();
   const user = useUser<{}, {storeId: BSON.ObjectId}, {}>();
+  // Query the store matching the store ID saved in the current user's
+  // custom user data document. The store has been created via an Atlas
+  // Function on the backend, thus this component is not demonstrating
+  // how to create a store via the client. (To see an example of inserting
+  // into the database from the client, see `addKiosk()` or `addProduct()`).
   const store = useObject(Store, user.customData.storeId);
   const products = useQuery(Product);
-
-  /**
-   * Adds a store. This demo app is syncing only 1 store at a time. Thus, if
-   * a store has already been created, this function will return immediately.
-   */
-  const addStore = useCallback(() => {
-    if (store) {
-      return;
-    }
-    realm.write(() => {
-      realm.create(Store, {_id: new BSON.ObjectId()});
-    });
-  }, [realm, store]);
 
   /**
    * Adds a kiosk to the store, containing all products in that store.
@@ -169,7 +159,6 @@ export function StoreProvider({children}: PropsWithChildren) {
 
   const contextValue = {
     store,
-    addStore,
     addKiosk,
     addProduct,
     updateProduct,
