@@ -58,8 +58,8 @@ jobs:
           - { os: android, runner: ubuntu-latest, arch: armeabi-v7a, artifact-path: packages/realm/react-native/android/src/main/jniLibs }
           - { os: android, runner: ubuntu-latest, arch: arm64-v8a, artifact-path: packages/realm/react-native/android/src/main/jniLibs }
           - { os: android, runner: ubuntu-latest, arch: x86, artifact-path: packages/realm/react-native/android/src/main/jniLibs }
-          - { os: darwin, runner: macos-latest, arch: x64, artifact-path: packages/realm/prebuilds, prebuild-extras: --prepack "codesign -v -s \"Realm Aps\"", test-node: true, test-electron: true }
-          - { os: darwin, runner: macos-latest, arch: arm64, artifact-path: packages/realm/prebuilds, prebuild-extras: --prepack "codesign -v -s \"Realm Aps\"", test-node: true, test-electron: true }
+          - { os: darwin, runner: macos-latest, arch: x64, artifact-path: packages/realm/prebuilds, prebuild-extras: --prepack "codesign -v -s 97CA68FCBB82FAC28C46586B5E0ECE13CF631597 generated/ts/realm.node", test-node: true, test-electron: true }
+          - { os: darwin, runner: macos-latest, arch: arm64, artifact-path: packages/realm/prebuilds, prebuild-extras: --prepack "codesign -v -s 97CA68FCBB82FAC28C46586B5E0ECE13CF631597 generated/ts/realm.node", test-node: true, test-electron: true }
           - { os: ios, runner: macos-latest-xlarge, arch: simulator, artifact-path: packages/realm/react-native/ios/realm-js-ios.xcframework }
           - { os: ios, runner: macos-latest-xlarge, arch: catalyst, artifact-path: packages/realm/react-native/ios/realm-js-ios.xcframework }
           - { os: ios, runner: macos-latest-xlarge, arch: ios, artifact-path: packages/realm/react-native/ios/realm-js-ios.xcframework }
