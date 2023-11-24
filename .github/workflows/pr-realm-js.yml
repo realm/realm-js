@@ -199,6 +199,10 @@ jobs:
           p12-file-base64: ${{ secrets.CODESIGN_P12 }}
           p12-password: ${{ secrets.CODESIGN_P12_PASSWORD }}
 
+      - name: List Codesign identities
+        if: ${{ matrix.variant.os == 'darwin' }}
+        run: security find-identity -v -p codesigning
+
       - name: Codesign prebuild artifact
         if: ${{ matrix.variant.os == 'darwin' }}
         run: codesign -s ${{ matrix.variant.artifact-path }}
