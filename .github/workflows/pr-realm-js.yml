@@ -172,9 +172,19 @@ jobs:
           echo 'UseMultiToolTask=true' >> $GITHUB_ENV
           echo 'VCPKG_KEEP_ENV_VARS=CCACHE_COMPILER;CCACHE_STATSLOG;CCACHE_LOGFILE;CCACHE_COMPILERTYPE;UseMultiToolTask' >> $GITHUB_ENV
 
+
+      - name: Import Codesign certificate
+        if: ${{ matrix.variant.os == 'darwin' }}
+        uses: apple-actions/import-codesign-certs@v2
+        with: 
+          p12-file-base64: ${{ secrets.CODESIGN_P12 }}
+          p12-password: ${{ secrets.CODESIGN_P12_PASSWORD }}
+          
       # build the c++ library for standard targets
       - name: Build node
         if: ${{ (matrix.variant.os != 'ios') && (matrix.variant.os != 'android') }}
+        env:
+          PREBUILD_EXTRAS: --prepack "codesign -v -s 'Realm Aps'"
         run: npm run build:node:prebuild:${{matrix.variant.arch}} --workspace realm
 
       # build the c++ library for IOS
@@ -191,17 +201,6 @@ jobs:
       - name: Build Android
         if: ${{ (matrix.variant.os == 'android') }}
         run: npm run build:android --workspace realm -- --arch=${{matrix.variant.arch}}
-
-      - name: Import Codesign certificate
-        if: ${{ matrix.variant.os == 'darwin' }}
-        uses: apple-actions/import-codesign-certs@v2
-        with: 
-          p12-file-base64: ${{ secrets.CODESIGN_P12 }}
-          p12-password: ${{ secrets.CODESIGN_P12_PASSWORD }}
-
-      - name: Codesign prebuild artifact
-        if: ${{ matrix.variant.os == 'darwin' }}
-        run: codesign -s "Realm Aps" ${{ matrix.variant.artifact-path }}
 
       # Due to a limitation in upload-artifact a redundant file is needed to force
       # preserving paths (https://github.com/actions/upload-artifact/issues/174)
