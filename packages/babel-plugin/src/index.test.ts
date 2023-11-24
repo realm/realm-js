@@ -440,6 +440,16 @@ describe("Babel plugin", () => {
       expect((parsedSchema?.properties.name as PropertySchema).mapTo).toEqual("rename");
     });
 
+    it("handles `@mapTo` decorators on Realm.List", () => {
+      const transformCode = transform({
+        source: `import Realm, { Types, BSON, List, Set, Dictionary, Mixed } from "realm";
+        export class Person extends Realm.Object { @Realm.mapTo('rename') name: Realm.Types.List<Person>; }`,
+      });
+      const parsedSchema = extractSchema(transformCode);
+
+      expect((parsedSchema?.properties.name as PropertySchema).mapTo).toEqual("rename");
+    });
+
     it("ignores `@mapTo` decorators not imported from `realm`", () => {
       const transformCode = transform({
         source: `import Realm, { Types, BSON, List, Set, Dictionary, Mixed } from "realm";

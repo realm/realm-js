@@ -7,8 +7,7 @@
 * None
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None
+* When mapTo is used on a property of type List, an error like `Property 'test_list' does not exist on 'Task' objects` occurs when trying to access the property. ([#6268](https://github.com/realm/realm-js/issues/6268), since v12.0.0)
 
 ### Compatibility
 * React Native >= v0.71.4
