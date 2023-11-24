@@ -186,9 +186,12 @@
       ]
     },
     "build:node:prebuild": {
-      "command": "cross-env-shell prebuild --runtime napi --arch $PREBUILD_ARCH -- --directory bindgen",
+      "command": "cross-env-shell prebuild --runtime napi --arch $PREBUILD_ARCH $PREBUILD_EXTRAS -- --directory bindgen",
       "env": {
         "PREBUILD_ARCH": {
+          "external": true
+        },
+        "PREBUILD_EXTRAS": {
           "external": true
         }
       }
@@ -196,25 +199,37 @@
     "build:node:prebuild:arm": {
       "command": "npm run build:node:prebuild",
       "env": {
-        "PREBUILD_ARCH": "arm"
+        "PREBUILD_ARCH": "arm",
+        "PREBUILD_EXTRAS": {
+          "external": true
+        }
       }
     },
     "build:node:prebuild:arm64": {
       "command": "npm run build:node:prebuild",
       "env": {
-        "PREBUILD_ARCH": "arm64"
+        "PREBUILD_ARCH": "arm64",
+        "PREBUILD_EXTRAS": {
+          "external": true
+        }
       }
     },
     "build:node:prebuild:x64": {
       "command": "npm run build:node:prebuild",
       "env": {
-        "PREBUILD_ARCH": "x64"
+        "PREBUILD_ARCH": "x64",
+        "PREBUILD_EXTRAS": {
+          "external": true
+        }
       }
     },
     "build:node:prebuild:ia32": {
       "command": "npm run build:node:prebuild",
       "env": {
-        "PREBUILD_ARCH": "ia32"
+        "PREBUILD_ARCH": "ia32",
+        "PREBUILD_EXTRAS": {
+          "external": true
+        }
       }
     },
     "build:android": {
