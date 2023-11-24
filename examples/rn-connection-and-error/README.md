@@ -224,7 +224,7 @@ We will add functions for the following:
     * An [authentication trigger](https://www.mongodb.com/docs/atlas/app-services/triggers/authentication-triggers/) will need to be created and configured to call this function (see below).
   * Switching the associated Store for the current user.
   * Creating a new store document and getting all store documents.
-    * These are used to check if the demo stores already exist and create them if not.
+    * These functions are used to check if the demo stores already exist and create them if not.
     * The functions need to be system calls, as the associated user will not have permissions to read or write any other store.
   * Deleting a custom user data document.
     * If a user triggers `Delete User` from the client, we also remove the associated custom user data document from Atlas.
