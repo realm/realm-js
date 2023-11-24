@@ -3,7 +3,7 @@
     "collection": "Store",
     "roles": [
         {
-            "name": "readAndWriteAll",
+            "name": "readAndWriteSpecificStore",
             "apply_when": {},
             "document_filters": {
                 "read": {

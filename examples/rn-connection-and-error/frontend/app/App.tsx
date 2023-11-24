@@ -116,7 +116,7 @@ function App() {
                 // For this demo, there are rules set on the authenticated user to determine
                 // which subset of data should be sent down to device. A user has an associated
                 // storeId which will be set on creation. Only data associated with this id will
-                // be sent to the device.
+                // be sent to the device. (Refer to the README.md for more details.)
                 // In order to be more performant, the subscriptions will be open to all data
                 // which also keeps it open to changes to the storeId without changing the subscription.
                 // When adding subscriptions, best practice is to name each subscription
@@ -134,6 +134,8 @@ function App() {
                       name: 'productsInStoreA',
                     });
                   },
+                  // We rerun the above `update()` callback when the realm is opened due to
+                  // how the permissions may change on the backend.
                   rerunOnOpen: true,
                 },
                 // The `ClientResetMode.RecoverOrDiscardUnsyncedChanges` will download a fresh copy
