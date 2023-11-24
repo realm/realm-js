@@ -19,9 +19,8 @@
 import React, {createContext, useCallback, useContext, useEffect} from 'react';
 import type {PropsWithChildren} from 'react';
 import {BSON, CollectionChangeCallback} from 'realm';
-import {useQuery, useRealm} from '@realm/react';
+import {useObject, useQuery, useRealm, useUser} from '@realm/react';
 
-import {SYNC_STORE_ID} from '../atlas-app-services/config';
 import {Kiosk} from '../models/Kiosk';
 import {Product, getRandomProductName} from '../models/Product';
 import {Store} from '../models/Store';
@@ -33,7 +32,6 @@ import {logger} from '../utils/logger';
  */
 type StoreContextType = {
   store: Store | null;
-  addStore: () => void;
   addKiosk: () => void;
   addProduct: () => void;
   updateProduct: (product: Product) => void;
@@ -45,7 +43,6 @@ type StoreContextType = {
  */
 const StoreContext = createContext<StoreContextType>({
   store: null,
-  addStore: () => {},
   addKiosk: () => {},
   addProduct: () => {},
   updateProduct: () => {},
@@ -59,22 +56,14 @@ const StoreContext = createContext<StoreContextType>({
  */
 export function StoreProvider({children}: PropsWithChildren) {
   const realm = useRealm();
-  const store = useQuery(Store)[0];
+  const user = useUser<{}, {storeId: BSON.ObjectId}, {}>();
+  // Query the store matching the store ID saved in the current user's
+  // custom user data document. The store has been created via an Atlas
+  // Function on the backend, thus this component is not demonstrating
+  // how to create a store via the client. (To see an example of inserting
+  // into the database from the client, see `addKiosk()` or `addProduct()`).
+  const store = useObject(Store, user.customData.storeId);
   const products = useQuery(Product);
-
-  /**
-   * Adds a store. This demo app is syncing and using only 1 store with a
-   * specific store ID (see `app/atlas-app-services/config.ts`). Thus, if this
-   * store has already been created, this function will return immediately.
-   */
-  const addStore = useCallback(() => {
-    if (store) {
-      return;
-    }
-    realm.write(() => {
-      realm.create(Store, {_id: SYNC_STORE_ID});
-    });
-  }, [realm, store]);
 
   /**
    * Adds a kiosk to the store, containing all products in that store.
@@ -83,12 +72,12 @@ export function StoreProvider({children}: PropsWithChildren) {
     realm.write(() => {
       const kiosk = realm.create(Kiosk, {
         _id: new BSON.ObjectId(),
-        storeId: SYNC_STORE_ID,
+        storeId: user.customData.storeId,
         products: [...products],
       });
       store?.kiosks.push(kiosk);
     });
-  }, [realm, store, products]);
+  }, [realm, store, products, user]);
 
   /**
    * Adds a product and then adds it to all kiosks in the store.
@@ -97,7 +86,7 @@ export function StoreProvider({children}: PropsWithChildren) {
     realm.write(() => {
       const product = realm.create(Product, {
         _id: new BSON.ObjectId(),
-        storeId: SYNC_STORE_ID,
+        storeId: user.customData.storeId,
         name: getRandomProductName(),
         price: parseFloat(getFloatBetween(3, 15).toFixed(2)),
         numInStock: getIntBetween(0, 100),
@@ -106,7 +95,7 @@ export function StoreProvider({children}: PropsWithChildren) {
         kiosk.products.push(product);
       }
     });
-  }, [realm, store]);
+  }, [realm, store, user]);
 
   /**
    * Updates a product by changing the number in stock.
@@ -170,7 +159,6 @@ export function StoreProvider({children}: PropsWithChildren) {
 
   const contextValue = {
     store,
-    addStore,
     addKiosk,
     addProduct,
     updateProduct,

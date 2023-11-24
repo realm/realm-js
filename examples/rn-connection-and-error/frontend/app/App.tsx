@@ -21,7 +21,7 @@ import {SafeAreaView, StatusBar, StyleSheet} from 'react-native';
 import Realm, {ClientResetMode, OpenRealmBehaviorType, SyncError} from 'realm';
 import {AppProvider, RealmProvider, UserProvider} from '@realm/react';
 
-import {ATLAS_APP_ID, SYNC_STORE_ID} from './atlas-app-services/config';
+import {ATLAS_APP_ID} from './atlas-app-services/config';
 import {AuthResultBoundary} from './components/AuthResultBoundary';
 import {Kiosk} from './models/Kiosk';
 import {Loading} from './components/Loading';
@@ -105,41 +105,38 @@ function App() {
           not been authenticated. In this case, we will show the login screen. */}
           <UserProvider fallback={LoginScreen}>
             {/* Define the Realm configuration as props passed to `RealmProvider`.
-            Note that `user` does not need to be defined in the `sync` config
-            since the `RealmProvider` will set it for you once authenticated. */}
+                Note that `user` does not need to be defined in the `sync` config
+                since the `RealmProvider` will set it for you once authenticated. */}
             <RealmProvider
               // The fallback component will be rendered until the realm is opened.
               fallback={Loading}
               schema={[Store, Kiosk, Product]}
               sync={{
                 flexible: true,
-                // To sync a preferred subset of data to the device, we only subscribe to
-                // the kiosks and products in a particular store. For this demo, we have
-                // defined the specific store ID in `app/atlas-app-services/config.ts`.
+                // For this demo, there are rules set on the authenticated user to determine
+                // which subset of data should be sent down to device. A user has an associated
+                // storeId which will be set on creation. Only data associated with this id will
+                // be sent to the device. (Refer to the README.md for more details.)
+                // In order to be more performant, the subscriptions will be open to all data
+                // which also keeps it open to changes to the storeId without changing the subscription.
                 // When adding subscriptions, best practice is to name each subscription
                 // for better managing removal of them.
                 initialSubscriptions: {
                   update: (mutableSubs, realm) => {
-                    // Subscribe to the store with the given ID.
-                    mutableSubs.add(
-                      realm.objects(Store).filtered('_id = $0', SYNC_STORE_ID),
-                      {name: 'storeA'},
-                    );
-                    // Subscribe to all kiosks in the store with the given ID.
-                    mutableSubs.add(
-                      realm
-                        .objects(Kiosk)
-                        .filtered('storeId = $0', SYNC_STORE_ID),
-                      {name: 'kiosksInStoreA'},
-                    );
-                    // Subscribe to all products in the store with the given ID.
-                    mutableSubs.add(
-                      realm
-                        .objects(Product)
-                        .filtered('storeId = $0', SYNC_STORE_ID),
-                      {name: 'productsInStoreA'},
-                    );
+                    // Subscribe to the all stores (access rules will determine what is sent down to the device).
+                    mutableSubs.add(realm.objects(Store), {name: 'storeA'});
+                    // Subscribe to all kiosks.
+                    mutableSubs.add(realm.objects(Kiosk), {
+                      name: 'kiosksInStoreA',
+                    });
+                    // Subscribe to all products.
+                    mutableSubs.add(realm.objects(Product), {
+                      name: 'productsInStoreA',
+                    });
                   },
+                  // We rerun the above `update()` callback when the realm is opened due to
+                  // how the permissions may change on the backend.
+                  rerunOnOpen: true,
                 },
                 // The `ClientResetMode.RecoverOrDiscardUnsyncedChanges` will download a fresh copy
                 // from the server if recovery of unsynced changes is not possible. For read-only

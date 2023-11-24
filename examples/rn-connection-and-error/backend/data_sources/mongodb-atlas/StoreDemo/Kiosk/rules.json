@@ -1,0 +1,23 @@
+{
+    "database": "StoreDemo",
+    "collection": "Kiosk",
+    "roles": [
+        {
+            "name": "readAndWriteSpecificStore",
+            "apply_when": {},
+            "document_filters": {
+                "read": {
+                    "storeId": "%%user.custom_data.storeId"
+                },
+                "write": {
+                    "storeId": "%%user.custom_data.storeId"
+                }
+            },
+            "insert": true,
+            "delete": true,
+            "search": true,
+            "read": true,
+            "write": true
+        }
+    ]
+}

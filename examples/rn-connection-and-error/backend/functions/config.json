@@ -6,8 +6,30 @@
         "disable_arg_logs": true
     },
     {
-        "name": "onUserCreation",
+        "name": "setUserDefaultStoreId",
+        "private": true,
+        "disable_arg_logs": true
+    },
+    {
+        "name": "switchStore",
         "private": false,
+        "disable_arg_logs": true
+    },
+    {
+        "name": "createNewStore",
+        "private": false,
+        "run_as_system": true,
+        "disable_arg_logs": true
+    },
+    {
+        "name": "getAllStores",
+        "private": true,
+        "run_as_system": true,
+        "disable_arg_logs": true
+    },
+    {
+        "name": "deleteCustomUserDataDoc",
+        "private": true,
         "disable_arg_logs": true
     }
 ]

@@ -17,17 +17,30 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import {useCallback, useEffect, useState} from 'react';
-import {BSON, ConnectionState, UserState} from 'realm';
+import {AppServicesFunction, BSON, ConnectionState, UserState} from 'realm';
 import {useApp, useRealm, useUser} from '@realm/react';
 
 import {Store} from '../models/Store';
 import {logger} from '../utils/logger';
 
 /**
+ * Atlas Functions set up on the backend that are callable from the client.
+ */
+type UserFunctions = {
+  switchStore: AppServicesFunction<void, []>;
+  triggerClientReset: AppServicesFunction<void, []>;
+};
+
+/**
  * The most recent access token is stored in a variable in order to detect
  * if the token has been refreshed (see `handleUserEventChange()`).
  */
 let mostRecentAccessToken: string | null = null;
+
+/**
+ * Whether to manually reconnect after being disconnected.
+ */
+let reconnectAfterDisconnect = false;
 
 /**
  * Hook for providing functions to trigger various sync listeners,
@@ -39,7 +52,7 @@ let mostRecentAccessToken: string | null = null;
 export function useDemoSyncTriggers() {
   const app = useApp();
   const realm = useRealm();
-  const currentUser = useUser();
+  const currentUser = useUser<UserFunctions, {}, {}>();
   const [isConnected, setIsConnected] = useState(true);
 
   /**
@@ -86,12 +99,20 @@ export function useDemoSyncTriggers() {
       } else if (disconnected) {
         logger.info('Disconnected.');
 
-        // At this point, the `newState` is `ConnectionState.Disconnected`. Automatic retries
+        // At this point, the `newState` is `ConnectionState.Disconnected`. If the sync session
+        // was not paused manually (e.g. `realm.syncSession?.pause()`), automatic retries
         // will start and the state will alternate in the following way for the period where
         // there is NO network connection:
         //    (1) oldState: ConnectionState.Disconnected, newState: ConnectionState.Connecting
         //    (2) oldState: ConnectionState.Connecting, newState: ConnectionState.Disconnected
         // Calling `App.Sync.Session.reconnect()` is not needed due to automatic retries.
+
+        // If the user chose to trigger a session refresh, `reconnectAfterDisconnect` will be
+        // `true` and we should manually resume the sync session after getting disconnected.
+        if (reconnectAfterDisconnect) {
+          reconnectAfterDisconnect = false;
+          reconnect();
+        }
       } /* failedReconnecting */ else {
         logger.info('Failed to reconnect.');
       }
@@ -102,13 +123,14 @@ export function useDemoSyncTriggers() {
 
     return () =>
       realm.syncSession?.removeConnectionNotification(handleConnectionChange);
-  }, [realm.syncSession]);
+  }, [realm.syncSession, reconnect]);
 
   /**
    * Trigger the sync error listener by trying to create a `Store` that
-   * is outside of the query filter subscribed to. Since we subscribed
-   * to the store with a given ID (see `App.tsx`), attempting to create
-   * one with a different ID will generate a sync error.
+   * is outside of the query filter subscribed to. Since we are subscribed
+   * to one store at a time (determined by our collection permissions,
+   * see README.md), attempting to create one with a different ID will
+   * generate a sync error.
    *
    * @note
    * You can also trigger sync errors by modifying the permissions of
@@ -146,6 +168,45 @@ export function useDemoSyncTriggers() {
    */
   const refreshAccessToken = useCallback(async () => {
     await currentUser.refreshCustomData();
+  }, [currentUser]);
+
+  /**
+   * Pause and resume the session in order to apply new rules to collections.
+   *
+   * @note
+   * This function is meant to be called after having first triggered a store change
+   * followed by a refresh of user data if an automatic session refresh does not occur.
+   * The store change will update permissions on the backend, making it necessary
+   * to refresh the session in order to see the effects in the UI.
+   */
+  const refreshSession = useCallback(() => {
+    // To refresh the session, we first pause the session, causing sync to get
+    // disconnected. Once disconnected, the `handleConnectionChange()` listener
+    // will be called, wherein we manually resume the session if `reconnectAfterDisconnect`
+    // is set to `true`. This pattern can be used to react to connection changes.
+    reconnectAfterDisconnect = true;
+    disconnect();
+  }, [disconnect]);
+
+  /**
+   * Trigger a store change by calling a custom Atlas Function (see
+   * `backend/functions/switchStore.js`) that updates the `storeId` field in the custom
+   * user data document for the current user. Since the `Store` collection permissions
+   * are tied to that `storeId` field, it will determine what gets synced to the device.
+   *
+   * @note
+   * You will need to trigger a refresh of the custom user data via the UI after calling
+   * this function to see the effects of the store change.
+   *
+   * @note
+   * Switching stores in this way (i.e. by modifying permissions via custom user data) is
+   * demonstrated here for developers who currently have such a use case. Normally, this
+   * can simply be achieved by updating the subscriptions used on the client (e.g. only
+   * subscribing to a store with a specific ID).
+   */
+  const switchStore = useCallback(() => {
+    logger.info('Switching store...');
+    currentUser.functions.switchStore();
   }, [currentUser]);
 
   /**
@@ -209,6 +270,8 @@ export function useDemoSyncTriggers() {
     triggerSyncError,
     triggerClientReset,
     refreshAccessToken,
+    refreshSession,
+    switchStore,
     deleteUser,
   };
 }

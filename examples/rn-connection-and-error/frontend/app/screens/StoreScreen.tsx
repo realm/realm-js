@@ -18,45 +18,33 @@
 
 import React from 'react';
 import {Alert, FlatList, StyleSheet, Text, View} from 'react-native';
-import {useAuth, useUser} from '@realm/react';
+import {useAuth} from '@realm/react';
 
 import {Button} from '../components/Button';
 import {KioskItem} from '../components/KioskItem';
+import {Loading} from '../components/Loading';
+import {StatusBar} from '../components/StatusBar';
 import {colors} from '../styles/colors';
 import {fonts} from '../styles/fonts';
 import {useDemoSyncTriggers} from '../hooks/useDemoSyncTriggers';
 import {useStore} from '../providers/StoreProvider';
 
 /**
- * The properties used as custom user data.
- *
- * @note
- * Our backend function `onUserCreation()` adds these fields
- * when the user registers.
- */
-type CustomUserData = {
-  user_id: string;
-  team: string;
-};
-
-/**
  * Screen for showing the kiosks and products in the store,
  * as well as buttons for triggering various listeners.
  */
 export function StoreScreen() {
-  const {store, addStore, addKiosk, addProduct, updateProduct, removeProduct} =
+  const {store, addKiosk, addProduct, updateProduct, removeProduct} =
     useStore();
   const {
-    isConnected,
-    reconnect,
-    disconnect,
     triggerSyncError,
     triggerClientReset,
     refreshAccessToken,
+    refreshSession,
+    switchStore,
     deleteUser,
   } = useDemoSyncTriggers();
   const {logOut} = useAuth();
-  const user = useUser<{}, CustomUserData, {}>();
 
   return (
     <View style={styles.container}>
@@ -84,21 +72,7 @@ export function StoreScreen() {
             />
           </View>
           <View style={styles.triggers}>
-            <View style={styles.status}>
-              <Text style={styles.statusText}>
-                Team: {user.customData.team}
-              </Text>
-            </View>
-            <View style={styles.status}>
-              <Text style={styles.statusText}>
-                Status: {isConnected ? 'Connected 🟢' : 'Not connected 🔴'}
-              </Text>
-              <Button
-                isSecondary
-                onPress={isConnected ? disconnect : reconnect}
-                text={isConnected ? 'Disconnect' : 'Connect'}
-              />
-            </View>
+            <StatusBar />
             <View style={styles.triggerButtons}>
               <Button
                 extraStyles={[styles.button]}
@@ -126,22 +100,41 @@ export function StoreScreen() {
               />
               <Button
                 extraStyles={[styles.button]}
+                onPress={deleteUser}
+                text="Delete User"
+              />
+              <Button
+                extraStyles={[styles.button]}
+                onPress={() => {
+                  switchStore();
+                  Alert.alert(
+                    'The associated store has been changed. Click "Refresh User Data" to update the UI.',
+                  );
+                }}
+                text="Trigger Store Change"
+              />
+              <Button
+                extraStyles={[styles.button]}
                 onPress={refreshAccessToken}
                 text="Refresh Access Token / User Data"
               />
               <Button
                 extraStyles={[styles.button]}
-                onPress={deleteUser}
-                text="Delete User"
+                onPress={refreshSession}
+                text="Refresh Session"
               />
             </View>
           </View>
         </>
       ) : (
-        // No store has been created yet (or not yet loaded).
-        <View style={styles.createStore}>
-          <Button onPress={addStore} text="Create Your Store" />
-          <Text style={styles.arrow}>⤴</Text>
+        // Store isn't yet loaded, perhaps while switching stores.
+        <View style={styles.loading}>
+          <Loading />
+          <StatusBar />
+          <Text style={styles.helperText}>
+            Press button below if stuck at loading.
+          </Text>
+          <Button onPress={refreshAccessToken} text="Refresh User Data" />
         </View>
       )}
     </View>
@@ -163,15 +156,6 @@ const styles = StyleSheet.create({
     borderColor: colors.grayMedium,
     backgroundColor: colors.white,
   },
-  createStore: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  arrow: {
-    marginTop: 20,
-    fontSize: 60,
-  },
   store: {
     flex: 1,
     paddingTop: 10,
@@ -192,16 +176,6 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderColor: colors.grayMedium,
   },
-  status: {
-    marginBottom: 20,
-    paddingHorizontal: 10,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  statusText: {
-    color: colors.grayDark,
-  },
   triggerButtons: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -210,5 +184,14 @@ const styles = StyleSheet.create({
   button: {
     width: '40%',
     flexGrow: 1,
+  },
+  loading: {
+    flex: 1,
+    paddingHorizontal: 20,
+  },
+  helperText: {
+    marginBottom: 20,
+    textAlign: 'center',
+    color: colors.grayDark,
   },
 });
