@@ -380,7 +380,7 @@ export class Realm {
    * @since 0.11.0
    */
   public static schemaVersion(path: string, encryptionKey?: ArrayBuffer | ArrayBufferView): number {
-    const notFound = 18446744073709551615n; // std::numeric_limit<uint64_t>::max() = 0xffffffffffffffff
+    const notFound = "18446744073709551615"; // std::numeric_limit<uint64_t>::max() = 0xffffffffffffffff as string
     const config: Configuration = { path };
     const absolutePath = Realm.determinePath(config);
     const schemaVersion = binding.Realm.getSchemaVersion({
@@ -388,7 +388,7 @@ export class Realm {
       encryptionKey: Realm.determineEncryptionKey(encryptionKey),
     });
     // no easy way to compare uint64_t in TypeScript
-    return notFound.toString() === schemaVersion.toString() ? -1 : binding.Int64.intToNum(schemaVersion);
+    return notFound === schemaVersion.toString() ? -1 : binding.Int64.intToNum(schemaVersion);
   }
 
   /**
