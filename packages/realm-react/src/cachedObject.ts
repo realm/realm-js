@@ -111,6 +111,7 @@ export function createCachedObject({ object, realm, updateCallback, updatedRef }
 
   const cachedObjectResult = new Proxy(object, cachedObjectHandler);
   const listenerCallback: Realm.ObjectChangeCallback<any> = (obj, changes) => {
+    updatedRef.current = true;
     if (changes.deleted) {
       updateCallback();
     } else if (changes.changedProperties.length > 0) {
@@ -125,7 +126,6 @@ export function createCachedObject({ object, realm, updateCallback, updatedRef }
         updateCallback();
       }
     }
-    updatedRef.current = true;
   };
 
   // We cannot add a listener to an invalid object
