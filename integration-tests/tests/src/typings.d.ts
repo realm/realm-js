@@ -168,7 +168,7 @@ type RealmContext = {
   closeRealm(options?: Partial<CloseRealmOptions>): Promise<void>;
 } & Mocha.Context;
 type RealmObjectContext<T = Record<string, unknown>> = {
-  object: Realm.Object & T;
+  object: Realm.Object<T> & T;
 } & RealmContext;
 // type BenchmarkContext = {
 //   result: BenchmarkResult;

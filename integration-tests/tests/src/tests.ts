@@ -58,6 +58,7 @@ import "./tests/migrations";
 import "./tests/mixed";
 import "./tests/notifications";
 import "./tests/objects";
+import "./tests/observable";
 import "./tests/queries";
 import "./tests/realm-constructor";
 import "./tests/results";
