@@ -1361,7 +1361,7 @@ describe("Realmtest", () => {
       });
     });
 
-    describe("schemaVersion", () => {
+    describe.skipIf(environment.missingServer, "schemaVersion", () => {
       importAppBefore(buildAppConfig("with-pbs").anonAuth().partitionBasedSync());
 
       [true, false].forEach((encryption) => {
@@ -1380,7 +1380,7 @@ describe("Realmtest", () => {
       });
     });
 
-    describe("exists", () => {
+    describe.skipIf(environment.missingServer, "exists", () => {
       importAppBefore(buildAppConfig("with-pbs").anonAuth().partitionBasedSync());
 
       it("yields correct value on a local realm", () => {
