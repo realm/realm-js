@@ -1334,7 +1334,7 @@ type CollectionType<
 type CompensatingWriteErrorType = CompensatingWriteError;
 type ConnectionStateType = ConnectionState;
 type CredentialsType = Credentials;
-type DictionaryType<T> = Dictionary<T>;
+type DictionaryType<T = unknown> = Dictionary<T>;
 type IndexDecoratorType = IndexDecorator;
 type ListType<T = unknown> = List<T>;
 type MapToDecoratorType = MapToDecorator;
