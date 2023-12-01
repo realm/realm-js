@@ -79,6 +79,7 @@
     "build:node:prebuild:arm64": "wireit",
     "build:node:prebuild:x64": "wireit",
     "build:node:prebuild:ia32": "wireit",
+    "build:node:prebuild:universal": "wireit",
     "build:android": "wireit",
     "build:ios": "wireit",
     "build:ios:debug:simulator": "wireit",
@@ -186,8 +187,11 @@
       ]
     },
     "build:node:prebuild": {
-      "command": "cross-env-shell prebuild --runtime napi --arch $PREBUILD_ARCH -- --directory bindgen",
+      "command": "cross-env-shell prebuild --runtime napi --arch '$PREBUILD_ARCH' -- --directory bindgen",
       "env": {
+        "npm_config_nodedir": {
+          "external": true
+        },
         "PREBUILD_ARCH": {
           "external": true
         }
@@ -215,6 +219,12 @@
       "command": "npm run build:node:prebuild",
       "env": {
         "PREBUILD_ARCH": "ia32"
+      }
+    },
+    "build:node:prebuild:universal": {
+      "command": "npm run build:node:prebuild",
+      "env": {
+        "PREBUILD_ARCH": "x86_64;arm64"
       }
     },
     "build:android": {
