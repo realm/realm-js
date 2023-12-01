@@ -83,7 +83,7 @@ describe("Encryption", () => {
     });
   });
 
-  describe("with sync", () => {
+  describe.skipIf(environment.missingServer, "with sync", () => {
     importAppBefore(buildAppConfig("with-pbs").anonAuth().partitionBasedSync());
 
     it("can set property in config", async function (this: AppContext) {

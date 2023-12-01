@@ -123,42 +123,46 @@ describe.skipIf(environment.missingServer, "path configuration (partition based 
   });
 });
 
-describe.skipIf(environment.skipFlexibleSync, "path configuration (flexible sync)", function () {
-  importAppBefore(buildAppConfig("with-flx").anonAuth().flexibleSync());
-  authenticateUserBefore();
+describe.skipIf(
+  environment.skipFlexibleSync || environment.missingServer,
+  "path configuration (flexible sync)",
+  function () {
+    importAppBefore(buildAppConfig("with-flx").anonAuth().flexibleSync());
+    authenticateUserBefore();
 
-  it("absolute path", async function () {
-    this.longTimeout();
-    const filename = getAbsolutePath();
-    const realm = await Realm.open({
-      path: filename,
-      schema: [schema],
-      sync: {
-        flexible: true,
-        user: this.user,
-      },
+    it("absolute path", async function () {
+      this.longTimeout();
+      const filename = getAbsolutePath();
+      const realm = await Realm.open({
+        path: filename,
+        schema: [schema],
+        sync: {
+          flexible: true,
+          user: this.user,
+        },
+      });
+      expect(realm.path).to.equal(filename);
+      expect(Realm.exists({ path: filename })).to.be.true;
+      realm.close();
+      Realm.deleteFile({ path: filename });
     });
-    expect(realm.path).to.equal(filename);
-    expect(Realm.exists({ path: filename })).to.be.true;
-    realm.close();
-    Realm.deleteFile({ path: filename });
-  });
 
-  it("relative path", async function () {
-    this.longTimeout();
-    const filename = getRelativePath();
-    const realm = await Realm.open({
-      path: filename,
-      schema: [schema],
-      sync: {
-        flexible: true,
-        user: this.user,
-      },
+    it("relative path", async function () {
+      this.longTimeout();
+      const filename = getRelativePath();
+      const realm = await Realm.open({
+        path: filename,
+        schema: [schema],
+        sync: {
+          flexible: true,
+          user: this.user,
+        },
+      });
+      // Realm Core will add a ".realm" suffix and url encode the path, if path is relative and sync is configured
+      const realmPath = realm.path;
+      expect(Realm.exists({ path: realmPath })).to.be.true;
+      realm.close();
+      Realm.deleteFile({ path: realmPath });
     });
-    // Realm Core will add a ".realm" suffix and url encode the path, if path is relative and sync is configured
-    const realmPath = realm.path;
-    expect(Realm.exists({ path: realmPath })).to.be.true;
-    realm.close();
-    Realm.deleteFile({ path: realmPath });
-  });
-});
+  },
+);
