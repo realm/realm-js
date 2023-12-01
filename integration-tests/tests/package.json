@@ -81,6 +81,8 @@
 		"@types/jsrsasign": "^10.5.4",
 		"@types/mocha": "^10.0.0",
 		"@types/node": "^18.15.10",
+		"@types/sinon": "^17.0.2",
+		"@types/sinon-chai": "^3.2.12",
 		"concurrently": "^6.5.1",
 		"mocha": "^10.1.0",
 		"node-fetch": "^2.6.9",
@@ -94,7 +96,9 @@
 		"chai": "4.3.6",
 		"chai-as-promised": "^7.1.1",
 		"concurrently": "^6.0.2",
-		"jsrsasign": "^10.6.1"
+		"jsrsasign": "^10.6.1",
+		"sinon": "^17.0.1",
+		"sinon-chai": "^3.7.0"
 	},
 	"files": [
 		"/src"
