@@ -101,9 +101,14 @@ const defaultSet =
 
 function embeddedSet({ typeHelpers: { toBinding }, columnKey }: PropertyOptions) {
   return (obj: binding.Obj, value: unknown) => {
-    // Asking for the toBinding will create the object and link it to the parent in one operation
-    // no need to actually set the value on the `obj`
-    toBinding(value, { createObj: () => [obj.createAndSetLinkedObject(columnKey), true] });
+    // Asking for the toBinding will create the object and link it to the parent in one operation.
+    // Thus, no need to actually set the value on the `obj` unless it's an optional null value.
+    const bindingValue = toBinding(value, { createObj: () => [obj.createAndSetLinkedObject(columnKey), true] });
+    // No need to destructure `optional` and check that it's `true` in this condition
+    // as trying to set a non-optional value to null will fail at an earlier stage.
+    if (bindingValue === null) {
+      obj.setAny(columnKey, bindingValue);
+    }
   };
 }
 
