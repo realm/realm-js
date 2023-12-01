@@ -249,7 +249,6 @@ const PROGRESS_LISTENERS = new Listeners<
   ListenerToken,
   [binding.WeakSyncSession, binding.SyncSession, ProgressDirection, ProgressMode]
 >({
-  throwOnReAdd: true,
   add(callback, weakInternal, internal, direction, mode) {
     const token = internal.registerProgressNotifier(
       (transferred, transferable) => callback(Number(transferred), Number(transferable)),
@@ -272,7 +271,6 @@ const CONNECTION_LISTENERS = new Listeners<
   ListenerToken,
   [binding.WeakSyncSession, binding.SyncSession]
 >({
-  throwOnReAdd: true,
   add(callback, weakInternal, internal) {
     const token = internal.registerConnectionChangeCallback((oldState, newState) =>
       callback(fromBindingConnectionState(newState), fromBindingConnectionState(oldState)),

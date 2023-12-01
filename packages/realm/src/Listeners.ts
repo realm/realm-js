@@ -27,7 +27,6 @@ export type CallbackRemover<TokenType> = (token: TokenType) => void;
 export type ListenersOptions<CallbackType, TokenType, Args extends unknown[]> = {
   add: CallbackAdder<CallbackType, TokenType, Args>;
   remove: CallbackRemover<TokenType>;
-  throwOnReAdd?: boolean;
 };
 
 /** @internal */
@@ -40,11 +39,7 @@ export class Listeners<CallbackType, TokenType, Args extends unknown[] = []> {
 
   add(callback: CallbackType, ...args: Args): void {
     if (this.listeners.has(callback)) {
-      // No need to add a listener twice
-      if (this.options.throwOnReAdd) {
-        throw new Error("Remove callback before adding it again");
-      }
-      return;
+      throw new Error("Remove callback before adding it again");
     }
     const token = this.options.add(callback, ...args);
     // Store the notification token by the callback to enable later removal.

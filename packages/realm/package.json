@@ -31,7 +31,7 @@
     "url": "https://www.mongodb.com/docs/realm/"
   },
   "config": {
-    "anonymizedBundleId": "tkgif/+3l1e9wStGJp2TOngAK3UcQ2u7OM8ZYJU5JYo="
+    "anonymizedBundleId": "1RmJBlqbKuzyRiPm4AsdIIxe8xlRUntGcGFEwUnUh6A="
   },
   "types": "./types.d.cts",
   "main": "./index.node.js",
