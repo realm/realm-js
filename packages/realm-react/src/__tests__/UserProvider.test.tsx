@@ -29,6 +29,8 @@ import { App } from "realm";
 const testEmail = "test@email.com";
 const testPassword = "password";
 
+// This is used to determine the initial state for user registrations.
+// Ensures that subsequent tests do not register the test user again.
 let userRegistered = false;
 
 const Login = () => {
@@ -37,14 +39,12 @@ const Login = () => {
 
   useEffect(() => {
     if (!isUserRegistered && !result.pending && result.operation !== AuthOperationName.Register) {
-      console.log("registering user");
       register({ email: testEmail, password: testPassword });
     }
   }, [register, isUserRegistered, result]);
 
   useEffect(() => {
     if (result.success && result.operation === AuthOperationName.Register) {
-      console.log("user registered");
       userRegistered = true;
       setIsUserRegistered(true);
     }
@@ -52,7 +52,6 @@ const Login = () => {
 
   useEffect(() => {
     if (isUserRegistered && !result.pending && result.operation !== AuthOperationName.LogInWithEmailPassword) {
-      console.log("logging in user");
       logIn({ email: testEmail, password: testPassword });
     }
   }, [logIn, isUserRegistered]);
@@ -99,13 +98,6 @@ describe("UserProvider", () => {
       const realmApp = new App({ id: appId, baseUrl });
 
       await realmApp.logIn(creds);
-
-      console.log("testing results: ", {
-        id,
-        currentId: realmApp?.currentUser?.id,
-        refreshToken,
-        currentRefreshToken: realmApp?.currentUser?.refreshToken,
-      });
 
       expect(id).toEqual(realmApp?.currentUser?.id);
       expect(refreshToken).not.toEqual(realmApp?.currentUser?.refreshToken);

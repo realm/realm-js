@@ -118,7 +118,7 @@ describe("App", () => {
       );
     });
 
-    it("logging in throws on non existing app", async function () {
+    it.skipIf(environment.missingServer, "logging in throws on non existing app", async function () {
       const app = new Realm.App(missingAppConfig);
       const credentials = Realm.Credentials.anonymous();
       await expect(app.logIn(credentials)).to.be.rejectedWith("cannot find app using Client App ID 'smurf'");
@@ -171,7 +171,7 @@ describe("App", () => {
     });
   });
 
-  describe("with valid app", async () => {
+  describe.skipIf(environment.missingServer, "with valid app", async () => {
     importAppBefore(buildAppConfig("with-anon").anonAuth());
 
     it("logins successfully ", async function (this: Mocha.Context & AppContext & RealmContext) {
@@ -264,7 +264,7 @@ describe("App", () => {
     });
   });
 
-  describe("with email-password auth", () => {
+  describe.skipIf(environment.missingServer, "with email-password auth", () => {
     importAppBefore(
       buildAppConfig("with-email-password").emailPasswordAuth({
         autoConfirm: true,
@@ -285,7 +285,7 @@ describe("App", () => {
     });
   });
 
-  describe("with sync", () => {
+  describe.skipIf(environment.missingServer, "with sync", () => {
     importAppBefore(buildAppConfig("with-pbs").anonAuth().partitionBasedSync());
 
     it("migration while sync is enabled throws", async function (this: Mocha.Context & AppContext & RealmContext) {
