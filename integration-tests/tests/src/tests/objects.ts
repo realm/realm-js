@@ -134,6 +134,30 @@ const LinkSchemas = {
   },
 };
 
+interface IEmbeddedObject {
+  intValue: number;
+}
+
+const EmbeddedObjectSchema: Realm.ObjectSchema = {
+  name: "EmbeddedObject",
+  embedded: true,
+  properties: {
+    intValue: "int",
+  },
+};
+
+interface IObjectWithEmbeddedObject {
+  // The type needs to allow for the implicit nullability.
+  embeddedValue: IEmbeddedObject | undefined | null;
+}
+
+const ObjectWithEmbeddedObjectSchema: Realm.ObjectSchema = {
+  name: "ObjectWithEmbeddedObject",
+  properties: {
+    embeddedValue: EmbeddedObjectSchema.name,
+  },
+};
+
 const DateObjectSchema = {
   name: "Date",
   properties: {
@@ -1250,6 +1274,43 @@ describe("Realm.Object", () => {
         obj.objectCol = anotherObj;
       });
       expect(obj.objectCol?.doubleCol).equals(3);
+    });
+  });
+
+  describe("embedded properties", () => {
+    openRealmBeforeEach({ schema: [EmbeddedObjectSchema, ObjectWithEmbeddedObjectSchema] });
+
+    it("sets an embedded property to null", function (this: Mocha.Context & RealmContext) {
+      this.realm.write(() => {
+        this.realm.create(ObjectWithEmbeddedObjectSchema.name, { embeddedValue: null });
+      });
+
+      const objects = this.realm.objects<IObjectWithEmbeddedObject>(ObjectWithEmbeddedObjectSchema.name);
+      expect(objects.length).to.equal(1);
+      expect(objects[0].embeddedValue).to.be.null;
+    });
+
+    it("updates an embedded property to null", function (this: Mocha.Context & RealmContext) {
+      this.realm.write(() => {
+        this.realm.create(ObjectWithEmbeddedObjectSchema.name, { embeddedValue: { intValue: 1 } });
+      });
+
+      const objects = this.realm.objects<IObjectWithEmbeddedObject>(ObjectWithEmbeddedObjectSchema.name);
+      expect(objects.length).to.equal(1);
+      const firstObject = objects[0];
+      expect(firstObject.embeddedValue?.intValue).to.equal(1);
+
+      this.realm.write(() => {
+        firstObject.embeddedValue = null;
+      });
+      expect(firstObject.embeddedValue).to.be.null;
+
+      this.realm.write(() => {
+        firstObject.embeddedValue = undefined;
+      });
+      // `undefined` and `null` JS values are always sent as `null` through
+      // the binding layer. Thus, the value is always retrieved as `null`.
+      expect(firstObject.embeddedValue).to.be.null;
     });
   });
 
