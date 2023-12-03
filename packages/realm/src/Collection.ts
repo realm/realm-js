@@ -37,14 +37,14 @@ export abstract class Collection<
 > implements Iterable<T>
 {
   /** @internal */
-  private listeners: Listeners<ChangeCallbackType, binding.NotificationToken>;
+  private listeners: Listeners<ChangeCallbackType, binding.NotificationToken, [string[] | undefined]>;
 
   /** @internal */
-  constructor(addListener: CallbackAdder<ChangeCallbackType, binding.NotificationToken>) {
+  constructor(addListener: CallbackAdder<ChangeCallbackType, binding.NotificationToken, [string[] | undefined]>) {
     if (arguments.length === 0) {
       throw new IllegalConstructorError("Collection");
     }
-    this.listeners = new Listeners<ChangeCallbackType, binding.NotificationToken>({
+    this.listeners = new Listeners({
       add: addListener,
       remove(token) {
         token.unregister();
@@ -128,9 +128,9 @@ export abstract class Collection<
    * @note Adding the listener is an asynchronous operation, so the callback is invoked the first time to notify the caller when the listener has been added.
    * Thus, when the callback is invoked the first time it will contain empty arrays for each property in the `changes` object.
    */
-  addListener(callback: ChangeCallbackType): void {
+  addListener(callback: ChangeCallbackType, keyPaths?: string | string[]): void {
     assert.function(callback, "callback");
-    this.listeners.add(callback);
+    this.listeners.add(callback, typeof keyPaths === "string" ? [keyPaths] : keyPaths);
   }
 
   /**

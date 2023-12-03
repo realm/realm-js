@@ -124,23 +124,26 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
     if (arguments.length === 0) {
       throw new IllegalConstructorError("OrderedCollection");
     }
-    super((callback) => {
-      return results.addNotificationCallback((changes) => {
-        try {
-          callback(proxied, {
-            deletions: unwind(changes.deletions),
-            insertions: unwind(changes.insertions),
-            oldModifications: unwind(changes.modifications),
-            newModifications: unwind(changes.modificationsNew),
-          });
-        } catch (err) {
-          // Scheduling a throw on the event loop,
-          // since throwing synchronously here would result in an abort in the calling C++
-          setImmediate(() => {
-            throw err;
-          });
-        }
-      }, undefined);
+    super((callback, keyPaths) => {
+      return results.addNotificationCallback(
+        (changes) => {
+          try {
+            callback(proxied, {
+              deletions: unwind(changes.deletions),
+              insertions: unwind(changes.insertions),
+              oldModifications: unwind(changes.modifications),
+              newModifications: unwind(changes.modificationsNew),
+            });
+          } catch (err) {
+            // Scheduling a throw on the event loop,
+            // since throwing synchronously here would result in an abort in the calling C++
+            setImmediate(() => {
+              throw err;
+            });
+          }
+        },
+        keyPaths ? this.mapKeyPaths(keyPaths) : keyPaths,
+      );
     });
     // Wrap in a proxy to trap ownKeys and get, enabling the spread operator
     const proxied = new Proxy(this, PROXY_HANDLER as ProxyHandler<this>);
@@ -896,5 +899,9 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
     } else {
       return DEFAULT_COLUMN_KEY;
     }
+  }
+
+  private mapKeyPaths(keyPaths: string[]) {
+    return this.realm.internal.createKeyPathArray(this.results.objectType, keyPaths);
   }
 }
