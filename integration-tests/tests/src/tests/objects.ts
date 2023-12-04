@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 import { expect } from "chai";
-import Realm from "realm";
+import Realm, { BSON, UpdateMode } from "realm";
 
 import { IPerson, Person, PersonSchema } from "../schemas/person-and-dogs";
 import {
@@ -147,13 +147,16 @@ const EmbeddedObjectSchema: Realm.ObjectSchema = {
 };
 
 interface IObjectWithEmbeddedObject {
+  _id: BSON.ObjectId;
   // The type needs to allow for the implicit nullability.
   embeddedValue: IEmbeddedObject | undefined | null;
 }
 
 const ObjectWithEmbeddedObjectSchema: Realm.ObjectSchema = {
   name: "ObjectWithEmbeddedObject",
+  primaryKey: "_id",
   properties: {
+    _id: { type: "objectId", default: () => new BSON.ObjectId() },
     embeddedValue: EmbeddedObjectSchema.name,
   },
 };
@@ -1280,7 +1283,7 @@ describe("Realm.Object", () => {
   describe("embedded properties", () => {
     openRealmBeforeEach({ schema: [EmbeddedObjectSchema, ObjectWithEmbeddedObjectSchema] });
 
-    it("sets an embedded property to null", function (this: Mocha.Context & RealmContext) {
+    it("sets an embedded property to null on creation", function (this: Mocha.Context & RealmContext) {
       this.realm.write(() => {
         this.realm.create(ObjectWithEmbeddedObjectSchema.name, { embeddedValue: null });
       });
@@ -1304,6 +1307,17 @@ describe("Realm.Object", () => {
         firstObject.embeddedValue = null;
       });
       expect(firstObject.embeddedValue).to.be.null;
+    });
+
+    it("updates an embedded property to null when set to undefined", function (this: Mocha.Context & RealmContext) {
+      this.realm.write(() => {
+        this.realm.create(ObjectWithEmbeddedObjectSchema.name, { embeddedValue: { intValue: 1 } });
+      });
+
+      const objects = this.realm.objects<IObjectWithEmbeddedObject>(ObjectWithEmbeddedObjectSchema.name);
+      expect(objects.length).to.equal(1);
+      const firstObject = objects[0];
+      expect(firstObject.embeddedValue?.intValue).to.equal(1);
 
       this.realm.write(() => {
         firstObject.embeddedValue = undefined;
@@ -1311,6 +1325,92 @@ describe("Realm.Object", () => {
       // `undefined` and `null` JS values are always sent as `null` through
       // the binding layer. Thus, the value is always retrieved as `null`.
       expect(firstObject.embeddedValue).to.be.null;
+    });
+
+    it("updates an embedded property to null with `UpdateMode.Modified`", function (this: Mocha.Context &
+      RealmContext) {
+      const objectCreated = this.realm.write(() => {
+        return this.realm.create<IObjectWithEmbeddedObject>(ObjectWithEmbeddedObjectSchema.name, {
+          embeddedValue: { intValue: 1 },
+        });
+      });
+
+      let objects = this.realm.objects<IObjectWithEmbeddedObject>(ObjectWithEmbeddedObjectSchema.name);
+      expect(objects.length).to.equal(1);
+      expect(objects[0]._id.equals(objectCreated._id)).to.be.true;
+      expect(objects[0].embeddedValue?.intValue).to.equal(1);
+
+      this.realm.write(() => {
+        this.realm.create(
+          ObjectWithEmbeddedObjectSchema.name,
+          {
+            _id: objectCreated._id,
+            embeddedValue: null,
+          },
+          UpdateMode.Modified,
+        );
+      });
+      objects = this.realm.objects(ObjectWithEmbeddedObjectSchema.name);
+      expect(objects.length).to.equal(1);
+      expect(objects[0]._id.equals(objectCreated._id)).to.be.true;
+      expect(objects[0].embeddedValue).to.be.null;
+    });
+
+    it("updates an embedded property to null with `UpdateMode.All`", function (this: Mocha.Context & RealmContext) {
+      const objectCreated = this.realm.write(() => {
+        return this.realm.create<IObjectWithEmbeddedObject>(ObjectWithEmbeddedObjectSchema.name, {
+          embeddedValue: { intValue: 1 },
+        });
+      });
+
+      let objects = this.realm.objects<IObjectWithEmbeddedObject>(ObjectWithEmbeddedObjectSchema.name);
+      expect(objects.length).to.equal(1);
+      expect(objects[0]._id.equals(objectCreated._id)).to.be.true;
+      expect(objects[0].embeddedValue?.intValue).to.equal(1);
+
+      this.realm.write(() => {
+        this.realm.create(
+          ObjectWithEmbeddedObjectSchema.name,
+          {
+            _id: objectCreated._id,
+            embeddedValue: null,
+          },
+          UpdateMode.All,
+        );
+      });
+      objects = this.realm.objects(ObjectWithEmbeddedObjectSchema.name);
+      expect(objects.length).to.equal(1);
+      expect(objects[0]._id.equals(objectCreated._id)).to.be.true;
+      expect(objects[0].embeddedValue).to.be.null;
+    });
+
+    it("does not update an embedded property to null when omitted with `UpdateMode.Modified`", function (this: Mocha.Context &
+      RealmContext) {
+      const objectCreated = this.realm.write(() => {
+        return this.realm.create<IObjectWithEmbeddedObject>(ObjectWithEmbeddedObjectSchema.name, {
+          embeddedValue: { intValue: 1 },
+        });
+      });
+
+      let objects = this.realm.objects<IObjectWithEmbeddedObject>(ObjectWithEmbeddedObjectSchema.name);
+      expect(objects.length).to.equal(1);
+      expect(objects[0]._id.equals(objectCreated._id));
+      expect(objects[0].embeddedValue?.intValue).to.equal(1);
+
+      // Create an object without the `embeddedValue` field.
+      this.realm.write(() => {
+        this.realm.create(
+          ObjectWithEmbeddedObjectSchema.name,
+          {
+            _id: objectCreated._id,
+          },
+          UpdateMode.Modified,
+        );
+      });
+      objects = this.realm.objects(ObjectWithEmbeddedObjectSchema.name);
+      expect(objects.length).to.equal(1);
+      expect(objects[0]._id.equals(objectCreated._id));
+      expect(objects[0].embeddedValue?.intValue).to.equal(1);
     });
   });
 
