@@ -20,7 +20,7 @@ export function sequence<This, Args extends unknown[], R>(...actions: Array<(...
   let i = 0;
   return function (this: This, ...args: Args) {
     if (i >= actions.length) {
-      throw new Error("Asked to perform more actions than was provided");
+      throw new Error(`Sequence was called more than ${actions.length} times (call #${i})`);
     } else {
       try {
         return actions[i].call(this, ...args);

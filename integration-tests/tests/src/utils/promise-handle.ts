@@ -18,7 +18,7 @@
 
 type ResolveType<T> = (value: T | PromiseLike<T>) => void;
 type RejectType = (reason?: any) => void;
-export type PromiseHandle<T> = {
+export type PromiseHandle<T = unknown> = {
   resolve: ResolveType<T>;
   reject: RejectType;
 } & Promise<T>;
