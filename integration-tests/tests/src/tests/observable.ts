@@ -132,7 +132,6 @@ describe("Observable", () => {
         const handle = createPromiseHandle();
 
         const listener = createListenerStub(handle, () => {
-          // Remove the listener and trigger a change
           this.realm.removeListener("change", listener);
           setImmediate(() => {
             this.realm.write(() => {
@@ -142,7 +141,7 @@ describe("Observable", () => {
         });
 
         this.realm.addListener("change", listener);
-        // Trigger a change to ensure we're actually listening
+
         this.realm.write(() => {
           this.realm.create("Person", { name: "Alice" });
         });
@@ -154,7 +153,6 @@ describe("Observable", () => {
         const handle = createPromiseHandle();
 
         const listener = createListenerStub(handle, () => {
-          // Remove the listener and trigger a change
           this.realm.removeAllListeners("change");
           setImmediate(() => {
             this.realm.write(() => {
@@ -164,7 +162,7 @@ describe("Observable", () => {
         });
 
         this.realm.addListener("change", listener);
-        // Trigger a change to ensure we're actually listening
+
         this.realm.write(() => {
           this.realm.create("Person", { name: "Alice" });
         });
@@ -188,7 +186,6 @@ describe("Observable", () => {
         const handle = createPromiseHandle();
 
         const listener = createListenerStub(handle, () => {
-          // Remove the listener and trigger a change
           this.realm.removeListener("beforenotify", listener);
           setImmediate(() => {
             this.realm.write(() => {
@@ -198,7 +195,7 @@ describe("Observable", () => {
         });
 
         this.realm.addListener("beforenotify", listener);
-        // Trigger a change to ensure we're actually listening
+
         this.realm.write(() => {
           this.realm.create("Person", { name: "Alice" });
         });
@@ -210,7 +207,6 @@ describe("Observable", () => {
         const handle = createPromiseHandle();
 
         const listener = createListenerStub(handle, () => {
-          // Remove the listener and trigger a change
           this.realm.removeAllListeners("beforenotify");
           setImmediate(() => {
             this.realm.write(() => {
@@ -220,7 +216,7 @@ describe("Observable", () => {
         });
 
         this.realm.addListener("beforenotify", listener);
-        // Trigger a change to ensure we're actually listening
+
         this.realm.write(() => {
           this.realm.create("Person", { name: "Alice" });
         });
@@ -269,7 +265,6 @@ describe("Observable", () => {
         const handle = createPromiseHandle();
 
         const listener = createListenerStub(handle, () => {
-          // Remove the listener and trigger a change
           this.realm.removeListener("schema", listener);
           setImmediate(() => {
             this.realm.write(() => {
@@ -279,7 +274,7 @@ describe("Observable", () => {
         });
 
         this.realm.addListener("schema", listener);
-        // Trigger a change to ensure we're actually listening
+
         this.realm.write(() => {
           this.realm._updateSchema([{ name: "Person", properties: { name: "string" } }]);
         });
@@ -291,7 +286,6 @@ describe("Observable", () => {
         const handle = createPromiseHandle();
 
         const listener = createListenerStub(handle, () => {
-          // Remove the listener and trigger a change
           this.realm.removeAllListeners("schema");
           setImmediate(() => {
             this.realm.write(() => {
@@ -301,7 +295,7 @@ describe("Observable", () => {
         });
 
         this.realm.addListener("schema", listener);
-        // Trigger a change to ensure we're actually listening
+
         this.realm.write(() => {
           this.realm._updateSchema([{ name: "Person", properties: { name: "string" } }]);
         });
@@ -357,13 +351,11 @@ describe("Observable", () => {
       const listener = createListenerStub(
         handle,
         () => {
-          // Trigger a change to ensure we're actually listening
           this.realm.write(() => {
             this.object.name = "Bob";
           });
         },
         () => {
-          // Remove the listener and trigger a change
           this.object.removeListener(listener);
           this.realm.write(() => {
             this.object.name = "Charlie";
@@ -382,7 +374,6 @@ describe("Observable", () => {
       const listener = createListenerStub(
         handle,
         () => {
-          // Trigger a change to ensure we're actually listening
           this.realm.write(() => {
             this.object.name = "Bob";
           });
@@ -469,13 +460,11 @@ describe("Observable", () => {
       const listener = createListenerStub(
         handle,
         () => {
-          // Trigger a change to ensure we're actually listening
           this.realm.write(() => {
             this.object.name = "Bob";
           });
         },
         () => {
-          // Remove the listener and trigger a change
           collection.removeListener(listener);
           this.realm.write(() => {
             this.object.name = "Charlie";
@@ -495,7 +484,6 @@ describe("Observable", () => {
       const listener = createListenerStub(
         handle,
         () => {
-          // Trigger a change to ensure we're actually listening
           this.realm.write(() => {
             this.object.name = "Bob";
           });
@@ -587,13 +575,11 @@ describe("Observable", () => {
       const listener = createListenerStub(
         handle,
         () => {
-          // Trigger a change to ensure we're actually listening
           this.realm.write(() => {
             collection[0].name = "Bobby";
           });
         },
         () => {
-          // Remove the listener and trigger a change
           collection.removeListener(listener);
           this.realm.write(() => {
             collection[0].name = "Charlotte";
@@ -613,7 +599,6 @@ describe("Observable", () => {
       const listener = createListenerStub(
         handle,
         () => {
-          // Trigger a change to ensure we're actually listening
           this.realm.write(() => {
             collection[0].name = "Charles";
           });
@@ -705,13 +690,11 @@ describe("Observable", () => {
       const listener = createListenerStub(
         handle,
         () => {
-          // Trigger a change to ensure we're actually listening
           this.realm.write(() => {
             collection.add(this.object);
           });
         },
         () => {
-          // Remove the listener and trigger a change
           collection.removeListener(listener);
           this.realm.write(() => {
             collection.delete(this.object);
@@ -731,7 +714,6 @@ describe("Observable", () => {
       const listener = createListenerStub(
         handle,
         () => {
-          // Trigger a change to ensure we're actually listening
           this.realm.write(() => {
             collection.add(this.object);
           });
@@ -820,13 +802,11 @@ describe("Observable", () => {
       const listener = createListenerStub(
         handle,
         () => {
-          // Trigger a change to ensure we're actually listening
           this.realm.write(() => {
             collection["bob"] = this.object;
           });
         },
         () => {
-          // Remove the listener and trigger a change
           collection.removeListener(listener);
           this.realm.write(() => {
             collection["bob"] = this.object;
@@ -846,7 +826,6 @@ describe("Observable", () => {
       const listener = createListenerStub(
         handle,
         () => {
-          // Trigger a change to ensure we're actually listening
           this.realm.write(() => {
             collection["bob"] = this.object;
           });
