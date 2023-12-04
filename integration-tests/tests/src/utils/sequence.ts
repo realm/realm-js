@@ -16,14 +16,17 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export function sequence<This, Args extends unknown[], R>(...actions: Array<(...args: Args) => R>) {
+/**
+ * @returns A function which will delegate calls to the callbacks in sequence or throw if called too many times.
+ */
+export function sequence<This, Args extends unknown[], R>(...callbacks: Array<(...args: Args) => R>) {
   let i = 0;
   return function (this: This, ...args: Args) {
-    if (i >= actions.length) {
-      throw new Error(`Sequence was called more than ${actions.length} times (call #${i})`);
+    if (i >= callbacks.length) {
+      throw new Error(`Sequence was called more than ${callbacks.length} times (call #${i})`);
     } else {
       try {
-        return actions[i].call(this, ...args);
+        return callbacks[i].call(this, ...args);
       } finally {
         i++;
       }

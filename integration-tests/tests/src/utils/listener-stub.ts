@@ -19,6 +19,12 @@
 import { PromiseHandle } from "./promise-handle";
 import { sequence } from "./sequence";
 
+/**
+ * A test utility useful when testing listeners.
+ * @param handle Promise handle, which will resolve as the final callback gets called or rejected if the returned function is called more than expected.
+ * @param callbacks An array of callbacks to call in sequence as the returned function is called.
+ * @returns A function which will delegate calls to the provided callbacks.
+ */
 export function createListenerStub<Args extends unknown[]>(
   handle: PromiseHandle<void>,
   ...callbacks: ((...args: Args) => void)[]
