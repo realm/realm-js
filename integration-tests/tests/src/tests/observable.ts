@@ -29,6 +29,7 @@ import Realm, { CollectionChangeSet, DictionaryChangeSet, ObjectChangeSet } from
 import { openRealmBefore, openRealmBeforeEach } from "../hooks";
 import { createListenerStub } from "../utils/listener-stub";
 import { createPromiseHandle } from "../utils/promise-handle";
+import { sequence } from "../utils/sequence";
 
 type Observable = Realm | Realm.Object<any> | Realm.Results<any> | Realm.List<any> | Realm.Dictionary | Realm.Set<any>;
 
@@ -50,6 +51,7 @@ function expectRealmNotifications(
       handle,
       ...expectedChangeSets.map(
         (expectedChanges, c) => (realm: Realm, name: string, schema?: Realm.CanonicalObjectSchema[]) => {
+          expect(realm).instanceOf(Realm);
           expect(name).equals(eventName, `Realm change event #${c} name didn't match`);
           expect(schema).deep.equals(expectedChanges.schema, `Realm change event #${c} schema didn't match`);
         },
@@ -98,6 +100,29 @@ function expectDictionaryNotifications(dictionary: Realm.Dictionary, expectedCha
   return handle;
 }
 
+type ListenerRemovalOptions = {
+  addListener: (callback: () => void) => void;
+  removeListener: (callback: () => void) => void;
+  update: () => void;
+};
+
+/**
+ * Adds a listener, triggers an update which removes the listener and triggers another update,
+ * expecting (through the use of a listener stub) that update to not call the listener again.
+ */
+async function expectListenerRemoval({ addListener, removeListener, update }: ListenerRemovalOptions) {
+  const handle = createPromiseHandle();
+  const listener = createListenerStub(handle, () => {
+    removeListener(listener);
+    setImmediate(() => {
+      update();
+    });
+  });
+  addListener(listener);
+  update();
+  await handle;
+}
+
 describe("Observable", () => {
   // describe("App", () => {});
 
@@ -129,45 +154,27 @@ describe("Observable", () => {
       });
 
       it("removes listeners", async function (this: RealmContext) {
-        const handle = createPromiseHandle();
-
-        const listener = createListenerStub(handle, () => {
-          this.realm.removeListener("change", listener);
-          setImmediate(() => {
+        await expectListenerRemoval({
+          addListener: (listener) => this.realm.addListener("change", listener),
+          removeListener: (listener) => this.realm.removeListener("change", listener),
+          update: () => {
             this.realm.write(() => {
               this.realm.create("Person", { name: "Bob" });
             });
-          });
+          },
         });
-
-        this.realm.addListener("change", listener);
-
-        this.realm.write(() => {
-          this.realm.create("Person", { name: "Alice" });
-        });
-
-        await handle;
       });
 
       it("removes all listeners", async function (this: RealmContext) {
-        const handle = createPromiseHandle();
-
-        const listener = createListenerStub(handle, () => {
-          this.realm.removeAllListeners("change");
-          setImmediate(() => {
+        await expectListenerRemoval({
+          addListener: (listener) => this.realm.addListener("change", listener),
+          removeListener: () => this.realm.removeAllListeners("change"),
+          update: () => {
             this.realm.write(() => {
               this.realm.create("Person", { name: "Bob" });
             });
-          });
+          },
         });
-
-        this.realm.addListener("change", listener);
-
-        this.realm.write(() => {
-          this.realm.create("Person", { name: "Alice" });
-        });
-
-        await handle;
       });
     });
 
@@ -184,45 +191,27 @@ describe("Observable", () => {
       });
 
       it("removes listeners", async function (this: RealmContext) {
-        const handle = createPromiseHandle();
-
-        const listener = createListenerStub(handle, () => {
-          this.realm.removeListener("beforenotify", listener);
-          setImmediate(() => {
+        await expectListenerRemoval({
+          addListener: (listener) => this.realm.addListener("beforenotify", listener),
+          removeListener: (listener) => this.realm.removeListener("beforenotify", listener),
+          update: () => {
             this.realm.write(() => {
               this.realm.create("Person", { name: "Bob" });
             });
-          });
+          },
         });
-
-        this.realm.addListener("beforenotify", listener);
-
-        this.realm.write(() => {
-          this.realm.create("Person", { name: "Alice" });
-        });
-
-        await handle;
       });
 
       it("removes all listeners", async function (this: RealmContext) {
-        const handle = createPromiseHandle();
-
-        const listener = createListenerStub(handle, () => {
-          this.realm.removeAllListeners("beforenotify");
-          setImmediate(() => {
+        await expectListenerRemoval({
+          addListener: (listener) => this.realm.addListener("beforenotify", listener),
+          removeListener: () => this.realm.removeAllListeners("beforenotify"),
+          update: () => {
             this.realm.write(() => {
               this.realm.create("Person", { name: "Bob" });
             });
-          });
+          },
         });
-
-        this.realm.addListener("beforenotify", listener);
-
-        this.realm.write(() => {
-          this.realm.create("Person", { name: "Alice" });
-        });
-
-        await handle;
       });
     });
 
@@ -263,45 +252,27 @@ describe("Observable", () => {
       });
 
       it("removes listeners", async function (this: InternalRealmContext) {
-        const handle = createPromiseHandle();
-
-        const listener = createListenerStub(handle, () => {
-          this.realm.removeListener("schema", listener);
-          setImmediate(() => {
+        await expectListenerRemoval({
+          addListener: (listener) => this.realm.addListener("schema", listener),
+          removeListener: (listener) => this.realm.removeListener("schema", listener),
+          update: () => {
             this.realm.write(() => {
               this.realm._updateSchema([{ name: "Person", properties: { name: "string" } }]);
             });
-          });
+          },
         });
-
-        this.realm.addListener("schema", listener);
-
-        this.realm.write(() => {
-          this.realm._updateSchema([{ name: "Person", properties: { name: "string" } }]);
-        });
-
-        await handle;
       });
 
       it("removes all listeners", async function (this: InternalRealmContext) {
-        const handle = createPromiseHandle();
-
-        const listener = createListenerStub(handle, () => {
-          this.realm.removeAllListeners("schema");
-          setImmediate(() => {
+        await expectListenerRemoval({
+          addListener: (listener) => this.realm.addListener("schema", listener),
+          removeListener: () => this.realm.removeAllListeners("schema"),
+          update: () => {
             this.realm.write(() => {
               this.realm._updateSchema([{ name: "Person", properties: { name: "string" } }]);
             });
-          });
+          },
         });
-
-        this.realm.addListener("schema", listener);
-
-        this.realm.write(() => {
-          this.realm._updateSchema([{ name: "Person", properties: { name: "string" } }]);
-        });
-
-        await handle;
       });
     });
   });
@@ -347,50 +318,27 @@ describe("Observable", () => {
     });
 
     it("removes listeners", async function (this: RealmObjectContext<Person>) {
-      const handle = createPromiseHandle();
-
-      const listener = createListenerStub(
-        handle,
-        () => {
-          this.realm.write(() => {
-            this.object.name = "Bob";
-          });
-        },
-        () => {
-          this.object.removeListener(listener);
+      await expectListenerRemoval({
+        addListener: (listener) => this.object.addListener(listener),
+        removeListener: (listener) => this.object.removeListener(listener),
+        update: () => {
           this.realm.write(() => {
             this.object.name = "Charlie";
           });
         },
-      );
-
-      this.object.addListener(listener);
-
-      await handle;
+      });
     });
 
     it("removes all listeners", async function (this: RealmObjectContext<Person>) {
-      const handle = createPromiseHandle();
-
-      const listener = createListenerStub(
-        handle,
-        () => {
-          this.realm.write(() => {
-            this.object.name = "Bob";
-          });
-        },
-        () => {
-          // Remove all listeners and trigger a change
-          this.object.removeAllListeners();
+      await expectListenerRemoval({
+        addListener: (listener) => this.object.addListener(listener),
+        removeListener: () => this.object.removeAllListeners(),
+        update: () => {
           this.realm.write(() => {
             this.object.name = "Charlie";
           });
         },
-      );
-
-      this.object.addListener(listener);
-
-      await handle;
+      });
     });
   });
 
@@ -456,51 +404,28 @@ describe("Observable", () => {
 
     it("removes listeners", async function (this: RealmObjectContext<Person>) {
       const collection = this.realm.objects("Person");
-      const handle = createPromiseHandle();
-
-      const listener = createListenerStub(
-        handle,
-        () => {
-          this.realm.write(() => {
-            this.object.name = "Bob";
-          });
-        },
-        () => {
-          collection.removeListener(listener);
+      await expectListenerRemoval({
+        addListener: (listener) => collection.addListener(listener),
+        removeListener: (listener) => collection.removeListener(listener),
+        update: () => {
           this.realm.write(() => {
             this.object.name = "Charlie";
           });
         },
-      );
-
-      collection.addListener(listener);
-
-      await handle;
+      });
     });
 
     it("removes all listeners", async function (this: RealmObjectContext<Person>) {
       const collection = this.realm.objects("Person");
-      const handle = createPromiseHandle();
-
-      const listener = createListenerStub(
-        handle,
-        () => {
-          this.realm.write(() => {
-            this.object.name = "Bob";
-          });
-        },
-        () => {
-          // Remove all listeners and trigger a change
-          collection.removeAllListeners();
+      await expectListenerRemoval({
+        addListener: (listener) => collection.addListener(listener),
+        removeListener: () => collection.removeAllListeners(),
+        update: () => {
           this.realm.write(() => {
             this.object.name = "Charlie";
           });
         },
-      );
-
-      collection.addListener(listener);
-
-      await handle;
+      });
     });
   });
 
@@ -571,51 +496,28 @@ describe("Observable", () => {
 
     it("removes listeners", async function (this: RealmObjectContext<Person>) {
       const collection = this.object.friends;
-      const handle = createPromiseHandle();
-
-      const listener = createListenerStub(
-        handle,
-        () => {
+      await expectListenerRemoval({
+        addListener: (listener) => collection.addListener(listener),
+        removeListener: (listener) => collection.removeListener(listener),
+        update: () => {
           this.realm.write(() => {
             collection[0].name = "Bobby";
           });
         },
-        () => {
-          collection.removeListener(listener);
-          this.realm.write(() => {
-            collection[0].name = "Charlotte";
-          });
-        },
-      );
-
-      collection.addListener(listener);
-
-      await handle;
+      });
     });
 
     it("removes all listeners", async function (this: RealmObjectContext<Person>) {
       const collection = this.object.friends;
-      const handle = createPromiseHandle();
-
-      const listener = createListenerStub(
-        handle,
-        () => {
+      await expectListenerRemoval({
+        addListener: (listener) => collection.addListener(listener),
+        removeListener: () => collection.removeAllListeners(),
+        update: () => {
           this.realm.write(() => {
-            collection[0].name = "Charles";
+            collection[0].name = "Bobby";
           });
         },
-        () => {
-          // Remove all listeners and trigger a change
-          collection.removeAllListeners();
-          this.realm.write(() => {
-            collection[0].name = "Charlotte";
-          });
-        },
-      );
-
-      collection.addListener(listener);
-
-      await handle;
+      });
     });
   });
 
@@ -686,51 +588,42 @@ describe("Observable", () => {
 
     it("removes listeners", async function (this: RealmObjectContext<Person>) {
       const collection = this.object.friends;
-      const handle = createPromiseHandle();
-
-      const listener = createListenerStub(
-        handle,
-        () => {
-          this.realm.write(() => {
-            collection.add(this.object);
-          });
-        },
-        () => {
-          collection.removeListener(listener);
-          this.realm.write(() => {
-            collection.delete(this.object);
-          });
-        },
-      );
-
-      collection.addListener(listener);
-
-      await handle;
+      await expectListenerRemoval({
+        addListener: (listener) => collection.addListener(listener),
+        removeListener: (listener) => collection.removeListener(listener),
+        update: sequence(
+          () => {
+            this.realm.write(() => {
+              collection.add(this.object);
+            });
+          },
+          () => {
+            this.realm.write(() => {
+              collection.delete(this.object);
+            });
+          },
+        ),
+      });
     });
 
     it("removes all listeners", async function (this: RealmObjectContext<Person>) {
       const collection = this.object.friends;
-      const handle = createPromiseHandle();
-
-      const listener = createListenerStub(
-        handle,
-        () => {
-          this.realm.write(() => {
-            collection.add(this.object);
-          });
-        },
-        () => {
-          // Remove all listeners and trigger a change
-          collection.removeAllListeners();
-          this.realm.write(() => {
-            collection.delete(this.object);
-          });
-        },
-      );
-
-      collection.addListener(listener);
-
-      await handle;
+      await expectListenerRemoval({
+        addListener: (listener) => collection.addListener(listener),
+        removeListener: () => collection.removeAllListeners(),
+        update: sequence(
+          () => {
+            this.realm.write(() => {
+              collection.add(this.object);
+            });
+          },
+          () => {
+            this.realm.write(() => {
+              collection.delete(this.object);
+            });
+          },
+        ),
+      });
     });
   });
 
@@ -798,51 +691,28 @@ describe("Observable", () => {
 
     it("removes listeners", async function (this: RealmObjectContext<Person>) {
       const collection = this.object.friendsByName;
-      const handle = createPromiseHandle();
-
-      const listener = createListenerStub(
-        handle,
-        () => {
+      await expectListenerRemoval({
+        addListener: (listener) => collection.addListener(listener),
+        removeListener: (listener) => collection.removeListener(listener),
+        update: () => {
           this.realm.write(() => {
             collection["bob"] = this.object;
           });
         },
-        () => {
-          collection.removeListener(listener);
-          this.realm.write(() => {
-            collection["bob"] = this.object;
-          });
-        },
-      );
-
-      collection.addListener(listener);
-
-      await handle;
+      });
     });
 
     it("removes all listeners", async function (this: RealmObjectContext<Person>) {
       const collection = this.object.friendsByName;
-      const handle = createPromiseHandle();
-
-      const listener = createListenerStub(
-        handle,
-        () => {
+      await expectListenerRemoval({
+        addListener: (listener) => collection.addListener(listener),
+        removeListener: () => collection.removeAllListeners(),
+        update: () => {
           this.realm.write(() => {
             collection["bob"] = this.object;
           });
         },
-        () => {
-          // Remove all listeners and trigger a change
-          collection.removeAllListeners();
-          this.realm.write(() => {
-            collection["bob"] = this.object;
-          });
-        },
-      );
-
-      collection.addListener(listener);
-
-      await handle;
+      });
     });
   });
 });
