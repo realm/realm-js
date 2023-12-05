@@ -168,7 +168,7 @@ type RealmContext = {
   closeRealm(options?: Partial<CloseRealmOptions>): Promise<void>;
 } & Mocha.Context;
 type RealmObjectContext<T = Record<string, unknown>> = {
-  object: Realm.Object & T;
+  object: Realm.Object<T> & T;
 } & RealmContext;
 // type BenchmarkContext = {
 //   result: BenchmarkResult;
@@ -192,7 +192,9 @@ declare namespace Chai {
 declare function setImmediate(cb: () => void): void;
 
 /** Rough typing of setTimeout to avoid type errors */
-declare function setTimeout(cb: (args: any[]) => void, timeout: number): any;
+declare type Timer = number;
+declare function setTimeout(cb: (args: any[]) => void, timeout: number): Timer;
+declare function clearTimeout(timer: Timer): void;
 
 interface Console {
   error(message?: unknown, ...optionalParams: unknown[]): void;
