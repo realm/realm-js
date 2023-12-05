@@ -19,32 +19,29 @@
 import { expect } from "chai";
 import { platform } from "node:os";
 const { X509Certificate } = await import("node:crypto");
-import {
+import Realm, {
+  App,
   ConfigurationWithSync,
   Credentials,
   ErrorCallback,
-  ProgressRealmPromise,
-  Realm,
+  // TODO: Fix import: ProgressRealmPromise,
   SessionStopPolicy,
   SSLConfiguration,
   SSLVerifyObject,
   User,
 } from "realm";
 
+import { PersonSchema } from "../schemas/person-and-dog-with-object-ids";
+import { buildAppConfig } from "../utils/build-app-config";
 import { closeRealm } from "../utils/close-realm";
 import { createPromiseHandle } from "../utils/promise-handle";
 import { importAppBefore } from "../hooks";
-import { PersonSchema } from "../schemas/person-and-dog-with-object-ids";
 
 // IMPORTANT:
 // * Can only run on non-Apple machines, otherwise tests will await forever.
-function isMacOS() {
-  return platform() === "darwin";
-}
-
-describe.skipIf(isMacOS() || environment.missingServer, "SSL Configuration", function () {
+describe.skipIf(platform() === "darwin" || environment.missingServer, "SSL Configuration", function () {
   this.longTimeout();
-  importAppBefore("with-db-flx");
+  importAppBefore(buildAppConfig("with-flx").anonAuth().flexibleSync());
 
   async function logIn(app: App): Promise<User> {
     return app.currentUser ?? app.logIn(Credentials.anonymous());
@@ -54,7 +51,7 @@ describe.skipIf(isMacOS() || environment.missingServer, "SSL Configuration", fun
     return app.currentUser?.logOut();
   }
 
-  function openRealm(user: User, ssl: SSLConfiguration, onError?: ErrorCallback): ProgressRealmPromise {
+  function openRealm(user: User, ssl: SSLConfiguration, onError?: ErrorCallback) /*: ProgressRealmPromise*/ {
     const config: ConfigurationWithSync = {
       schema: [PersonSchema],
       sync: {
@@ -148,7 +145,7 @@ describe.skipIf(isMacOS() || environment.missingServer, "SSL Configuration", fun
 
     await expect(openRealm(this.app.currentUser, ssl, onError)).to.be.rejectedWith("SSL server certificate rejected");
     expect(validationCallbackInvoked).to.be.true;
-    await expect(onErrorHandle.promise).to.not.be.rejected;
+    await expect(onErrorHandle).to.not.be.rejected;
   });
 
   it("verifies the server's SSL certificate", async function (this: RealmContext) {
@@ -216,7 +213,7 @@ describe.skipIf(isMacOS() || environment.missingServer, "SSL Configuration", fun
     };
 
     const realm = await openRealm(this.app.currentUser, ssl);
-    await expect(validateHandle.promise).to.not.be.rejected;
+    await expect(validateHandle).to.not.be.rejected;
 
     closeRealm(realm);
   });
