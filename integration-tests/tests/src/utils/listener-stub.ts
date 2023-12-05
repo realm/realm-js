@@ -51,7 +51,7 @@ export function createListenerStub<Args extends unknown[]>(
     ...callbacks,
     (...args: Args) => {
       last(...args);
-      // Wait just a sec before resolving, in case another callback fires right after
+      // Wait before resolving, in case another callback fires right after
       successTimeout = setTimeout(() => {
         handle.resolve();
       }, 50);
