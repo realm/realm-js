@@ -4,7 +4,7 @@
 * None
 
 ### Enhancements
-* None
+* Exporting a `RealmEventName` type. ([#6300](https://github.com/realm/realm-js/pull/6300))
 
 ### Fixed
 * When mapTo is used on a property of type List, an error like `Property 'test_list' does not exist on 'Task' objects` occurs when trying to access the property. ([#6268](https://github.com/realm/realm-js/issues/6268), since v12.0.0)

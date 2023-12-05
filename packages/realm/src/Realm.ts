@@ -1508,6 +1508,7 @@ export declare namespace Realm {
     PropertyTypeName,
     ProviderTypeType as ProviderType,
     ProxyTypeType as ProxyType,
+    RealmEventName,
     RealmObjectConstructor,
     /** @deprecated Will be removed in v13.0.0. Please use {@link RealmObjectConstructor} */
     RealmObjectConstructor as ObjectClass,

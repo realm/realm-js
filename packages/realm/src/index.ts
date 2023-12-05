@@ -144,6 +144,7 @@ export {
   ProviderType,
   ProxyType,
   Realm,
+  RealmEventName,
   RealmObject as Object,
   RealmObjectConstructor,
   RealmSet as Set,
