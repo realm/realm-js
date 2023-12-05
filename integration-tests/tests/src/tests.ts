@@ -41,6 +41,7 @@ import "./tests/sync/sync-as-local";
 import "./tests/sync/sync-session";
 import "./tests/sync/upload-delete-download";
 import "./tests/sync/user";
+import "./tests/sync/user-listener-lockup";
 import "./tests/sync/uuid";
 
 import "./tests/alias";
