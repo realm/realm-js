@@ -24,9 +24,9 @@
 
 import { expect } from "chai";
 
-import Realm, { CollectionChangeSet, DictionaryChangeSet, ObjectChangeSet } from "realm";
+import Realm, { CollectionChangeSet, DictionaryChangeSet, ObjectChangeSet, RealmEventName } from "realm";
 
-import { openRealmBefore, openRealmBeforeEach } from "../hooks";
+import { openRealmBeforeEach } from "../hooks";
 import { createListenerStub } from "../utils/listener-stub";
 import { createPromiseHandle } from "../utils/promise-handle";
 
@@ -40,7 +40,7 @@ function expectObservableMethods(observable: Observable) {
 
 function expectRealmNotifications(
   realm: Realm,
-  eventName: "change" | "schema" | "beforenotify",
+  eventName: RealmEventName,
   expectedChangeSets: { schema?: Realm.CanonicalObjectSchema[] }[],
 ) {
   const handle = createPromiseHandle();
