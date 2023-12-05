@@ -124,8 +124,6 @@ async function expectListenerRemoval({ addListener, removeListener, update }: Li
 }
 
 describe("Observable", () => {
-  // describe("App", () => {});
-
   describe("Realm", () => {
     openRealmBeforeEach({
       schema: [
