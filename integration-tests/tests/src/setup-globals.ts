@@ -70,7 +70,48 @@ describe("Test Harness", function (this: Mocha.Suite) {
 import Realm from "realm";
 
 // Disable the logger to avoid console flooding
-const { defaultLogLevel = "off" } = environment;
+const { printLogAfterTest = false, defaultLogLevel = printLogAfterTest ? "all" : "off" } = environment;
 Realm.setLogLevel(defaultLogLevel);
+
+import chalk from "chalk";
+
+/**
+ * Contains the Realm log since the test started.
+ */
+let log: { level: ValidRealmLogLevel; message: string }[] = [];
+
+if (printLogAfterTest) {
+  Realm.setLogger((level: Realm.App.Sync.LogLevel, message: string) => {
+    if (level !== "off" && level !== "all") {
+      log.push({ level, message });
+    }
+  });
+}
+
+// Reset the log before each test
+beforeEach(() => {
+  log = [];
+});
+
+const logColors: Record<ValidRealmLogLevel, chalk.Chalk> = {
+  trace: chalk.dim,
+  debug: chalk.dim,
+  detail: chalk.dim,
+  info: chalk.blue,
+  warn: chalk.yellow,
+  error: chalk.red,
+  fatal: chalk.red,
+};
+
+afterEach(function (this: Mocha.Context) {
+  if (printLogAfterTest === true || (printLogAfterTest === "on-failure" && this.currentTest?.isFailed())) {
+    console.log();
+    for (const { level, message } of log) {
+      const color = logColors[level];
+      console.log(`[${color(level)}] ${message}`);
+    }
+    console.log();
+  }
+});
 
 Realm.flags.THROW_ON_GLOBAL_REALM = true;

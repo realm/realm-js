@@ -93,6 +93,7 @@
 		"@thi.ng/bench": "^3.1.16",
 		"chai": "4.3.6",
 		"chai-as-promised": "^7.1.1",
+		"chalk": "^4.1.2",
 		"concurrently": "^6.0.2",
 		"jsrsasign": "^10.6.1"
 	},

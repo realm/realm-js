@@ -44,8 +44,8 @@ type KnownEnvironment = {
   reuseApp?: true;
   /** Set the default log level to help debugging realm core issues */
   defaultLogLevel?: Realm.App.Sync.LogLevel;
-  /** Set the sync client log level to help debugging sync client issues */
-  syncLogLevel?: Realm.App.Sync.LogLevel;
+  /** Enable printing of the log after every test */
+  printLogAfterTest?: boolean | "on-failure";
 
   // BaaS server and Realm App Importer specific variables below
 
@@ -159,6 +159,8 @@ declare namespace Mocha {
 type AppContext = { app: Realm.App; databaseName: string } & Mocha.Context;
 type UserContext = { user: Realm.User } & Mocha.Context;
 type CloseRealmOptions = { deleteFile: boolean; clearTestState: boolean; reopen: boolean };
+
+type ValidRealmLogLevel = Exclude<Realm.App.Sync.LogLevel, "off" | "all">;
 type RealmContext = {
   realm: Realm;
   /**

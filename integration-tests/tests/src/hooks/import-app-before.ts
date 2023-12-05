@@ -16,15 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import Realm, { AppConfiguration } from "realm";
+import Realm from "realm";
 
 import { importApp } from "../utils/import-app";
 import { AppConfig } from "@realm/app-importer";
 import { mongodbServiceType } from "../utils/ExtendedAppConfigBuilder";
-
-const REALM_LOG_LEVELS = ["all", "trace", "debug", "detail", "info", "warn", "error", "fatal", "off"];
-
-const { syncLogLevel = "warn" } = environment;
 
 export type AppConfigurationRelaxed = {
   id?: string;
@@ -65,17 +61,6 @@ export function importAppBefore(config: AppConfig | { config: AppConfig }, sdkCo
       } else if (databaseNames.length > 1) {
         throw new Error("Expected at most 1 database name in the config");
       }
-
-      Realm.App.Sync.setLogLevel(this.app, syncLogLevel);
-      // Set a default logger as Android does not forward stdout
-      Realm.App.Sync.setLogger(this.app, (level, message) => {
-        const time = new Date().toISOString().split("T")[1].replace("Z", "");
-        const magentaTime = `\x1b[35m${time}`;
-        const greenLogLevel = `\x1b[32m${REALM_LOG_LEVELS[level].toUpperCase()}`;
-        const whiteMessage = `\x1b[37m${message}}`;
-
-        console.log(`${magentaTime}: ${greenLogLevel}:\t${whiteMessage}`);
-      });
     }
   });
 
