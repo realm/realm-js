@@ -18,7 +18,11 @@
 
 import { expect } from "chai";
 import { platform } from "node:os";
-const { X509Certificate } = await import("node:crypto");
+// If crypto support is not enabled on the Node.js build, using this lexical
+// `import` keyword will throw when executed. If we want to handle such a case
+// or log a certain message, use the `import()` function within a try-catch.
+// See: https://nodejs.org/api/crypto.html#determining-if-crypto-support-is-unavailable
+import { X509Certificate } from "node:crypto";
 import Realm, {
   App,
   ConfigurationWithSync,
