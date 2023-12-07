@@ -49,6 +49,11 @@ export function EditObjectModal({ object, onEdit, onDelete, onCancel }: EditObje
   function handleSave() {
     const values = json5.parse(code);
     if (objectSchema) {
+      const { primaryKey } = objectSchema;
+      // Avoid updating primary key values
+      if (primaryKey) {
+        delete values[primaryKey];
+      }
       realm.write(() => {
         const transformedValues = transformValues(Object.values(objectSchema.properties), values);
         Object.assign<any, any>(object, transformedValues);
