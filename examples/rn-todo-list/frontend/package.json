@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@realm/debugger": "file:../../../packages/debugger/realm-debugger-0.1.0.tgz",
-    "@realm/react": "file:../../../packages/realm-react/realm-react-0.6.1.tgz",
+    "@realm/react": "file:../../../packages/realm-react/realm-react-0.6.2.tgz",
     "react": "18.2.0",
     "react-native": "0.72.6",
     "react-native-config": "^1.5.1",

@@ -11,6 +11,7 @@
 *.d
 *.libdeps
 *.zip
+*.tgz
 *.realm
 *.realm.lock
 *.realm.fresh.lock
