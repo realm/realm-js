@@ -184,7 +184,7 @@ function spawnBaaS(tag: string) {
 
 yargs(hideBin(process.argv))
   .command(
-    ["run", "$0"],
+    ["run [tag]", "$0 [tag]"],
     "Runs the BaaS test image using Docker",
     (yargs) => yargs.positional("tag", { type: "string" }).option("branch", { default: "master" }),
     async (argv) => {
@@ -193,9 +193,13 @@ yargs(hideBin(process.argv))
         ensureDocker();
         ensureNoBaas();
 
-        const tag = argv.tag || (await fetchBaasTag(argv.branch));
-        pullBaas(tag);
-        spawnBaaS(tag);
+        if (argv.tag) {
+          spawnBaaS(argv.tag);
+        } else {
+          const tag = await fetchBaasTag(argv.branch);
+          pullBaas(tag);
+          spawnBaaS(tag);
+        }
       } catch (err) {
         console.error();
         if (err instanceof UsageError) {
