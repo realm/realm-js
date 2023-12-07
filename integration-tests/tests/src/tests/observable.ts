@@ -71,9 +71,7 @@ function inlineActions<ChangeSet extends object>(changesAndActions: (ChangeSet |
 function performActions(actions: Action[]) {
   for (const action of actions) {
     // Using separate ticks to let the calling function return early
-    setImmediate(() => {
-      action();
-    });
+    setImmediate(action);
   }
 }
 
