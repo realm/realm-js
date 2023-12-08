@@ -10,6 +10,7 @@
 * When mapTo is used on a property of type List, an error like `Property 'test_list' does not exist on 'Task' objects` occurs when trying to access the property. ([#6268](https://github.com/realm/realm-js/issues/6268), since v12.0.0)
 * Fixed bug where apps running under JavaScriptCore on Android will terminate with the error message `No identifiers allowed directly after numeric literal`. ([#6194](https://github.com/realm/realm-js/issues/6194), since v12.2.0)
 * When an object had an embedded object as one of its properties, updating that property to `null` or `undefined` did not update the property in the database. ([#6280](https://github.com/realm/realm-js/issues/6280), since v12.0.0)
+* Fixed download of platform + arch specific prebuilt binaries when building an Electron app using `electron-builder`. ([#3828](https://github.com/realm/realm-js/issues/3828))
 
 ### Compatibility
 * React Native >= v0.71.4
