@@ -1,5 +1,8 @@
 ## vNext (TBD)
 
+### Breaking changes
+* Adding the same callback function as listener on a `Collection` or `Object` used to be undefined behavior, but now throws, which result in runtime errors that can be resolved by ensuring the a callback is only added once. ([#6310](https://github.com/realm/realm-js/pull/6310))
+
 ### Deprecations
 * None
 
