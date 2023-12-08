@@ -941,9 +941,7 @@ describe("Observable", () => {
         EMPTY_DICTIONARY_CHANGESET,
         () => {
           this.realm.write(() => {
-            // collection["bob"].name = "Bobby";
-            // TODO: It seems we cannot trigger a notification when a property value changes.
-            collection["bob"] = this.object;
+            collection["bob"].name = "Bobby";
           });
         },
         {
@@ -979,6 +977,97 @@ describe("Observable", () => {
             collection["bob"] = this.object;
           });
         },
+      });
+    });
+
+    describe("key-path filtered", () => {
+      it("calls listener only on relevant changes", async function (this: RealmObjectContext<Person>) {
+        const alice = this.object;
+        const [bob] = this.realm.objects<Person>("Person").filtered("name = $0", "Bob");
+        assert(bob);
+
+        const collection = this.object.friendsByName;
+        await expectDictionaryNotifications(
+          collection,
+          [
+            EMPTY_DICTIONARY_CHANGESET,
+            () => {
+              // Updating the age to 42 will ensure the object doesn't leave the results
+              this.realm.write(() => {
+                bob.name = "Bobby";
+              });
+            },
+            {
+              deletions: [],
+              insertions: [],
+              modifications: ["bob"],
+            },
+            () => {
+              // Let's make alice befriend herself
+              this.realm.write(() => {
+                this.object.friendsByName["alice"] = alice;
+              });
+            },
+            {
+              deletions: [],
+              insertions: ["alice"],
+              modifications: [],
+            },
+            () => {
+              this.realm.write(() => {
+                delete this.object.friendsByName["bob"];
+              });
+            },
+            {
+              deletions: ["bob"],
+              insertions: [],
+              modifications: [],
+            },
+            () => {
+              // Perform a couple of changes that shouldn't trigger
+              this.realm.write(() => {
+                assert(bob);
+                bob.name = "Bart";
+              });
+            },
+          ],
+          ["name"],
+        );
+
+        await expectDictionaryNotifications(
+          collection,
+          [
+            EMPTY_DICTIONARY_CHANGESET,
+            () => {
+              this.realm.write(() => {
+                this.object.friendsByName["alice"].name = "Alex";
+              });
+            },
+            {
+              deletions: [],
+              insertions: [],
+              modifications: ["alice"],
+            },
+            () => {
+              this.realm.write(() => {
+                delete this.object.friendsByName["alice"];
+              });
+            },
+            {
+              deletions: ["alice"],
+              insertions: [],
+              modifications: [],
+            },
+            // Perform a couple of changes that shouldn't trigger
+            () => {
+              this.realm.write(() => {
+                bob.name = "Alice";
+                bob.name = "Barney";
+              });
+            },
+          ],
+          ["friendsByName.name"],
+        );
       });
     });
   });
