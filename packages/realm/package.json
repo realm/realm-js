@@ -59,7 +59,8 @@
     "react-native/ios/RealmReact",
     "scripts/submit-analytics.mjs",
     "react-native.config.js",
-    "RealmJS.podspec"
+    "RealmJS.podspec",
+    "binding.gyp"
   ],
   "scripts": {
     "test": "wireit",
