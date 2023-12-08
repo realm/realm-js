@@ -31,6 +31,8 @@ import { createListenerStub } from "../utils/listener-stub";
 import { createPromiseHandle } from "../utils/promise-handle";
 import { sequence } from "../utils/sequence";
 
+const EMPTY_OBJECT_CHANGESET: Realm.ObjectChangeSet<unknown> = { deleted: false, changedProperties: [] };
+
 const EMPTY_COLLECTION_CHANGESET: Realm.CollectionChangeSet = {
   deletions: [],
   insertions: [],
@@ -132,7 +134,7 @@ function expectObjectNotifications<T>(
       performActions(actions);
     }),
   );
-  object.addListener(listener /*, keyPaths*/);
+  object.addListener(listener, keyPaths);
   handle.finally(() => {
     object.removeListener(listener);
   });
@@ -366,13 +368,15 @@ describe("Observable", () => {
   });
 
   describe("Object", () => {
-    type Person = { name: string };
+    type Person = { name: string; age: number | undefined; friends: Realm.List<Person> };
     openRealmBeforeEach({
       schema: [
         {
           name: "Person",
           properties: {
             name: "string",
+            age: "int?",
+            friends: "Person[]",
           },
         },
       ],
@@ -380,7 +384,11 @@ describe("Observable", () => {
 
     beforeEach(function (this: RealmObjectContext<Person>) {
       this.object = this.realm.write(() => {
-        return this.realm.create<Person>("Person", { name: "Alice" });
+        const alice = this.realm.create<Person>("Person", { name: "Alice" });
+        const bob = this.realm.create<Person>("Person", { name: "Bob" });
+        const charlie = this.realm.create<Person>("Person", { name: "Charlie" });
+        alice.friends.push(bob, charlie);
+        return alice;
       });
     });
 
@@ -389,12 +397,12 @@ describe("Observable", () => {
     });
 
     it("calls listener initially", async function (this: RealmObjectContext<Person>) {
-      await expectObjectNotifications(this.object, [{ deleted: false, changedProperties: [] }]);
+      await expectObjectNotifications(this.object, [EMPTY_OBJECT_CHANGESET]);
     });
 
     it("calls listener", async function (this: RealmObjectContext<Person>) {
       await expectObjectNotifications(this.object, [
-        { deleted: false, changedProperties: [] },
+        EMPTY_OBJECT_CHANGESET,
         () => {
           this.realm.write(() => {
             this.object.name = "Bob";
@@ -425,6 +433,95 @@ describe("Observable", () => {
             this.object.name = "Charlie";
           });
         },
+      });
+    });
+
+    describe("key-path filtered", () => {
+      it("calls listener only on relevant changes", async function (this: RealmObjectContext<Person>) {
+        await expectObjectNotifications(
+          this.object,
+          [
+            EMPTY_OBJECT_CHANGESET,
+            () => {
+              // Updating the age to 42 will ensure the object doesn't leave the results
+              this.realm.write(() => {
+                this.object.name = "Alex";
+                this.object.age = 42;
+              });
+            },
+            {
+              deleted: false,
+              changedProperties: ["name"],
+            },
+            () => {
+              // Perform a couple of changes that shouldn't trigger
+              this.realm.write(() => {
+                this.object.age = 64;
+              });
+
+              const lastFriend = this.realm.write(() => {
+                return this.object.friends.pop();
+              });
+              assert(lastFriend);
+              this.realm.write(() => {
+                this.object.friends.push(lastFriend);
+              });
+            },
+          ],
+          ["name"],
+        );
+
+        await expectObjectNotifications(
+          this.object,
+          [
+            EMPTY_OBJECT_CHANGESET,
+            () => {
+              this.realm.write(() => {
+                this.object.friends.pop();
+              });
+            },
+            {
+              deleted: false,
+              changedProperties: ["friends"],
+            },
+            // Perform a couple of changes that shouldn't trigger
+            () => {
+              this.realm.write(() => {
+                this.object.age = 24;
+              });
+              this.realm.write(() => {
+                this.object.friends[0].name = "Bart";
+              });
+            },
+          ],
+          ["friends"],
+        );
+
+        await expectObjectNotifications(
+          this.object,
+          [
+            EMPTY_OBJECT_CHANGESET,
+            () => {
+              this.realm.write(() => {
+                this.object.friends[0].name = "Bobby";
+              });
+            },
+            {
+              deleted: false,
+              changedProperties: ["friends"],
+            },
+            // Perform a couple of changes that shouldn't trigger
+            () => {
+              this.realm.write(() => {
+                this.object.age = 24;
+              });
+              this.realm.write(() => {
+                this.object.friends[0].age = 24;
+              });
+            },
+          ],
+          ["friends.name"],
+        );
       });
     });
   });
@@ -511,114 +608,121 @@ describe("Observable", () => {
     describe("key-path filtered", () => {
       it("calls listener only on relevant changes", async function (this: RealmObjectContext<Person>) {
         const collection = this.realm.objects<Person>("Person").filtered("name = $0 OR age = 42", "Alice");
-        {
-          const completion = expectCollectionNotifications(
-            collection,
-            [
-              EMPTY_COLLECTION_CHANGESET,
-              {
-                deletions: [],
-                insertions: [],
-                newModifications: [0],
-                oldModifications: [0],
-              },
-              {
-                deletions: [0],
-                insertions: [],
-                newModifications: [],
-                oldModifications: [],
-              },
-              {
-                deletions: [],
-                insertions: [0],
-                newModifications: [],
-                oldModifications: [],
-              },
-            ],
-            ["name"],
-          );
+        await expectCollectionNotifications(
+          collection,
+          [
+            EMPTY_COLLECTION_CHANGESET,
+            () => {
+              // Updating the age to 42 will ensure the object doesn't leave the results
+              this.realm.write(() => {
+                this.object.name = "Alex";
+                this.object.age = 42;
+              });
+            },
+            {
+              deletions: [],
+              insertions: [],
+              newModifications: [0],
+              oldModifications: [0],
+            },
+            () => {
+              // Now that nothing matches, the object will be deleted from the collection.
+              this.realm.write(() => {
+                this.object.name = "Alan";
+                this.object.age = 24;
+              });
+            },
+            {
+              deletions: [0],
+              insertions: [],
+              newModifications: [],
+              oldModifications: [],
+            },
+            () => {
+              // Resetting the name, to make the object re-enter into the collection.
+              this.realm.write(() => {
+                this.object.name = "Alice";
+              });
+            },
+            {
+              deletions: [],
+              insertions: [0],
+              newModifications: [],
+              oldModifications: [],
+            },
+            () => {
+              // Perform a couple of changes that shouldn't trigger
+              this.realm.write(() => {
+                this.object.age = 64;
+              });
 
-          // Updating the age to 42 will ensure the object doesn't leave the results
-          this.realm.write(() => {
-            this.object.name = "Alex";
-            this.object.age = 42;
-          });
+              const lastFriend = this.realm.write(() => {
+                return this.object.friends.pop();
+              });
+              assert(lastFriend);
+              this.realm.write(() => {
+                this.object.friends.push(lastFriend);
+              });
+            },
+          ],
+          ["name"],
+        );
 
-          // Now that nothing matches, the object will be deleted from the collection
-          this.realm.write(() => {
-            this.object.name = "Alan";
-            this.object.age = 24;
-          });
+        await expectCollectionNotifications(
+          collection,
+          [
+            EMPTY_COLLECTION_CHANGESET,
+            () => {
+              this.realm.write(() => {
+                this.object.friends.pop();
+              });
+            },
+            {
+              deletions: [],
+              insertions: [],
+              newModifications: [0],
+              oldModifications: [0],
+            },
+            // Perform a couple of changes that shouldn't trigger
+            () => {
+              this.realm.write(() => {
+                this.object.age = 24;
+              });
+              this.realm.write(() => {
+                this.object.friends[0].name = "Bart";
+              });
+            },
+          ],
+          ["friends"],
+        );
 
-          // Resetting the name
-          this.realm.write(() => {
-            this.object.name = "Alice";
-          });
-
-          // Perform a couple of changes that shouldn't trigger
-
-          this.realm.write(() => {
-            this.object.age = 64;
-          });
-
-          const lastFriend = this.realm.write(() => {
-            return this.object.friends.pop();
-          });
-
-          assert(lastFriend);
-          this.realm.write(() => {
-            this.object.friends.push(lastFriend);
-          });
-
-          await completion;
-        }
-
-        {
-          const completion = expectCollectionNotifications(
-            collection,
-            [
-              EMPTY_COLLECTION_CHANGESET,
-              {
-                deletions: [],
-                insertions: [],
-                newModifications: [0],
-                oldModifications: [0],
-              },
-            ],
-            ["friends", "friends.name"],
-          );
-
-          expect(collection.length).equals(1);
-          expect(collection[0].name).equals(this.object.name);
-          expect(collection[0].friends[0].name).equals("Bob");
-
-          this.realm.write(() => {
-            this.object.friends[0].name = "Bobby";
-          });
-
-          expect(collection[0].friends[0].name).equals("Bobby");
-
-          // Perform a couple of changes that shouldn't trigger
-
-          this.realm.write(() => {
-            this.object.age = 24;
-          });
-
-          this.realm.write(() => {
-            this.object.friends[0].age = 24;
-          });
-
-          const lastFriend = this.realm.write(() => {
-            return this.object.friends.pop();
-          });
-
-          assert(lastFriend);
-          this.realm.write(() => {
-            this.object.friends.push(lastFriend);
-          });
-
-          await completion;
-        }
+        await expectCollectionNotifications(
+          collection,
+          [
+            EMPTY_COLLECTION_CHANGESET,
+            () => {
+              this.realm.write(() => {
+                this.object.friends[0].name = "Bobby";
+              });
+            },
+            {
+              deletions: [],
+              insertions: [],
+              newModifications: [0],
+              oldModifications: [0],
+            },
+            // Perform a couple of changes that shouldn't trigger
+            () => {
+              this.realm.write(() => {
+                this.object.age = 24;
+              });
+              this.realm.write(() => {
+                this.object.friends[0].age = 24;
+              });
+            },
+          ],
+          ["friends.name"],
+        );
       });
     });
   });

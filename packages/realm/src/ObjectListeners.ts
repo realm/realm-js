@@ -34,22 +34,25 @@ export class ObjectListeners<T> {
 
   private properties: PropertyMap;
 
-  private listeners = new Listeners<ObjectChangeCallback<T>, binding.NotificationToken>({
-    add: (callback) => {
-      const token = this.notifier.addCallback((changes) => {
-        try {
-          callback(this.object as RealmObject<T> & T, {
-            deleted: changes.isDeleted,
-            changedProperties: changes.changedColumns.map(this.properties.getName),
-          });
-        } catch (err) {
-          // Scheduling a throw on the event loop,
-          // since throwing synchronously here would result in an abort in the calling C++
-          setImmediate(() => {
-            throw err;
-          });
-        }
-      }, undefined);
+  private listeners = new Listeners<ObjectChangeCallback<T>, binding.NotificationToken, [string[] | undefined]>({
+    add: (callback, keyPaths) => {
+      const token = this.notifier.addCallback(
+        (changes) => {
+          try {
+            callback(this.object as RealmObject<T> & T, {
+              deleted: changes.isDeleted,
+              changedProperties: changes.changedColumns.map(this.properties.getName),
+            });
+          } catch (err) {
+            // Scheduling a throw on the event loop,
+            // since throwing synchronously here would result in an abort in the calling C++
+            setImmediate(() => {
+              throw err;
+            });
+          }
+        },
+        keyPaths ? this.mapKeyPaths(keyPaths) : undefined,
+      );
       // Get an actual NotificationToken for the bigint value
       return binding.NotificationToken.forObject(this.notifier, token);
     },
@@ -72,8 +75,8 @@ export class ObjectListeners<T> {
     }
   }
 
-  addListener(callback: ObjectChangeCallback<T>): void {
-    this.listeners.add(callback);
+  addListener(callback: ObjectChangeCallback<T>, keyPaths?: string[]): void {
+    this.listeners.add(callback, keyPaths);
   }
 
   removeListener(callback: ObjectChangeCallback<T>): void {
@@ -82,5 +85,9 @@ export class ObjectListeners<T> {
 
   removeAllListeners(): void {
     this.listeners.removeAll();
+  }
+
+  private mapKeyPaths(keyPaths: string[]) {
+    return this.realm.createKeyPathArray(this.object.objectSchema().name, keyPaths);
   }
 }
