@@ -57,6 +57,7 @@
     "react-native/ios/realm-js-ios.xcframework",
     "react-native/ios/realm-js-ios.xcframework/**/*.a",
     "react-native/ios/RealmReact",
+    "bindgen/vendor/realm-core/dependencies.list",
     "scripts/submit-analytics.mjs",
     "react-native.config.js",
     "RealmJS.podspec",

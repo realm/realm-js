@@ -62,6 +62,7 @@ export { collectPlatformData };
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const realmPackagePath = path.resolve(__dirname, "..");
+const realmCorePackagePath = path.resolve(realmPackagePath, "bindgen", "vendor", "realm-core");
 
 /**
  * Path and credentials required to submit analytics through the webhook.
@@ -144,13 +145,12 @@ function getRealmVersion() {
  * @returns the Realm Core version as a string
  */
 function getRealmCoreVersion() {
-  const dependenciesListPath = path.resolve(realmPackagePath, "dependencies.list");
+  const dependenciesListPath = path.resolve(realmCorePackagePath, "dependencies.list");
   const dependenciesList = fs
-    .readFileSync(dependenciesListPath)
-    .toString()
+    .readFileSync(dependenciesListPath, "utf8")
     .split("\n")
     .map((s) => s.split("="));
-  return dependenciesList.find((e) => e[0] === "REALM_CORE_VERSION")[1];
+  return dependenciesList.find((e) => e[0] === "VERSION")[1];
 }
 
 /**
