@@ -75,7 +75,7 @@ export class ObjectListeners<T> {
     }
   }
 
-  addListener(callback: ObjectChangeCallback<T>, keyPaths?: string[]): void {
+  addListener(callback: ObjectChangeCallback<T>, keyPaths: undefined | string[]): void {
     this.listeners.add(callback, keyPaths);
   }
 

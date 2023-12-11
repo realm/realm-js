@@ -120,7 +120,7 @@ function expectRealmNotifications(
 function expectObjectNotifications<T>(
   object: Realm.Object<T>,
   changesAndActions: (Action | ObjectChangeSet<T>)[],
-  keyPaths?: string[],
+  keyPaths?: string | string[],
 ) {
   const handle = createPromiseHandle();
 
@@ -144,7 +144,7 @@ function expectObjectNotifications<T>(
 function expectCollectionNotifications(
   collection: Realm.Collection,
   changesAndActions: (Action | CollectionChangeSet)[],
-  keyPaths?: string[],
+  keyPaths?: string | string[],
 ) {
   const handle = createPromiseHandle();
 
@@ -168,7 +168,7 @@ function expectCollectionNotifications(
 function expectDictionaryNotifications(
   dictionary: Realm.Dictionary,
   changesAndActions: (Action | DictionaryChangeSet)[],
-  keyPaths?: string[],
+  keyPaths?: string | string[],
 ) {
   const handle = createPromiseHandle();
 
@@ -468,7 +468,7 @@ describe("Observable", () => {
               });
             },
           ],
-          ["name"],
+          "name",
         );
 
         await expectObjectNotifications(
@@ -665,7 +665,7 @@ describe("Observable", () => {
               });
             },
           ],
-          ["name"],
+          "name",
         );
 
         await expectCollectionNotifications(

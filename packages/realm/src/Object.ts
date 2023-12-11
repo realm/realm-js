@@ -505,12 +505,12 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
    * @note Adding the listener is an asynchronous operation, so the callback is invoked the first time to notify the caller when the listener has been added.
    * Thus, when the callback is invoked the first time it will contain empty array for `changes.changedProperties`.
    */
-  addListener(callback: ObjectChangeCallback<T>, keyPaths?: string[]): void {
+  addListener(callback: ObjectChangeCallback<T>, keyPaths?: string | string[]): void {
     assert.function(callback);
     if (!this[INTERNAL_LISTENERS]) {
       this[INTERNAL_LISTENERS] = new ObjectListeners<T>(this[REALM].internal, this);
     }
-    this[INTERNAL_LISTENERS].addListener(callback, keyPaths);
+    this[INTERNAL_LISTENERS].addListener(callback, typeof keyPaths === "string" ? [keyPaths] : keyPaths);
   }
 
   /**
