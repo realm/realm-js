@@ -206,8 +206,6 @@ async function collectPlatformData(packagePath = getProjectRoot()) {
   if (packageJson.name) {
     bundleId = packageJson["name"];
   }
-  const anonymizedBundleId = sha256(bundleId);
-  saveBundleId(anonymizedBundleId);
 
   if (packageJson.dependencies && packageJson.dependencies["react-native"]) {
     framework = "react-native";
@@ -287,7 +285,7 @@ async function collectPlatformData(packagePath = getProjectRoot()) {
     "JS Analytics Version": 3,
     distinct_id: identifier,
     "Anonymized Builder Id": sha256(identifier),
-    "Anonymized Bundle Id": anonymizedBundleId,
+    "Anonymized Bundle Id": sha256(bundleId),
     "Realm Version": realmVersion,
     Binding: "Javascript",
     Version: packageJson.version,
@@ -329,6 +327,8 @@ async function submitAnalytics() {
     debug("Analytics is disabled");
     return;
   }
+
+  saveBundleId(data["Anonymized Bundle Id"]);
 
   return new Promise((resolve, reject) => {
     // node 19 turns on keep-alive by default and it will make the https.get() to hang
