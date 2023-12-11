@@ -503,6 +503,10 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
    *      console.log(` ${prop}`);
    *   });
    * })
+   * @example
+   * wine.addListener((obj, changes) => {
+   *  console.log("The wine got deleted or its brand might have changed");
+   * }, ["brand"])
    * @note Adding the listener is an asynchronous operation, so the callback is invoked the first time to notify the caller when the listener has been added.
    * Thus, when the callback is invoked the first time it will contain empty array for `changes.changedProperties`.
    */
