@@ -25,7 +25,6 @@ jobs:
       matrix:
         workspace:
           - realm
-          - '@realm/bindgen'
           - '@realm/network-transport'
           - '@realm/babel-plugin'
           - '@realm/react'
