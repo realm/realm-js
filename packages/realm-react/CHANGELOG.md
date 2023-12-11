@@ -7,8 +7,7 @@
 * None
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None
+* Removed race condition in `useObject` ([#6291](https://github.com/realm/realm-js/issues/6291)) Thanks [@bimusik](https://github.com/bimusiek)!
 
 ### Compatibility
 * React Native >= v0.71.4
