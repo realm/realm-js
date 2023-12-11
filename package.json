@@ -90,10 +90,9 @@
     "node-addon-api": "^6.0.0",
     "react-native": "0.72.6",
     "rollup": "^3.15.0",
-    "tsx": "^3.12.3",
+    "tsx": "^4.6.2",
     "typedoc": "^0.24.8",
     "typescript": "^4.9.3",
-    "typedoc": "^0.24.6",
     "wireit": "^0.9.5"
   },
   "peerDependencies": {
