@@ -18,9 +18,7 @@
 * File format: generates Realms with format v23 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-<!-- * Either mention core version or upgrade -->
-<!-- * Using Realm Core vX.Y.Z -->
-<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
+* Upgraded Realm Core from v13.23.4 to v13.24.1. ([#6311](https://github.com/realm/realm-js/pull/6311))
 
 ## 12.3.1 (2023-11-23)
 
