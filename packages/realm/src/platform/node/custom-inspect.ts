@@ -15,22 +15,60 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-import { InspectOptions, inspect } from "node:util";
+import { InspectOptionsStylized, inspect } from "node:util";
 
-import { Collection, RealmObject } from "../../internal";
+import { Collection, Dictionary, List, RealmObject, RealmSet } from "../../internal";
+import { Results } from "realm/binding";
 
-type CustomInspectFunction<T> = (this: T, depth: number, inspectOptions: InspectOptions) => void;
+type CustomInspectFunction<T> = (this: T, depth: number, options: InspectOptionsStylized) => void;
 
 function injectInspect<T extends object>(constructor: { prototype: T }, customInspect: CustomInspectFunction<T>) {
   Object.assign(constructor.prototype, { [inspect.custom]: customInspect });
 }
 
-injectInspect(RealmObject, function (this, depth: number, inspectOptions: InspectOptions) {
-  const { name } = this.objectSchema();
-  return `${name} ${inspect({ ...this }, inspectOptions.showHidden, depth, inspectOptions.colors)}`;
-});
+function possiblyShort(name: string, depth: number, options: InspectOptionsStylized, cb: () => string) {
+  if (depth === -1) {
+    if (options.colors) {
+      return options.stylize(`[${name}]`, "special");
+    } else {
+      return `[${name}]`;
+    }
+  } else {
+    return `${name} ${cb()}`;
+  }
+}
 
-injectInspect(Collection, function (this, depth: number, inspectOptions: InspectOptions) {
-  const name = this.constructor.name;
-  return `${name} ${inspect({ ...this }, inspectOptions.showHidden, depth, inspectOptions.colors)}`;
-});
+function constructorName(value: object) {
+  if (value instanceof RealmObject) {
+    return value.objectSchema().name;
+  } else if (value instanceof RealmSet) {
+    return "Realm.Set";
+  } else if (value instanceof List) {
+    return "Realm.List";
+  } else if (value instanceof Dictionary) {
+    return "Realm.Dictionary";
+  } else if (value instanceof Results) {
+    return "Realm.Results";
+  } else {
+    return value.constructor.name;
+  }
+}
+
+function isIterable<T>(value: object): value is Iterable<T> {
+  if (value instanceof Dictionary) {
+    return false;
+  } else if (Symbol.iterator in value) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+function defaultInspector<T extends object>(this: T, depth: number, options: InspectOptionsStylized) {
+  return possiblyShort(constructorName(this), depth, options, () =>
+    inspect(isIterable(this) ? [...this] : { ...this }, options.showHidden, depth, options.colors),
+  );
+}
+
+injectInspect(RealmObject, defaultInspector);
+injectInspect(Collection, defaultInspector);
