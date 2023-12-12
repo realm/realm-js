@@ -5,6 +5,8 @@
 
 ### Enhancements
 * Exporting a `RealmEventName` type. ([#6300](https://github.com/realm/realm-js/pull/6300))
+* Automatic client reset recovery now preserves the original division of changesets, rather than combining all unsynchronized changes into a single changeset. ([realm/realm-core#7161](https://github.com/realm/realm-core/pull/7161))
+* Automatic client reset recovery now does a better job of recovering changes when changesets were downloaded from the server after the unuploaded local changes were committed. If the local Realm happened to be fully up to date with the server prior to the client reset, automatic recovery should now always produce exactly the same state as if no client reset was involved. ([realm/realm-core#7161](https://github.com/realm/realm-core/pull/7161))
 
 ### Fixed
 * When mapTo is used on a property of type List, an error like `Property 'test_list' does not exist on 'Task' objects` occurs when trying to access the property. ([#6268](https://github.com/realm/realm-js/issues/6268), since v12.0.0)
@@ -12,15 +14,22 @@
 * When an object had an embedded object as one of its properties, updating that property to `null` or `undefined` did not update the property in the database. ([#6280](https://github.com/realm/realm-js/issues/6280), since v12.0.0)
 * Fixed download of platform + arch specific prebuilt binaries when building an Electron app using `electron-builder`. ([#3828](https://github.com/realm/realm-js/issues/3828))
 
+* Fixed deadlock which occurred when accessing the current user from the `App` from within a callback from the `User` listener. ([#7183](https://github.com/realm/realm-core/issues/7183), since v12.2.1)
+* Errors encountered while reapplying local changes for client reset recovery on partition-based sync Realms would result in the client reset attempt not being recorded, possibly resulting in an endless loop of attempting and failing to automatically recover the client reset. Flexible sync and errors from the server after completing the local recovery were handled correctly. ([realm/realm-core#7149](https://github.com/realm/realm-core/pull/7149), since v10.3.0-rc.1)
+* During a client reset with recovery when recovering a move or set operation on a `List<Object>` or `List<Mixed>` that operated on indices that were not also added in the recovery, links to an object which had been deleted by another client while offline would be recreated by the recovering client. But the objects of these links would only have the primary key populated and all other fields would be default values. Now, instead of creating these zombie objects, the lists being recovered skip such deleted links. ([realm/realm-core#7112](https://github.com/realm/realm-core/issues/7112) since the beginning of client reset with recovery in v10.18.0)
+* During a client reset recovery a Set of links could be missing items, or an exception could be thrown that prevents recovery e.g., `Requested index 1 calling get() on set 'source.collection' when max is 0`. ([realm/realm-core#7112](https://github.com/realm/realm-core/issues/7112), since the beginning of client reset with recovery in v10.18.0)
+* Calling `sort()` or `distinct()` on a `LnkSet` that had unresolved links in it would produce duplicate indices. ([realm/realm-core#7112](https://github.com/realm/realm-core/issues/7112), since the beginning of client reset with recovery in v10.18.0)
+* Automatic client reset recovery would duplicate insertions in a list when recovering a write which made an unrecoverable change to a list (i.e. modifying or deleting a pre-existing entry), followed by a subscription change, followed by a write which added an entry to the list. ([realm/realm-core#7155](https://github.com/realm/realm-core/pull/7155), since v10.19.4)
+* Fixed several causes of "decryption failed" exceptions that could happen when opening multiple encrypted Realm files in the same process while using Apple/linux and storing the Realms on an exFAT file system. ([realm/realm-core#7156](https://github.com/realm/realm-core/issues/7156), since v1.0.0)
+* If the very first open of a flexible sync Realm triggered a client reset, the configuration had an initial subscriptions callback, both before and after reset callbacks, and the initial subscription callback began a read transaction without ending it (which is normally going to be the case), opening the frozen Realm for the after reset callback would trigger a BadVersion exception. ([realm/realm-core#7161](https://github.com/realm/realm-core/pull/7161), since v10.19.4)
+
 ### Compatibility
 * React Native >= v0.71.4
 * Realm Studio v14.0.0.
 * File format: generates Realms with format v23 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-<!-- * Either mention core version or upgrade -->
-<!-- * Using Realm Core vX.Y.Z -->
-<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
+* Upgraded Realm Core from v13.23.4 to v13.24.1. ([#6311](https://github.com/realm/realm-js/pull/6311))
 
 ## 12.3.1 (2023-11-23)
 
