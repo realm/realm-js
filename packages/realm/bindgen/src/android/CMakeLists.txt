@@ -14,7 +14,7 @@ add_library(realm-js-android SHARED
     platform.cpp
     jni_utils.cpp
     io_realm_react_RealmReactModule.cpp
-    ../../node_modules/react-native/ReactAndroid/src/main/jni/react/turbomodule/ReactCommon/CallInvokerHolder.cpp
+    ${REACT_NATIVE_ROOT_DIR}/ReactAndroid/src/main/jni/react/turbomodule/ReactCommon/CallInvokerHolder.cpp
 )
 
 set_target_properties(realm-js-android PROPERTIES
@@ -110,9 +110,9 @@ endif()
 find_library(FBJNI_LIBRARY fbjni PATHS ${FBJNI_LIB_DIR} NO_CMAKE_FIND_ROOT_PATH)
 target_include_directories(realm-js-android PUBLIC
     ${FBJNI_INCLUDE_DIR}
-    ../../node_modules/react-native/ReactAndroid/src/main/java/com/facebook/react/turbomodule/core/jni/
-    ../../node_modules/react-native/ReactAndroid/src/main/jni/react/turbomodule/
-    ../../node_modules/react-native/ReactCommon/callinvoker/
+    ${REACT_NATIVE_ROOT_DIR}/ReactAndroid/src/main/java/com/facebook/react/turbomodule/core/jni/
+    ${REACT_NATIVE_ROOT_DIR}/ReactAndroid/src/main/jni/react/turbomodule/
+    ${REACT_NATIVE_ROOT_DIR}/react-native/ReactCommon/callinvoker/
 )
 
 target_link_libraries(realm-js-android

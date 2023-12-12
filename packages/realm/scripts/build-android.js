@@ -21,7 +21,7 @@ const fs = require("fs-extra");
 const path = require("path");
 const exec = require("child_process").execFileSync;
 
-const { version } = require("realm/package.json");
+const { version } = require("../package.json");
 
 const packageRoot = path.resolve(__dirname, "..");
 
@@ -91,7 +91,7 @@ for (const arch of architectures) {
     "-DANDROID_NATIVE_API_LEVEL=16",
     `-DCMAKE_BUILD_TYPE=${buildType}`,
     "-DANDROID_STL=c++_shared",
-    path.resolve(packageRoot, "packages/realm/bindgen"),
+    path.resolve(packageRoot, "./bindgen"),
   ];
   exec(cmakePath, args, { cwd: archBuildDir, stdio: "inherit" });
 
@@ -105,8 +105,6 @@ generateVersionFile();
 function generateVersionFile() {
   const targetFile = path.resolve(
     packageRoot,
-    "packages",
-    "realm",
     "react-native",
     "android",
     "src",
