@@ -7,6 +7,7 @@
 * Exporting a `RealmEventName` type. ([#6300](https://github.com/realm/realm-js/pull/6300))
 * Automatic client reset recovery now preserves the original division of changesets, rather than combining all unsynchronized changes into a single changeset. ([realm/realm-core#7161](https://github.com/realm/realm-core/pull/7161))
 * Automatic client reset recovery now does a better job of recovering changes when changesets were downloaded from the server after the unuploaded local changes were committed. If the local Realm happened to be fully up to date with the server prior to the client reset, automatic recovery should now always produce exactly the same state as if no client reset was involved. ([realm/realm-core#7161](https://github.com/realm/realm-core/pull/7161))
+* Improved the experience of logging `Realm.Object` and `Realm.Collection` objects on Node.js, by providing a custom "inspect" symbol. ([#2758](https://github.com/realm/realm-js/pull/2758))
 
 ### Fixed
 * When mapTo is used on a property of type List, an error like `Property 'test_list' does not exist on 'Task' objects` occurs when trying to access the property. ([#6268](https://github.com/realm/realm-js/issues/6268), since v12.0.0)
