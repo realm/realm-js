@@ -223,6 +223,10 @@ async function expectListenerRemoval({ addListener, removeListener, update }: Li
   await handle;
 }
 
+function noop() {
+  /* tumbleweed */
+}
+
 describe("Observable", () => {
   describe("Realm", () => {
     openRealmBeforeEach({
@@ -250,6 +254,14 @@ describe("Observable", () => {
           },
           {},
         ]);
+      });
+
+      // Skipping, because although the API would be more uniform, there is no need to throw when adding the same Realm listener twice
+      it.skip("throws on listener reuse", function (this: RealmContext) {
+        this.realm.addListener("change", noop);
+        expect(() => {
+          this.realm.addListener("change", noop);
+        }).throws("Remove callback before adding it again");
       });
 
       it("removes listeners", async function (this: RealmContext) {
@@ -288,6 +300,14 @@ describe("Observable", () => {
           },
           {},
         ]);
+      });
+
+      // Skipping, because although the API would be more uniform, there is no need to throw when adding the same Realm listener twice
+      it.skip("throws on listener reuse", function (this: RealmContext) {
+        this.realm.addListener("beforenotify", noop);
+        expect(() => {
+          this.realm.addListener("beforenotify", noop);
+        }).throws("Remove callback before adding it again");
       });
 
       it("removes listeners", async function (this: RealmContext) {
@@ -350,6 +370,14 @@ describe("Observable", () => {
         ]);
       });
 
+      // Skipping, because although the API would be more uniform, there is no need to throw when adding the same Realm listener twice
+      it.skip("throws on listener reuse", function (this: RealmContext) {
+        this.realm.addListener("schema", noop);
+        expect(() => {
+          this.realm.addListener("schema", noop);
+        }).throws("Remove callback before adding it again");
+      });
+
       it("removes listeners", async function (this: InternalRealmContext) {
         await expectListenerRemoval({
           addListener: (listener) => this.realm.addListener("schema", listener),
@@ -405,8 +433,23 @@ describe("Observable", () => {
       expectObservableMethods(this.object);
     });
 
+    it("throws on listener reuse", function (this: RealmObjectContext<Person>) {
+      this.object.addListener(noop);
+      expect(() => {
+        this.object.addListener(noop);
+      }).throws("Remove callback before adding it again");
+    });
+
     it("calls listener initially", async function (this: RealmObjectContext<Person>) {
       await expectObjectNotifications(this.object, undefined, [EMPTY_OBJECT_CHANGESET]);
+    });
+
+    it("calls listener initially (passing key-path as string)", async function (this: RealmObjectContext<Person>) {
+      await expectObjectNotifications(this.object, "name", [EMPTY_OBJECT_CHANGESET]);
+    });
+
+    it("calls listener initially (passing key-path as array)", async function (this: RealmObjectContext<Person>) {
+      await expectObjectNotifications(this.object, ["name"], [EMPTY_OBJECT_CHANGESET]);
     });
 
     it("calls listener", async function (this: RealmObjectContext<Person>) {
@@ -561,9 +604,24 @@ describe("Observable", () => {
       expectObservableMethods(this.realm.objects("Person"));
     });
 
-    it("calls listener initially", async function (this: RealmObjectContext<Person>) {
+    it("throws on listener reuse", function (this: RealmObjectContext<Person>) {
       const collection = this.realm.objects("Person");
-      await expectCollectionNotifications(collection, undefined, [EMPTY_COLLECTION_CHANGESET]);
+      collection.addListener(noop);
+      expect(() => {
+        collection.addListener(noop);
+      }).throws("Remove callback before adding it again");
+    });
+
+    it("calls listener initially", async function (this: RealmObjectContext<Person>) {
+      await expectCollectionNotifications(this.realm.objects("Person"), undefined, [EMPTY_COLLECTION_CHANGESET]);
+    });
+
+    it("calls listener initially (passing key-path as string)", async function (this: RealmObjectContext<Person>) {
+      await expectCollectionNotifications(this.realm.objects("Person"), "name", [EMPTY_COLLECTION_CHANGESET]);
+    });
+
+    it("calls listener initially (passing key-path as array)", async function (this: RealmObjectContext<Person>) {
+      await expectCollectionNotifications(this.realm.objects("Person"), ["name"], [EMPTY_COLLECTION_CHANGESET]);
     });
 
     it("calls listener", async function (this: RealmObjectContext<Person>) {
@@ -756,9 +814,24 @@ describe("Observable", () => {
       expectObservableMethods(this.object.friends);
     });
 
-    it("calls listener initially", async function (this: RealmObjectContext<Person>) {
+    it("throws on listener reuse", function (this: RealmObjectContext<Person>) {
       const collection = this.object.friends;
-      await expectCollectionNotifications(collection, undefined, [EMPTY_COLLECTION_CHANGESET]);
+      collection.addListener(noop);
+      expect(() => {
+        collection.addListener(noop);
+      }).throws("Remove callback before adding it again");
+    });
+
+    it("calls listener initially", async function (this: RealmObjectContext<Person>) {
+      await expectCollectionNotifications(this.object.friends, undefined, [EMPTY_COLLECTION_CHANGESET]);
+    });
+
+    it("calls listener initially (passing key-path as string)", async function (this: RealmObjectContext<Person>) {
+      await expectCollectionNotifications(this.object.friends, "name", [EMPTY_COLLECTION_CHANGESET]);
+    });
+
+    it("calls listener initially (passing key-path as array)", async function (this: RealmObjectContext<Person>) {
+      await expectCollectionNotifications(this.object.friends, ["name"], [EMPTY_COLLECTION_CHANGESET]);
     });
 
     it("calls listener", async function (this: RealmObjectContext<Person>) {
@@ -836,9 +909,24 @@ describe("Observable", () => {
       expectObservableMethods(this.object.friends);
     });
 
-    it("calls listener initially", async function (this: RealmObjectContext<Person>) {
+    it("throws on listener reuse", function (this: RealmObjectContext<Person>) {
       const collection = this.object.friends;
-      await expectCollectionNotifications(collection, undefined, [EMPTY_COLLECTION_CHANGESET]);
+      collection.addListener(noop);
+      expect(() => {
+        collection.addListener(noop);
+      }).throws("Remove callback before adding it again");
+    });
+
+    it("calls listener initially", async function (this: RealmObjectContext<Person>) {
+      await expectCollectionNotifications(this.object.friends, undefined, [EMPTY_COLLECTION_CHANGESET]);
+    });
+
+    it("calls listener initially (passing key-path as string)", async function (this: RealmObjectContext<Person>) {
+      await expectCollectionNotifications(this.object.friends, "name", [EMPTY_COLLECTION_CHANGESET]);
+    });
+
+    it("calls listener initially (passing key-path as array)", async function (this: RealmObjectContext<Person>) {
+      await expectCollectionNotifications(this.object.friends, ["name"], [EMPTY_COLLECTION_CHANGESET]);
     });
 
     it("calls listener", async function (this: RealmObjectContext<Person>) {
@@ -929,9 +1017,24 @@ describe("Observable", () => {
       expectObservableMethods(this.object.friendsByName);
     });
 
-    it("calls listener initially", async function (this: RealmObjectContext<Person>) {
+    it("throws on listener reuse", function (this: RealmObjectContext<Person>) {
       const collection = this.object.friendsByName;
-      await expectDictionaryNotifications(collection, undefined, [EMPTY_DICTIONARY_CHANGESET]);
+      collection.addListener(noop);
+      expect(() => {
+        collection.addListener(noop);
+      }).throws("Remove callback before adding it again");
+    });
+
+    it("calls listener initially", async function (this: RealmObjectContext<Person>) {
+      await expectDictionaryNotifications(this.object.friendsByName, undefined, [EMPTY_DICTIONARY_CHANGESET]);
+    });
+
+    it("calls listener initially (passing key-path as string)", async function (this: RealmObjectContext<Person>) {
+      await expectDictionaryNotifications(this.object.friendsByName, "name", [EMPTY_DICTIONARY_CHANGESET]);
+    });
+
+    it("calls listener initially (passing key-path as array)", async function (this: RealmObjectContext<Person>) {
+      await expectDictionaryNotifications(this.object.friendsByName, ["name"], [EMPTY_DICTIONARY_CHANGESET]);
     });
 
     it("calls listener", async function (this: RealmObjectContext<Person>) {
