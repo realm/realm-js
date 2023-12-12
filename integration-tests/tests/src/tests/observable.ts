@@ -754,7 +754,7 @@ describe("Observable", () => {
     });
 
     describe("key-path filtered", () => {
-      it("calls listener only on relevant changes", async function (this: RealmObjectContext<Person>) {
+      it("fires on relevant changes to a primitive", async function (this: RealmObjectContext<Person>) {
         const collection = this.realm.objects<Person>("Person").filtered("name = $0 OR age = 42", "Alice");
         await expectCollectionNotifications(
           collection,
@@ -815,7 +815,10 @@ describe("Observable", () => {
             },
           ],
         );
+      });
 
+      it("fires on relevant changes to a list", async function (this: RealmObjectContext<Person>) {
+        const collection = this.realm.objects<Person>("Person").filtered("name = $0 OR age = 42", "Alice");
         await expectCollectionNotifications(
           collection,
           ["friends"],
@@ -843,7 +846,10 @@ describe("Observable", () => {
             },
           ],
         );
+      });
 
+      it("fires on relevant changes to a primitive of a list", async function (this: RealmObjectContext<Person>) {
+        const collection = this.realm.objects<Person>("Person").filtered("name = $0 OR age = 42", "Alice");
         await expectCollectionNotifications(
           collection,
           ["friends.name"],
@@ -871,7 +877,10 @@ describe("Observable", () => {
             },
           ],
         );
+      });
 
+      it("fires on relevant changes to a wildcard", async function (this: RealmObjectContext<Person>) {
+        const collection = this.realm.objects<Person>("Person").filtered("name = $0 OR age = 42", "Alice");
         await expectCollectionNotifications(
           collection,
           ["*"],
@@ -1191,6 +1200,7 @@ describe("Observable", () => {
         const alice = this.realm.create<Person>("Person", { name: "Alice" });
         const bob = this.realm.create<Person>("Person", { name: "Bob" });
         alice.friendsByName.set({ bob });
+        bob.friendsByName.set({ alice });
         return alice;
       });
     });
@@ -1262,8 +1272,8 @@ describe("Observable", () => {
       });
     });
 
-    describe("key-path filtered", () => {
-      it("calls listener only on relevant changes", async function (this: RealmObjectContext<Person>) {
+    describe("key-path filtered listeners", () => {
+      it("fires on relevant changes to a primitive", async function (this: RealmObjectContext<Person>) {
         const alice = this.object;
         const [bob] = this.realm.objects<Person>("Person").filtered("name = $0", "Bob");
         assert(bob);
@@ -1314,7 +1324,13 @@ describe("Observable", () => {
             },
           ],
         );
+      });
 
+      it("fires on relevant changes to a nested dictionary entry's primitive", async function (this: RealmObjectContext<Person>) {
+        const [bob] = this.realm.objects<Person>("Person").filtered("name = $0", "Bob");
+        assert(bob);
+
+        const collection = this.object.friendsByName;
         await expectDictionaryNotifications(
           collection,
           ["friendsByName.name"],
@@ -1322,29 +1338,31 @@ describe("Observable", () => {
             EMPTY_DICTIONARY_CHANGESET,
             () => {
               this.realm.write(() => {
-                this.object.friendsByName["alice"].name = "Alex";
+                this.object.friendsByName["bob"].friendsByName["alice"].name = "Alex";
               });
             },
             {
               deletions: [],
               insertions: [],
-              modifications: ["alice"],
+              modifications: ["bob"],
             },
             () => {
               this.realm.write(() => {
-                delete this.object.friendsByName["alice"];
+                delete this.object.friendsByName["bob"];
               });
             },
             {
-              deletions: ["alice"],
+              deletions: ["bob"],
               insertions: [],
               modifications: [],
             },
             // Perform a couple of changes that shouldn't trigger
             () => {
               this.realm.write(() => {
-                bob.name = "Alice";
-                bob.name = "Barney";
+                this.object.name = "Alice";
+              });
+              this.realm.write(() => {
+                bob.name = "Bobby";
               });
             },
           ],
