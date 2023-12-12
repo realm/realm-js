@@ -26,18 +26,6 @@ function injectInspect<T extends object>(constructor: { prototype: T }, customIn
   Object.assign(constructor.prototype, { [inspect.custom]: customInspect });
 }
 
-function possiblyShort(name: string, depth: number, options: InspectOptionsStylized, cb: () => string) {
-  if (depth === -1) {
-    if (options.colors) {
-      return options.stylize(`[${name}]`, "special");
-    } else {
-      return `[${name}]`;
-    }
-  } else {
-    return `${name} ${cb()}`;
-  }
-}
-
 function constructorName(value: object) {
   if (value instanceof RealmObject) {
     return value.objectSchema().name;
@@ -65,9 +53,16 @@ function isIterable<T>(value: object): value is Iterable<T> {
 }
 
 function defaultInspector<T extends object>(this: T, depth: number, options: InspectOptionsStylized) {
-  return possiblyShort(constructorName(this), depth, options, () =>
-    inspect(isIterable(this) ? [...this] : { ...this }, options.showHidden, depth, options.colors),
-  );
+  const name = constructorName(this);
+  if (depth === -1) {
+    if (options.colors) {
+      return options.stylize(`[${name}]`, "special");
+    } else {
+      return `[${name}]`;
+    }
+  } else {
+    return `${name} ${inspect(isIterable(this) ? [...this] : { ...this }, options.showHidden, depth, options.colors)}`;
+  }
 }
 
 injectInspect(RealmObject, defaultInspector);
