@@ -570,6 +570,43 @@ describe("Observable", () => {
             },
           ],
         );
+
+        await expectObjectNotifications(
+          this.object,
+          ["*"],
+          [
+            EMPTY_OBJECT_CHANGESET,
+            () => {
+              this.realm.write(() => {
+                this.object.name = "Alice";
+              });
+            },
+            {
+              deleted: false,
+              changedProperties: ["name"],
+            },
+            () => {
+              this.realm.write(() => {
+                const charles = this.realm.create<Person>("Person", { name: "Charles", age: 74 });
+                this.object.friends.push(charles);
+              });
+            },
+            {
+              deleted: false,
+              changedProperties: ["friends"],
+            },
+            // Perform a couple of changes that shouldn't trigger
+            () => {
+              this.realm.write(() => {
+                this.object.friends[0].name = "Alex";
+              });
+              this.realm.write(() => {
+                const daniel = this.realm.create<Person>("Person", { name: "Charles", age: 74 });
+                this.object.friends[0].friends.push(daniel);
+              });
+            },
+          ],
+        );
       });
     });
   });
@@ -778,6 +815,45 @@ describe("Observable", () => {
               });
               this.realm.write(() => {
                 this.object.friends[0].age = 24;
+              });
+            },
+          ],
+        );
+
+        await expectCollectionNotifications(
+          collection,
+          ["*"],
+          [
+            EMPTY_COLLECTION_CHANGESET,
+            () => {
+              this.realm.write(() => {
+                collection[0].name = "Alice";
+              });
+            },
+            {
+              deletions: [],
+              insertions: [],
+              newModifications: [0],
+              oldModifications: [0],
+            },
+            () => {
+              this.realm.write(() => {
+                collection[0].age = 42;
+              });
+            },
+            {
+              deletions: [],
+              insertions: [],
+              newModifications: [0],
+              oldModifications: [0],
+            },
+            // Perform a couple of changes that shouldn't trigger
+            () => {
+              this.realm.write(() => {
+                collection[0].friends[0].name = "Barney";
+              });
+              this.realm.write(() => {
+                collection[0].friends[0].age = 34;
               });
             },
           ],
