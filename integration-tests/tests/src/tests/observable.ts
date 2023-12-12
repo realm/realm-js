@@ -612,6 +612,50 @@ describe("Observable", () => {
           ],
         );
       });
+
+      it("combines key-paths when delivering notifications", async function (this: RealmObjectContext<Person>) {
+        const completion1 = expectObjectNotifications(
+          this.object,
+          ["name"],
+          [
+            EMPTY_OBJECT_CHANGESET,
+            {
+              deleted: false,
+              changedProperties: ["name"],
+            },
+            {
+              deleted: false,
+              changedProperties: ["age"],
+            },
+          ],
+        );
+
+        const completion2 = expectObjectNotifications(
+          this.object,
+          ["age"],
+          [
+            EMPTY_OBJECT_CHANGESET,
+            {
+              deleted: false,
+              changedProperties: ["name"],
+            },
+            {
+              deleted: false,
+              changedProperties: ["age"],
+            },
+          ],
+        );
+
+        this.realm.write(() => {
+          this.object.name = "Alex";
+        });
+
+        this.realm.write(() => {
+          this.object.age = 24;
+        });
+
+        await Promise.all([completion1, completion2]);
+      });
     });
   });
 
@@ -866,6 +910,60 @@ describe("Observable", () => {
             },
           ],
         );
+      });
+
+      it("combines key-paths when delivering notifications", async function (this: RealmObjectContext<Person>) {
+        const collection = this.realm.objects<Person>("Person").filtered("name = $0 OR name = $1", "Alice", "Alex");
+
+        const completion1 = expectCollectionNotifications(
+          collection,
+          ["name"],
+          [
+            EMPTY_COLLECTION_CHANGESET,
+            {
+              deletions: [],
+              insertions: [],
+              newModifications: [0],
+              oldModifications: [0],
+            },
+            {
+              deletions: [],
+              insertions: [],
+              newModifications: [0],
+              oldModifications: [0],
+            },
+          ],
+        );
+
+        const completion2 = expectCollectionNotifications(
+          collection,
+          ["age"],
+          [
+            EMPTY_COLLECTION_CHANGESET,
+            {
+              deletions: [],
+              insertions: [],
+              newModifications: [0],
+              oldModifications: [0],
+            },
+            {
+              deletions: [],
+              insertions: [],
+              newModifications: [0],
+              oldModifications: [0],
+            },
+          ],
+        );
+
+        this.realm.write(() => {
+          this.object.name = "Alex";
+        });
+
+        this.realm.write(() => {
+          this.object.age = 24;
+        });
+
+        await Promise.all([completion1, completion2]);
       });
     });
   });
