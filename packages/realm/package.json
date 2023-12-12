@@ -220,9 +220,9 @@
       }
     },
     "build:android": {
-      "command": "node ../../scripts/build-android.js",
+      "command": "node ./scripts/build-android.js",
       "files": [
-        "../../src/android/**",
+        "bindgen/android/**",
         "bindgen/src/**/*.ts",
         "bindgen/vendor/realm-core/bindgen/src/**/*.ts",
         "bindgen/vendor/realm-core/bindgen/src/**/*.h",
@@ -230,7 +230,7 @@
       ]
     },
     "build:ios": {
-      "command": "../../scripts/build-ios.sh -c ${CONFIGURATION:=Release} ${PLATFORMS}",
+      "command": "scripts/build-ios.sh -c ${CONFIGURATION:=Release} ${PLATFORMS}",
       "files": [
         "../../src/ios/**",
         "bindgen/src/**/*.ts",
@@ -302,6 +302,7 @@
     "@types/mocha": "^10.0.0",
     "@types/node": "^18.15.10",
     "@types/path-browserify": "^1.0.0",
+    "command-line-args": "^5.2.1",
     "chai": "4.3.6",
     "cmake-js": "6.3.2",
     "cross-env": "^7.0.3",

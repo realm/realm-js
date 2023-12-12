@@ -49,9 +49,9 @@ yarn.lock
 
 # Android/IJ
 /android
-/react-native/android/src/main/jni/core
-/react-native/android/.cxx/
-/build-android/
+/packages/realm/react-native/android/src/main/jni/core
+/packages/realm/react-native/android/.cxx/
+/packages/realm/build-android/
 .idea
 .gradle
 local.properties
