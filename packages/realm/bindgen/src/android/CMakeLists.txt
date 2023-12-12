@@ -112,7 +112,7 @@ target_include_directories(realm-js-android PUBLIC
     ${FBJNI_INCLUDE_DIR}
     ${REACT_NATIVE_ROOT_DIR}/ReactAndroid/src/main/java/com/facebook/react/turbomodule/core/jni/
     ${REACT_NATIVE_ROOT_DIR}/ReactAndroid/src/main/jni/react/turbomodule/
-    ${REACT_NATIVE_ROOT_DIR}/react-native/ReactCommon/callinvoker/
+    ${REACT_NATIVE_ROOT_DIR}/ReactCommon/callinvoker/
 )
 
 target_link_libraries(realm-js-android

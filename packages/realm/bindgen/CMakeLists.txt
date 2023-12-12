@@ -84,7 +84,7 @@ if(CMAKE_GENERATOR MATCHES "^Ninja")
 endif()
 
 if(DEFINED CMAKE_JS_VERSION)
-    list(APPEND CMAKE_MODULE_PATH "${PACKAGE_ROOT_DIR}/cmake")
+    list(APPEND CMAKE_MODULE_PATH "./cmake")
     include(NodeJSTargets)
 endif()
 
