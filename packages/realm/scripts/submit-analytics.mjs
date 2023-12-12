@@ -62,6 +62,7 @@ export { collectPlatformData };
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const realmPackagePath = path.resolve(__dirname, "..");
+const realmCorePackagePath = path.resolve(realmPackagePath, "bindgen", "vendor", "realm-core");
 
 /**
  * Path and credentials required to submit analytics through the webhook.
@@ -144,13 +145,12 @@ function getRealmVersion() {
  * @returns the Realm Core version as a string
  */
 function getRealmCoreVersion() {
-  const dependenciesListPath = path.resolve(realmPackagePath, "dependencies.list");
+  const dependenciesListPath = path.resolve(realmCorePackagePath, "dependencies.list");
   const dependenciesList = fs
-    .readFileSync(dependenciesListPath)
-    .toString()
+    .readFileSync(dependenciesListPath, "utf8")
     .split("\n")
     .map((s) => s.split("="));
-  return dependenciesList.find((e) => e[0] === "REALM_CORE_VERSION")[1];
+  return dependenciesList.find((e) => e[0] === "VERSION")[1];
 }
 
 /**
@@ -206,8 +206,6 @@ async function collectPlatformData(packagePath = getProjectRoot()) {
   if (packageJson.name) {
     bundleId = packageJson["name"];
   }
-  const anonymizedBundleId = sha256(bundleId);
-  saveBundleId(anonymizedBundleId);
 
   if (packageJson.dependencies && packageJson.dependencies["react-native"]) {
     framework = "react-native";
@@ -287,7 +285,7 @@ async function collectPlatformData(packagePath = getProjectRoot()) {
     "JS Analytics Version": 3,
     distinct_id: identifier,
     "Anonymized Builder Id": sha256(identifier),
-    "Anonymized Bundle Id": anonymizedBundleId,
+    "Anonymized Bundle Id": sha256(bundleId),
     "Realm Version": realmVersion,
     Binding: "Javascript",
     Version: packageJson.version,
@@ -329,6 +327,8 @@ async function submitAnalytics() {
     debug("Analytics is disabled");
     return;
   }
+
+  saveBundleId(data["Anonymized Bundle Id"]);
 
   return new Promise((resolve, reject) => {
     // node 19 turns on keep-alive by default and it will make the https.get() to hang
