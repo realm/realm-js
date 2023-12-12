@@ -990,7 +990,6 @@ describe("Observable", () => {
           [
             EMPTY_DICTIONARY_CHANGESET,
             () => {
-              // Updating the age to 42 will ensure the object doesn't leave the results
               this.realm.write(() => {
                 bob.name = "Bobby";
               });
