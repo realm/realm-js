@@ -90,103 +90,114 @@ function performActions(actions: Action[]) {
   }
 }
 
+type ChangeSetAsserter<ChangeSet, Args extends unknown[]> = (
+  expectedChange: ChangeSet,
+  index: number,
+) => (...args: Args) => void;
+
+/**
+ * Reusable utility which will add a listener, perform a sequence of actions and assertions of expected changesets.
+ * For every changeset a call of the listener will be expected, after which all subsequent actions will be scheduled for execution in the upcoming tick.
+ * There is a small delay after the assertion of the last changeset to the returned promise gets resolved, to ensure that no unwanted notifications are fired.
+ * @param addListener Called when a listener needs to be added
+ * @param removeListener Called when a listener needs to be removed
+ * @param asserter Called when a changeset needs to be asserted / validated
+ * @param changesAndActions An array of actions (i.e. functions) to execute and changeset objects to assert.
+ */
+async function expectNotifications<ChangeSet extends object, Args extends unknown[]>(
+  addListener: (listener: (...args: Args) => void) => void,
+  removeListener: (listener: (...args: Args) => void) => void,
+  asserter: ChangeSetAsserter<ChangeSet, Args>,
+  changesAndActions: (Action | ChangeSet)[],
+) {
+  const handle = createPromiseHandle();
+
+  const { initialActions, changes } = inlineActions(changesAndActions);
+
+  const listener = createListenerStub(
+    handle,
+    ...changes.map(({ expectedChange, actions }, changeIndex) => (...args: Args) => {
+      asserter(expectedChange, changeIndex)(...args);
+      performActions(actions);
+    }),
+  );
+
+  addListener(listener);
+  performActions(initialActions);
+
+  handle.finally(() => {
+    removeListener(listener);
+  });
+
+  await handle;
+}
+
 type RealmChangeSet = { schema?: Realm.CanonicalObjectSchema[] };
 
-function expectRealmNotifications(
+/**
+ * Expect a list of changesets to
+ * @param changesAndActions
+ */
+async function expectRealmNotifications(
   realm: Realm,
   eventName: RealmEventName,
   changesAndActions: (Action | RealmChangeSet)[],
 ) {
-  const handle = createPromiseHandle();
-
-  const { initialActions, changes } = inlineActions(changesAndActions);
-  performActions(initialActions);
-
-  const listener = createListenerStub(
-    handle,
-    ...changes.map(({ expectedChange }, c) => (realm: Realm, name: string, schema?: Realm.CanonicalObjectSchema[]) => {
+  await expectNotifications(
+    (listener) => realm.addListener(eventName, listener),
+    (listener) => realm.removeListener(eventName, listener),
+    (expectedChange, c) => (realm: Realm, name: string, schema?: Realm.CanonicalObjectSchema[]) => {
       expect(realm).instanceOf(Realm);
       expect(name).equals(eventName, `Realm change event #${c} name didn't match`);
       expect(schema).deep.equals(expectedChange.schema, `Realm change event #${c} schema didn't match`);
-    }),
+    },
+    changesAndActions,
   );
-  realm.addListener(eventName, listener);
-  handle.finally(() => {
-    realm.removeListener(eventName, listener);
-  });
-  return handle;
 }
 
-function expectObjectNotifications<T>(
+async function expectObjectNotifications<T>(
   object: Realm.Object<T>,
+  keyPaths: undefined | string | string[],
   changesAndActions: (Action | ObjectChangeSet<T>)[],
-  keyPaths?: string | string[],
 ) {
-  const handle = createPromiseHandle();
-
-  const { initialActions, changes } = inlineActions(changesAndActions);
-  performActions(initialActions);
-
-  const listener = createListenerStub(
-    handle,
-    ...changes.map(({ expectedChange, actions }, c) => (_: Realm.Object<T>, actualChange: ObjectChangeSet<T>) => {
+  await expectNotifications(
+    (listener) => object.addListener(listener, keyPaths),
+    (listener) => object.removeListener(listener),
+    (expectedChange, c) => (_: Realm.Object<T>, actualChange: ObjectChangeSet<T>) => {
       expect(actualChange).deep.equals(expectedChange, `Changeset #${c} didn't match`);
-      performActions(actions);
-    }),
+    },
+    changesAndActions,
   );
-  object.addListener(listener, keyPaths);
-  handle.finally(() => {
-    object.removeListener(listener);
-  });
-  return handle;
 }
 
-function expectCollectionNotifications(
+async function expectCollectionNotifications(
   collection: Realm.Collection,
+  keyPaths: undefined | string | string[],
   changesAndActions: (Action | CollectionChangeSet)[],
-  keyPaths?: string | string[],
 ) {
-  const handle = createPromiseHandle();
-
-  const { initialActions, changes } = inlineActions(changesAndActions);
-  performActions(initialActions);
-
-  const listener = createListenerStub(
-    handle,
-    ...changes.map(({ expectedChange, actions }, c) => (_: Realm.Collection, actualChange: CollectionChangeSet) => {
+  await expectNotifications(
+    (listener) => collection.addListener(listener, keyPaths),
+    (listener) => collection.removeListener(listener),
+    (expectedChange, c) => (_: Realm.Collection, actualChange: CollectionChangeSet) => {
       expect(actualChange).deep.equals(expectedChange, `Changeset #${c} didn't match`);
-      performActions(actions);
-    }),
+    },
+    changesAndActions,
   );
-  collection.addListener(listener, keyPaths);
-  handle.finally(() => {
-    collection.removeListener(listener);
-  });
-  return handle;
 }
 
-function expectDictionaryNotifications(
+async function expectDictionaryNotifications(
   dictionary: Realm.Dictionary,
+  keyPaths: undefined | string | string[],
   changesAndActions: (Action | DictionaryChangeSet)[],
-  keyPaths?: string | string[],
 ) {
-  const handle = createPromiseHandle();
-
-  const { initialActions, changes } = inlineActions(changesAndActions);
-  performActions(initialActions);
-
-  const listener = createListenerStub(
-    handle,
-    ...changes.map(({ expectedChange, actions }, c) => (_: Realm.Dictionary, actualChange: DictionaryChangeSet) => {
+  await expectNotifications(
+    (listener) => dictionary.addListener(listener, keyPaths),
+    (listener) => dictionary.removeListener(listener),
+    (expectedChange, c) => (_: Realm.Dictionary, actualChange: DictionaryChangeSet) => {
       expect(actualChange).deep.equals(expectedChange, `Changeset #${c} didn't match`);
-      performActions(actions);
-    }),
+    },
+    changesAndActions,
   );
-  dictionary.addListener(listener, keyPaths);
-  handle.finally(() => {
-    dictionary.removeListener(listener);
-  });
-  return handle;
 }
 
 type ListenerRemovalOptions = {
