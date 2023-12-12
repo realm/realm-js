@@ -19,5 +19,6 @@
 import "./fs";
 import "./device-info";
 import "./sync-proxy-config";
+import "./custom-inspect";
 
 export * from "../../index";
