@@ -112,8 +112,7 @@ describe("App", () => {
       await expect(app.logIn(credentials)).to.be.rejectedWith(
         select({
           reactNative: "Network request failed",
-          default:
-            "request to http://localhost:9999/api/client/v2.0/app/smurf/location failed, reason: connect ECONNREFUSED",
+          default: "request to http://localhost:9999/api/client/v2.0/app/smurf/location failed",
         }),
       );
     });

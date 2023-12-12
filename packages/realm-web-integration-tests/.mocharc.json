@@ -1,5 +1,5 @@
 {
-  "loader": "tsx",
+  "import": "tsx",
   "enable-source-maps": true,
   "no-warnings": true,
   "spec": "src/**/*.test.ts",

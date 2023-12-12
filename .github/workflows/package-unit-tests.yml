@@ -25,7 +25,6 @@ jobs:
       matrix:
         workspace:
           - realm
-          - '@realm/bindgen'
           - '@realm/network-transport'
           - '@realm/babel-plugin'
           - '@realm/react'
@@ -54,7 +53,7 @@ jobs:
 
       - uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 20
 
       # ninja-build is used by default if available and results in faster build times
       - name: Install ninja

@@ -15,7 +15,7 @@ jobs:
           submodules: "recursive"
       - uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 20
       # Install the root package (--ignore-scripts to avoid downloading or building the native module)
       - name: Install root package dependencies
         run: npm ci --ignore-scripts

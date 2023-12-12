@@ -22,7 +22,7 @@ jobs:
       - name: Setup node version
         uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 20
           cache: npm
       - name: Install dependencies
         # Ignoring scripts to prevent a prebuilt from getting fetched / built
@@ -72,7 +72,7 @@ jobs:
       - name: Setup node version
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 20
           cache: npm
 
       - name: Get NPM cache directory
@@ -272,7 +272,7 @@ jobs:
       - name: Setup node version
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 20
           cache: npm
 
       - name: Generate server configuration

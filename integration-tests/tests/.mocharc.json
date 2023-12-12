@@ -1,6 +1,6 @@
 {
   "node-option": [
-    "loader=tsx",
+    "import=tsx",
     "expose_gc",
     "enable-source-maps",
     "no-warnings"
