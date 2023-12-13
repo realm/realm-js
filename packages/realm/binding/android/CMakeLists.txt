@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 3.18.1)
 
-set(REACT_NATIVE_VERSION "0.71.0-rc.5")
-
 set(REACT_NATIVE_ROOT_DIR "${PACKAGE_ROOT_DIR}/node_modules/react-native")
 set(REACT_NATIVE_AAR_DIR "${CMAKE_BINARY_DIR}/../react-native-aar") # TODO: Could we use CMAKE_BINARY_DIR instead?
 set(REACT_NATIVE_VERSION "0.71.0")

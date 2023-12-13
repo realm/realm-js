@@ -8,6 +8,7 @@ cd "$(dirname "$0")/.."
 PROJECT_ROOT=$(pwd)
 SDK_PATH=$PROJECT_ROOT
 BINDGEN_PATH=$PROJECT_ROOT/bindgen
+BINDING_PATH=$PROJECT_ROOT/binding
 SCRIPT=$(basename "${BASH_SOURCE[0]}")
 
 function usage {
@@ -116,7 +117,7 @@ done
 
 rm -rf _include
 mkdir -p _include/realm-js-ios
-cp "$BINDGEN_PATH"/src/jsi/jsi_init.h _include/realm-js-ios/
+cp "$BINDING_PATH"/jsi/jsi_init.h _include/realm-js-ios/
 
 rm -rf ../realm-js-ios.xcframework
 xcodebuild -create-xcframework \
