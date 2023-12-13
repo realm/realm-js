@@ -1,7 +1,4 @@
-## vNext (TBD)
-
-### Deprecations
-* None
+## 12.4.0 (2023-12-13)
 
 ### Enhancements
 * Exporting a `RealmEventName` type. ([#6300](https://github.com/realm/realm-js/pull/6300))
@@ -15,7 +12,7 @@
 * When an object had an embedded object as one of its properties, updating that property to `null` or `undefined` did not update the property in the database. ([#6280](https://github.com/realm/realm-js/issues/6280), since v12.0.0)
 * Fixed download of platform + arch specific prebuilt binaries when building an Electron app using `electron-builder`. ([#3828](https://github.com/realm/realm-js/issues/3828))
 
-* Fixed deadlock which occurred when accessing the current user from the `App` from within a callback from the `User` listener. ([#7183](https://github.com/realm/realm-core/issues/7183), since v12.2.1)
+* Fixed deadlock which occurred when accessing the current user from the `App` from within a callback from the `User` listener. ([realm/realm-core#7183](https://github.com/realm/realm-core/issues/7183), since v12.2.1)
 * Errors encountered while reapplying local changes for client reset recovery on partition-based sync Realms would result in the client reset attempt not being recorded, possibly resulting in an endless loop of attempting and failing to automatically recover the client reset. Flexible sync and errors from the server after completing the local recovery were handled correctly. ([realm/realm-core#7149](https://github.com/realm/realm-core/pull/7149), since v10.3.0-rc.1)
 * During a client reset with recovery when recovering a move or set operation on a `List<Object>` or `List<Mixed>` that operated on indices that were not also added in the recovery, links to an object which had been deleted by another client while offline would be recreated by the recovering client. But the objects of these links would only have the primary key populated and all other fields would be default values. Now, instead of creating these zombie objects, the lists being recovered skip such deleted links. ([realm/realm-core#7112](https://github.com/realm/realm-core/issues/7112) since the beginning of client reset with recovery in v10.18.0)
 * During a client reset recovery a Set of links could be missing items, or an exception could be thrown that prevents recovery e.g., `Requested index 1 calling get() on set 'source.collection' when max is 0`. ([realm/realm-core#7112](https://github.com/realm/realm-core/issues/7112), since the beginning of client reset with recovery in v10.18.0)
