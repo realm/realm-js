@@ -1,7 +1,4 @@
-## vNext (TBD)
-
-### Deprecations
-* None
+## 12.4.0 (2023-12-13)
 
 ### Enhancements
 * Exporting a `RealmEventName` type. ([#6300](https://github.com/realm/realm-js/pull/6300))
