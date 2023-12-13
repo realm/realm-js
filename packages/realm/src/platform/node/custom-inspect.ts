@@ -17,8 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 import { InspectOptionsStylized, inspect } from "node:util";
 
-import { Collection, Dictionary, List, RealmObject, RealmSet } from "../../internal";
-import { Results } from "realm/binding";
+import { Collection, Dictionary, List, RealmObject, RealmSet, Results } from "../../internal";
 
 type CustomInspectFunction<T> = (this: T, depth: number, options: InspectOptionsStylized) => void;
 
