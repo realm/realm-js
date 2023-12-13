@@ -220,7 +220,7 @@
       }
     },
     "build:android": {
-      "command": "node ./scripts/build-android.js",
+      "command": "tsx ./scripts/build-android.ts",
       "files": [
         "bindgen/android/**",
         "bindgen/src/**/*.ts",
