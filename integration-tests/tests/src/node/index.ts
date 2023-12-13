@@ -22,3 +22,4 @@ import "./analytics";
 import "./clean-exit";
 import "./path";
 import "./sync-proxy";
+import "./custom-inspect";
