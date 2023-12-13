@@ -120,6 +120,10 @@ endif()
 target_include_directories(realm-js PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
 set(SDK_DIR ${PACKAGE_ROOT_DIR}/packages/realm)
+set(BINDING_DIR ${SDK_DIR}/binding)
+
+target_include_directories(realm-js PRIVATE "${BINDING_DIR}")
+
 
 file(GLOB_RECURSE SDK_TS_FILES
     LIST_DIRECTORIES false
@@ -175,7 +179,7 @@ if(DEFINED CMAKE_JS_VERSION)
         SOURCES ${SDK_TS_FILES}
     )
 
-    target_sources(realm-js PRIVATE node_init.cpp ${CMAKE_JS_SRC} ${CMAKE_CURRENT_SOURCE_DIR}/src/node/platform.cpp)
+    target_sources(realm-js PRIVATE node_init.cpp ${CMAKE_JS_SRC} ${BINDING_DIR}/node/platform.cpp)
 else()
     include(jsi.cmake)
 
@@ -191,9 +195,9 @@ else()
     target_sources(realm-js PRIVATE jsi_init.cpp ${CMAKE_JS_SRC})
 
     if(ANDROID)
-        add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src/android android)
+        add_subdirectory(${BINDING_DIR}/android android)
     elseif(CMAKE_SYSTEM_NAME STREQUAL iOS)
-        add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src/ios ios)
+        add_subdirectory(${BINDING_DIR}/ios ios)
     else()
         # disabling for now to simplify the bootstrapping process.
         # message(FATAL_ERROR "Only support JSI builds for Android and iOS")
