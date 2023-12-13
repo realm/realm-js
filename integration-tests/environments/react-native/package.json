@@ -90,7 +90,6 @@
     "test:android": {
       "command": "npm run common",
       "dependencies": [
-        "../../../packages/realm:build:android",
         "../../../packages/realm:bundle",
         "../../../packages/mocha-reporter:bundle",
         "../../../packages/realm-network-transport:bundle"

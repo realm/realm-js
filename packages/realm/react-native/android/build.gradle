@@ -29,23 +29,24 @@ android {
     defaultConfig {
         minSdkVersion rootProject.hasProperty('minSdkVersion') ? rootProject.minSdkVersion : 16
         targetSdkVersion rootProject.hasProperty('targetSdkVersion') ? rootProject.targetSdkVersion : 28
+        externalNativeBuild {
+            cmake {
+                arguments '-DANDROID_STL=c++_shared'
+                targets 'realm-js-android'
+                cppFlags ''
+                abiFilters "armeabi-v7a", "x86", "x86_64", "arm64-v8a"
+            }
+        }
     }
     buildTypes {
         debug {
             jniDebuggable true
         }
     }
-
-    // Do not strip debug symbols from debug builds of Realm
-    buildTypes {
-        debug {
-            packagingOptions {
-                if (com.android.builder.model.Version.ANDROID_GRADLE_PLUGIN_VERSION.compareTo("4.2") >= 0) {
-                    jniLibs.keepDebugSymbols += "**/librealm.so"
-                } else {
-                    doNotStrip "**/librealm.so"
-                }
-            }
+    externalNativeBuild {
+        cmake {
+            path file('../../bindgen/CMakeLists.txt')
+            version '3.22.1'
         }
     }
 }
