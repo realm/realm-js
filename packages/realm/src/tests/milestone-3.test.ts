@@ -169,7 +169,9 @@ describe("Milestone #3", () => {
         fooCalls++;
       }
       alice.addListener(foo);
-      alice.addListener(foo);
+      expect(() => {
+        alice.addListener(foo);
+      }).throws("Remove callback before adding it again");
       // Make a change to fire the listener
       realm.write(() => (alice.name = "Alison"));
       // Begin a new write transaction to ensure the read transaction gets advanced
@@ -361,7 +363,9 @@ describe("Milestone #3", () => {
         fooCalls++;
       }
       persons.addListener(foo);
-      persons.addListener(foo);
+      expect(() => {
+        persons.addListener(foo);
+      }).throws("Remove callback before adding it again");
       // Make a change to fire the listener
       realm.write(() => (alice.name = "Alison"));
       // Begin a new write transaction to ensure the read transaction gets advanced
