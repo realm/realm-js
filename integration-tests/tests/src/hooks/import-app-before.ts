@@ -64,6 +64,11 @@ export function importAppBefore(config: AppConfig | { config: AppConfig }, sdkCo
     }
   });
 
+  after("muteAppLog", function (this: AppContext & Mocha.Context) {
+    // Mute the log to avoid lifetime issues when reading out strings from the logger
+    Realm.App.Sync.setLogLevel(this.app, "off");
+  });
+
   after("removeUsersAfter", async function (this: Partial<AppContext> & Mocha.Context) {
     const { app } = this;
     if (app) {

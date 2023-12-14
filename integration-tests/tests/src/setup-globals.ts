@@ -105,12 +105,10 @@ const logColors: Record<ValidRealmLogLevel, chalk.Chalk> = {
 
 afterEach(function (this: Mocha.Context) {
   if (printLogAfterTest === true || (printLogAfterTest === "on-failure" && this.currentTest?.isFailed())) {
-    console.log();
     for (const { level, message } of log) {
       const color = logColors[level];
       console.log(`[${color(level)}] ${message}`);
     }
-    console.log();
   }
 });
 
