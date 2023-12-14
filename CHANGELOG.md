@@ -1,17 +1,9 @@
 ## vNext (TBD)
 
-### Breaking changes
-* Adding the same callback function as a listener on a `Collection` or `Object` used to be undefined behavior, but now throws, which results in runtime errors that can be resolved by ensuring that the callback is only added once. ([#6310](https://github.com/realm/realm-js/pull/6310))
-
 ### Deprecations
 * None
 
 ### Enhancements
-* Exceptions thrown during bootstrap application will now be surfaced to the user via the sync error handler rather than terminating the program with an unhandled exception. ([realm/realm-core#7197](https://github.com/realm/realm-core/pull/7197))
-
-### Fixed
-* Exceptions thrown during bootstrap application could crash the sync client with an `!m_sess` assertion. ([realm/realm-core#7196](https://github.com/realm/realm-core/issues/7196), since v10.18.0)
-* If a `SyncSession` was explicitly resumed via `reconnect()` while it was waiting to auto-resume after a non-fatal error and then another non-fatal error was received, the sync client could crash with a `!m_try_again_activation_timer` assertion. ([realm/realm-core#6961](https://github.com/realm/realm-core/issues/6961), since device sync was introduced)
 * Added an optional third `keyPaths` argument to the `addListener` methods of `Collection` and `Object`. Use this to indicate a lower bound on the changes relevant for the listener. This is a lower bound, since if multiple listeners are added (each with their own "key paths") the union of these key-paths will determine the changes that are considered relevant for all listeners registered on the object or collection. In other words: A listener might fire more than the key-paths specify, if other listeners with different key-paths are present. ([#6285](https://github.com/realm/realm-js/issues/6285))
   ```ts
   // Adding a listener that will fire only on changes to the `location` property (if no other key-path listeners are added to the collection).
@@ -19,6 +11,13 @@
     console.log("A car location changed");
   }, ["location"]);
   ```
+* Exceptions thrown during bootstrap application will now be surfaced to the user via the sync error handler rather than terminating the program with an unhandled exception. ([realm/realm-core#7197](https://github.com/realm/realm-core/pull/7197))
+
+### Fixed
+* Exceptions thrown during bootstrap application could crash the sync client with an `!m_sess` assertion. ([realm/realm-core#7196](https://github.com/realm/realm-core/issues/7196), since v10.18.0)
+* If a `SyncSession` was explicitly resumed via `reconnect()` while it was waiting to auto-resume after a non-fatal error and then another non-fatal error was received, the sync client could crash with a `!m_try_again_activation_timer` assertion. ([realm/realm-core#6961](https://github.com/realm/realm-core/issues/6961), since device sync was introduced)
+* Adding the same callback function as a listener on a `Collection` or `Object` used to be undefined behavior. Now it throws, which results in runtime errors that can be resolved by ensuring that the callback is only added once per object. ([#6310](https://github.com/realm/realm-js/pull/6310))
+
 
 ### Compatibility
 * React Native >= v0.71.4
