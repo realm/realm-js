@@ -145,7 +145,7 @@ jobs:
         draft: false
 
     - name: 'Post to #realm-releases'
-      uses: realm/ci-actions/release-to-slack@v3
+      uses: realm/ci-actions/release-to-slack@9166f8af1cc0739f03702c66294ed2fe4cc55f4c
       with:
         changelog: EXTRACTED_CHANGELOG.md
         sdk: ${{env.SDK_NAME}}
