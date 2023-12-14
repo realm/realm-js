@@ -49,13 +49,13 @@
     "electron-builder": "^23.6.0",
     "mocha-github-actions-reporter": "^0.3.0",
     "mocha-junit-reporter": "^2.2.0",
-    "mocha-remote-cli": "^1.6.1"
+    "mocha-remote-cli": "^1.8.0"
   },
   "dependencies": {
     "@electron/remote": "^2.0.9",
     "@realm/integration-tests": "*",
     "fs-extra": "^9.1.0",
-    "mocha-remote-client": "^1.6.1",
+    "mocha-remote-client": "^1.8.0",
     "@realm/app-importer": "*"
   },
   "build": {
