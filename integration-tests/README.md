@@ -84,6 +84,7 @@ Examples of context variables used:
 - `realmBaseUrl=https://localhost:9090`: Set the base URL used when connecting the the server.
 - `mongodbClusterName=Cluster0`: Set the name of the cluster, used when setting up the "mongodb-atlas" service on imported apps.
 - `mongodbServiceType`: Set the type of mongodb service, used when importing. Defaults to `mongodb` or `mongodb-atlas` if `mongodbClusterName` is set.
+- `printLogAfterTest=on-failure`: Enable printing of the log after every test failure
 
 As an example, to iterate on the performence tests, run the `./tests` (on Node.js) skipping tests that require a server as well as the integration tests and enable performance tests:
 
