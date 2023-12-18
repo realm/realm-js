@@ -10,7 +10,8 @@
     "lint": "wireit",
     "lint:fix": "wireit",
     "lint:cpp": "find src packages/realm/bindgen/src -name '*.cpp' -or -name '*.h' -or -name '*.hpp' | xargs clang-format --dry-run --Werror",
-    "lint:cpp:fix": "find src packages/realm/bindgen/src -name '*.cpp' -or -name '*.h' -or -name '*.hpp' | xargs clang-format -i"
+    "lint:cpp:fix": "find src packages/realm/bindgen/src -name '*.cpp' -or -name '*.h' -or -name '*.hpp' | xargs clang-format -i",
+    "clean": "git clean -fdx -e node_modules"
   },
   "wireit": {
     "build": {
