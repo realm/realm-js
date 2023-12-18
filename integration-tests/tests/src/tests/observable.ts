@@ -499,7 +499,7 @@ describe("Observable", () => {
           [
             EMPTY_OBJECT_CHANGESET,
             () => {
-              // Updating the age to 42 will ensure the object doesn't leave the results
+              // Updating the `age` to verify this isn't included in the `changedProperties`
               this.realm.write(() => {
                 this.object.name = "Alex";
                 this.object.age = 42;
