@@ -268,12 +268,9 @@ describe("Observable", () => {
         ]);
       });
 
-      // Skipping, because although the API would be more uniform, there is no need to throw when adding the same Realm listener twice
-      it.skip("throws on listener reuse", function (this: RealmContext) {
+      it("doesn't throw on listener reuse", function (this: RealmContext) {
         this.realm.addListener("change", noop);
-        expect(() => {
-          this.realm.addListener("change", noop);
-        }).throws("Remove callback before adding it again");
+        this.realm.addListener("change", noop);
       });
 
       it("removes listeners", async function (this: RealmContext) {
@@ -314,12 +311,9 @@ describe("Observable", () => {
         ]);
       });
 
-      // Skipping, because although the API would be more uniform, there is no need to throw when adding the same Realm listener twice
-      it.skip("throws on listener reuse", function (this: RealmContext) {
+      it("doesn't throw on listener reuse", function (this: RealmContext) {
         this.realm.addListener("beforenotify", noop);
-        expect(() => {
-          this.realm.addListener("beforenotify", noop);
-        }).throws("Remove callback before adding it again");
+        this.realm.addListener("beforenotify", noop);
       });
 
       it("removes listeners", async function (this: RealmContext) {
@@ -382,12 +376,9 @@ describe("Observable", () => {
         ]);
       });
 
-      // Skipping, because although the API would be more uniform, there is no need to throw when adding the same Realm listener twice
-      it.skip("throws on listener reuse", function (this: RealmContext) {
+      it("doesn't throw on listener reuse", function (this: RealmContext) {
         this.realm.addListener("schema", noop);
-        expect(() => {
-          this.realm.addListener("schema", noop);
-        }).throws("Remove callback before adding it again");
+        this.realm.addListener("schema", noop);
       });
 
       it("removes listeners", async function (this: InternalRealmContext) {
