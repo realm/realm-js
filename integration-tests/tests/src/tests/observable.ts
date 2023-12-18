@@ -135,8 +135,8 @@ async function expectNotifications<ChangeSet extends object, Args extends unknow
 type RealmChangeSet = { schema?: Realm.CanonicalObjectSchema[] };
 
 /**
- * Expect a list of changesets to
- * @param changesAndActions
+ * Expect a list of changesets to a Realm.
+ * @see {@link expectNotifications} for details on the {@link changesAndActions} argument.
  */
 async function expectRealmNotifications(
   realm: Realm,
@@ -155,6 +155,10 @@ async function expectRealmNotifications(
   );
 }
 
+/**
+ * Expect a list of changesets to a Realm.Object.
+ * @see {@link expectNotifications} for details on the {@link changesAndActions} argument.
+ */
 async function expectObjectNotifications<T>(
   object: Realm.Object<T>,
   keyPaths: undefined | string | string[],
@@ -170,6 +174,10 @@ async function expectObjectNotifications<T>(
   );
 }
 
+/**
+ * Expect a list of changesets to a Realm.Collection.
+ * @see {@link expectNotifications} for details on the {@link changesAndActions} argument.
+ */
 async function expectCollectionNotifications(
   collection: Realm.Collection,
   keyPaths: undefined | string | string[],
@@ -185,6 +193,10 @@ async function expectCollectionNotifications(
   );
 }
 
+/**
+ * Expect a list of changesets to a Realm.Dictionary.
+ * @see {@link expectNotifications} for details on the {@link changesAndActions} argument.
+ */
 async function expectDictionaryNotifications(
   dictionary: Realm.Dictionary,
   keyPaths: undefined | string | string[],
