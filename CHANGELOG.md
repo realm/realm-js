@@ -1,7 +1,4 @@
-## vNext (TBD)
-
-### Deprecations
-* None
+## 12.5.0 (2023-12-19)
 
 ### Enhancements
 * Added an optional third `keyPaths` argument to the `addListener` methods of `Collection` and `Object`. Use this to indicate a lower bound on the changes relevant for the listener. This is a lower bound, since if multiple listeners are added (each with their own "key paths") the union of these key-paths will determine the changes that are considered relevant for all listeners registered on the object or collection. In other words: A listener might fire more than the key-paths specify, if other listeners with different key-paths are present. ([#6285](https://github.com/realm/realm-js/issues/6285))
