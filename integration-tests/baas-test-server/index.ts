@@ -62,10 +62,7 @@ function ensureDocker() {
     const version = execSync("docker --version", { encoding: "utf8" }).trim();
     console.log(`Using ${version}`);
   } catch (err) {
-    // Clone the baas repository
-    execSync("git clone --depth=1 --branch kh/translator-pkg-upgraded git@github.com:kraenhansen/baas.git baas", {
-      stdio: "inherit",
-    });
+    throw new Error("Do you have the Docker CLI installed?", { cause: err });
   }
 }
 
