@@ -35,6 +35,10 @@ global.it.skipIf = testSkipIf;
 
 import chai from "chai";
 
+// When a deep.equals fails, we want the entire diff to show
+// See https://stackoverflow.com/a/45882252
+chai.config.truncateThreshold = 0;
+
 import chaiAsPromised from "chai-as-promised";
 chai.use(chaiAsPromised);
 

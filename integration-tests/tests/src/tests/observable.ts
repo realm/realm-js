@@ -22,7 +22,7 @@
  * - Adding a listener will call the callback on change.
  */
 
-import { expect } from "chai";
+import { assert, expect } from "chai";
 
 import Realm, { CollectionChangeSet, DictionaryChangeSet, ObjectChangeSet, RealmEventName } from "realm";
 
@@ -30,6 +30,21 @@ import { openRealmBeforeEach } from "../hooks";
 import { createListenerStub } from "../utils/listener-stub";
 import { createPromiseHandle } from "../utils/promise-handle";
 import { sequence } from "../utils/sequence";
+
+const EMPTY_OBJECT_CHANGESET: Realm.ObjectChangeSet<unknown> = { deleted: false, changedProperties: [] };
+
+const EMPTY_COLLECTION_CHANGESET: Realm.CollectionChangeSet = {
+  deletions: [],
+  insertions: [],
+  newModifications: [],
+  oldModifications: [],
+};
+
+const EMPTY_DICTIONARY_CHANGESET: Realm.DictionaryChangeSet = {
+  deletions: [],
+  insertions: [],
+  modifications: [],
+};
 
 type Observable = Realm | Realm.Object<any> | Realm.Results<any> | Realm.List<any> | Realm.Dictionary | Realm.Set<any>;
 
@@ -75,93 +90,126 @@ function performActions(actions: Action[]) {
   }
 }
 
+type ChangeSetAsserter<ChangeSet, Args extends unknown[]> = (
+  expectedChange: ChangeSet,
+  index: number,
+) => (...args: Args) => void;
+
+/**
+ * Reusable utility which will add a listener, perform a sequence of actions and assertions of expected changesets.
+ * For every changeset a call of the listener will be expected, after which all subsequent actions will be scheduled for execution in the upcoming tick.
+ * There is a small delay after the assertion of the last changeset to the returned promise gets resolved, to ensure that no unwanted notifications are fired.
+ * @param addListener Called when a listener needs to be added
+ * @param removeListener Called when a listener needs to be removed
+ * @param asserter Called when a changeset needs to be asserted / validated
+ * @param changesAndActions An array of actions (i.e. functions) to execute and changeset objects to assert.
+ */
+async function expectNotifications<ChangeSet extends object, Args extends unknown[]>(
+  addListener: (listener: (...args: Args) => void) => void,
+  removeListener: (listener: (...args: Args) => void) => void,
+  asserter: ChangeSetAsserter<ChangeSet, Args>,
+  changesAndActions: (Action | ChangeSet)[],
+) {
+  const handle = createPromiseHandle();
+
+  const { initialActions, changes } = inlineActions(changesAndActions);
+
+  const listener = createListenerStub(
+    handle,
+    ...changes.map(({ expectedChange, actions }, changeIndex) => (...args: Args) => {
+      asserter(expectedChange, changeIndex)(...args);
+      performActions(actions);
+    }),
+  );
+
+  addListener(listener);
+  performActions(initialActions);
+
+  handle.finally(() => {
+    removeListener(listener);
+  });
+
+  await handle;
+}
+
 type RealmChangeSet = { schema?: Realm.CanonicalObjectSchema[] };
 
-function expectRealmNotifications(
+/**
+ * Expect a list of changesets to a Realm.
+ * @see {@link expectNotifications} for details on the {@link changesAndActions} argument.
+ */
+async function expectRealmNotifications(
   realm: Realm,
   eventName: RealmEventName,
   changesAndActions: (Action | RealmChangeSet)[],
 ) {
-  const handle = createPromiseHandle();
-
-  const { initialActions, changes } = inlineActions(changesAndActions);
-  performActions(initialActions);
-
-  realm.addListener(
-    eventName,
-    createListenerStub(
-      handle,
-      ...changes.map(
-        ({ expectedChange }, c) =>
-          (realm: Realm, name: string, schema?: Realm.CanonicalObjectSchema[]) => {
-            expect(realm).instanceOf(Realm);
-            expect(name).equals(eventName, `Realm change event #${c} name didn't match`);
-            expect(schema).deep.equals(expectedChange.schema, `Realm change event #${c} schema didn't match`);
-          },
-      ),
-    ),
+  await expectNotifications(
+    (listener) => realm.addListener(eventName, listener),
+    (listener) => realm.removeListener(eventName, listener),
+    (expectedChange, c) => (realm: Realm, name: string, schema?: Realm.CanonicalObjectSchema[]) => {
+      expect(realm).instanceOf(Realm);
+      expect(name).equals(eventName, `Realm change event #${c} name didn't match`);
+      expect(schema).deep.equals(expectedChange.schema, `Realm change event #${c} schema didn't match`);
+    },
+    changesAndActions,
   );
-  return handle;
 }
 
-function expectObjectNotifications<T>(object: Realm.Object<T>, changesAndActions: (Action | ObjectChangeSet<T>)[]) {
-  const handle = createPromiseHandle();
-
-  const { initialActions, changes } = inlineActions(changesAndActions);
-  performActions(initialActions);
-
-  object.addListener(
-    createListenerStub(
-      handle,
-      ...changes.map(({ expectedChange, actions }, c) => (_: Realm.Object<T>, actualChange: ObjectChangeSet<T>) => {
-        expect(actualChange).deep.equals(expectedChange, `Changeset #${c} didn't match`);
-        performActions(actions);
-      }),
-    ),
+/**
+ * Expect a list of changesets to a Realm.Object.
+ * @see {@link expectNotifications} for details on the {@link changesAndActions} argument.
+ */
+async function expectObjectNotifications<T>(
+  object: Realm.Object<T>,
+  keyPaths: undefined | string | string[],
+  changesAndActions: (Action | ObjectChangeSet<T>)[],
+) {
+  await expectNotifications(
+    (listener) => object.addListener(listener, keyPaths),
+    (listener) => object.removeListener(listener),
+    (expectedChange, c) => (_: Realm.Object<T>, actualChange: ObjectChangeSet<T>) => {
+      expect(actualChange).deep.equals(expectedChange, `Changeset #${c} didn't match`);
+    },
+    changesAndActions,
   );
-  return handle;
 }
 
-function expectCollectionNotifications(
+/**
+ * Expect a list of changesets to a Realm.Collection.
+ * @see {@link expectNotifications} for details on the {@link changesAndActions} argument.
+ */
+async function expectCollectionNotifications(
   collection: Realm.Collection,
+  keyPaths: undefined | string | string[],
   changesAndActions: (Action | CollectionChangeSet)[],
 ) {
-  const handle = createPromiseHandle();
-
-  const { initialActions, changes } = inlineActions(changesAndActions);
-  performActions(initialActions);
-
-  collection.addListener(
-    createListenerStub(
-      handle,
-      ...changes.map(({ expectedChange, actions }, c) => (_: Realm.Collection, actualChange: CollectionChangeSet) => {
-        expect(actualChange).deep.equals(expectedChange, `Changeset #${c} didn't match`);
-        performActions(actions);
-      }),
-    ),
+  await expectNotifications(
+    (listener) => collection.addListener(listener, keyPaths),
+    (listener) => collection.removeListener(listener),
+    (expectedChange, c) => (_: Realm.Collection, actualChange: CollectionChangeSet) => {
+      expect(actualChange).deep.equals(expectedChange, `Changeset #${c} didn't match`);
+    },
+    changesAndActions,
   );
-  return handle;
 }
 
-function expectDictionaryNotifications(
+/**
+ * Expect a list of changesets to a Realm.Dictionary.
+ * @see {@link expectNotifications} for details on the {@link changesAndActions} argument.
+ */
+async function expectDictionaryNotifications(
   dictionary: Realm.Dictionary,
+  keyPaths: undefined | string | string[],
   changesAndActions: (Action | DictionaryChangeSet)[],
 ) {
-  const handle = createPromiseHandle();
-
-  const { initialActions, changes } = inlineActions(changesAndActions);
-  performActions(initialActions);
-
-  dictionary.addListener(
-    createListenerStub(
-      handle,
-      ...changes.map(({ expectedChange, actions }, c) => (_: Realm.Dictionary, actualChange: DictionaryChangeSet) => {
-        expect(actualChange).deep.equals(expectedChange, `Changeset #${c} didn't match`);
-        performActions(actions);
-      }),
-    ),
+  await expectNotifications(
+    (listener) => dictionary.addListener(listener, keyPaths),
+    (listener) => dictionary.removeListener(listener),
+    (expectedChange, c) => (_: Realm.Dictionary, actualChange: DictionaryChangeSet) => {
+      expect(actualChange).deep.equals(expectedChange, `Changeset #${c} didn't match`);
+    },
+    changesAndActions,
   );
-  return handle;
 }
 
 type ListenerRemovalOptions = {
@@ -187,6 +235,10 @@ async function expectListenerRemoval({ addListener, removeListener, update }: Li
   await handle;
 }
 
+function noop() {
+  /* tumbleweed */
+}
+
 describe("Observable", () => {
   describe("Realm", () => {
     openRealmBeforeEach({
@@ -206,7 +258,7 @@ describe("Observable", () => {
 
     describe("change", () => {
       it("calls listener", async function (this: RealmContext) {
-        const completion = expectRealmNotifications(this.realm, "change", [
+        await expectRealmNotifications(this.realm, "change", [
           () => {
             this.realm.write(() => {
               this.realm.create("Person", { name: "Alice" });
@@ -214,8 +266,11 @@ describe("Observable", () => {
           },
           {},
         ]);
+      });
 
-        await completion;
+      it("doesn't throw on listener reuse", function (this: RealmContext) {
+        this.realm.addListener("change", noop);
+        this.realm.addListener("change", noop);
       });
 
       it("removes listeners", async function (this: RealmContext) {
@@ -254,6 +309,11 @@ describe("Observable", () => {
           },
           {},
         ]);
+      });
+
+      it("doesn't throw on listener reuse", function (this: RealmContext) {
+        this.realm.addListener("beforenotify", noop);
+        this.realm.addListener("beforenotify", noop);
       });
 
       it("removes listeners", async function (this: RealmContext) {
@@ -316,6 +376,11 @@ describe("Observable", () => {
         ]);
       });
 
+      it("doesn't throw on listener reuse", function (this: RealmContext) {
+        this.realm.addListener("schema", noop);
+        this.realm.addListener("schema", noop);
+      });
+
       it("removes listeners", async function (this: InternalRealmContext) {
         await expectListenerRemoval({
           addListener: (listener) => this.realm.addListener("schema", listener),
@@ -343,13 +408,15 @@ describe("Observable", () => {
   });
 
   describe("Object", () => {
-    type Person = { name: string };
+    type Person = { name: string; age: number | undefined; friends: Realm.List<Person> };
     openRealmBeforeEach({
       schema: [
         {
           name: "Person",
           properties: {
             name: "string",
+            age: "int?",
+            friends: "Person[]",
           },
         },
       ],
@@ -357,7 +424,11 @@ describe("Observable", () => {
 
     beforeEach(function (this: RealmObjectContext<Person>) {
       this.object = this.realm.write(() => {
-        return this.realm.create<Person>("Person", { name: "Alice" });
+        const alice = this.realm.create<Person>("Person", { name: "Alice" });
+        const bob = this.realm.create<Person>("Person", { name: "Bob" });
+        const charlie = this.realm.create<Person>("Person", { name: "Charlie" });
+        alice.friends.push(bob, charlie);
+        return alice;
       });
     });
 
@@ -365,13 +436,28 @@ describe("Observable", () => {
       expectObservableMethods(this.object);
     });
 
+    it("throws on listener reuse", function (this: RealmObjectContext<Person>) {
+      this.object.addListener(noop);
+      expect(() => {
+        this.object.addListener(noop);
+      }).throws("Remove callback before adding it again");
+    });
+
     it("calls listener initially", async function (this: RealmObjectContext<Person>) {
-      await expectObjectNotifications(this.object, [{ deleted: false, changedProperties: [] }]);
+      await expectObjectNotifications(this.object, undefined, [EMPTY_OBJECT_CHANGESET]);
+    });
+
+    it("calls listener initially (passing key-path as string)", async function (this: RealmObjectContext<Person>) {
+      await expectObjectNotifications(this.object, "name", [EMPTY_OBJECT_CHANGESET]);
+    });
+
+    it("calls listener initially (passing key-path as array)", async function (this: RealmObjectContext<Person>) {
+      await expectObjectNotifications(this.object, ["name"], [EMPTY_OBJECT_CHANGESET]);
     });
 
     it("calls listener", async function (this: RealmObjectContext<Person>) {
-      await expectObjectNotifications(this.object, [
-        { deleted: false, changedProperties: [] },
+      await expectObjectNotifications(this.object, undefined, [
+        EMPTY_OBJECT_CHANGESET,
         () => {
           this.realm.write(() => {
             this.object.name = "Bob";
@@ -404,10 +490,180 @@ describe("Observable", () => {
         },
       });
     });
+
+    describe("key-path filtered", () => {
+      it("calls listener only on relevant changes", async function (this: RealmObjectContext<Person>) {
+        await expectObjectNotifications(
+          this.object,
+          ["name"],
+          [
+            EMPTY_OBJECT_CHANGESET,
+            () => {
+              // Updating the `age` to verify this isn't included in the `changedProperties`
+              this.realm.write(() => {
+                this.object.name = "Alex";
+                this.object.age = 42;
+              });
+            },
+            {
+              deleted: false,
+              changedProperties: ["name"],
+            },
+            () => {
+              // Perform a couple of changes that shouldn't trigger
+              this.realm.write(() => {
+                this.object.age = 64;
+              });
+
+              const lastFriend = this.realm.write(() => {
+                return this.object.friends.pop();
+              });
+              assert(lastFriend);
+              this.realm.write(() => {
+                this.object.friends.push(lastFriend);
+              });
+            },
+          ],
+        );
+
+        await expectObjectNotifications(
+          this.object,
+          ["friends"],
+          [
+            EMPTY_OBJECT_CHANGESET,
+            () => {
+              this.realm.write(() => {
+                this.object.friends.pop();
+              });
+            },
+            {
+              deleted: false,
+              changedProperties: ["friends"],
+            },
+            // Perform a couple of changes that shouldn't trigger
+            () => {
+              this.realm.write(() => {
+                this.object.age = 24;
+              });
+              this.realm.write(() => {
+                this.object.friends[0].name = "Bart";
+              });
+            },
+          ],
+        );
+
+        await expectObjectNotifications(
+          this.object,
+          ["friends.name"],
+          [
+            EMPTY_OBJECT_CHANGESET,
+            () => {
+              this.realm.write(() => {
+                this.object.friends[0].name = "Bobby";
+              });
+            },
+            {
+              deleted: false,
+              changedProperties: ["friends"],
+            },
+            // Perform a couple of changes that shouldn't trigger
+            () => {
+              this.realm.write(() => {
+                this.object.age = 24;
+              });
+              this.realm.write(() => {
+                this.object.friends[0].age = 24;
+              });
+            },
+          ],
+        );
+
+        await expectObjectNotifications(
+          this.object,
+          ["*"],
+          [
+            EMPTY_OBJECT_CHANGESET,
+            () => {
+              this.realm.write(() => {
+                this.object.name = "Alice";
+              });
+            },
+            {
+              deleted: false,
+              changedProperties: ["name"],
+            },
+            () => {
+              this.realm.write(() => {
+                const charles = this.realm.create<Person>("Person", { name: "Charles", age: 74 });
+                this.object.friends.push(charles);
+              });
+            },
+            {
+              deleted: false,
+              changedProperties: ["friends"],
+            },
+            // Perform a couple of changes that shouldn't trigger
+            () => {
+              this.realm.write(() => {
+                this.object.friends[0].name = "Alex";
+              });
+              this.realm.write(() => {
+                const daniel = this.realm.create<Person>("Person", { name: "Charles", age: 74 });
+                this.object.friends[0].friends.push(daniel);
+              });
+            },
+          ],
+        );
+      });
+
+      it("combines key-paths when delivering notifications", async function (this: RealmObjectContext<Person>) {
+        const completion1 = expectObjectNotifications(
+          this.object,
+          ["name"],
+          [
+            EMPTY_OBJECT_CHANGESET,
+            {
+              deleted: false,
+              changedProperties: ["name"],
+            },
+            {
+              deleted: false,
+              changedProperties: ["age"],
+            },
+          ],
+        );
+
+        const completion2 = expectObjectNotifications(
+          this.object,
+          ["age"],
+          [
+            EMPTY_OBJECT_CHANGESET,
+            {
+              deleted: false,
+              changedProperties: ["name"],
+            },
+            {
+              deleted: false,
+              changedProperties: ["age"],
+            },
+          ],
+        );
+
+        this.realm.write(() => {
+          this.object.name = "Alex";
+        });
+
+        this.realm.write(() => {
+          this.object.age = 24;
+        });
+
+        await Promise.all([completion1, completion2]);
+      });
+    });
   });
 
   describe("Results", () => {
-    type Person = { name: string };
+    type Person = { name: string; age: number | undefined; friends: Realm.List<Person> };
     // change: with / without key-paths
     openRealmBeforeEach({
       schema: [
@@ -415,6 +671,8 @@ describe("Observable", () => {
           name: "Person",
           properties: {
             name: "string",
+            age: "int?",
+            friends: "Person[]",
           },
         },
       ],
@@ -422,7 +680,11 @@ describe("Observable", () => {
 
     beforeEach(function (this: RealmObjectContext<Person>) {
       this.object = this.realm.write(() => {
-        return this.realm.create<Person>("Person", { name: "Alice" });
+        const alice = this.realm.create<Person>("Person", { name: "Alice" });
+        const bob = this.realm.create<Person>("Person", { name: "Bob" });
+        const charlie = this.realm.create<Person>("Person", { name: "Charlie" });
+        alice.friends.push(bob, charlie);
+        return alice;
       });
     });
 
@@ -430,27 +692,30 @@ describe("Observable", () => {
       expectObservableMethods(this.realm.objects("Person"));
     });
 
-    it("calls listener initially", async function (this: RealmObjectContext<Person>) {
+    it("throws on listener reuse", function (this: RealmObjectContext<Person>) {
       const collection = this.realm.objects("Person");
-      await expectCollectionNotifications(collection, [
-        {
-          deletions: [],
-          insertions: [],
-          newModifications: [],
-          oldModifications: [],
-        },
-      ]);
+      collection.addListener(noop);
+      expect(() => {
+        collection.addListener(noop);
+      }).throws("Remove callback before adding it again");
+    });
+
+    it("calls listener initially", async function (this: RealmObjectContext<Person>) {
+      await expectCollectionNotifications(this.realm.objects("Person"), undefined, [EMPTY_COLLECTION_CHANGESET]);
+    });
+
+    it("calls listener initially (passing key-path as string)", async function (this: RealmObjectContext<Person>) {
+      await expectCollectionNotifications(this.realm.objects("Person"), "name", [EMPTY_COLLECTION_CHANGESET]);
+    });
+
+    it("calls listener initially (passing key-path as array)", async function (this: RealmObjectContext<Person>) {
+      await expectCollectionNotifications(this.realm.objects("Person"), ["name"], [EMPTY_COLLECTION_CHANGESET]);
     });
 
     it("calls listener", async function (this: RealmObjectContext<Person>) {
       const collection = this.realm.objects("Person");
-      await expectCollectionNotifications(collection, [
-        {
-          deletions: [],
-          insertions: [],
-          newModifications: [],
-          oldModifications: [],
-        },
+      await expectCollectionNotifications(collection, undefined, [
+        EMPTY_COLLECTION_CHANGESET,
         () => {
           this.realm.write(() => {
             this.object.name = "Bob";
@@ -490,6 +755,229 @@ describe("Observable", () => {
         },
       });
     });
+
+    describe("key-path filtered", () => {
+      it("fires on relevant changes to a primitive", async function (this: RealmObjectContext<Person>) {
+        const collection = this.realm.objects<Person>("Person").filtered("name = $0 OR age = 42", "Alice");
+        await expectCollectionNotifications(
+          collection,
+          ["name"],
+          [
+            EMPTY_COLLECTION_CHANGESET,
+            () => {
+              // Updating the age to 42 will ensure the object doesn't leave the results
+              this.realm.write(() => {
+                this.object.name = "Alex";
+                this.object.age = 42;
+              });
+            },
+            {
+              deletions: [],
+              insertions: [],
+              newModifications: [0],
+              oldModifications: [0],
+            },
+            () => {
+              // Now that nothing matches, the object will be deleted from the collection.
+              this.realm.write(() => {
+                this.object.name = "Alan";
+                this.object.age = 24;
+              });
+            },
+            {
+              deletions: [0],
+              insertions: [],
+              newModifications: [],
+              oldModifications: [],
+            },
+            () => {
+              // Resetting the name, to make the object re-enter into the collection.
+              this.realm.write(() => {
+                this.object.name = "Alice";
+              });
+            },
+            {
+              deletions: [],
+              insertions: [0],
+              newModifications: [],
+              oldModifications: [],
+            },
+            () => {
+              // Perform a couple of changes that shouldn't trigger
+              this.realm.write(() => {
+                this.object.age = 64;
+              });
+
+              const lastFriend = this.realm.write(() => {
+                return this.object.friends.pop();
+              });
+              assert(lastFriend);
+              this.realm.write(() => {
+                this.object.friends.push(lastFriend);
+              });
+            },
+          ],
+        );
+      });
+
+      it("fires on relevant changes to a list", async function (this: RealmObjectContext<Person>) {
+        const collection = this.realm.objects<Person>("Person").filtered("name = $0 OR age = 42", "Alice");
+        await expectCollectionNotifications(
+          collection,
+          ["friends"],
+          [
+            EMPTY_COLLECTION_CHANGESET,
+            () => {
+              this.realm.write(() => {
+                this.object.friends.pop();
+              });
+            },
+            {
+              deletions: [],
+              insertions: [],
+              newModifications: [0],
+              oldModifications: [0],
+            },
+            // Perform a couple of changes that shouldn't trigger
+            () => {
+              this.realm.write(() => {
+                this.object.age = 24;
+              });
+              this.realm.write(() => {
+                this.object.friends[0].name = "Bart";
+              });
+            },
+          ],
+        );
+      });
+
+      it("fires on relevant changes to a primitive of a list", async function (this: RealmObjectContext<Person>) {
+        const collection = this.realm.objects<Person>("Person").filtered("name = $0 OR age = 42", "Alice");
+        await expectCollectionNotifications(
+          collection,
+          ["friends.name"],
+          [
+            EMPTY_COLLECTION_CHANGESET,
+            () => {
+              this.realm.write(() => {
+                this.object.friends[0].name = "Bobby";
+              });
+            },
+            {
+              deletions: [],
+              insertions: [],
+              newModifications: [0],
+              oldModifications: [0],
+            },
+            // Perform a couple of changes that shouldn't trigger
+            () => {
+              this.realm.write(() => {
+                this.object.age = 24;
+              });
+              this.realm.write(() => {
+                this.object.friends[0].age = 24;
+              });
+            },
+          ],
+        );
+      });
+
+      it("fires on relevant changes to a wildcard", async function (this: RealmObjectContext<Person>) {
+        const collection = this.realm.objects<Person>("Person").filtered("name = $0 OR age = 42", "Alice");
+        await expectCollectionNotifications(
+          collection,
+          ["*"],
+          [
+            EMPTY_COLLECTION_CHANGESET,
+            () => {
+              this.realm.write(() => {
+                collection[0].name = "Alice";
+              });
+            },
+            {
+              deletions: [],
+              insertions: [],
+              newModifications: [0],
+              oldModifications: [0],
+            },
+            () => {
+              this.realm.write(() => {
+                collection[0].age = 42;
+              });
+            },
+            {
+              deletions: [],
+              insertions: [],
+              newModifications: [0],
+              oldModifications: [0],
+            },
+            // Perform a couple of changes that shouldn't trigger
+            () => {
+              this.realm.write(() => {
+                collection[0].friends[0].name = "Barney";
+              });
+              this.realm.write(() => {
+                collection[0].friends[0].age = 34;
+              });
+            },
+          ],
+        );
+      });
+
+      it("combines key-paths when delivering notifications", async function (this: RealmObjectContext<Person>) {
+        const collection = this.realm.objects<Person>("Person").filtered("name = $0 OR name = $1", "Alice", "Alex");
+
+        const completion1 = expectCollectionNotifications(
+          collection,
+          ["name"],
+          [
+            EMPTY_COLLECTION_CHANGESET,
+            {
+              deletions: [],
+              insertions: [],
+              newModifications: [0],
+              oldModifications: [0],
+            },
+            {
+              deletions: [],
+              insertions: [],
+              newModifications: [0],
+              oldModifications: [0],
+            },
+          ],
+        );
+
+        const completion2 = expectCollectionNotifications(
+          collection,
+          ["age"],
+          [
+            EMPTY_COLLECTION_CHANGESET,
+            {
+              deletions: [],
+              insertions: [],
+              newModifications: [0],
+              oldModifications: [0],
+            },
+            {
+              deletions: [],
+              insertions: [],
+              newModifications: [0],
+              oldModifications: [0],
+            },
+          ],
+        );
+
+        this.realm.write(() => {
+          this.object.name = "Alex";
+        });
+
+        this.realm.write(() => {
+          this.object.age = 24;
+        });
+
+        await Promise.all([completion1, completion2]);
+      });
+    });
   });
 
   describe("List", () => {
@@ -520,27 +1008,30 @@ describe("Observable", () => {
       expectObservableMethods(this.object.friends);
     });
 
-    it("calls listener initially", async function (this: RealmObjectContext<Person>) {
+    it("throws on listener reuse", function (this: RealmObjectContext<Person>) {
       const collection = this.object.friends;
-      await expectCollectionNotifications(collection, [
-        {
-          deletions: [],
-          insertions: [],
-          newModifications: [],
-          oldModifications: [],
-        },
-      ]);
+      collection.addListener(noop);
+      expect(() => {
+        collection.addListener(noop);
+      }).throws("Remove callback before adding it again");
+    });
+
+    it("calls listener initially", async function (this: RealmObjectContext<Person>) {
+      await expectCollectionNotifications(this.object.friends, undefined, [EMPTY_COLLECTION_CHANGESET]);
+    });
+
+    it("calls listener initially (passing key-path as string)", async function (this: RealmObjectContext<Person>) {
+      await expectCollectionNotifications(this.object.friends, "name", [EMPTY_COLLECTION_CHANGESET]);
+    });
+
+    it("calls listener initially (passing key-path as array)", async function (this: RealmObjectContext<Person>) {
+      await expectCollectionNotifications(this.object.friends, ["name"], [EMPTY_COLLECTION_CHANGESET]);
     });
 
     it("calls listener", async function (this: RealmObjectContext<Person>) {
       const collection = this.object.friends;
-      const completion = expectCollectionNotifications(collection, [
-        {
-          deletions: [],
-          insertions: [],
-          newModifications: [],
-          oldModifications: [],
-        },
+      const completion = expectCollectionNotifications(collection, undefined, [
+        EMPTY_COLLECTION_CHANGESET,
         () => {
           this.realm.write(() => {
             collection[1].name = "Diana";
@@ -612,27 +1103,30 @@ describe("Observable", () => {
       expectObservableMethods(this.object.friends);
     });
 
-    it("calls listener initially", async function (this: RealmObjectContext<Person>) {
+    it("throws on listener reuse", function (this: RealmObjectContext<Person>) {
       const collection = this.object.friends;
-      await expectCollectionNotifications(collection, [
-        {
-          deletions: [],
-          insertions: [],
-          oldModifications: [],
-          newModifications: [],
-        },
-      ]);
+      collection.addListener(noop);
+      expect(() => {
+        collection.addListener(noop);
+      }).throws("Remove callback before adding it again");
+    });
+
+    it("calls listener initially", async function (this: RealmObjectContext<Person>) {
+      await expectCollectionNotifications(this.object.friends, undefined, [EMPTY_COLLECTION_CHANGESET]);
+    });
+
+    it("calls listener initially (passing key-path as string)", async function (this: RealmObjectContext<Person>) {
+      await expectCollectionNotifications(this.object.friends, "name", [EMPTY_COLLECTION_CHANGESET]);
+    });
+
+    it("calls listener initially (passing key-path as array)", async function (this: RealmObjectContext<Person>) {
+      await expectCollectionNotifications(this.object.friends, ["name"], [EMPTY_COLLECTION_CHANGESET]);
     });
 
     it("calls listener", async function (this: RealmObjectContext<Person>) {
       const collection = this.object.friends;
-      const completion = expectCollectionNotifications(collection, [
-        {
-          deletions: [],
-          insertions: [],
-          oldModifications: [],
-          newModifications: [],
-        },
+      await expectCollectionNotifications(collection, undefined, [
+        EMPTY_COLLECTION_CHANGESET,
         () => {
           this.realm.write(() => {
             // collection["bob"].name = "Bobby";
@@ -647,8 +1141,6 @@ describe("Observable", () => {
           newModifications: [],
         },
       ]);
-
-      await completion;
     });
 
     it("removes listeners", async function (this: RealmObjectContext<Person>) {
@@ -711,6 +1203,7 @@ describe("Observable", () => {
         const alice = this.realm.create<Person>("Person", { name: "Alice" });
         const bob = this.realm.create<Person>("Person", { name: "Bob" });
         alice.friendsByName.set({ bob });
+        bob.friendsByName.set({ alice });
         return alice;
       });
     });
@@ -719,30 +1212,33 @@ describe("Observable", () => {
       expectObservableMethods(this.object.friendsByName);
     });
 
-    it("calls listener initially", async function (this: RealmObjectContext<Person>) {
+    it("throws on listener reuse", function (this: RealmObjectContext<Person>) {
       const collection = this.object.friendsByName;
-      await expectDictionaryNotifications(collection, [
-        {
-          deletions: [],
-          insertions: [],
-          modifications: [],
-        },
-      ]);
+      collection.addListener(noop);
+      expect(() => {
+        collection.addListener(noop);
+      }).throws("Remove callback before adding it again");
+    });
+
+    it("calls listener initially", async function (this: RealmObjectContext<Person>) {
+      await expectDictionaryNotifications(this.object.friendsByName, undefined, [EMPTY_DICTIONARY_CHANGESET]);
+    });
+
+    it("calls listener initially (passing key-path as string)", async function (this: RealmObjectContext<Person>) {
+      await expectDictionaryNotifications(this.object.friendsByName, "name", [EMPTY_DICTIONARY_CHANGESET]);
+    });
+
+    it("calls listener initially (passing key-path as array)", async function (this: RealmObjectContext<Person>) {
+      await expectDictionaryNotifications(this.object.friendsByName, ["name"], [EMPTY_DICTIONARY_CHANGESET]);
     });
 
     it("calls listener", async function (this: RealmObjectContext<Person>) {
       const collection = this.object.friendsByName;
-      const completion = expectDictionaryNotifications(collection, [
-        {
-          deletions: [],
-          insertions: [],
-          modifications: [],
-        },
+      await expectDictionaryNotifications(collection, undefined, [
+        EMPTY_DICTIONARY_CHANGESET,
         () => {
           this.realm.write(() => {
-            // collection["bob"].name = "Bobby";
-            // TODO: It seems we cannot trigger a notification when a property value changes.
-            collection["bob"] = this.object;
+            collection["bob"].name = "Bobby";
           });
         },
         {
@@ -751,8 +1247,6 @@ describe("Observable", () => {
           modifications: ["bob"],
         },
       ]);
-
-      await completion;
     });
 
     it("removes listeners", async function (this: RealmObjectContext<Person>) {
@@ -778,6 +1272,104 @@ describe("Observable", () => {
             collection["bob"] = this.object;
           });
         },
+      });
+    });
+
+    describe("key-path filtered listeners", () => {
+      it("fires on relevant changes to a primitive", async function (this: RealmObjectContext<Person>) {
+        const alice = this.object;
+        const [bob] = this.realm.objects<Person>("Person").filtered("name = $0", "Bob");
+        assert(bob);
+
+        const collection = this.object.friendsByName;
+        await expectDictionaryNotifications(
+          collection,
+          ["name"],
+          [
+            EMPTY_DICTIONARY_CHANGESET,
+            () => {
+              this.realm.write(() => {
+                bob.name = "Bobby";
+              });
+            },
+            {
+              deletions: [],
+              insertions: [],
+              modifications: ["bob"],
+            },
+            () => {
+              // Let's make alice befriend herself
+              this.realm.write(() => {
+                this.object.friendsByName["alice"] = alice;
+              });
+            },
+            {
+              deletions: [],
+              insertions: ["alice"],
+              modifications: [],
+            },
+            () => {
+              this.realm.write(() => {
+                delete this.object.friendsByName["bob"];
+              });
+            },
+            {
+              deletions: ["bob"],
+              insertions: [],
+              modifications: [],
+            },
+            () => {
+              // Perform a couple of changes that shouldn't trigger
+              this.realm.write(() => {
+                assert(bob);
+                bob.name = "Bart";
+              });
+            },
+          ],
+        );
+      });
+
+      it("fires on relevant changes to a nested dictionary entry's primitive", async function (this: RealmObjectContext<Person>) {
+        const [bob] = this.realm.objects<Person>("Person").filtered("name = $0", "Bob");
+        assert(bob);
+
+        const collection = this.object.friendsByName;
+        await expectDictionaryNotifications(
+          collection,
+          ["friendsByName.name"],
+          [
+            EMPTY_DICTIONARY_CHANGESET,
+            () => {
+              this.realm.write(() => {
+                this.object.friendsByName["bob"].friendsByName["alice"].name = "Alex";
+              });
+            },
+            {
+              deletions: [],
+              insertions: [],
+              modifications: ["bob"],
+            },
+            () => {
+              this.realm.write(() => {
+                delete this.object.friendsByName["bob"];
+              });
+            },
+            {
+              deletions: ["bob"],
+              insertions: [],
+              modifications: [],
+            },
+            // Perform a couple of changes that shouldn't trigger
+            () => {
+              this.realm.write(() => {
+                this.object.name = "Alice";
+              });
+              this.realm.write(() => {
+                bob.name = "Bobby";
+              });
+            },
+          ],
+        );
       });
     });
   });

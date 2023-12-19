@@ -492,6 +492,7 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
    * @param callback.changes - A dictionary with information about the changes.
    * @param callback.changes.deleted - Is `true` if the object has been deleted.
    * @param callback.changes.changedProperties  - An array of properties that have changed their value.
+   * @param keyPaths - Indicates a lower bound on the changes relevant for the listener. This is a lower bound, since if multiple listeners are added (each with their own `keyPaths`) the union of these key-paths will determine the changes that are considered relevant for all listeners registered on the object. In other words: A listener might fire more than the key-paths specify, if other listeners with different key-paths are present.
    * @throws A {@link TypeAssertionError} if `callback` is not a function.
    * @example
    * wine.addListener((obj, changes) => {
@@ -502,15 +503,19 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
    *      console.log(` ${prop}`);
    *   });
    * })
+   * @example
+   * wine.addListener((obj, changes) => {
+   *  console.log("The wine got deleted or its brand might have changed");
+   * }, ["brand"])
    * @note Adding the listener is an asynchronous operation, so the callback is invoked the first time to notify the caller when the listener has been added.
    * Thus, when the callback is invoked the first time it will contain empty array for `changes.changedProperties`.
    */
-  addListener(callback: ObjectChangeCallback<T>): void {
+  addListener(callback: ObjectChangeCallback<T>, keyPaths?: string | string[]): void {
     assert.function(callback);
     if (!this[INTERNAL_LISTENERS]) {
       this[INTERNAL_LISTENERS] = new ObjectListeners<T>(this[REALM].internal, this);
     }
-    this[INTERNAL_LISTENERS].addListener(callback);
+    this[INTERNAL_LISTENERS].addListener(callback, typeof keyPaths === "string" ? [keyPaths] : keyPaths);
   }
 
   /**

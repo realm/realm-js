@@ -4,11 +4,20 @@
 * None
 
 ### Enhancements
+* Added an optional third `keyPaths` argument to the `addListener` methods of `Collection` and `Object`. Use this to indicate a lower bound on the changes relevant for the listener. This is a lower bound, since if multiple listeners are added (each with their own "key paths") the union of these key-paths will determine the changes that are considered relevant for all listeners registered on the object or collection. In other words: A listener might fire more than the key-paths specify, if other listeners with different key-paths are present. ([#6285](https://github.com/realm/realm-js/issues/6285))
+  ```ts
+  // Adding a listener that will fire only on changes to the `location` property (if no other key-path listeners are added to the collection).
+  cars.addListener((collection, changes) => {
+    console.log("A car location changed");
+  }, ["location"]);
+  ```
 * Exceptions thrown during bootstrap application will now be surfaced to the user via the sync error handler rather than terminating the program with an unhandled exception. ([realm/realm-core#7197](https://github.com/realm/realm-core/pull/7197))
 
 ### Fixed
 * Exceptions thrown during bootstrap application could crash the sync client with an `!m_sess` assertion. ([realm/realm-core#7196](https://github.com/realm/realm-core/issues/7196), since v10.18.0)
 * If a `SyncSession` was explicitly resumed via `reconnect()` while it was waiting to auto-resume after a non-fatal error and then another non-fatal error was received, the sync client could crash with a `!m_try_again_activation_timer` assertion. ([realm/realm-core#6961](https://github.com/realm/realm-core/issues/6961), since device sync was introduced)
+* Adding the same callback function as a listener on a `Collection` or `Object` used to be undefined behavior. Now it throws, which results in runtime errors that can be resolved by ensuring that the callback is only added once per object. ([#6310](https://github.com/realm/realm-js/pull/6310))
+
 
 ### Compatibility
 * React Native >= v0.71.4
@@ -31,6 +40,7 @@
 * Fixed bug where apps running under JavaScriptCore on Android will terminate with the error message `No identifiers allowed directly after numeric literal`. ([#6194](https://github.com/realm/realm-js/issues/6194), since v12.2.0)
 * When an object had an embedded object as one of its properties, updating that property to `null` or `undefined` did not update the property in the database. ([#6280](https://github.com/realm/realm-js/issues/6280), since v12.0.0)
 * Fixed download of platform + arch specific prebuilt binaries when building an Electron app using `electron-builder`. ([#3828](https://github.com/realm/realm-js/issues/3828))
+* Notification listeners on a `Dictionary` would only fire when the dictionary itself changed (via inserts or deletions) but not when changes were made to the underlying objects. ([#6310](https://github.com/realm/realm-js/pull/6310), since v12.0.0)
 
 * Fixed deadlock which occurred when accessing the current user from the `App` from within a callback from the `User` listener. ([realm/realm-core#7183](https://github.com/realm/realm-core/issues/7183), since v12.2.1)
 * Errors encountered while reapplying local changes for client reset recovery on partition-based sync Realms would result in the client reset attempt not being recorded, possibly resulting in an endless loop of attempting and failing to automatically recover the client reset. Flexible sync and errors from the server after completing the local recovery were handled correctly. ([realm/realm-core#7149](https://github.com/realm/realm-core/pull/7149), since v10.3.0-rc.1)

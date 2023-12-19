@@ -339,6 +339,7 @@ classes:
       - compact
       - convert
       - verify_open
+      - create_key_path_array
       - close
       # JS-specific
       - DOLLAR_addr

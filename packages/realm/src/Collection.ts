@@ -37,14 +37,14 @@ export abstract class Collection<
 > implements Iterable<T>
 {
   /** @internal */
-  private listeners: Listeners<ChangeCallbackType, binding.NotificationToken>;
+  private listeners: Listeners<ChangeCallbackType, binding.NotificationToken, [string[] | undefined]>;
 
   /** @internal */
-  constructor(addListener: CallbackAdder<ChangeCallbackType, binding.NotificationToken>) {
+  constructor(addListener: CallbackAdder<ChangeCallbackType, binding.NotificationToken, [string[] | undefined]>) {
     if (arguments.length === 0) {
       throw new IllegalConstructorError("Collection");
     }
-    this.listeners = new Listeners<ChangeCallbackType, binding.NotificationToken>({
+    this.listeners = new Listeners({
       add: addListener,
       remove(token) {
         token.unregister();
@@ -113,6 +113,7 @@ export abstract class Collection<
    * @param callback.changes.newModifications - The indices in the collection where objects were modified.
    * @param callback.changes.oldModifications - The indices in the collection where objects were modified.
    * @param callback.changes.deletions - The indices in the collection where objects were deleted.
+   * @param keyPaths - Indicates a lower bound on the changes relevant for the listener. This is a lower bound, since if multiple listeners are added (each with their own `keyPaths`) the union of these key-paths will determine the changes that are considered relevant for all listeners registered on the collection. In other words: A listener might fire more than the key-paths specify, if other listeners with different key-paths are present.
    * @note `deletions and `oldModifications` report the indices in the collection before the change happened,
    * while `insertions` and `newModifications` report the indices into the new version of the collection.
    * @throws A {@link TypeAssertionError} if `callback` is not a function.
@@ -125,12 +126,16 @@ export abstract class Collection<
    *  console.log(`${changes.deletions.length} deletions`);
    *  console.log(`new size of collection: ${collection.length}`);
    * });
+   * @example
+   * wines.addListener((collection, changes) => {
+   *  console.log("A wine's brand might have changed");
+   * }, ["brand"]);
    * @note Adding the listener is an asynchronous operation, so the callback is invoked the first time to notify the caller when the listener has been added.
    * Thus, when the callback is invoked the first time it will contain empty arrays for each property in the `changes` object.
    */
-  addListener(callback: ChangeCallbackType): void {
+  addListener(callback: ChangeCallbackType, keyPaths?: string | string[]): void {
     assert.function(callback, "callback");
-    this.listeners.add(callback);
+    this.listeners.add(callback, typeof keyPaths === "string" ? [keyPaths] : keyPaths);
   }
 
   /**

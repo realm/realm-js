@@ -115,31 +115,34 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
     if (arguments.length === 0 || !(internal instanceof binding.Dictionary)) {
       throw new IllegalConstructorError("Dictionary");
     }
-    super((callback) => {
-      return this[INTERNAL].addKeyBasedNotificationCallback(({ deletions, insertions, modifications }) => {
-        try {
-          callback(proxied, {
-            deletions: deletions.map((value) => {
-              assert.string(value);
-              return value;
-            }),
-            insertions: insertions.map((value) => {
-              assert.string(value);
-              return value;
-            }),
-            modifications: modifications.map((value) => {
-              assert.string(value);
-              return value;
-            }),
-          });
-        } catch (err) {
-          // Scheduling a throw on the event loop,
-          // since throwing synchronously here would result in an abort in the calling C++
-          setImmediate(() => {
-            throw err;
-          });
-        }
-      }, []);
+    super((listener, keyPaths) => {
+      return this[INTERNAL].addKeyBasedNotificationCallback(
+        ({ deletions, insertions, modifications }) => {
+          try {
+            listener(proxied, {
+              deletions: deletions.map((value) => {
+                assert.string(value);
+                return value;
+              }),
+              insertions: insertions.map((value) => {
+                assert.string(value);
+                return value;
+              }),
+              modifications: modifications.map((value) => {
+                assert.string(value);
+                return value;
+              }),
+            });
+          } catch (err) {
+            // Scheduling a throw on the event loop,
+            // since throwing synchronously here would result in an abort in the calling C++
+            setImmediate(() => {
+              throw err;
+            });
+          }
+        },
+        keyPaths ? realm.internal.createKeyPathArray(internal.objectSchema.name, keyPaths) : keyPaths,
+      );
     });
 
     const proxied = new Proxy(this, PROXY_HANDLER) as Dictionary<T>;
