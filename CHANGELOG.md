@@ -4,11 +4,11 @@
 * None
 
 ### Enhancements
-* None
+* Exceptions thrown during bootstrap application will now be surfaced to the user via the sync error handler rather than terminating the program with an unhandled exception. ([realm/realm-core#7197](https://github.com/realm/realm-core/pull/7197))
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None
+* Exceptions thrown during bootstrap application could crash the sync client with an `!m_sess` assertion. ([realm/realm-core#7196](https://github.com/realm/realm-core/issues/7196), since v10.18.0)
+* If a `SyncSession` was explicitly resumed via `reconnect()` while it was waiting to auto-resume after a non-fatal error and then another non-fatal error was received, the sync client could crash with a `!m_try_again_activation_timer` assertion. ([realm/realm-core#6961](https://github.com/realm/realm-core/issues/6961), since device sync was introduced)
 
 ### Compatibility
 * React Native >= v0.71.4
@@ -16,9 +16,7 @@
 * File format: generates Realms with format v23 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-<!-- * Either mention core version or upgrade -->
-<!-- * Using Realm Core vX.Y.Z -->
-<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
+* Upgraded Realm Core from v13.24.1 to v13.25.0. ([#6324](https://github.com/realm/realm-js/issues/6324))
 
 ## 12.4.0 (2023-12-13)
 
