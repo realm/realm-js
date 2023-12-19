@@ -68,47 +68,22 @@ describe("Test Harness", function (this: Mocha.Suite) {
 });
 
 import Realm from "realm";
+import * as logBuffer from "./utils/buffered-log";
 
 // Disable the logger to avoid console flooding
 const { printLogAfterTest = false, defaultLogLevel = printLogAfterTest ? "all" : "off" } = environment;
 Realm.setLogLevel(defaultLogLevel);
 
-import chalk from "chalk";
-
-/**
- * Contains the Realm log since the test started.
- */
-let log: { level: ValidRealmLogLevel; message: string }[] = [];
-
 if (printLogAfterTest) {
-  Realm.setLogger((level: Realm.App.Sync.LogLevel, message: string) => {
-    if (level !== "off" && level !== "all") {
-      log.push({ level, message });
-    }
-  });
+  Realm.setLogger(logBuffer.append);
 }
 
 // Reset the log before each test
-beforeEach(() => {
-  log = [];
-});
+beforeEach("Clear buffered Realm log", logBuffer.clear);
 
-const logColors: Record<ValidRealmLogLevel, chalk.Chalk> = {
-  trace: chalk.dim,
-  debug: chalk.dim,
-  detail: chalk.dim,
-  info: chalk.blue,
-  warn: chalk.yellow,
-  error: chalk.red,
-  fatal: chalk.red,
-};
-
-afterEach(function (this: Mocha.Context) {
+afterEach("Print buffered Realm log", function (this: Mocha.Context) {
   if (printLogAfterTest === true || (printLogAfterTest === "on-failure" && this.currentTest?.isFailed())) {
-    for (const { level, message } of log) {
-      const color = logColors[level];
-      console.log(`[${color(level)}] ${message}`);
-    }
+    logBuffer.printAndClear();
   }
 });
 

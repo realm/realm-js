@@ -19,6 +19,8 @@
 import Realm, { User } from "realm";
 
 import { openRealm, OpenRealmConfiguration } from "../utils/open-realm";
+import * as logBuffer from "../utils/buffered-log";
+import { sleep } from "../utils/sleep";
 
 /**
  * Hook for use in before/beforeEach which opens a Realm with the specified config
@@ -30,36 +32,42 @@ import { openRealm, OpenRealmConfiguration } from "../utils/open-realm";
  */
 export function openRealmHook(config: OpenRealmConfiguration = {}) {
   return async function openRealmHandler(this: Partial<RealmContext> & UserContext & Mocha.Context): Promise<void> {
-    this.longTimeout();
-    if (this.realm) {
-      throw new Error("Unexpected realm on context, use only one openRealmBefore per test");
-    } else {
-      this.closeRealm = async () => {
-        console.warn("🤷 Skipped closing a Realm that failed to open");
-      };
-      const { realm, config: actualConfig } = await openRealm(config, this.user as unknown as User);
-      this.realm = realm;
-      this.closeRealm = async ({
-        clearTestState = true,
-        deleteFile = true,
-        reopen = false,
-      }: Partial<CloseRealmOptions>) => {
-        if (this.realm && !this.realm.isClosed) {
-          this.realm.close();
-        }
-        // Get rid of the Realm in any case
-        delete this.realm;
-        if (deleteFile) {
-          Realm.deleteFile(actualConfig);
-        }
-        if (clearTestState) {
-          Realm.clearTestState();
-        }
-        if (reopen) {
-          const { realm } = await openRealm(actualConfig, this.user as unknown as User);
-          this.realm = realm;
-        }
-      };
+    try {
+      this.longTimeout();
+      if (this.realm) {
+        throw new Error("Unexpected realm on context, use only one openRealmBefore per test");
+      } else {
+        this.closeRealm = async () => {
+          console.warn("🤷 Skipped closing a Realm that failed to open");
+        };
+        const { realm, config: actualConfig } = await openRealm(config, this.user as unknown as User);
+        this.realm = realm;
+        this.closeRealm = async ({
+          clearTestState = true,
+          deleteFile = true,
+          reopen = false,
+        }: Partial<CloseRealmOptions>) => {
+          if (this.realm && !this.realm.isClosed) {
+            this.realm.close();
+          }
+          // Get rid of the Realm in any case
+          delete this.realm;
+          if (deleteFile) {
+            Realm.deleteFile(actualConfig);
+          }
+          if (clearTestState) {
+            Realm.clearTestState();
+          }
+          if (reopen) {
+            const { realm } = await openRealm(actualConfig, this.user as unknown as User);
+            this.realm = realm;
+          }
+        };
+      }
+    } catch (err) {
+      // When it fails here, we cannot rely on this being printed from the after each hook
+      logBuffer.printAndClear();
+      throw err;
     }
   };
 }
