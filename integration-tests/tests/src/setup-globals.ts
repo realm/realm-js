@@ -71,10 +71,9 @@ import Realm from "realm";
 import * as logBuffer from "./utils/buffered-log";
 
 // Disable the logger to avoid console flooding
-const { printLogAfterTest = false, defaultLogLevel = printLogAfterTest ? "all" : "off" } = environment;
-Realm.setLogLevel(defaultLogLevel);
+Realm.setLogLevel(logBuffer.defaultLogLevel);
 
-if (printLogAfterTest) {
+if (logBuffer.printLogAfterTest) {
   Realm.setLogger(logBuffer.append);
 }
 
@@ -82,8 +81,13 @@ if (printLogAfterTest) {
 beforeEach("Clear buffered Realm log", logBuffer.clear);
 
 afterEach("Print buffered Realm log", function (this: Mocha.Context) {
-  if (printLogAfterTest === true || (printLogAfterTest === "on-failure" && this.currentTest?.isFailed())) {
+  if (
+    logBuffer.printLogAfterTest === true ||
+    (logBuffer.printLogAfterTest === "on-failure" && this.currentTest && this.currentTest.state === "failed")
+  ) {
+    console.log("=== Printing Realm log since start of test ===");
     logBuffer.printAndClear();
+    console.log("=== End of Realm log ===");
   }
 });
 

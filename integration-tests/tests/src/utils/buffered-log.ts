@@ -19,10 +19,11 @@
 import chalk from "chalk";
 import Realm from "realm";
 
-/**
- * Contains the Realm log since the test started.
- */
-let log: { level: ValidRealmLogLevel; message: string }[] = [];
+type LogEntry = { level: ValidRealmLogLevel; message: string };
+
+const log: LogEntry[] = [];
+
+export const { printLogAfterTest = false, defaultLogLevel = printLogAfterTest ? "all" : "off" } = environment;
 
 export function append(level: Realm.App.Sync.LogLevel, message: string) {
   if (level !== "off" && level !== "all") {
@@ -31,7 +32,7 @@ export function append(level: Realm.App.Sync.LogLevel, message: string) {
 }
 
 export function clear() {
-  log = [];
+  log.splice(0, log.length);
 }
 
 const logColors: Record<ValidRealmLogLevel, chalk.Chalk> = {
@@ -45,7 +46,6 @@ const logColors: Record<ValidRealmLogLevel, chalk.Chalk> = {
 };
 
 export function printAndClear() {
-  console.log("printAndClearLogBuffer called");
   for (const { level, message } of log) {
     const color = logColors[level];
     console.log(`[${color(level)}] ${message}`);

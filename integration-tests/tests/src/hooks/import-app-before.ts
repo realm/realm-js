@@ -17,10 +17,11 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import Realm from "realm";
+import { AppConfig } from "@realm/app-importer";
 
 import { importApp } from "../utils/import-app";
-import { AppConfig } from "@realm/app-importer";
 import { mongodbServiceType } from "../utils/ExtendedAppConfigBuilder";
+import * as logBuffer from "../utils/buffered-log";
 
 export type AppConfigurationRelaxed = {
   id?: string;
@@ -44,6 +45,8 @@ export function importAppBefore(config: AppConfig | { config: AppConfig }, sdkCo
     } else {
       const { appId, baseUrl } = await importApp(config);
       this.app = new Realm.App({ id: appId, baseUrl, ...sdkConfig });
+      // Un-mute the log to allow log buffer to read from it again
+      Realm.App.Sync.setLogLevel(this.app, logBuffer.defaultLogLevel);
 
       // Extract the sync database name from the config
       const databaseNames: (string | undefined)[] = config.services

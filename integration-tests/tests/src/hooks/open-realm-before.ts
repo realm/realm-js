@@ -20,7 +20,6 @@ import Realm, { User } from "realm";
 
 import { openRealm, OpenRealmConfiguration } from "../utils/open-realm";
 import * as logBuffer from "../utils/buffered-log";
-import { sleep } from "../utils/sleep";
 
 /**
  * Hook for use in before/beforeEach which opens a Realm with the specified config
