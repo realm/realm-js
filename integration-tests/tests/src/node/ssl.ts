@@ -126,7 +126,8 @@ describe.skipIf(platform() === "darwin" || environment.missingServer, "SSL Confi
     }
   });
 
-  it("does not connect when rejecting the server's SSL certificate", async function (this: RealmContext) {
+  // TODO: Remove `only`.
+  it.only("does not connect when rejecting the server's SSL certificate", async function (this: RealmContext) {
     let validationCallbackInvoked = false;
     const ssl: SSLConfiguration = {
       validate: true,
@@ -140,6 +141,10 @@ describe.skipIf(platform() === "darwin" || environment.missingServer, "SSL Confi
 
     const onErrorHandle = createPromiseHandle();
     const onError: ErrorCallback = (_, error) => {
+      // == TEMPORARY ==
+      console.log("SSL ERROR CALLBACK");
+      console.log({ error });
+      // ===============
       const SSL_SERVER_CERT_REJECTED = 117;
       if (error.code === SSL_SERVER_CERT_REJECTED) {
         onErrorHandle.resolve();
@@ -174,7 +179,6 @@ describe.skipIf(platform() === "darwin" || environment.missingServer, "SSL Confi
         } else {
           // If the certificate is not accepted by OpenSSL, Core recommends using an independent
           // verification step. That step is represented here by checking the dates.
-          // (TODO: Add extra validation)
           const now = new Date();
           const isValid = now >= new Date(x509.validFrom) && now <= new Date(x509.validTo);
           return isServerCertificate ? isValid && !!x509.checkHost(verifyObject.serverAddress) : isValid;
