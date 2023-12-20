@@ -2285,29 +2285,46 @@ describe("Lists", () => {
     });
   });
 
+  // https://github.com/realm/realm-js/issues/6322
   describe("Link with primary key", () => {
     openRealmBeforeEach({ schema: [Farm, Farmer] });
 
-    // https://github.com/realm/realm-js/issues/6322
     it("Update - assignment", function (this: RealmContext) {
       this.realm.write(() => {
         this.realm.create("Farmer", { id: 11, currentFarm: { id: 22 } });
       });
 
-      expect(this.realm.objects("Farmer").length).equals(1);
-      expect(this.realm.objectForPrimaryKey("Farmer", 11)).not.to.be.undefined;
-      expect((this.realm.objectForPrimaryKey("Farmer", 11)?.currentFarm as Farm).id).equals(22);
+      expect(this.realm.objects<Farmer>(Farmer).length).equals(1);
+      expect(this.realm.objectForPrimaryKey<Farmer>(Farmer, 11)).not.to.be.undefined;
+      expect(this.realm.objectForPrimaryKey<Farmer>(Farmer, 11)?.currentFarm?.id).equals(22);
 
       this.realm.write(() => {
-        const newFarm = this.realm.create("Farm", { id: 33 });
-        const farmer = this.realm.objectForPrimaryKey("Farmer", 11);
+        const newFarm = this.realm.create(Farm, { id: 33 });
+        const farmer = this.realm.objectForPrimaryKey<Farmer>(Farmer, 11);
         expect(farmer).not.null;
         //@ts-expect-error cannot be null
         farmer.currentFarm = newFarm;
       });
 
-      expect(this.realm.objects("Farm").length).equals(2);
-      expect((this.realm.objectForPrimaryKey("Farmer", 11)?.currentFarm as Farm).id).equals(33);
+      expect(this.realm.objects<Farm>(Farm).length).equals(2);
+      expect(this.realm.objectForPrimaryKey<Farmer>(Farmer, 11)?.currentFarm?.id).equals(33);
+    });
+
+    it("Update - same object", function (this: RealmContext) {
+      this.realm.write(() => {
+        this.realm.create("Farmer", { id: 11, currentFarm: { id: 22 } });
+      });
+
+      const farmer = this.realm.objectForPrimaryKey<Farmer>(Farmer, 11);
+      const farm = this.realm.objectForPrimaryKey<Farm>(Farm, 22);
+
+      this.realm.write(() => {
+        //@ts-expect-error cannot be null
+        farmer.currentFarm = farm;
+      });
+
+      expect(this.realm.objects<Farmer>(Farmer).length).equals(1);
+      expect(this.realm.objects<Farm>(Farm).length).equals(1);
     });
   });
 });
