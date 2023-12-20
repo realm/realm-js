@@ -120,9 +120,7 @@ export class ProgressRealmPromise implements Promise<Realm> {
             if (config.sync?.flexible && !config.openSyncedRealmLocally) {
               const { subscriptions } = realm;
               if (subscriptions.state === SubscriptionSetState.Pending) {
-                console.log("WAIT FOR SYNCHRONIZATION"); // == TEMPORARY ==
                 await subscriptions.waitForSynchronization();
-                console.log("SYNCHRONIZED!"); // == TEMPORARY ==
               }
             }
             return realm;

@@ -72,7 +72,8 @@ describe.skipIf(platform() === "darwin" || environment.missingServer, "SSL Confi
         onError,
         // @ts-expect-error Internal field
         _sessionStopPolicy: SessionStopPolicy.Immediately,
-        // == TEMPORARY ==
+        // Needed when testing rejection of certificates in order to prevent the test
+        // from awaiting/timing out, since the TLS handshake error will be non-fatal.
         cancelWaitsOnNonFatalError: true,
       },
     };
@@ -128,8 +129,7 @@ describe.skipIf(platform() === "darwin" || environment.missingServer, "SSL Confi
     }
   });
 
-  // TODO: Remove `only`.
-  it.only("does not connect when rejecting the server's SSL certificate", async function (this: RealmContext) {
+  it("does not connect when rejecting the server's SSL certificate", async function (this: RealmContext) {
     let validationCallbackInvoked = false;
     const ssl: SSLConfiguration = {
       validate: true,
@@ -143,17 +143,10 @@ describe.skipIf(platform() === "darwin" || environment.missingServer, "SSL Confi
 
     const onErrorHandle = createPromiseHandle();
     const onError: ErrorCallback = (_, error) => {
-      // == TEMPORARY ==
-      console.log("SSL ERROR CALLBACK");
-      console.log({ error });
-      // ===============
       const TLS_HANDSHAKE_FAILED = 1042;
       if (error.code === TLS_HANDSHAKE_FAILED) {
-        console.log("TLS handshake failed");
-        // throw error;
         onErrorHandle.resolve();
       } else {
-        // throw new Error(`Expected the error to be a TLS handshake rejection, got: ${error.reason}`);
         onErrorHandle.reject(`Expected the error to be a TLS handshake rejection, got: ${error.reason}`);
       }
     };

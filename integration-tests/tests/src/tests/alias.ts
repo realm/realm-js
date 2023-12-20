@@ -85,8 +85,7 @@ describe("Aliasing property names using mapTo", () => {
     schema: [PersonSchema, ObjectASchema],
   });
 
-  // TODO: Remove `only`.
-  it.only("supports defining aliases for properties in a schema", function (this: Mocha.Context & RealmContext) {
+  it("supports defining aliases for properties in a schema", function (this: Mocha.Context & RealmContext) {
     const { realm } = this;
 
     // Mapped properties are reported for all variants, no matter if the public_name is set or not.
