@@ -72,6 +72,8 @@ describe.skipIf(platform() === "darwin" || environment.missingServer, "SSL Confi
         onError,
         // @ts-expect-error Internal field
         _sessionStopPolicy: SessionStopPolicy.Immediately,
+        // == TEMPORARY ==
+        cancelWaitsOnNonFatalError: true,
       },
     };
 
@@ -139,7 +141,7 @@ describe.skipIf(platform() === "darwin" || environment.missingServer, "SSL Confi
       },
     };
 
-    // const onErrorHandle = createPromiseHandle();
+    const onErrorHandle = createPromiseHandle();
     const onError: ErrorCallback = (_, error) => {
       // == TEMPORARY ==
       console.log("SSL ERROR CALLBACK");
@@ -148,11 +150,11 @@ describe.skipIf(platform() === "darwin" || environment.missingServer, "SSL Confi
       const TLS_HANDSHAKE_FAILED = 1042;
       if (error.code === TLS_HANDSHAKE_FAILED) {
         console.log("TLS handshake failed");
-        throw error;
-        // onErrorHandle.resolve();
+        // throw error;
+        onErrorHandle.resolve();
       } else {
-        throw new Error(`Expected the error to be a TLS handshake rejection, got: ${error.reason}`);
-        // onErrorHandle.reject(`Expected the error to be a TLS handshake rejection, got: ${error.reason}`);
+        // throw new Error(`Expected the error to be a TLS handshake rejection, got: ${error.reason}`);
+        onErrorHandle.reject(`Expected the error to be a TLS handshake rejection, got: ${error.reason}`);
       }
     };
 
@@ -160,7 +162,7 @@ describe.skipIf(platform() === "darwin" || environment.missingServer, "SSL Confi
       "TLS handshake failed: OpenSSL error: certificate verify failed",
     );
     expect(validationCallbackInvoked).to.be.true;
-    // await onErrorHandle;
+    await onErrorHandle;
   });
 
   it("verifies the server's SSL certificate", async function (this: RealmContext) {
