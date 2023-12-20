@@ -28,7 +28,6 @@ import Realm, {
   ConfigurationWithSync,
   Credentials,
   ErrorCallback,
-  // TODO: Fix import: ProgressRealmPromise,
   SessionStopPolicy,
   SSLConfiguration,
   SSLVerifyObject,
@@ -46,6 +45,14 @@ import { importAppBefore } from "../hooks";
 describe.skipIf(platform() === "darwin" || environment.missingServer, "SSL Configuration", function () {
   this.longTimeout();
   importAppBefore(buildAppConfig("with-flx").anonAuth().flexibleSync());
+
+  beforeEach(async function (this: AppContext & Mocha.Context) {
+    await logIn(this.app);
+  });
+
+  afterEach(async function (this: AppContext & Mocha.Context) {
+    await logOut(this.app);
+  });
 
   async function logIn(app: App): Promise<User> {
     return app.currentUser ?? app.logIn(Credentials.anonymous());
@@ -71,14 +78,6 @@ describe.skipIf(platform() === "darwin" || environment.missingServer, "SSL Confi
     return Realm.open(config);
   }
 
-  beforeEach(async function (this: AppContext & Mocha.Context) {
-    await logIn(this.app);
-  });
-
-  afterEach(async function (this: AppContext & Mocha.Context) {
-    await logOut(this.app);
-  });
-
   it("connects when accepting the server's SSL certificate", async function (this: RealmContext) {
     let validationCallbackInvoked = false;
     const ssl: SSLConfiguration = {
@@ -95,13 +94,14 @@ describe.skipIf(platform() === "darwin" || environment.missingServer, "SSL Confi
     const onError: ErrorCallback = () => (syncErrorCallbackInvoked = true);
 
     const realm = await openRealm(this.app.currentUser, ssl, onError);
-
-    expect(realm.syncSession?.isConnected()).to.be.true;
-    expect(realm.syncSession?.config.ssl).to.deep.equal({ validate: true, certificatePath: undefined });
-    expect(validationCallbackInvoked).to.be.true;
-    expect(syncErrorCallbackInvoked).to.be.false;
-
-    closeRealm(realm);
+    try {
+      expect(realm.syncSession?.isConnected()).to.be.true;
+      expect(realm.syncSession?.config.ssl).to.deep.equal({ validate: true, certificatePath: undefined });
+      expect(validationCallbackInvoked).to.be.true;
+      expect(syncErrorCallbackInvoked).to.be.false;
+    } finally {
+      closeRealm(realm);
+    }
   });
 
   it("connects without validating the server's SSL certificate when 'validate' is 'false'", async function (this: RealmContext) {
@@ -116,13 +116,14 @@ describe.skipIf(platform() === "darwin" || environment.missingServer, "SSL Confi
     const onError: ErrorCallback = () => (syncErrorCallbackInvoked = true);
 
     const realm = await openRealm(this.app.currentUser, ssl, onError);
-
-    expect(realm.syncSession?.isConnected()).to.be.true;
-    expect(realm.syncSession?.config.ssl).to.deep.equal({ validate: false, certificatePath: undefined });
-    expect(validationCallbackInvoked).to.be.false;
-    expect(syncErrorCallbackInvoked).to.be.false;
-
-    closeRealm(realm);
+    try {
+      expect(realm.syncSession?.isConnected()).to.be.true;
+      expect(realm.syncSession?.config.ssl).to.deep.equal({ validate: false, certificatePath: undefined });
+      expect(validationCallbackInvoked).to.be.false;
+      expect(syncErrorCallbackInvoked).to.be.false;
+    } finally {
+      closeRealm(realm);
+    }
   });
 
   it("does not connect when rejecting the server's SSL certificate", async function (this: RealmContext) {
@@ -149,7 +150,7 @@ describe.skipIf(platform() === "darwin" || environment.missingServer, "SSL Confi
 
     await expect(openRealm(this.app.currentUser, ssl, onError)).to.be.rejectedWith("SSL server certificate rejected");
     expect(validationCallbackInvoked).to.be.true;
-    await expect(onErrorHandle).to.not.be.rejected;
+    await onErrorHandle;
   });
 
   it("verifies the server's SSL certificate", async function (this: RealmContext) {
@@ -185,13 +186,14 @@ describe.skipIf(platform() === "darwin" || environment.missingServer, "SSL Confi
     const onError: ErrorCallback = () => (syncErrorCallbackInvoked = true);
 
     const realm = await openRealm(this.app.currentUser, ssl, onError);
-
-    expect(realm.syncSession?.isConnected()).to.be.true;
-    expect(realm.syncSession?.config.ssl).to.deep.equal({ validate: true, certificatePath: undefined });
-    expect(validationCallbackInvoked).to.be.true;
-    expect(syncErrorCallbackInvoked).to.be.false;
-
-    closeRealm(realm);
+    try {
+      expect(realm.syncSession?.isConnected()).to.be.true;
+      expect(realm.syncSession?.config.ssl).to.deep.equal({ validate: true, certificatePath: undefined });
+      expect(validationCallbackInvoked).to.be.true;
+      expect(syncErrorCallbackInvoked).to.be.false;
+    } finally {
+      closeRealm(realm);
+    }
   });
 
   it("calls the certificate validation callback with an SSLVerifyObject", async function (this: RealmContext) {
@@ -217,9 +219,11 @@ describe.skipIf(platform() === "darwin" || environment.missingServer, "SSL Confi
     };
 
     const realm = await openRealm(this.app.currentUser, ssl);
-    await expect(validateHandle).to.not.be.rejected;
-
-    closeRealm(realm);
+    try {
+      await expect(validateHandle).to.not.be.rejected;
+    } finally {
+      closeRealm(realm);
+    }
   });
 
   describe("validate config object", function () {
