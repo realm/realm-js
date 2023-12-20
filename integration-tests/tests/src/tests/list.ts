@@ -416,6 +416,32 @@ TodoList.schema = {
   },
 };
 
+// https://github.com/realm/realm-js/issues/6322
+class Farmer extends Realm.Object<Farmer> {
+  id!: number;
+  currentFarm?: Farm;
+  static schema: Realm.ObjectSchema = {
+    name: "Farmer",
+    primaryKey: "id",
+    properties: {
+      id: "int",
+      currentFarm: "Farm",
+    },
+  };
+}
+
+class Farm extends Realm.Object<Farm> {
+  id!: number;
+
+  static schema: Realm.ObjectSchema = {
+    name: "Farm",
+    primaryKey: "id",
+    properties: {
+      id: "int",
+    },
+  };
+}
+
 describe("Lists", () => {
   describe("constructor", () => {
     openRealmBeforeEach({ schema: [PersonSchema, PersonListSchema] });
@@ -2256,6 +2282,32 @@ describe("Lists", () => {
         expect(() => list.swap(1, 10)).to.throw("Indexes cannot be greater than the size of the list");
         expect(() => list.swap(10, 1)).to.throw("Indexes cannot be greater than the size of the list");
       });
+    });
+  });
+
+  describe("Link with primary key", () => {
+    openRealmBeforeEach({ schema: [Farm, Farmer] });
+
+    // https://github.com/realm/realm-js/issues/6322
+    it("Update - assignment", function (this: RealmContext) {
+      this.realm.write(() => {
+        this.realm.create("Farmer", { id: 11, currentFarm: { id: 22 } });
+      });
+
+      expect(this.realm.objects("Farmer").length).equals(1);
+      expect(this.realm.objectForPrimaryKey("Farmer", 11)).not.to.be.undefined;
+      expect((this.realm.objectForPrimaryKey("Farmer", 11)?.currentFarm as Farm).id).equals(22);
+
+      this.realm.write(() => {
+        const newFarm = this.realm.create("Farm", { id: 33 });
+        const farmer = this.realm.objectForPrimaryKey("Farmer", 11);
+        expect(farmer).not.null;
+        //@ts-expect-error cannot be null
+        farmer.currentFarm = newFarm;
+      });
+
+      expect(this.realm.objects("Farm").length).equals(2);
+      expect((this.realm.objectForPrimaryKey("Farmer", 11)?.currentFarm as Farm).id).equals(33);
     });
   });
 });
