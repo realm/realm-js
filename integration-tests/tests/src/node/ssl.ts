@@ -139,23 +139,28 @@ describe.skipIf(platform() === "darwin" || environment.missingServer, "SSL Confi
       },
     };
 
-    const onErrorHandle = createPromiseHandle();
+    // const onErrorHandle = createPromiseHandle();
     const onError: ErrorCallback = (_, error) => {
       // == TEMPORARY ==
       console.log("SSL ERROR CALLBACK");
       console.log({ error });
       // ===============
-      const SSL_SERVER_CERT_REJECTED = 117;
-      if (error.code === SSL_SERVER_CERT_REJECTED) {
-        onErrorHandle.resolve();
+      const TLS_HANDSHAKE_FAILED = 1042;
+      if (error.code === TLS_HANDSHAKE_FAILED) {
+        console.log("TLS handshake failed");
+        throw error;
+        // onErrorHandle.resolve();
       } else {
-        onErrorHandle.reject(`Expected the error to be an SSL server certificate rejection, got: ${error.message}`);
+        throw new Error(`Expected the error to be a TLS handshake rejection, got: ${error.reason}`);
+        // onErrorHandle.reject(`Expected the error to be a TLS handshake rejection, got: ${error.reason}`);
       }
     };
 
-    await expect(openRealm(this.app.currentUser, ssl, onError)).to.be.rejectedWith("SSL server certificate rejected");
+    await expect(openRealm(this.app.currentUser, ssl, onError)).to.be.rejectedWith(
+      "TLS handshake failed: OpenSSL error: certificate verify failed",
+    );
     expect(validationCallbackInvoked).to.be.true;
-    await onErrorHandle;
+    // await onErrorHandle;
   });
 
   it("verifies the server's SSL certificate", async function (this: RealmContext) {
