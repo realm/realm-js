@@ -31,10 +31,26 @@ const BAAS_PORT = 9090;
 
 dotenv.config();
 
-const { AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY } = process.env;
+const { AWS_PROFILE, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY } = process.env;
+assert(AWS_PROFILE, "Missing AWS_PROFILE env");
 assert(AWS_ACCESS_KEY_ID && AWS_SECRET_ACCESS_KEY, "Missing AWS_ACCESS_KEY_ID or AWS_SECRET_ACCESS_KEY env");
 
 class UsageError extends Error {}
+
+type ExecError = {
+  stdout: string;
+  stderr: string;
+} & Error;
+
+function isExecError(value: unknown): value is ExecError {
+  return (
+    value instanceof Error &&
+    "stdout" in value &&
+    typeof value.stdout === "string" &&
+    "stderr" in value &&
+    typeof value.stderr === "string"
+  );
+}
 
 function registerExitListeners(logPrefix: string, child: cp.ChildProcess) {
   function killChild() {
@@ -62,7 +78,16 @@ function ensureDocker() {
     const version = execSync("docker --version", { encoding: "utf8" }).trim();
     console.log(`Using ${version}`);
   } catch (err) {
-    throw new Error("Do you have the Docker CLI installed?", { cause: err });
+    throw new UsageError("Do you have the Docker CLI installed?", { cause: err });
+  }
+}
+
+function ensureAWSCli() {
+  try {
+    const version = execSync("aws --version", { encoding: "utf8" }).trim();
+    console.log(`Using ${version}`);
+  } catch (err) {
+    throw new UsageError("Do you have the AWS CLI installed?", { cause: err });
   }
 }
 
@@ -145,18 +170,16 @@ async function fetchBaasTag(branch: string) {
 
 function pullBaas(tag: string) {
   try {
-    execSync(`docker pull ${tag}`, { stdio: "inherit" });
+    execSync(`docker pull ${tag}`, { encoding: "utf8" });
   } catch (err) {
-    if (err instanceof Error) {
-      const profilesOutput = execSync("aws configure list-profiles", { encoding: "utf8" }).trim();
-      const profiles = chalk.italic(profilesOutput.split("\n").join(", "));
-      const profileInstruction = `Pick the right profile from this list: ${profiles}`;
-      const profilePlaceholder = chalk.bold("<profile>");
-      const awsCommand = `aws --profile ${profilePlaceholder} ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${ECR_HOSTNAME}`;
-      const runInstruction = `Then run: ${chalk.dim(awsCommand)}`;
-      throw new UsageError(
-        ["Failed to pull docker image - have you authenticated?", profileInstruction, runInstruction].join("\n"),
+    if (isExecError(err) && err.stderr.includes("Your authorization token has expired")) {
+      execSync(`aws --profile ${AWS_PROFILE} sso login`, { stdio: "inherit" });
+      execSync(
+        `aws --profile ${AWS_PROFILE} ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${ECR_HOSTNAME}`,
+        { stdio: "inherit" },
       );
+    } else {
+      throw err;
     }
   }
 }
@@ -188,6 +211,7 @@ yargs(hideBin(process.argv))
       try {
         ensureNodeVersion();
         ensureDocker();
+        ensureAWSCli();
         ensureNoBaas();
 
         if (argv.tag) {
