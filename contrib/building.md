@@ -23,15 +23,13 @@
       - [Additional steps for Windows](#additional-steps-for-windows)
       - [Building for ARM/Linux](#building-for-armlinux)
     - [Building the documentation](#building-the-documentation)
-  - [Installing the project's sub-packages](#installing-the-projects-sub-packages)
+    - [Cleaning up build files](#cleaning-up-build-files)
   - [Running the tests](#running-the-tests)
-    - [Modern tests](#modern-tests)
-    - [Legacy tests](#legacy-tests)
     - [Linting the source code](#linting-the-source-code)
-      - [JS](#js)
+      - [JS/TS](#jsts)
       - [C++](#c-1)
-      - [Testing on Windows](#testing-on-windows)
-      - [Node version setup](#node-version-setup)
+    - [Testing on Windows](#testing-on-windows)
+    - [Node version setup](#node-version-setup)
   - [Testing against real apps](#testing-against-real-apps)
   - [Debugging](#debugging)
     - [Debugging failing Github Actions CI tests](#debugging-failing-github-actions-ci-tests)
@@ -44,8 +42,8 @@ The following dependencies are required. All except Xcode can be installed by fo
 
 - [Xcode](https://developer.apple.com/xcode/) latest Xcode with command line tools installed
   - The latest Xcode should work, which can be downloaded from [Mac App Store](https://itunes.apple.com/us/app/xcode/id497799835?mt=12). To install older Xcode versions, [Xcodes.app](https://github.com/RobotsAndPencils/XcodesApp) is highly recommended
-- [Node.js](https://nodejs.org/en/) version 13 or later
-  - Consider [using NVM](https://github.com/nvm-sh/nvm#installing-and-updating) to enable fast switching between Node.js & NPM versions
+- [Node.js](https://nodejs.org/en/) version 16 or later
+  - We recommend [using NVM](https://github.com/nvm-sh/nvm#installing-and-updating) to enable fast switching between Node.js & NPM versions
 - [CMake](https://cmake.org/) 3.21.4 or later
 - [OpenJDK 8](https://openjdk.java.net/install/)
 - [Android SDK 23+](https://developer.android.com/studio/index.html#command-tools)
@@ -73,9 +71,6 @@ brew install nvm cmake
 
 # Install the latest LTS version of Node.js and set it as the default
 nvm install --lts
-
-# Install the project's JavaScript dependencies
-npm install
 ```
 
 #### iOS
@@ -97,7 +92,7 @@ brew install --cask temurin
 java -version
 ```
 
-Next you need to define some environment variables. The best way to do this is in your shell’s configuration file, e.g. `~/.zshrc`, then open a new terminal window or `source ~/.zshrc` to reload the config. Add the following:
+Next you need to define some environment variables. The best way to do this is in your shell’s configuration file, e.g. `~/.zshrc`, then open a new terminal window or run `source ~/.zshrc` to reload the config. Add the following:
 
 ```sh
 # Location of your Android SDK
@@ -145,7 +140,7 @@ export PATH=<ccache location>/libexec:$PATH
 
 ## Cloning the repository
 
-To clone the RealmJS repository and install git submodules and dependencies.
+To clone the RealmJS repository and install git submodules, dependencies, and subpackage dependencies, run:
 
 ```sh
 git clone https://github.com/realm/realm-js.git
@@ -154,7 +149,10 @@ git submodule update --init --recursive
 npm install
 ```
 
-In order to improve the accuracy of `git blame` locally by ignoring commits in which the code was reformatted by an automated tool, run: `git config blame.ignoreRevsFile .gitignore-revs` from inside the repository.
+In order to improve the accuracy of `git blame` locally by ignoring commits in which the code was reformatted by an automated tool, run the following from inside the repository:
+```sh
+git config blame.ignoreRevsFile .gitignore-revs
+```
 
 ### Cloning the repository on Windows
 
@@ -167,6 +165,7 @@ git clone -c core.symlinks=true https://github.com/realm/realm-js
 
 or manually create the symlinks using directory junctions if you already have the repo cloned:
 
+*TODO: Needs updating:*
 ```cmd
 # run in elevated command prompt
 cd realm-js\react-native\android\src\main\jni
@@ -181,7 +180,8 @@ del assets
 mklink /j assets "../../../../../data"
 ```
 
-Note: If you have cloned the repo previously make sure you remove your `node_modules` directory since it may contain stale dependencies which may cause the build to fail.
+> [!NOTE]
+> If you have cloned the repo previously make sure you remove your `node_modules` directory since it may contain stale dependencies which may cause the build to fail.
 
 ### Visual Studio Code setup
 
@@ -192,13 +192,13 @@ Visual Studio Code is the recommended editor for the best experience working wit
 You should check that VS Code is using the workspace version of TypeScript rather than the VS Code version. This should be automatically configured but does not always seem to take effect. You can do this by:
 
 1. Open the `realm-js` root directory in VS Code and open any TypeScript file
-2. Press Shift+Cmd+P to open the command palette
+2. Press `Shift+Cmd+P` to open the command palette
 3. Start typing `select typescript version` to select the `TypeScript: Select TypeScript Version` command
 4. Ensure `Use Workspace Version` is selected.
 
 #### C++
 
-If you are using Visual Studio Code as your editor, you can get greatly improved C++ Intellisense by installing the [clangd](https://marketplace.visualstudio.com/items?itemName=llvm-vs-code-extensions.vscode-clangd) extension, which should be recommended by VS Code when you open the repository. This should prompt you to disable the built in C++ extensions Intellisense, but if not you should do this in Settings, searching for `cpp intellisense`.
+If you are using Visual Studio Code as your editor, you can get greatly improved C++ Intellisense by installing the [clangd](https://marketplace.visualstudio.com/items?itemName=llvm-vs-code-extensions.vscode-clangd) extension, which should be recommended by VS Code when you open the repository. This should prompt you to disable the built in C++ extensions Intellisense, but if not you should do this in Settings, searching for `cpp intelli`.
 
 This extension picks up the `build/compile_commands.json` file generated by CMake (symlinked in the root directory), enabling full Intellisense.
 
@@ -208,32 +208,38 @@ Other editors should also be able to be configured to use the `compile_commands.
 
 ### Building for iOS
 
-- Run `./scripts/build-ios.sh` from the `realm-js` root directory
+You can build and bundle for iOS by running the following command from the root directory:
+
+```sh
+npm run build:ios --workspace realm
+npm run bundle --workspace realm
+```
 
 ### Building for Android
 
-- Run `node scripts/build-android.js` from the `realm-js` root directory
-  - The compiled version of the Android module is output to `<project-root>/android`
+You can build and bundle for Android by running the following command from the root directory:
+
+```sh
+npm run build:android --workspace realm
+npm run bundle --workspace realm
+```
+
+The compiled version of the Android module is output to `<project-root>/android`.
 
 ### Building for Node.js
 
-You can build for Node.js by running the command:
+You can build and bundle for Node.js by running the following command from the root directory:
 
 ```sh
-npm run build
-```
-
-If you want to build for Apple Silicon on an Intel based Mac, you can use the following command instead:
-
-```sh
- npm run build-m1
+npm run build:node --workspace realm
+npm run bundle --workspace realm
 ```
 
 #### Additional steps for Windows
 
-On Windows you will need to setup the environment for node-gyp:
+On Windows you will need to set up the environment for node-gyp:
 
-- Option 1: Install windows-build-tools Node.js package
+- Option 1: Install `windows-build-tools` Node.js package
 
   ```cmd
   # run in elevated command prompt (as Administrator)
@@ -275,7 +281,7 @@ source $HOME/.bashrc
 nvm install 16 # you can use any supported node version
 ```
 
-You can now build Realm JS from source:
+You can now build and bundle Realm JS from source:
 
 ```sh
 export REALM_USE_SYSTEM_OPENSSL=1
@@ -283,71 +289,65 @@ git clone https://github.com/realm/realm-js
 cd realm-js
 git submodule update —-init —-recursive
 npm install --ignore-scripts
-npx cmake-js build
+npm run build:node --workspace realm
+npm run bundle --workspace realm
 ```
 
-Finally, you can use Realm JS in your project `MyProject`:
+Finally, you can use Realm JS in your example project `MyProject`:
 
 ```sh
 cd MyProject
 npm init -y  # skip this if you've already initialised your project
-npm install path/to/realm-js
+npm install path/to/realm-js/packages/realm
+```
+
+> [!NOTE]
+> To run any of the `"scripts"` commands from one of the `package.json` files directly from the root, use the `"name"` value from the target `package.json` as such: `npm run <command name> --workspace <package.json name>`.
+
+### Cleaning up build files
+
+If you need to clean up build files and other untracked files (except for `node_modules` directories), run the following command from the root directory:
+
+```sh
+npm run clean
 ```
 
 ### Building the documentation
 
-API documentation is written using [JSDoc](http://usejsdoc.org/). To generate the documentation, run:
-
-`npm run jsdoc`
-
-The generated docs can be found in `docs/output/realm/<version>/index.html`.
-
-## Installing the project's sub-packages
-
-We've decided to slowly migrate this repository to a mono-repository containing multiple packages (stored in the `./packages` directory). To install and link these, run (from the `realm-js` repo root directory):
+API documentation is written using [TypeDoc](https://typedoc.org/). To generate the documentation, run the following command from the root directory:
 
 ```sh
-npx lerna bootstrap
+npm run docs --workspace realm
 ```
 
-Note: you must successfuly build Realm JS for [iOS](#building-for-ios) and [Android](#building-for-android) before running `lerna`, or the command may fail.
-
-Please familiarise yourself with [Lerna](https://github.com/lerna/lerna) to learn how to add dependencies to these packages.
+The generated docs can be found in `packages/realm/docs/index.html`.
 
 ## Running the tests
 
-There are two sets of tests for Realm JS, one legacy and one modern. The intention is to move all tests over to the modern set, but for now you will need to execute both sets of tests.
-
-### Modern tests
-
 See [the instructions in the `integration-tests`](../integration-tests/README.md) directory.
-
-### Legacy tests
-
-To run the the tests, run the `scripts/test.sh` script, passing an argument for which tests you would like to execute. The following options are available:
-
-- `react-tests` - runs all React Native tests on iOS Simulator
-- `react-tests-android` - runs all React Native Android tests on Android emulator
-- `node` - runs all tests for Node.js
-- `test-runners` - checks supported tests runners are working correctly
-
-For example:
-
-```sh
-scripts/test.sh node
-```
 
 ### Linting the source code
 
-#### JS
+#### JS/TS
 
-Run `npm run lint` to lint the JS source code using `eslint`.
+To lint JavaScript and TypeScript source code files using `eslint`, run the following command from the root directory:
+
+```sh
+npm run lint
+```
 
 #### C++
 
-Run `npm run lint:cpp` to lint the C++ source code using `clang-format`. We use a `.clang-format` based on the one from `realm-core`, but should feel free to modify if required.
+To lint C++ source code files using `clang-format`, run the following command from the root directory:
 
-#### Testing on Windows
+```sh
+npm run lint:cpp
+```
+
+We use a `.clang-format` file based on the one from `realm-core`, but feel free to modify if required.
+
+*TODO: Update the following section?*
+### Testing on Windows
 
 On Windows some of these targets are available as npm commands.
 
@@ -357,9 +357,9 @@ npm run node-tests
 npm run test-runners
 ```
 
-#### Node version setup
+### Node version setup
 
-The tests will spawn a new shell when running, so you need to make sure that new shell instances use the correct version of `npm`. If you have Homebrew correctly installed, this should work – if it is not working, you can add the following to your preferred shell configuration:
+The tests will spawn a new shell when running, so you need to make sure that new shell instances use the correct version of `npm`. If you have Homebrew correctly installed, this should work. If it is not working, you can add the following to your preferred shell configuration:
 
 ```sh
 export NVM_DIR="$HOME/.nvm"
@@ -390,6 +390,7 @@ The relevant snippet is:
       limit-access-to-actor: true
   timeout-minutes: 30
 ```
+
 ## Updating the Android JNI headers
 
 If you add a new JNI method to [`RealmReactModule.java`](https://github.com/realm/realm-js/blob/main/packages/realm/react-native/android/src/main/java/io/realm/react/RealmReactModule.java), you will need to regenerate the auto-generated [header file](https://github.com/realm/realm-js/blob/main/packages/realm/src/android/io_realm_react_RealmReactModule.h).
