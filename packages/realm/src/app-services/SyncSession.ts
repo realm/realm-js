@@ -57,8 +57,11 @@ export type ProgressNotificationCallback =
   /**
    * @param transferred - The current number of bytes already transferred
    * @param transferable - The total number of transferable bytes (i.e. the number of bytes already transferred plus the number of bytes pending transfer)
-   * @param progressEstimate - An estimate in the range [0.0; 1.0] on the progress. The estimate is only set for flexible sync, and it is only useful
-   *                           during bootstrap. Once steady-state has been reached, the value will remain 1.0.
+   * @param progressEstimate - An estimate in the range [0.0; 1.0] on the progress. Once streaming phase or steady-state has been reached, the value
+   *   will remain 1.0. For Partition Based Sync, the value is the ratio of `transferred` and `transferable`.
+   * @remarks
+   *
+   * The parameters `transferred` and `transferable` will be removed in version 13.0.0 and `progressEstimate` will come non-optional.
    */
   (transferred: number, transferable: number, progressEstimate?: number) => void;
 
@@ -252,8 +255,20 @@ const PROGRESS_LISTENERS = new Listeners<
   [binding.WeakSyncSession, binding.SyncSession, ProgressDirection, ProgressMode]
 >({
   add(callback, weakInternal, internal, direction, mode) {
+    const properCallback = (transferred: number, transferable: number, estimate: number) => {
+      if (internal.config.flxSyncRequested) {
+        callback(Number(transferred), Number(transferable), Number(estimate));
+      } else {
+        if (transferable === 0.0) {
+          callback(Number(transferred), Number(transferable), 0.0);
+        } else {
+          callback(Number(transferred), Number(transferable), Number(transferred) / Number(transferable));
+        }
+      }
+    };
+
     const token = internal.registerProgressNotifier(
-      (transferred, transferable) => callback(Number(transferred), Number(transferable)),
+      (transferred, transferable, estimate) => properCallback(Number(transferred), Number(transferable), estimate),
       toBindingDirection(direction),
       mode === ProgressMode.ReportIndefinitely,
     );
