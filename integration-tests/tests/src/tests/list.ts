@@ -2308,6 +2308,18 @@ describe("Lists", () => {
 
       expect(this.realm.objects<Farm>(Farm).length).equals(2);
       expect(this.realm.objectForPrimaryKey<Farmer>(Farmer, 11)?.currentFarm?.id).equals(33);
+
+      // change it link back to the first object
+      this.realm.write(() => {
+        const farmer = this.realm.objectForPrimaryKey<Farmer>(Farmer, 11);
+        expect(farmer).not.null;
+        const oldFarm = this.realm.objectForPrimaryKey<Farm>(Farm, 22);
+        //@ts-expect-error cannot be null
+        farmer.currentFarm = oldFarm;
+      });
+
+      expect(this.realm.objects<Farm>(Farm).length).equals(2);
+      expect(this.realm.objectForPrimaryKey<Farmer>(Farmer, 11)?.currentFarm?.id).equals(22);
     });
 
     it("Update - same object", function (this: RealmContext) {
