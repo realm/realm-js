@@ -435,6 +435,7 @@ describe("Realm.Object", () => {
         expect(john.age).equals(42);
       });
 
+      // NOTE: The exact name of this test is referred to by our contrib docs (contrib/debugging-cpp.md).
       it("can return a value on write", () => {
         const realm = new Realm({ schema: [PersonSchema] });
 

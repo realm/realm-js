@@ -53,7 +53,7 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "LLDB Node REPL",
+            "name": "LLDB: Node REPL",
             "program": "node",
             "args": [
                 "--expose_gc"
@@ -71,7 +71,7 @@
             },
             "args": [
                 "--inspect",
-                "--loader=tsx",
+                "--import=tsx",
                 "--expose_gc",
                 "--enable-source-maps",
                 "--no-warnings",
@@ -96,7 +96,7 @@
             "console": "integratedTerminal",
             "program": "${workspaceRoot}/node_modules/mocha/lib/cli/cli.js",
             "runtimeArgs": [
-                "--loader=tsx",
+                "--import=tsx",
                 "--expose_gc",
                 "--enable-source-maps",
                 "--no-warnings"

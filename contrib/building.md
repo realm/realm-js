@@ -140,7 +140,7 @@ export PATH=<ccache location>/libexec:$PATH
 
 ## Cloning the repository
 
-To clone the RealmJS repository and install git submodules, dependencies, and subpackage dependencies, run:
+To clone the Realm JS repository and install git submodules, dependencies, and subpackage dependencies, run:
 
 ```sh
 git clone https://github.com/realm/realm-js.git
@@ -150,13 +150,14 @@ npm install
 ```
 
 In order to improve the accuracy of `git blame` locally by ignoring commits in which the code was reformatted by an automated tool, run the following from inside the repository:
+
 ```sh
 git config blame.ignoreRevsFile .gitignore-revs
 ```
 
 ### Cloning the repository on Windows
 
-On Windows the RealmJS repo should be cloned with symlinks enabled:
+On Windows the Realm JS repo should be cloned with symlinks enabled:
 
 ```cmd
 # run in elevated command prompt
@@ -165,7 +166,9 @@ git clone -c core.symlinks=true https://github.com/realm/realm-js
 
 or manually create the symlinks using directory junctions if you already have the repo cloned:
 
+******
 *TODO: Needs updating:*
+******
 ```cmd
 # run in elevated command prompt
 cd realm-js\react-native\android\src\main\jni
@@ -301,7 +304,7 @@ npm init -y  # skip this if you've already initialised your project
 npm install path/to/realm-js/packages/realm
 ```
 
-> [!NOTE]
+> [!TIP]
 > To run any of the `"scripts"` commands from one of the `package.json` files directly from the root, use the `"name"` value from the target `package.json` as such: `npm run <command name> --workspace <package.json name>`.
 
 ### Cleaning up build files
@@ -346,7 +349,9 @@ npm run lint:cpp
 
 We use a `.clang-format` file based on the one from `realm-core`, but feel free to modify if required.
 
+******
 *TODO: Update the following section?*
+******
 ### Testing on Windows
 
 On Windows some of these targets are available as npm commands.

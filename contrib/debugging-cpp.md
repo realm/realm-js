@@ -6,13 +6,13 @@
 * [Debugging C++](#debugging-c)
 * [Quick start](#quick-start)
    * [Setup](#setup)
-   * [Debugging Realm Unit Tests through Example](#debugging-realm-unit-tests-through-example)
+   * [Debugging Realm Integration Tests Through Example](#debugging-realm-integration-tests-through-example)
 * [Details on debugging C++](#details-on-debugging-c)
    * [Visual Studio Code configurations](#visual-studio-code-configurations)
-      * [Configuration: LLDB Debug Unit Tests](#configuration-lldb-debug-unit-tests)
-      * [Configuration: LLDB Debug Integration Tests](#configuration-lldb-debug-integration-tests)
-      * [Configuration: LLDB Node REPL](#configuration-lldb-node-repl)
-      * [Configuration: LLDB Attach to Process](#configuration-lldb-attach-to-process)
+      * [Configuration: LLDB & Node: Integration tests](#configuration-lldb-node-integration-tests)
+      * [Configuration: LLDB & Node: @realm/react](#configuration-lldb-node-realmreact-tests)
+      * [Configuration: LLDB: Node REPL](#configuration-lldb-node-repl)
+      * [Configuration: LLDB: Attach to Process](#configuration-lldb-attach-to-process)
    * [Working with lldb in VS Code](#working-with-lldb-in-vs-code)
       * [Breaking on exceptions](#breaking-on-exceptions)
       * [Inspecting/interacting with variables when paused](#inspectinginteracting-with-variables-when-paused)
@@ -31,56 +31,87 @@
 
 ## Setup
 
-First make sure your environment is setup by following the [building instructions](./building.md)
+First make sure your environment is setup by following the [building instructions](./building.md).
 
-Then you will need the following plugins for VSCode:
+Then you will need the following plugins for VS Code:
 * [C/C++ by Microsoft](https://github.com/Microsoft/vscode-cpptools)
 * [CodeLLDB](https://github.com/vadimcn/vscode-lldb)
 
-## Debugging Realm Unit Tests through Example
+## Debugging Realm Integration Tests Through Example
 
-First lets take a look at `.vscode/launch.json`.  This contains various ways to launch commands from vscode.  For this example we will look at the command `LLDB Debug Unit Tests`.
+******
+*TODO: Need to look into the following error:*
+```
+Error: Cannot find module '/Users/lj/Documents/MongoDB/test/js-building-docs/realm-js/integration-tests/tests/@realm/mocha-reporter'
+```
+*May have to do with `--loader` vs `--import`?*
+******
+
+First let's take a look at [.vscode/launch.json](https://github.com/realm/realm-js/blob/main/.vscode/launch.json). This contains various ways to launch commands from VS Code. For this example we will look at the command `LLDB & Node: Integration tests`:
+
+```json
+{
+    "name": "LLDB & Node: Integration tests",
+    "presentation": {
+        "group": "realm",
+        "order": 1
+    },
+    "configurations": [
+        "Node: Attach to process",
+        "LLDB: Integration tests"
+    ]
+},
+```
+
+We can see that it in turn uses two other configurations: `Node: Attach to process` and `LLDB: Integration tests`. Let's have a look at the latter:
 
 ```json
 {
     "type": "lldb",
     "request": "launch",
-    "name": "LLDB Debug Unit Tests",
+    "name": "LLDB: Integration tests",
     "program": "node",
+    "cwd": "${workspaceRoot}/integration-tests/tests",
+    "env": {
+        "CONTEXT": "appTemplatesPath=../realm-apps"
+    },
     "args": [
+        "--inspect",
+        "--import=tsx",
         "--expose_gc",
-        "${workspaceFolder}/tests/node_modules/jasmine/bin/jasmine.js",
-        "spec/unit_tests.js",
-        "--filter=${input:testFilter}"
-    ],
-    "cwd": "${workspaceFolder}/tests",
-    "preLaunchTask": "Build Node Tests"
-}
+        "--enable-source-maps",
+        "--no-warnings",
+        "${workspaceRoot}/node_modules/mocha/lib/cli/cli.js",
+        "--require",
+        "src/node/inject-globals.ts",
+        "src/index.ts",
+        "--timeout",
+        "10000",
+        "--grep",
+        "${input:integrationTestFilter}"
+    ]
+},
 ```
 
-A quick read through this code shows that the launch type is `lldb` provided by the CodeLLDB extension, and it is using the `node` command to invoke the `jasmine` test framework with our `spec/unit_tests.js`. The `${input:testFilter}` will prompt us for a string to use as filter to avoid running all tests every time. The `preLaunchTask` will compile Realm JS in debug mode before starting the debug session.
+This shows that the launch type is `lldb` provided by the CodeLLDB extension, and it is using the `node` command to invoke the `mocha` test framework with our test entry point file `src/index.ts`. The `${input:integrationTestFilter}` will prompt us for a string to use as filter to avoid running all tests every time.
 
-When prompted for a filter, try using "testListPush" as the input. As we are fairly certain this will perform a `push` command on a realm list, we can place a breakpoint in the push function in `src/js_list.hpp` by locating the push function and clicking next to the desired line number (see example below)
+We will soon run a test that will create a Realm object, so let's put a breakpoint in Core's `Table::create_object` method (`packages/realm/bindgen/vendor/realm-core/src/realm/table.cpp`) by clicking to the left of the desired line number (see the :red_circle: circle below):
 
-![Breakpoint in Code](./assets/pushBreakpoint.png)
+![Breakpoint in Code](./assets/core-breakpoint.png)
 
-Now we can run the test and see what happens.  Click on the debug tab in the left bar of vscode:
+Click on the `Run and Debug` tab in the left bar of VS Code:
 
 ![Debug Icon](./assets/debugIcon.png)
 
-Select the `LLDB Launch Unit Tests` from the run tab:
+Select `LLDB & Node: Integration test` from the run tab:
 
-![Debug Run Tab](./assets/debugRunTab.png)
+![Run and Debug Tab](./assets/launch-run-and-debug.png)
 
-Now press play, type "testListPush" as filter and hit <kbd>Enter</kbd>
+Press the play button, type "can return a value on write" when prompted, then press <kbd>Enter</kbd>.
 
-![Enter test filter](./assets/debug-enter-test-filter.png)
+Once the test is run, execution should stop at the first breakpoint.
 
-We should now arrive at our new breakpoint.
-
-![Met Breakpoint](./assets/metBreakpoint.png)
-
-To run all tests, simply leave the filter at the default (`.`).
+To run all tests, simply leave the filter as is and press <kbd>Enter</kbd>.
 
 # Details on debugging C++
 
@@ -88,29 +119,51 @@ To run all tests, simply leave the filter at the default (`.`).
 
 Visual Studio Code with the [CodeLLDB](https://marketplace.visualstudio.com/items?itemName=vadimcn.vscode-lldb) extension provides a good experience for debugging C++ code using the `lldb` debugger.
 
-The [launch.json](https://github.com/realm/realm-js/blob/main/.vscode/launch.json) file contains various useful debugger launch configurations which attach `lldb` to the `node` process so that breakpoints can be set and exceptions can be caught. These profiles can be seected from the list in the top right of the "Run and Debug" pane in VS Code.
+The [launch.json](https://github.com/realm/realm-js/blob/main/.vscode/launch.json) file contains various useful debugger launch configurations which attach `lldb` to the `node` process so that breakpoints can be set and exceptions can be caught. These profiles can be selected from the list in the top of the `Run and Debug` pane in VS Code.
 
-All the launch configurations are configured to [compile Realm JS in debug mode](https://github.com/realm/realm-js/blob/main/.vscode/launch.json#L98) before starting the debug session, so you do not need to remember to compile between sessions.
+******
+*TODO: Possibly update the statement or launch.json (we only have 1 "preLaunchTask"):*
+******
+All the launch configurations are configured to compile Realm JS in debug mode (by prelaunching a task from [tasks.json](https://github.com/realm/realm-js/blob/main/.vscode/tasks.json)) before starting the debug session, so you do not need to remember to compile between sessions.
 
-### Configuration: LLDB Debug Unit Tests
+By default, running the tests will prompt you for a string to filter out which tests to run each time you invoke it. If you are debugging a specific test, it can save time if you temporarily hardcode the filter as in the example below (for the "LLDB: Integration tests" configuration):
 
-This configuration will run the [unit tests](https://github.com/realm/realm-js/tree/main/tests) with `lldb` attached. By default, it will ask for the filter for the run each time you invoke it. If you are debugging a specific test, it can save time if you temporarily hardcode the filter: https://github.com/realm/realm-js/blob/main/.vscode/launch.json#L88.
+```diff
+ {
+     // ...
+     "name": "LLDB: Integration tests",
+     "args": [
+         // ...
+         "--grep",
+-        "${input:integrationTestFilter}"
++        "My filter string"
+     ]
+ },
+```
 
-### Configuration: LLDB Debug Integration Tests
+### Configuration: LLDB & Node: Integration tests
 
-This configuration will run the [integration tests](https://github.com/realm/realm-js/tree/main/tests) with `lldb` attached. By default, it will ask for the grep pattern for the run each time you invoke it. If you are debugging a specific test, it can save time if you temporarily hardcode the filter: https://github.com/realm/realm-js/blob/main/.vscode/launch.json#L117.
+This configuration will run the [integration tests](https://github.com/realm/realm-js/tree/main/integration-tests/tests) with `lldb` attached. This option is the combination of the configurations `Node: Attach to process` and `LLDB: Integration tests`, enabling you to switch between their stack traces and placing breakpoints in C++ files.
 
-A pre-requisite for running these tests is to start the [https://github.com/realm/realm-js/blob/main/packages/realm-app-importer](`realm-app-importer`) script in a terminal, by running: `npx lerna bootstrap --scope @realm/integration-tests --include-dependencies && cd integration-tests/tests && npm run app-importer` – this is usually started automatically when you run the tests, but as we need to connect `lldb` directly to the `node` instance that is running the tests, you need to start it manually.
+### Configuration: LLDB & Node: @realm/react
 
-### Configuration: LLDB Node REPL
+This configuration will run the [@realm/react tests](https://github.com/realm/realm-js/tree/main/packages/realm-react/src/__tests__) with `lldb` attached. This option is the combination of the configurations `Node: Attach to process` and `LLDB: Realm React Tests`, enabling you to switch between their stack traces and placing breakpoints in C++ files.
 
-This configuration starts a `node` REPL with the debugger attached. This allows you to easily evaluate statements and jump into the C++ debugger. If you are running the same commands over and over, you may want to save these to a temporary `.js` file and add this file's path to the `args` in https://github.com/realm/realm-js/blob/main/.vscode/launch.json#L98, so that `node` runs this script instead of a REPL.
+### Configuration: LLDB: Node REPL
 
-### Configuration: LLDB Attach to Process
+This configuration starts a `node` REPL with the debugger attached. This allows you to easily evaluate statements and jump into the C++ debugger. If you are running the same commands over and over, you may want to save these to a temporary `.js` file and add this file's path to the `args` so that `node` runs this script instead of a REPL.
+
+### Configuration: LLDB: Attach to Process
 
 This configuration will attach `lldb` to a running process. This can be useful for debugging Electron applications, for example, in which case you might want to connect the debugger to the `main.js` process.
 
 When this configuration is run, it will open a process picker. You should be able to identify the correct process by searching for a known string in the application name, though it might require some trial and error!
+
+******
+*TODO: Add the following configs and explain their difference:*
+* Node: Integration tests
+* Node: Debug integration tests
+******
 
 ## Working with lldb in VS Code
 
@@ -148,7 +201,23 @@ It can sometimes be useful to use a debug version of Node. This allows you to vi
 
 ### Using a debug version of Node
 
-To use a debug version of Node, change the path to `node` for the `lldb` launch configuration you are using to point to the debug version you compiled above, e.g. change https://github.com/realm/realm-js/blob/main/.vscode/launch.json#L103 to `"program": "/Users/my_name/dev/node-v16.13.2/out/Debug/node"`. You should now get full source code in stack traces.
+To use a debug version of Node, change the path to `node` for the `lldb` launch configuration you are using to point to the debug version you compiled above, for example:
+
+```diff
+ {
+     "type": "lldb",
+     "request": "launch",
+     "name": "LLDB: Node REPL",
+-    "program": "node",
++    "program": "/Users/my_name/dev/node-v20.3.1/out/Debug/node",
+     "args": [
+         "--expose_gc"
+     ],
+     "preLaunchTask": "Build Node Tests"
+ },
+```
+
+You should now get full source code in stack traces.
 
 You can also open the Node source directory in VS Code and use the launch config from https://joyeecheung.github.io/blog/2018/12/31/tips-and-tricks-node-core/ (which has some other useful tips) if you wish to go deeper into the Node source code.
 
@@ -156,10 +225,15 @@ You can also open the Node source directory in VS Code and use the launch config
 
 To debug Realm C++ in an iOS app using Xcode:
 
-1. Ensure you are using a debug version of the Realm `xcframework` (`./scripts/build-ios.sh -c Debug simulator`)
-2. In your Xcode project, go to `File` > `Add files to <project name>` and select your `realm-js/src` directory (it must be the same directory you used to build the `xcframework` as the paths are absolute). Ensure "Copy items" is not ticked, and "Create folder references" is selected, then press `Add`.
-3. Repeat step 2, for your `realm-js/vendor/realm-core/src` directory.
-4. Build and run the app in debug mode.
+1. Ensure you are using a debug version of the Realm `xcframework`.
+2. In your Xcode project, go to `File` > `Add files to <project name>` and select your `realm-js/packages/realm/src` directory (it must be the same directory you used to build the `xcframework` as the paths are absolute). Ensure "Copy items" is not ticked, and "Create folder references" is selected, then press `Add`.
+3. Repeat step 2, for your `realm-js/packages/realm/bindgen/vendor/realm-core/src` directory.
+4. Build and run the app in debug mode:
+
+```sh
+# Run from the root directory:
+npm run build:ios:debug:simulator --workspace realm
+```
 
 You should now be able to navigate to Realm C++ source files and add breakpoints by navigating to the source files in the Project navigator.
 
@@ -180,8 +254,8 @@ To debug Realm C++ in an Android app using Android Studio (the integration test 
    // Add the Realm source files to the Android Studio project so that we can add breakpoints
    // in debug mode. These will not be compiled, it will still use the .so library.
    sourceSets {
-      main.java.srcDirs += '<path to realm-js/src>'
-      main.java.srcDirs += '<path to realm-js/vendor/realm-core/src>'
+      main.java.srcDirs += '<path to realm-js/packages/realm/src>'
+      main.java.srcDirs += '<path to realm-js/packages/realm/bindgen/vendor/realm-core/src>'
    }
    ```
 4. In Android Studio, go to `Run` > `Edit Configurations...` and in the `Debugger` tab, select a `Debug type` of `Native Only`
@@ -237,4 +311,4 @@ Sometimes it can be non-obvious what type an `auto` variable has. The debugger c
 
 To run a Node script and capture a performance trace to analyse in Instruments, you can run it like: `xcrun xctrace record --template 'Time Profiler' --target-stdout - --launch -- ~/.nvm/versions/node/v16.13.2/bin/node index.js`.
 
-Using a debug version of Realm (e.g. compile Realm in debug mode, then `npm i ~/dev/realm-js` to install your local version into your Node project) may yield more useful information.
+Using a debug version of Realm (e.g. [compile Realm in debug mode](./building.md#building-realm-js), then `npm i ~/dev/realm-js` to install your local version into your Node project) may yield more useful information.
