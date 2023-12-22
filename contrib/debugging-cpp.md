@@ -42,7 +42,7 @@ Then you will need the following plugins for VS Code:
 ******
 *TODO: Need to look into the following error:*
 ```
-Error: Cannot find module '/Users/lj/Documents/MongoDB/test/js-building-docs/realm-js/integration-tests/tests/@realm/mocha-reporter'
+Error: Cannot find module '/<path>/realm-js/integration-tests/tests/@realm/mocha-reporter'
 ```
 *May have to do with `--loader` vs `--import`?*
 ******
@@ -311,4 +311,4 @@ Sometimes it can be non-obvious what type an `auto` variable has. The debugger c
 
 To run a Node script and capture a performance trace to analyse in Instruments, you can run it like: `xcrun xctrace record --template 'Time Profiler' --target-stdout - --launch -- ~/.nvm/versions/node/v16.13.2/bin/node index.js`.
 
-Using a debug version of Realm (e.g. [compile Realm in debug mode](./building.md#building-realm-js), then `npm i ~/dev/realm-js` to install your local version into your Node project) may yield more useful information.
+Using a debug version of Realm (e.g. [compile Realm in debug mode](./building.md#building-realm-js-1), then `npm i ~/dev/realm-js` to install your local version into your Node project) may yield more useful information.
