@@ -88,6 +88,28 @@ if(DEFINED CMAKE_JS_VERSION)
     include(NodeJSTargets)
 endif()
 
+
+# Add git submodule if it doesn't exist
+find_package(Git QUIET)
+if(GIT_FOUND)
+    option(GIT_SUBMODULE "Check and retreive submodules when building" ON)
+    if(GIT_SUBMODULE)
+        message(STATUS "Update Submodules")
+        execute_process(
+            COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+            RESULT_VARIABLE GIT_SUBMODULE_RESULT
+        )
+        if(NOT GIT_SUBMODULE_RESULT EQUAL "0")
+            message(FATAL_ERROR "git submodule update --init --recursive failed and returned ${GIT_SUBMODULE_RESULT}")
+        endif()
+    endif()
+endif()
+
+if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/vendor/realm-core/CMakeLists.txt")
+    message(FATAL_ERROR "Realm Core has not been uploaded.  Run git submodule update --init --recursive.")
+endif()
+
 # TODO is this option dead? Do we want to support compiling with it set to OFF?
 option(REALM_JS_BUILD_CORE_FROM_SOURCE "Build Realm Core from source, as opposed to downloading prebuilt binaries" ON)
 if(REALM_JS_BUILD_CORE_FROM_SOURCE)
