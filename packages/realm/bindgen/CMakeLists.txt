@@ -93,6 +93,10 @@ endif()
 find_package(Git QUIET)
 if(GIT_FOUND)
     option(GIT_SUBMODULE "Check and retreive submodules when building" ON)
+    if(DEFINED ENV{DO_GIT_SUBMODULE})
+        message(STATUS "Overriding GIT_SUBMODULE option with env")
+        set(GIT_SUBMODULE $ENV{DO_GIT_SUBMODULE} CACHE BOOL "Overriding GIT_SUBMODULE option with env" FORCE)
+    endif()
     if(GIT_SUBMODULE)
         message(STATUS "Update Submodules")
         execute_process(
@@ -107,7 +111,7 @@ if(GIT_FOUND)
 endif()
 
 if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/vendor/realm-core/CMakeLists.txt")
-    message(FATAL_ERROR "Realm Core has not been uploaded.  Run git submodule update --init --recursive.")
+    message(FATAL_ERROR "realm-core dir does not exist.  Run git submodule update --init --recursive.")
 endif()
 
 # TODO is this option dead? Do we want to support compiling with it set to OFF?
