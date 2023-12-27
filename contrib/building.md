@@ -166,9 +166,7 @@ git clone -c core.symlinks=true https://github.com/realm/realm-js
 
 or manually create the symlinks using directory junctions if you already have the repo cloned:
 
-******
-*TODO: Needs updating:*
-******
+[//]: # "TODO: Needs updating:"
 ```cmd
 # run in elevated command prompt
 cd realm-js\react-native\android\src\main\jni
@@ -349,9 +347,7 @@ npm run lint:cpp
 
 We use a `.clang-format` file based on the one from `realm-core`, but feel free to modify if required.
 
-******
-*TODO: Update the following section?*
-******
+[//]: # "TODO: Update the following section?"
 ### Testing on Windows
 
 On Windows some of these targets are available as npm commands.

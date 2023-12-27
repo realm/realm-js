@@ -39,13 +39,9 @@ Then you will need the following plugins for VS Code:
 
 ## Debugging Realm Integration Tests Through Example
 
-******
-*TODO: Need to look into the following error:*
-```
-Error: Cannot find module '/<path>/realm-js/integration-tests/tests/@realm/mocha-reporter'
-```
-*May have to do with `--loader` vs `--import`?*
-******
+[//]: # "TODO: Need to look into the following error:"
+[//]: # "Error: Cannot find module '/<path>/realm-js/integration-tests/tests/@realm/mocha-reporter'"
+[//]: # "May have to do with `--loader` vs `--import`?"
 
 First let's take a look at [.vscode/launch.json](https://github.com/realm/realm-js/blob/main/.vscode/launch.json). This contains various ways to launch commands from VS Code. For this example we will look at the command `LLDB & Node: Integration tests`:
 
@@ -121,9 +117,7 @@ Visual Studio Code with the [CodeLLDB](https://marketplace.visualstudio.com/item
 
 The [launch.json](https://github.com/realm/realm-js/blob/main/.vscode/launch.json) file contains various useful debugger launch configurations which attach `lldb` to the `node` process so that breakpoints can be set and exceptions can be caught. These profiles can be selected from the list in the top of the `Run and Debug` pane in VS Code.
 
-******
-*TODO: Possibly update the statement or launch.json (we only have 1 "preLaunchTask"):*
-******
+[//]: # "TODO: Possibly update this statement or launch.json (we only have 1 "preLaunchTask"):"
 All the launch configurations are configured to compile Realm JS in debug mode (by prelaunching a task from [tasks.json](https://github.com/realm/realm-js/blob/main/.vscode/tasks.json)) before starting the debug session, so you do not need to remember to compile between sessions.
 
 By default, running the tests will prompt you for a string to filter out which tests to run each time you invoke it. If you are debugging a specific test, it can save time if you temporarily hardcode the filter as in the example below (for the "LLDB: Integration tests" configuration):
@@ -159,11 +153,9 @@ This configuration will attach `lldb` to a running process. This can be useful f
 
 When this configuration is run, it will open a process picker. You should be able to identify the correct process by searching for a known string in the application name, though it might require some trial and error!
 
-******
-*TODO: Add the following configs and explain their difference:*
-* Node: Integration tests
-* Node: Debug integration tests
-******
+[//]: # "TODO: Add the following configs and explain their difference:"
+[//]: # "* Node: Integration tests"
+[//]: # "* Node: Debug integration tests"
 
 ## Working with lldb in VS Code
 
