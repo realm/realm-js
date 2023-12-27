@@ -184,7 +184,7 @@ mklink /j assets "../../../../../data"
 ```
 
 > [!NOTE]
-> If you have cloned the repo previously make sure you remove your `node_modules` directory since it may contain stale dependencies which may cause the build to fail.
+> If you have cloned the repo previously make sure you remove your `node_modules` directory, as well as any `node_modules` directory of any sub-directory, since it may contain stale dependencies which may cause the build to fail.
 
 ### Visual Studio Code setup
 
@@ -195,7 +195,7 @@ Visual Studio Code is the recommended editor for the best experience working wit
 You should check that VS Code is using the workspace version of TypeScript rather than the VS Code version. This should be automatically configured but does not always seem to take effect. You can do this by:
 
 1. Open the `realm-js` root directory in VS Code and open any TypeScript file
-2. Press `Shift+Cmd+P` to open the command palette
+2. Press <kbd>Shift</kbd>+<kbd>Cmd</kbd>+<kbd>P</kbd> to open the command palette
 3. Start typing `select typescript version` to select the `TypeScript: Select TypeScript Version` command
 4. Ensure `Use Workspace Version` is selected.
 
