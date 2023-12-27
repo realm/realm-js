@@ -1,7 +1,7 @@
 # Keeping our code style aligned with linting
 
 We're using linters for a couple of reasons:
-- We've experienced a lot of reviews to focus on the stying of code rather than its design and architecture. In particular, this has the potential to be a real turn-off for a newcomer.
+- We've experienced a lot of reviews to focus on the styling of code rather than its design and architecture. In particular, this has the potential to be a real turn-off for a newcomer.
 - Writing code in a shared style makes way easier to read across files.
 - As with any static analysis of code, linting has the potential to find bugs before our users do.
 
@@ -27,18 +27,14 @@ Linters are run for every pull-request, via [the `pr-linting` workflow](../.gith
 
 Every package of this mono-repository should have a `lint` script - to lint, simply change your working directory and run the script:
 
-```
+```sh
 npm run lint
 ```
 
-To run linting on every package of the project, use the `lerna:lint` script in the root package:
+To run linting on every package of the project, run the same above command but from the root directory.
 
-```
-npm run lerna:lint
-```
+The linter can automatically fix some issues. To run a fix across every sub-package, you can run the following command from the root directory:
 
-The linter can automatically fix some issues. To run a fix across every sub-package, you can use the `lerna:lint:fix` script in the root package:
-
-```
-npm run lerna:lint:fix
+```sh
+npm run lint:fix
 ```
