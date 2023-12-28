@@ -1,9 +1,16 @@
 name: Pull request build and test
 on:
   push:
+    # The workflow will run only when both `branches` and `paths-ignore` are satisfied.
     branches:
       - main
+    paths-ignore:
+      - "**.md"
+      - "**.png"
   pull_request:
+    # Note that the workflow will still run if paths outside of `paths-ignore` have
+    # been modified in the PR, irrespective of an individual commit only modifying
+    # ignored paths. (See: https://github.com/actions/runner/issues/2324)
     paths-ignore:
       - "**.md"
       - "**.png"
