@@ -7,8 +7,8 @@
 * None
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None
+* Accessing the `providerType` on a `UserIdentity` via `User.identities` always yielded `undefined`. Thanks to
+[@joelowry96](https://github.com/joelowry96) for pinpointing the fix.
 
 ### Compatibility
 * React Native >= v0.71.4
