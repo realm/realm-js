@@ -15,6 +15,7 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
+
 import { expect } from "chai";
 import { KJUR } from "jsrsasign";
 import Realm, { ProviderType, UserState } from "realm";
@@ -30,17 +31,14 @@ import { buildAppConfig } from "../../utils/build-app-config";
 type AnyApp = Realm.App<any, any>;
 type AnyUser = Realm.User<any, any, any>;
 
-function expectIsUser(user: Realm.User, providerType?: ProviderType) {
+function expectIsUser(user: Realm.User) {
   expect(user).to.be.an("object");
   expect(user.accessToken).to.be.a("string");
   expect(user.refreshToken).to.be.a("string");
   expect(user.id).to.be.a("string");
+  expect(user.identities).to.be.an("array");
   expect(user.customData).to.be.an("object");
   expect(user).instanceOf(Realm.User);
-  expect(user.identities).to.be.an("array");
-  if (providerType) {
-    expect(user.identities.some((identity) => identity.providerType === providerType)).to.be.true;
-  }
 }
 
 function expectIsSameUser(value: AnyUser, user: AnyUser | null) {
@@ -53,13 +51,18 @@ function expectUserFromAll(all: Record<string, AnyUser>, user: Realm.User) {
   expectIsSameUser(all[user.id], user);
 }
 
+function expectIsProviderType(user: Realm.User, providerType: ProviderType) {
+  expect(user.identities.some((identity) => identity.providerType === providerType)).to.be.true;
+}
+
 async function registerAndLogInEmailUser(app: AnyApp) {
   const validEmail = randomVerifiableEmail();
   const validPassword = "test1234567890";
   await app.emailPasswordAuth.registerUser({ email: validEmail, password: validPassword });
   const user = await app.logIn(Realm.Credentials.emailPassword({ email: validEmail, password: validPassword }));
-  expectIsUser(user, ProviderType.LocalUserPass);
+  expectIsUser(user);
   expectIsSameUser(user, app.currentUser);
+  expectIsProviderType(user, ProviderType.LocalUserPass);
   return user;
 }
 
@@ -142,8 +145,9 @@ describe.skipIf(environment.missingServer, "User", () => {
       await expect(this.app.logIn(credentials)).to.be.rejectedWith("invalid username/password"); // this user does not exist yet
       await this.app.emailPasswordAuth.registerUser({ email: validEmail, password: validPassword });
       const user = await this.app.logIn(credentials);
-      expectIsUser(user, ProviderType.LocalUserPass);
+      expectIsUser(user);
       expectIsSameUser(user, this.app.currentUser);
+      expectIsProviderType(user, ProviderType.LocalUserPass);
       await user.logOut();
     });
 
@@ -153,8 +157,9 @@ describe.skipIf(environment.missingServer, "User", () => {
       await expect(this.app.logIn(credentials)).to.be.rejectedWith("invalid username/password"); // this user does not exist yet
       await this.app.emailPasswordAuth.registerUser({ email: validEmail, password: validPassword });
       const user = await this.app.logIn(credentials);
-      expectIsUser(user, ProviderType.LocalUserPass);
+      expectIsUser(user);
       expectIsSameUser(user, this.app.currentUser);
+      expectIsProviderType(user, ProviderType.LocalUserPass);
       await user.logOut();
     });
   });
@@ -168,8 +173,9 @@ describe.skipIf(environment.missingServer, "User", () => {
         const credentials = Realm.Credentials.anonymous();
 
         const user = await this.app.logIn(credentials);
-        expectIsUser(user, ProviderType.AnonUser);
+        expectIsUser(user);
         expectIsSameUser(user, this.app.currentUser);
+        expectIsProviderType(user, ProviderType.AnonUser);
         await user.logOut();
         // Is now logged out.
         expect(this.app.currentUser).to.be.null;
