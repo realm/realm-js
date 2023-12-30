@@ -4,8 +4,19 @@
 # This enables building for iOS on the end-users machine,
 # where "react-native" is installed as a sibling to our package instead of being a dev-dependency of our package.
 
+if(NOT DEFINED NODE_PATH)
+set(NODE_PATH $ENV{NODE_PATH})
+    if(NOT NODE_PATH)
+    find_program(NODE_PATH node)
+    endif()
+endif()
+
+if(NOT DEFINED NODE_PATH)
+    message(FATAL_ERROR "Node.js not found")
+endif()
+
 execute_process(
-    COMMAND node --print "path.dirname(require.resolve('react-native/package.json'))"
+    COMMAND ${NODE_PATH} --print "path.dirname(require.resolve('react-native/package.json'))"
     OUTPUT_VARIABLE REACT_NATIVE_ROOT_DIR
     OUTPUT_STRIP_TRAILING_WHITESPACE
     COMMAND_ERROR_IS_FATAL ANY

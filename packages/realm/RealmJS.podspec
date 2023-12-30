@@ -42,6 +42,12 @@ Pod::Spec.new do |s|
   s.source                 = { :http => 'https://github.com/realm/realm-js/blob/main/CONTRIBUTING.md#how-to-debug-react-native-podspec' }
 
   s.source_files           = 'react-native/ios/RealmReact/*.mm'
+  #                           'binding/ios/*.mm',
+  #                           'binding/jsi/*.{hpp,cpp,h}',
+  #                           'binding/*.{hpp}',
+  #                           'bindgen/src/**/*.{h}'
+  #                           'bindgen/vendor/**/*.{h,hpp}'
+
   s.public_header_files    = 'react-native/ios/RealmReact/*.h'
 
   s.frameworks             = uses_frameworks ? ['React'] : []
@@ -51,6 +57,7 @@ Pod::Spec.new do |s|
   s.pod_target_xcconfig    = {
                                 # Setting up clang
                                 'CLANG_CXX_LANGUAGE_STANDARD' => 'c++17',
+                                #'GCC_CXX_LANGUAGE_STANDARD' => 'c++17',
                                 'CLANG_CXX_LIBRARY' => 'libc++',
                                 # Setting the current project version and versioning system to get a symbol for analytics
                                 'CURRENT_PROJECT_VERSION' => s.version,
@@ -58,6 +65,7 @@ Pod::Spec.new do |s|
                                 # Header search paths are prefixes to the path specified in #include macros
                                 'HEADER_SEARCH_PATHS' => [
                                   '"$(PODS_TARGET_SRCROOT)/react-native/ios/RealmReact/"',
+                                  '"$(PODS_TARGET_SRCROOT)/react-native/ios/build/_include"',
                                   '"$(PODS_ROOT)/Headers/Public/React-Core/"'
                                   #"'#{app_path}/ios/Pods/Headers/Public/React-Core'" # Use this line instead of 👆 while linting
                                 ].join(' ')
@@ -67,4 +75,20 @@ Pod::Spec.new do |s|
   s.vendored_frameworks = 'react-native/ios/realm-js-ios.xcframework'
 
   s.dependency 'React'
+
+  script_location = "#{__dir__}/scripts/build-ios-on-install.sh"
+
+  CMAKE_PATH = Pod::Executable::which!('cmake')
+  NODE_PATH = Pod::Executable::which!('node')
+
+  # Post install script
+  s.script_phase = {
+    :name => 'Generate Realm xcframework',
+    :execution_position => :before_compile,
+    :script => <<-EOS
+    export CMAKE_PATH=#{CMAKE_PATH}
+    export NODE_PATH=#{NODE_PATH}
+    /bin/sh -c \"#{script_location} -c $CONFIGURATION $PLATFORM_NAME\"
+    EOS
+  }
 end
