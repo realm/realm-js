@@ -5,7 +5,8 @@
     "<rootDir>/src"
   ],
   "setupFilesAfterEnv": [
-    "@testing-library/jest-native/extend-expect"
+    "@testing-library/jest-native/extend-expect",
+    "<rootDir>/src/__tests__/setup.ts"
   ],
   "transform": {
     "^.+\\.(js|jsx|ts|tsx)$": "babel-jest"
