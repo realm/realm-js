@@ -16,11 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { useApp, useAuthResult } from "./AppProvider";
-import { AuthOperationName, AuthResult } from "./types";
 import Realm from "realm";
-import { useAuthOperation } from "./useAuthOperation";
 import { useCallback } from "react";
+
+import { AuthOperationName, AuthResult } from "./types";
+import { useApp, useAuthResult } from "./AppProvider";
+import { useAuthOperation } from "./useAuthOperation";
 
 interface UseEmailPasswordAuth {
   /**

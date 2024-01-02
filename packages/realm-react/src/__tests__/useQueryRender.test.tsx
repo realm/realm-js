@@ -16,15 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import React, { useEffect, useState, useCallback, useMemo } from "react";
-import Realm, { flags } from "realm";
-import { render, waitFor, fireEvent, act } from "@testing-library/react-native";
-import { View, TextInput, TouchableHighlight, Text, FlatList, ListRenderItem } from "react-native";
-import "@testing-library/jest-native/extend-expect";
-import { createRealmContext } from "..";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import Realm from "realm";
+import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
+import { FlatList, ListRenderItem, Text, TextInput, TouchableHighlight, View } from "react-native";
 
-// Enable calling Realm.clearTestState()
-flags.ALLOW_CLEAR_TEST_STATE = true;
+import { createRealmContext } from "..";
 
 class Item extends Realm.Object {
   id!: number;
@@ -405,12 +402,12 @@ describe.each`
       });
       let i = 0;
       while (i < 10) {
-        await new Promise((resolve) => setTimeout(resolve, 10));
+        await new Promise<void>((resolve) => setTimeout(resolve, 10));
         const id = i;
         testRealm.write(() => {
           return new Item(testRealm, { id, name: `${id}` });
         });
-        await new Promise((resolve) => setTimeout(resolve, 0));
+        await new Promise<void>((resolve) => setTimeout(resolve, 0));
         testRealm.write(() => {
           const item = testRealm.objectForPrimaryKey(Item, id);
           if (item) {
@@ -458,7 +455,7 @@ describe.each`
       forceSynchronousNotifications(testRealm);
     });
 
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    await new Promise<void>((resolve) => setTimeout(resolve, 1000));
 
     expect(queryObjectChangeCounter).toHaveBeenCalledTimes(initialCount + 1);
   });

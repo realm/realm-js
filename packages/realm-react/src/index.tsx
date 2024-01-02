@@ -16,12 +16,13 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { createContext } from "react";
 import Realm from "realm";
-import { createUseRealm } from "./useRealm";
-import { createUseQuery } from "./useQuery";
-import { createUseObject } from "./useObject";
+import { createContext } from "react";
+
 import { createRealmProvider } from "./RealmProvider";
+import { createUseObject } from "./useObject";
+import { createUseQuery } from "./useQuery";
+import { createUseRealm } from "./useRealm";
 
 type RealmContext = {
   /**

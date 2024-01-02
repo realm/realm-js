@@ -15,16 +15,17 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-import React, { useEffect, useState } from "react";
-import { AppProvider } from "../AppProvider";
-import { renderHook, waitFor } from "@testing-library/react-native";
 
+import { renderHook, waitFor } from "@testing-library/react-native";
 import { AppConfigBuilder } from "@realm/app-importer";
+import Realm, { App } from "realm";
+import React, { useEffect, useState } from "react";
+
+import { AppProvider } from "../AppProvider";
 import { useEmailPasswordAuth } from "../useEmailPasswordAuth";
 import { baseUrl, importApp } from "./helpers";
 import { AuthOperationName } from "../types";
 import { UserProvider, useUser } from "../UserProvider";
-import { App } from "realm";
 
 const testEmail = "test@email.com";
 const testPassword = "password";

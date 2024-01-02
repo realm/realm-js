@@ -15,7 +15,9 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
+
 import Realm from "realm";
+
 import { createCachedCollection } from "./cachedCollection";
 
 /**
@@ -57,7 +59,6 @@ export type CachedObject = {
  *
  * See {@link cachedCollection} and the `useObject` hook for description of how this
  * helps prevent unnecessary rendering.
- *
  * @param args - {@link CachedObjectArgs} object arguments
  * @returns Proxy object wrapping the {@link Realm.Object}
  */

@@ -15,8 +15,10 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
+
+import { useEffect, useMemo, useReducer, useRef } from "react";
 import Realm from "realm";
-import { useEffect, useReducer, useMemo, useRef } from "react";
+
 import { CachedObject, createCachedObject } from "./cachedObject";
 import { CollectionCallback, getObjectForPrimaryKey, getObjects } from "./helpers";
 

@@ -17,12 +17,10 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { useEffect, useState } from "react";
-import Realm, { flags } from "realm";
+import Realm from "realm";
 import { renderHook } from "@testing-library/react-native";
-import { createUseObject } from "../useObject";
 
-// Enable calling Realm.clearTestState()
-flags.ALLOW_CLEAR_TEST_STATE = true;
+import { createUseObject } from "../useObject";
 
 const dogSchema: Realm.ObjectSchema = {
   name: "dog",

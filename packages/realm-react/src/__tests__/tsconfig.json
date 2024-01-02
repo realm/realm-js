@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "types": [
+      "jest",
+      "node",
+      "@testing-library/react-native/extend-expect",
+    ]
+  },
+  "include": [
+    "."
+  ],
+  "exclude": []
+}

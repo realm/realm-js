@@ -15,7 +15,9 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
+
 import Realm from "realm";
+
 import { CollectionCallback } from "./helpers";
 
 const numericRegEx = /^-?\d+$/;
@@ -70,7 +72,6 @@ type CachedCollectionArgs<T> = {
  * This makes the {@link Realm.Collection} behaves in an immutable way, as React expects, so
  * that a {@link Realm.Object} can be wrapped in {@link React.memo} to prevent unnecessary
  * rendering (see {@link useQuery} hook).
- *
  * @param args {@link CachedCollectionArgs} object arguments
  * @returns Proxy object wrapping the collection
  */
