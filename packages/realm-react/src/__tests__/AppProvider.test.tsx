@@ -37,7 +37,9 @@ describe("AppProvider", () => {
   });
 
   it("throws useApp is used without having the AppProvider is rendered", () => {
-    expect(() => renderHook(() => useApp())).toThrow();
+    renderHook(() =>
+      expect(() => useApp()).toThrow("No app found. Did you forget to wrap your component in an <AppProvider>?"),
+    );
   });
 
   it("handle state changes to its configuration", async () => {
