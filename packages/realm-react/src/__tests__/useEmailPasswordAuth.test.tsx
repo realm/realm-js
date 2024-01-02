@@ -15,12 +15,13 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-import React from "react";
-import { AppProvider } from "../AppProvider";
-import { renderHook, act } from "@testing-library/react-native";
 
+import React from "react";
+import { act, renderHook } from "@testing-library/react-native";
 import { AppConfigBuilder } from "@realm/app-importer";
 import { App } from "realm";
+
+import { AppProvider } from "../AppProvider";
 import { useEmailPasswordAuth } from "../useEmailPasswordAuth";
 import { baseUrl, importApp, testAuthOperation } from "./helpers";
 

@@ -15,6 +15,7 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
+
 import Realm from "realm";
 
 // Convenience function that returns the correct type for the objectForPrimaryKey function

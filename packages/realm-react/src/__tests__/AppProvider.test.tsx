@@ -15,10 +15,12 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
+
 import React, { useRef, useState } from "react";
+import { Button, Text, View } from "react-native";
+import { act, fireEvent, render, renderHook, waitFor } from "@testing-library/react-native";
+
 import { AppProvider, useApp } from "../AppProvider";
-import { View, Text, Button } from "react-native";
-import { fireEvent, render, waitFor, renderHook, act } from "@testing-library/react-native";
 
 jest.mock("react-native/Libraries/Animated/NativeAnimatedHelper");
 

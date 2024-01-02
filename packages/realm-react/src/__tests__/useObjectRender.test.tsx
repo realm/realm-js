@@ -16,10 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { fireEvent, render, waitFor, act } from "@testing-library/react-native";
-import React, { useEffect, useRef, useState } from "react";
-import { TextInput, Text, TouchableHighlight, View, FlatList, ListRenderItem } from "react-native";
+import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
+import React, { useEffect, useState } from "react";
+import { FlatList, ListRenderItem, Text, TextInput, TouchableHighlight, View } from "react-native";
 import Realm from "realm";
+
 import { createUseObject } from "../useObject";
 
 export class ListItem extends Realm.Object {

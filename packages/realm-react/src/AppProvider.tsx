@@ -15,9 +15,11 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-import { isEqual } from "lodash";
+
 import React, { createContext, useContext, useLayoutEffect, useRef, useState } from "react";
 import Realm from "realm";
+import { isEqual } from "lodash";
+
 import { AuthResult, OperationState } from "./types";
 
 type AppContextValue = Realm.App | null;

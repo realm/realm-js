@@ -16,8 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import { useCallback, useEffect, useMemo, useReducer, useRef } from "react";
 import Realm from "realm";
-import { useEffect, useReducer, useMemo, useRef, useCallback } from "react";
+
 import { createCachedCollection } from "./cachedCollection";
 import { getObjects } from "./helpers";
 

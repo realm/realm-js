@@ -15,16 +15,15 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-import React, { useRef, useState } from "react";
-import Realm, { User, flags } from "realm";
-import "@testing-library/jest-native/extend-expect";
-import { createRealmContext } from "..";
-import { mergeRealmConfiguration, areConfigurationsIdentical } from "../RealmProvider";
-import { View, Button, Text } from "react-native";
-import { render, fireEvent, waitFor, renderHook, act } from "@testing-library/react-native";
 
-// Enable calling Realm.clearTestState()
-flags.ALLOW_CLEAR_TEST_STATE = true;
+import React, { useRef, useState } from "react";
+import Realm, { User } from "realm";
+import { Button, Text, View } from "react-native";
+import { act, fireEvent, render, renderHook, waitFor } from "@testing-library/react-native";
+import "@testing-library/jest-native/extend-expect";
+
+import { createRealmContext } from "..";
+import { areConfigurationsIdentical, mergeRealmConfiguration } from "../RealmProvider";
 
 const dogSchema: Realm.ObjectSchema = {
   name: "dog",

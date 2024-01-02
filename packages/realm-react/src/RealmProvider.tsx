@@ -16,9 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import React, { useEffect, useState, useRef, useContext } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import Realm from "realm";
 import { isEqual } from "lodash";
+
 import { UserContext } from "./UserProvider";
 
 type PartialRealmConfiguration = Omit<Partial<Realm.Configuration>, "sync"> & {
