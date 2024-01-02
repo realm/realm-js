@@ -189,10 +189,7 @@ export class User<
    * @returns An array of {@link UserIdentity} objects.
    */
   get identities(): UserIdentity[] {
-    return this.internal.identities.map((identity) => {
-      const { id, provider_type: providerType } = identity as Record<string, string>;
-      return { id, providerType } as UserIdentity;
-    });
+    return this.internal.identities.map(({ id, providerType }) => ({ id, providerType } as UserIdentity));
   }
 
   /**
