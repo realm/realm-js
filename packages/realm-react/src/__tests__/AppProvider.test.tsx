@@ -66,7 +66,7 @@ describe("AppProvider", () => {
 
     await act(async () => {
       fireEvent.press(changeSchemaButton);
-      await new Promise((resolve) => setTimeout(resolve, 0));
+      await new Promise<void>((resolve) => setTimeout(resolve, 0));
     });
 
     // Changing the realm provider configuration will cause a remount
@@ -100,7 +100,7 @@ describe("AppProvider", () => {
 
     // Wait a tick for the app reference to be set by the provider.  Then force a rerender.
     await act(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 0));
+      await new Promise<void>((resolve) => setTimeout(resolve, 0));
       fireEvent.press(toggleAppRef);
     });
 

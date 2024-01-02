@@ -20,7 +20,6 @@ import React, { useRef, useState } from "react";
 import Realm, { User } from "realm";
 import { Button, Text, View } from "react-native";
 import { act, fireEvent, render, renderHook, waitFor } from "@testing-library/react-native";
-import "@testing-library/jest-native/extend-expect";
 
 import { createRealmContext } from "..";
 import { areConfigurationsIdentical, mergeRealmConfiguration } from "../RealmProvider";
@@ -144,7 +143,7 @@ describe("RealmProvider", () => {
 
     await act(async () => {
       fireEvent.press(toggleComponent);
-      await new Promise((resolve) => setTimeout(resolve, 0));
+      await new Promise<void>((resolve) => setTimeout(resolve, 0));
     });
     expect(() => getByTestId("secondRealmProvider")).toThrow(
       "Unable to find an element with testID: secondRealmProvider",
@@ -181,7 +180,7 @@ describe("RealmProvider", () => {
 
     await act(async () => {
       fireEvent.press(changeSchemaButton);
-      await new Promise((resolve) => setTimeout(resolve, 0));
+      await new Promise<void>((resolve) => setTimeout(resolve, 0));
     });
 
     // Changing the realm provider configuration will cause a comlete new remount
@@ -220,13 +219,13 @@ describe("RealmProvider", () => {
 
     // Wait a tick for the RealmProvider to set the reference and then call a function that uses the ref
     await act(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 0));
+      await new Promise<void>((resolve) => setTimeout(resolve, 0));
       fireEvent.press(toggleRefPath);
     });
 
     const realmRefPathText = await waitFor(() => queryByTestId("realmRefPath"));
 
-    expect(realmRefPathText).toHaveTextContent("testPath.realm");
+    expect(realmRefPathText).toHaveTextContent("testPath.realm", { exact: false });
   });
   // TODO: Now that local realm is immediately set, the fallback never renders.
   // We need to test synced realm in order to produce the fallback

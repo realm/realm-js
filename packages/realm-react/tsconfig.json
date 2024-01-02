@@ -5,6 +5,10 @@
     "lib": [
       "es2021",
     ],
+    "types": [
+      "realm",
+      "react"
+    ],
     "esModuleInterop": true,
     "moduleResolution": "node",
     "jsx": "react",
@@ -22,4 +26,7 @@
   "include": [
     "src"
   ],
+  "exclude": [
+    "src/__tests__"
+  ]
 }
