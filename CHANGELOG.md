@@ -7,8 +7,8 @@
 * None
 
 ### Fixed
-* Accessing the `providerType` on a `UserIdentity` via `User.identities` always yielded `undefined`. Thanks to
-[@joelowry96](https://github.com/joelowry96) for pinpointing the fix.
+* Accessing the `providerType` on a `UserIdentity` via `User.identities` always yielded `undefined`. Thanks to [@joelowry96](https://github.com/joelowry96) for pinpointing the fix.
+* Bad performance of initial Sync download involving many backlinks. ([realm/realm-core#7217](https://github.com/realm/realm-core/issues/7217), since v10.0.0)
 
 ### Compatibility
 * React Native >= v0.71.4
@@ -16,9 +16,7 @@
 * File format: generates Realms with format v23 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-<!-- * Either mention core version or upgrade -->
-<!-- * Using Realm Core vX.Y.Z -->
-<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
+* Upgraded Realm Core from v13.25.0 to v13.25.1. ([#6335](https://github.com/realm/realm-js/issues/6335))
 
 ## 12.5.0 (2023-12-19)
 
@@ -111,7 +109,7 @@
 * Deleting an object in an asymmetric table would cause a crash. ([realm/realm-kotlin#1537](https://github.com/realm/realm-kotlin/issues/1537), since v10.19.0)
 * Updating subscriptions did not trigger Realm auto-refreshes, sometimes resulting in async refresh hanging until another write was performed by something else. ([realm/realm-core#7031](https://github.com/realm/realm-core/pull/7031))
 * Fix inter-process locking for concurrent Realm file access resulting in an inter-process deadlock on FAT32/exFAT file systems. ([realm/realm-core#6959](https://github.com/realm/realm-core/pull/6959))
-  
+
 ### Compatibility
 * React Native >= v0.71.4
 * Realm Studio v14.0.0.
