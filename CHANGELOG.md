@@ -1,10 +1,4 @@
-## vNext (TBD)
-
-### Deprecations
-* None
-
-### Enhancements
-* None
+## 12.5.1 (2024-01-03)
 
 ### Fixed
 * Accessing the `providerType` on a `UserIdentity` via `User.identities` always yielded `undefined`. Thanks to [@joelowry96](https://github.com/joelowry96) for pinpointing the fix.

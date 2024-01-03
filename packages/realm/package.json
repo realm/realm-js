@@ -1,6 +1,6 @@
 {
   "name": "realm",
-  "version": "12.5.0",
+  "version": "12.5.1",
   "description": "Realm by MongoDB is an offline-first mobile database: an alternative to SQLite and key-value stores",
   "license": "apache-2.0",
   "homepage": "https://www.mongodb.com/docs/realm/",
