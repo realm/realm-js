@@ -68,25 +68,18 @@ else
 fi
 
 DESTINATIONS=()
-LIBRARIES=()
-BUILD_LIB_CMDS=()
 
+# TODO: Can this be infered from xcode env variables? (maccatalyst appears to be a unicorn)
 for platform in "${PLATFORMS[@]}"; do
     case "$platform" in
         ios)
             DESTINATIONS+=(-destination 'generic/platform=iOS')
-            LIBRARIES+=(-library ./out/$CONFIGURATION-iphoneos/librealm-js-ios.a -headers ./_include)
-            BUILD_LIB_CMDS+=("xcrun libtool -static -D -o ./out/$CONFIGURATION-iphoneos/librealm-js-ios.a ./out/$CONFIGURATION-iphoneos/*.a")
         ;;
         maccatalyst)
             DESTINATIONS+=(-destination 'platform=macOS,arch=x86_64,variant=Mac Catalyst')
-            LIBRARIES+=(-library ./out/$CONFIGURATION-maccatalyst/librealm-js-ios.a -headers ./_include)
-            BUILD_LIB_CMDS+=("xcrun libtool -static -D -o ./out/$CONFIGURATION-maccatalyst/librealm-js-ios.a ./out/$CONFIGURATION-maccatalyst/*.a")
         ;;
         iphonesimulator)
             DESTINATIONS+=(-destination 'generic/platform=iOS Simulator')
-            LIBRARIES+=(-library ./out/$CONFIGURATION-iphonesimulator/librealm-js-ios.a -headers ./_include)
-            BUILD_LIB_CMDS+=("xcrun libtool -static -D -o ./out/$CONFIGURATION-iphonesimulator/librealm-js-ios.a ./out/$CONFIGURATION-iphonesimulator/*.a")
         ;;
         *)
             echo "${platform} not supported"
@@ -108,32 +101,34 @@ DEVELOPER_DIR="${DEVELOPER_DIR:-${SELECTED_DEVELOPER_DIR}}"
 # Configure CMake project
 env DEVELOPER_DIR="$DEVELOPER_DIR" SDKROOT="$SDKROOT" $CMAKE_PATH "$BINDGEN_PATH" -GXcode \
     -DCMAKE_TOOLCHAIN_FILE="$BINDGEN_PATH/vendor/realm-core/tools/cmake/xcode.toolchain.cmake" \
-    -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY="$(pwd)/out/$<CONFIG>\$EFFECTIVE_PLATFORM_NAME" \
-    # -DCMAKE_C_COMPILER="$PROJECT_ROOT/scripts/ccache-clang.sh" \
-    # -DCMAKE_CXX_COMPILER="$PROJECT_ROOT/scripts/ccache-clang++.sh"
-    # -DCMAKE_C_COMPILER="/usr/bin/clang" \
-    # -DCMAKE_CXX_COMPILER="/usr/bin/clang++"\
+    -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY="$(pwd)/out" \
 
 
 DEVELOPER_DIR="$DEVELOPER_DIR" xcodebuild build \
     -scheme realm-js-ios \
     "${DESTINATIONS[@]}" \
     -configuration $CONFIGURATION \
-    # CC="$PROJECT_ROOT/scripts/ccache-clang.sh" \
-    # CXX="$PROJECT_ROOT/scripts/ccache-clang++.sh" \
     ONLY_ACTIVE_ARCH=NO \
     BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
     SUPPORTS_MACCATALYST=YES
 
-for cmd in "${BUILD_LIB_CMDS[@]}"; do
-    eval "${cmd}"
-done
-
+# copy needed headers into project
 rm -rf _include
 mkdir -p _include/realm-js-ios
 cp "$BINDING_PATH"/jsi/jsi_init.h _include/realm-js-ios/
 
-rm -rf ../realm-js-ios.xcframework
-xcodebuild -create-xcframework \
-    "${LIBRARIES[@]}" \
-    -output ../realm-js-ios.xcframework
+# copy built into a unified location
+rm -rf libs
+mkdir libs
+cp out/$CONFIGURATION/*.a libs
+
+# Rename the *.a files so there are the same regardles if configuration was debug or release
+
+pushd libs
+
+find . -type f -name "*-dbg*" | while read -r file; do
+    # Construct new filename by removing '-dbg'
+    newfile=$(echo "$file" | sed 's/-dbg//')
+    # Rename the file
+    mv "$file" "$newfile"
+done
