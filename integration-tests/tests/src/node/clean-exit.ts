@@ -16,16 +16,50 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { execSync } from "child_process";
+import { execFileSync } from "node:child_process";
+import fs from "node:fs";
+import path from "node:path";
+import os from "node:os";
+import { assert } from "chai";
+import module from "node:module";
 
-describe("Clean exit for Node.js scripts", function () {
+const require = module.createRequire(import.meta.url);
+const realmPackagePath = require.resolve("realm");
+assert(realmPackagePath, "Expected to resolve Realm package");
+
+function expectCleanExit(source: string, timeout: number) {
+  execFileSync(process.execPath, ["--eval", source], {
+    timeout,
+    cwd: fs.mkdtempSync(path.join(os.tmpdir(), "realm-exit-test-")),
+    stdio: "inherit",
+    env: {
+      REALM_PACKAGE_PATH: realmPackagePath,
+    },
+  });
+}
+
+describe("clean exits in Node.js", function () {
   // Repro for https://github.com/realm/realm-js/issues/4535 - currently still failing
-  it.skip("exits cleanly when creating a new Realm.App", function (this: RealmContext) {
-    execSync(
-      `node -e 'const Realm = require("realm"); const app = new Realm.App({ id: "myapp-abcde" }); Realm.clearTestState();'`,
-      {
-        timeout: Math.min(this.timeout(), 5000),
-      },
+  it("exits when creating Realm", function (this: RealmContext) {
+    expectCleanExit(
+      `
+        const Realm = require(process.env.REALM_PACKAGE_PATH);
+        const realm = new Realm();
+        realm.close();
+      `,
+      Math.min(this.timeout(), 5000),
+    );
+  });
+
+  it("exits when creating Realm.App", function (this: RealmContext) {
+    expectCleanExit(
+      `
+        const Realm = require(process.env.REALM_PACKAGE_PATH);
+        Realm.flags.ALLOW_CLEAR_TEST_STATE = true;
+        new Realm.App({ id: "myapp-abcde" });
+        Realm.clearTestState();
+      `,
+      Math.min(this.timeout(), 5000),
     );
   });
 });
