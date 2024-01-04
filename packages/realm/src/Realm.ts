@@ -320,6 +320,7 @@ export class Realm {
       }
     }
     Realm.internals.clear();
+    App.resetInternals();
     binding.RealmCoordinator.clearAllCaches();
     binding.App.clearCachedApps();
     ProgressRealmPromise.cancelAll();

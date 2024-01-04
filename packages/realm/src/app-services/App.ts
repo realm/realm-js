@@ -23,6 +23,7 @@ import {
   DefaultObject,
   EmailPasswordAuth,
   Listeners,
+  Realm,
   Sync,
   User,
   assert,
@@ -178,6 +179,18 @@ export class App<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private static appByUserId = new Map<string, binding.WeakRef<AnyApp>>();
 
+  /* @internal */
+  public static resetInternals() {
+    for (const weakApp of App.appById.values()) {
+      const app = weakApp.deref();
+      if (app) {
+        app.internal.$resetSharedPtr();
+      }
+    }
+    App.appById.clear();
+    App.appByUserId.clear();
+  }
+
   /**
    * Get or create a singleton Realm App from an ID.
    * Calling this function multiple times with the same ID will return the same instance.
@@ -200,9 +213,7 @@ export class App<
     if (cachedApp) {
       return cachedApp;
     }
-    const newApp = new App(id);
-    App.appById.set(id, new binding.WeakRef(newApp));
-    return newApp;
+    return new App(id);
   }
 
   public static Sync = Sync;
@@ -278,23 +289,36 @@ export class App<
     }
 
     fs.ensureDirectoryForFile(fs.joinPaths(baseFilePath || fs.getDefaultDirectoryPath(), "mongodb-realm"));
-    // TODO: This used getSharedApp in the legacy SDK, but it's failing AppTests
-    this.internal = binding.App.getUncachedApp(
-      {
-        appId: id,
-        deviceInfo: App.deviceInfo,
-        transport: createNetworkTransport(),
-        baseUrl,
-        defaultRequestTimeoutMs: timeout ? binding.Int64.numToInt(timeout) : undefined,
-      },
-      {
-        baseFilePath: baseFilePath ? baseFilePath : fs.getDefaultDirectoryPath(),
-        metadataMode: metadata ? toBindingMetadataMode(metadata.mode) : binding.MetadataMode.NoEncryption,
-        customEncryptionKey: metadata?.encryptionKey,
-        userAgentBindingInfo: App.userAgent,
-        multiplexSessions,
-      },
-    );
+
+    const logger = Realm.makeDefaultLogger();
+    const transport = createNetworkTransport();
+    try {
+      // TODO: This used getSharedApp in the legacy SDK, but it's failing AppTests
+      this.internal = binding.App.getUncachedApp(
+        {
+          appId: id,
+          deviceInfo: App.deviceInfo,
+          transport,
+          baseUrl,
+          defaultRequestTimeoutMs: timeout ? binding.Int64.numToInt(timeout) : undefined,
+        },
+        {
+          baseFilePath: baseFilePath ? baseFilePath : fs.getDefaultDirectoryPath(),
+          metadataMode: metadata ? toBindingMetadataMode(metadata.mode) : binding.MetadataMode.NoEncryption,
+          customEncryptionKey: metadata?.encryptionKey,
+          userAgentBindingInfo: App.userAgent,
+          multiplexSessions,
+          logger,
+        },
+      );
+    } finally {
+      // To enable a quick shutdown, we reset any shared pointers in the config
+      logger.$resetSharedPtr();
+      transport.$resetSharedPtr();
+    }
+
+    // Enable getting this app via its id
+    App.appById.set(id, new binding.WeakRef(this));
   }
 
   /**
