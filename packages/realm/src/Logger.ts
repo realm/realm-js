@@ -78,7 +78,7 @@ export function fromBindingLoggerLevelToLogLevel(arg: binding.LoggerLevel): LogL
 
 /** @internal */
 export const defaultLogger: LoggerCallback = function (logLevel: LogLevel, message: string) {
-  const formattedLogMessage = `[${logLevel}] ${message}`;
+  const formattedLogMessage = `(realm)[${logLevel}] ${message}`;
   /* eslint-disable no-console */
   if (logLevel === "error" || logLevel === "fatal") {
     console.error(formattedLogMessage);
@@ -91,4 +91,12 @@ export const defaultLogger: LoggerCallback = function (logLevel: LogLevel, messa
 };
 
 /** @internal */
-export const defaultLoggerLevel: LogLevel = "warn";
+export const defaultLogLevel: LogLevel = "warn";
+
+/** @internal */
+export function toBindingLogger(logger: LoggerCallback, level: LogLevel) {
+  const logLevel = toBindingLoggerLevel(level);
+  return binding.Helpers.makeCallbackLogger((level, message) => {
+    logger(fromBindingLoggerLevelToLogLevel(level), message);
+  }, logLevel);
+}

@@ -20,7 +20,6 @@ import {
   App,
   ConnectionState,
   LogLevel,
-  Logger,
   MutableSubscriptionSet,
   NumericLogLevel,
   OpenRealmBehaviorConfiguration,
@@ -34,8 +33,6 @@ import {
   SyncSession,
   User,
   assert,
-  binding,
-  fromBindingLoggerLevelToNumericLogLevel,
   toBindingLoggerLevel,
   toBindingSyncConfig,
   validateSyncConfiguration,
@@ -59,12 +56,10 @@ export class Sync {
   }
 
   /** @deprecated Will be removed in v13.0.0. Please use {@link Realm.setLogger}. */
-  static setLogger(app: App, logger: Logger) {
-    const factory = binding.Helpers.makeLoggerFactory((level, message) => {
-      logger(fromBindingLoggerLevelToNumericLogLevel(level), message);
-    });
-    app.internal.syncManager.setLoggerFactory(factory);
+  static setLogger() {
+    throw new Error("No longer supported!");
   }
+
   /**
    * Get all sync sessions for a particular user.
    * @since 10.0.0

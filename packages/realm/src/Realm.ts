@@ -178,8 +178,8 @@ import {
   WaitForSync,
   assert,
   binding,
+  defaultLogLevel,
   defaultLogger,
-  defaultLoggerLevel,
   extendDebug,
   flags,
   fromBindingLoggerLevelToLogLevel,
@@ -193,6 +193,7 @@ import {
   normalizeRealmSchema,
   safeGlobalThis,
   toArrayBuffer,
+  toBindingLogger,
   toBindingLoggerLevel,
   toBindingSchema,
   toBindingSyncConfig,
@@ -279,6 +280,9 @@ export class Realm {
 
   public static defaultPath = Realm.normalizePath("default.realm");
 
+  public static defaultLogger = defaultLogger;
+  public static defaultLogLevel = defaultLogLevel;
+
   private static internals = new Set<binding.WeakRef<binding.Realm>>();
 
   /**
@@ -288,8 +292,7 @@ export class Realm {
    * @since 12.0.0
    */
   static setLogLevel(level: LogLevel) {
-    const bindingLoggerLevel = toBindingLoggerLevel(level);
-    binding.Logger.setDefaultLevelThreshold(bindingLoggerLevel);
+    Realm.defaultLogLevel = level;
   }
 
   /**
@@ -298,11 +301,8 @@ export class Realm {
    * @note The logger callback needs to be setup before opening the first realm.
    * @since 12.0.0
    */
-  static setLogger(loggerCallback: LoggerCallback) {
-    const logger = binding.Helpers.makeLogger((level, message) => {
-      loggerCallback(fromBindingLoggerLevelToLogLevel(level), message);
-    });
-    binding.Logger.setDefaultLogger(logger);
+  static setLogger(callback: LoggerCallback) {
+    Realm.defaultLogger = callback;
   }
 
   /**
@@ -526,6 +526,11 @@ export class Realm {
   }
 
   /** @internal */
+  public static makeDefaultLogger() {
+    return toBindingLogger(Realm.defaultLogger, Realm.defaultLogLevel);
+  }
+
+  /** @internal */
   public static transformConfig(config: Configuration): {
     schemaExtras: RealmSchemaExtra;
     bindingConfig: binding.RealmConfig_Relaxed;
@@ -535,6 +540,7 @@ export class Realm {
     const path = Realm.determinePath(config);
     const { fifoFilesFallbackPath, shouldCompact, inMemory } = config;
     const bindingSchema = normalizedSchema && toBindingSchema(normalizedSchema);
+
     return {
       schemaExtras,
       bindingConfig: {
@@ -558,6 +564,7 @@ export class Realm {
         syncConfig: config.sync ? toBindingSyncConfig(config.sync) : undefined,
         forceSyncHistory: config.openSyncedRealmLocally,
         automaticallyHandleBacklinksInMigrations: config.migrationOptions?.resolveEmbeddedConstraints ?? false,
+        logger: Realm.makeDefaultLogger(),
       },
     };
   }
@@ -663,6 +670,12 @@ export class Realm {
 
       fs.ensureDirectoryForFile(bindingConfig.path);
       this.internal = internalConfig.internal ?? binding.Realm.getSharedRealm(bindingConfig);
+
+      // To enable a quick shotdown, we reset any shared pointers in the config
+      if (bindingConfig.logger) {
+        bindingConfig.logger.$resetSharedPtr();
+      }
+
       if (flags.ALLOW_CLEAR_TEST_STATE) {
         Realm.internals.add(new binding.WeakRef(this.internal));
       }
@@ -1862,10 +1875,6 @@ declare global {
     }
   }
 }
-
-//Set default logger and log level.
-Realm.setLogger(defaultLogger);
-Realm.setLogLevel(defaultLoggerLevel);
 
 // Patch the global at runtime
 let warnedAboutGlobalRealmUse = false;

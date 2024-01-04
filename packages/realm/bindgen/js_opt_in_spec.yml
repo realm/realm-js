@@ -51,6 +51,7 @@ records:
       - initialization_function
       - should_compact_on_launch_function
       - automatically_handle_backlinks_in_migrations
+      - logger
 
   UserIdentity:
     fields:
@@ -127,6 +128,7 @@ records:
       - custom_encryption_key
       - user_agent_binding_info
       - multiplex_sessions
+      - logger
 
   SyncError:
    fields:
@@ -235,8 +237,7 @@ classes:
       - make_network_transport
       - delete_data_for_object
       - base64_decode
-      - make_logger_factory
-      - make_logger
+      - make_callback_logger
       - simulate_sync_error
       - consume_thread_safe_reference_to_shared_realm
       - file_exists
@@ -249,6 +250,8 @@ classes:
     methods:
       - set_default_logger
       - set_default_level_threshold
+      # JS-specific
+      - DOLLAR_resetSharedPtr
 
   ConstTableRef:
     methods:
@@ -463,6 +466,13 @@ classes:
       - unsubscribe
       - call_function
       - make_streaming_request
+      # JS-specific
+      - DOLLAR_resetSharedPtr
+
+  GenericNetworkTransport:
+    methods:
+      # JS-specific
+      - DOLLAR_resetSharedPtr
 
   WatchStream:
     methods:
@@ -501,7 +511,6 @@ classes:
       - immediately_run_file_actions
       - set_session_multiplexing
       - set_log_level
-      - set_logger_factory
       - set_user_agent
       - reconnect
       - path_for_realm
