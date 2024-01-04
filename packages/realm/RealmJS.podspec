@@ -33,20 +33,15 @@ Pod::Spec.new do |s|
 
   s.authors                = package['author']
   s.homepage               = package['homepage']
-  s.platform               = :ios, '9.0'
+  s.platform               = :ios, '13.4'
 
-  # The source field is a required field in the podspec, but it is not ment to be used.
-  # This is because the Podspec is not ment to be published into a CocoaPod repository, instead React Native uses a :path style dependency when adding this to the users projects Podfile.
+  # The source field is a required field in the podspec, but it is not meant to be used.
+  # This is because the Podspec is not meant to be published into a CocoaPod repository, instead React Native uses a :path style dependency when adding this to the users projects Podfile.
   # @see https://guides.cocoapods.org/using/the-podfile.html#using-the-files-from-a-folder-local-to-the-machine
   # @see https://github.com/react-native-community/cli/blob/master/docs/autolinking.md#platform-ios
   s.source                 = { :http => 'https://github.com/realm/realm-js/blob/main/CONTRIBUTING.md#how-to-debug-react-native-podspec' }
 
   s.source_files           = 'react-native/ios/RealmReact/*.mm'
-  #                           'binding/ios/*.mm',
-  #                           'binding/jsi/*.{hpp,cpp,h}',
-  #                           'binding/*.{hpp}',
-  #                           'bindgen/src/**/*.{h}'
-  #                           'bindgen/vendor/**/*.{h,hpp}'
 
   s.public_header_files    = 'react-native/ios/RealmReact/*.h'
 
@@ -71,8 +66,14 @@ Pod::Spec.new do |s|
                                 ].join(' ')
                               }
 
+  lib_location = "react-native/ios/build/libs"
+
   # TODO: Consider providing an option to build with the -dbg binaries instead
-  s.vendored_frameworks = 'react-native/ios/realm-js-ios.xcframework'
+  s.vendored_libraries = "#{lib_location}/librealm.a",
+                         "#{lib_location}/librealm-js-ios.a",
+                         "#{lib_location}/librealm-object-store.a",
+                         "#{lib_location}/librealm-parser.a",
+                         "#{lib_location}/librealm-sync.a"
 
   s.dependency 'React'
 
