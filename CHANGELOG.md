@@ -7,8 +7,10 @@
 * None
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None
+* Trying to create an invalid object (e.g. missing required properties) via `realm.create()` or a `Realm.Object` constructor would both throw and create the object (with default values for required properties), causing the object creation to not be rolled back in the following cases:
+  * A) During a manual transaction if the user does not explicitly catch the exception and cancel the transaction.
+  * B) If the user catches the exception within the callback passed to `realm.write()` and does not rethrow it.
+  * Fix: The operation is now automatically rolled back. ([#2638](https://github.com/realm/realm-js/issues/2638))
 
 ### Compatibility
 * React Native >= v0.71.4
@@ -23,7 +25,7 @@
 ## 12.5.1 (2024-01-03)
 
 ### Fixed
-* Accessing the `providerType` on a `UserIdentity` via `User.identities` always yielded `undefined`. Thanks to [@joelowry96](https://github.com/joelowry96) for pinpointing the fix.
+* Accessing the `providerType` on a `UserIdentity` via `User.identities` always yielded `undefined`. Thanks to [@joelowry96](https://github.com/joelowry96) for pinpointing the fix. ([#6248](https://github.com/realm/realm-js/issues/6248))
 * Bad performance of initial Sync download involving many backlinks. ([realm/realm-core#7217](https://github.com/realm/realm-core/issues/7217), since v10.0.0)
 
 ### Compatibility
