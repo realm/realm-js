@@ -95,7 +95,7 @@ describe("Realm transactions", () => {
     it("`realm.create()` does not create an object if it throws", function (this: Mocha.Context & RealmContext) {
       this.realm.write(() => {
         // It is important to catch the exception within `realm.write()` in order to test
-        // that the object creation path does not modify the object (rather than being due
+        // that the object creation path does not create the object (rather than being due
         // to `realm.write()` cancelling the transaction).
         expect(() => {
           const invalidPerson = { name: "Amy" };
@@ -139,6 +139,7 @@ describe("Realm transactions", () => {
       expect(() => {
         this.realm.write(() => {
           this.realm.create(PersonWithEmbeddedSchema.name, { name: "John", age: 30 });
+          // Don't catch any exceptions within `realm.write()`.
           const invalidPerson = { name: "Amy" };
           this.realm.create(PersonWithEmbeddedSchema.name, invalidPerson);
         });

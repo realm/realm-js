@@ -250,8 +250,8 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
       // cascaded delete in Core. However, an invalid embedded object created by only setting
       // a property (not through `realm.create()`) will not enter this if-block and be removed.
       // We could remove the check for `table` then get it via `binding.Helpers.getTable(..)`,
-      // but removing the embedded object in this case would cause parent's embedded object
-      // field to be set to `null` (overriding the previous value). Not removing the object
+      // but removing the embedded object in this case would cause the parent's embedded object
+      // field to be set to `null` (overwriting the previous value). Not removing the object
       // (as in the current implementation) instead causes Core to overwrite the values of
       // the embedded object with default values. That is the same behavior as before this
       // commit. Ideally, the valid embedded object should remain unchanged, see issue:
