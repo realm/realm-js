@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import React from "react";
+import Realm from "realm";
 import { act, renderHook } from "@testing-library/react-native";
 import { AppConfigBuilder } from "@realm/app-importer";
 import { App } from "realm";
@@ -76,15 +77,6 @@ describe("useEmailPassword", () => {
       });
       expect(realmApp.currentUser).toBeNull();
     });
-    it("sets an error state when user is already registered", async () => {
-      const { result } = renderEmailPasswordAuth(appId, baseUrl);
-      await testAuthOperation({
-        authOperation: () => result.current.register({ email: "test2@test.com", password: "password" }),
-        expectedResult: () => {
-          expect(result.current.result.error).toBeDefined();
-        },
-      });
-    });
     it("can switch users", async () => {
       const { result } = renderEmailPasswordAuth(appId, baseUrl);
 
@@ -123,6 +115,32 @@ describe("useEmailPassword", () => {
       const user = realmApp.currentUser;
       expect(user?.id).not.toEqual(firstUserId);
     });
+
+    it("sets an error state when user is already registered", async () => {
+      const { result } = renderEmailPasswordAuth(appId, baseUrl);
+      await testAuthOperation({
+        authOperation: () => result.current.register({ email: "test3@test.com", password: "password" }),
+        expectedResult: () => {
+          expect(result.current.result.success).toBe(true);
+          expect(result.current.result.error).toBeUndefined();
+        },
+      });
+
+      try {
+        // Muting the logger to make the failing request less noisy
+        Realm.setLogLevel("off");
+        await testAuthOperation({
+          authOperation: () => result.current.register({ email: "test3@test.com", password: "password" }),
+          expectedResult: () => {
+            expect(result.current.result.success).toBe(false);
+            expect(result.current.result.error).toBeDefined();
+            expect(result.current.result.error?.message).toContain("name already in use");
+          },
+        });
+      } finally {
+        Realm.setLogLevel("warn");
+      }
+    });
   });
   describe("all methods are callable and report a state", () => {
     let appId: string;
@@ -139,13 +157,21 @@ describe("useEmailPassword", () => {
       });
       ({ appId } = await importApp(config.config));
     });
+
     it("logIn", async () => {
       const { result } = renderEmailPasswordAuth(appId, baseUrl);
-      await testAuthOperation({
-        authOperation: () => result.current.logIn({ email: "test@test.com", password: "password" }),
-        expectedResult: () => expect(result.current.result.error).toBeDefined(),
-      });
+      try {
+        // Muting the logger to make the failing request less noisy
+        Realm.setLogLevel("off");
+        await testAuthOperation({
+          authOperation: () => result.current.logIn({ email: "test@test.com", password: "password" }),
+          expectedResult: () => expect(result.current.result.error).toBeDefined(),
+        });
+      } finally {
+        Realm.setLogLevel("warn");
+      }
     });
+
     it("register", async () => {
       const { result } = renderEmailPasswordAuth(appId, baseUrl);
       await testAuthOperation({
