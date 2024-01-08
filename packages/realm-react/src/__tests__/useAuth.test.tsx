@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import React from "react";
+import Realm from "realm";
 import { renderHook } from "@testing-library/react-native";
 import { AppConfigBuilder } from "@realm/app-importer";
 
@@ -42,6 +43,16 @@ describe("useAuth", () => {
       const config = new AppConfigBuilder("test-app");
       ({ appId } = await importApp(config.config));
     });
+
+    // Muting the logger to make the failing requests less noisy
+    beforeAll(() => {
+      Realm.setLogLevel("off");
+    });
+
+    afterAll(() => {
+      Realm.setLogLevel("warn");
+    });
+
     it("logIn", async () => {
       const { result } = renderAuth(appId, baseUrl);
       await testAuthOperation({

@@ -71,8 +71,9 @@ describe("useObject hook", () => {
     });
     realm.close();
   });
+
   afterEach(() => {
-    Realm.clearTestState;
+    Realm.clearTestState();
   });
 
   it("can retrieve a single object using useObject", () => {
