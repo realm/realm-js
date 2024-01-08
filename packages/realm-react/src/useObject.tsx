@@ -21,16 +21,20 @@ import Realm from "realm";
 
 import { CachedObject, createCachedObject } from "./cachedObject";
 import { CollectionCallback, getObjectForPrimaryKey, getObjects } from "./helpers";
+import { UseRealmHook } from "./useRealm";
+
+export type UseObjectHook = {
+  <T>(type: string, primaryKey: T[keyof T]): (T & Realm.Object<T>) | null;
+  <T extends Realm.Object<any>>(type: { new (...args: any): T }, primaryKey: T[keyof T]): T | null;
+};
 
 /**
  * Generates the `useObject` hook from a given `useRealm` hook.
  * @param useRealm - Hook that returns an open Realm instance
  * @returns useObject - Hook that is used to gain access to a single Realm object from a primary key
  */
-export function createUseObject(useRealm: () => Realm) {
-  function useObject<T>(type: string, primaryKey: T[keyof T]): (T & Realm.Object<T>) | null;
-  function useObject<T extends Realm.Object<any>>(type: { new (...args: any): T }, primaryKey: T[keyof T]): T | null;
-  function useObject<T extends Realm.Object>(
+export function createUseObject(useRealm: UseRealmHook): UseObjectHook {
+  return function useObject<T extends Realm.Object>(
     type: string | { new (...args: any): T },
     primaryKey: T[keyof T],
   ): T | null {
@@ -151,9 +155,7 @@ export function createUseObject(useRealm: () => Realm) {
     }
     // This will never be undefined, but the type system doesn't know that
     return objectRef.current as T;
-  }
-
-  return useObject;
+  };
 }
 
 // This is a helper function that determines if two primary keys are equal.  It will also handle the case where the primary key is an ObjectId or UUID

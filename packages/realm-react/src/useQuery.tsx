@@ -26,23 +26,22 @@ type RealmClassType<T = any> = { new (...args: any): T };
 type QueryCallback<T> = (collection: Realm.Results<T>) => Realm.Results<T>;
 type DependencyList = ReadonlyArray<unknown>;
 
+export type UseQueryHook = {
+  <T>(type: string, query?: QueryCallback<T>, deps?: DependencyList): Realm.Results<T & Realm.Object<T>>;
+  <T extends Realm.Object<any>>(
+    type: RealmClassType<T>,
+    query?: QueryCallback<T>,
+    deps?: DependencyList,
+  ): Realm.Results<T>;
+};
+
 /**
  * Generates the `useQuery` hook from a given `useRealm` hook.
  * @param useRealm - Hook that returns an open Realm instance
  * @returns useObject - Hook that is used to gain access to a {@link Realm.Collection}
  */
-export function createUseQuery(useRealm: () => Realm) {
-  function useQuery<T>(
-    type: string,
-    query?: QueryCallback<T>,
-    deps?: DependencyList,
-  ): Realm.Results<T & Realm.Object<T>>;
-  function useQuery<T extends Realm.Object<any>>(
-    type: RealmClassType<T>,
-    query?: QueryCallback<T>,
-    deps?: DependencyList,
-  ): Realm.Results<T>;
-  function useQuery<T extends Realm.Object<any>>(
+export function createUseQuery(useRealm: () => Realm): UseQueryHook {
+  return function useQuery<T extends Realm.Object<any>>(
     type: string | RealmClassType<T>,
     query: QueryCallback<T> = (collection: Realm.Results<T>) => collection,
     deps: DependencyList = [],
@@ -99,6 +98,5 @@ export function createUseQuery(useRealm: () => Realm) {
 
     // This will never not be defined, but the type system doesn't know that
     return collectionRef.current as Realm.Results<T>;
-  }
-  return useQuery;
+  };
 }
