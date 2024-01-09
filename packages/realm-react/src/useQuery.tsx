@@ -26,6 +26,18 @@ type RealmClassType<T = any> = { new (...args: any): T };
 type QueryCallback<T> = (collection: Realm.Results<T>) => Realm.Results<T>;
 type DependencyList = ReadonlyArray<unknown>;
 
+type QueryHookOptions<T> = {
+  type: string;
+  query?: QueryCallback<T>;
+  keyPaths?: string[];
+};
+
+type QueryHookClassBasedOptions<T> = {
+  type: RealmClassType<T>;
+  query?: QueryCallback<T>;
+  keyPaths?: string[];
+};
+
 export type UseQueryHook = {
   <T>(type: string, query?: QueryCallback<T>, deps?: DependencyList): Realm.Results<T & Realm.Object<T>>;
   <T extends Realm.Object<any>>(
@@ -33,7 +45,21 @@ export type UseQueryHook = {
     query?: QueryCallback<T>,
     deps?: DependencyList,
   ): Realm.Results<T>;
+
+  <T>(options: QueryHookOptions<T>, deps?: DependencyList): Realm.Results<T & Realm.Object<T>>;
+  <T extends Realm.Object<any>>(options: QueryHookClassBasedOptions<T>, deps?: DependencyList): Realm.Results<T>;
 };
+
+function isClassModelConstructor(value: unknown): value is RealmClassType<unknown> {
+  return Object.getPrototypeOf(value) === Realm.Object;
+}
+
+/**
+ * Maps a value to itself
+ */
+function identity<T>(value: T): T {
+  return value;
+}
 
 /**
  * Generates the `useQuery` hook from a given `useRealm` hook.
@@ -41,9 +67,8 @@ export type UseQueryHook = {
  * @returns useObject - Hook that is used to gain access to a {@link Realm.Collection}
  */
 export function createUseQuery(useRealm: () => Realm): UseQueryHook {
-  return function useQuery<T extends Realm.Object<any>>(
-    type: string | RealmClassType<T>,
-    query: QueryCallback<T> = (collection: Realm.Results<T>) => collection,
+  function useQuery<T extends Realm.Object<any>>(
+    { type, query = identity }: QueryHookOptions<T> | QueryHookClassBasedOptions<T>,
     deps: DependencyList = [],
   ): Realm.Results<T> {
     const realm = useRealm();
@@ -98,5 +123,24 @@ export function createUseQuery(useRealm: () => Realm): UseQueryHook {
 
     // This will never not be defined, but the type system doesn't know that
     return collectionRef.current as Realm.Results<T>;
+  }
+
+  return function useQueryOverload<T extends Realm.Object<any>>(
+    typeOrOptions: QueryHookOptions<T> | QueryHookClassBasedOptions<T> | string | RealmClassType<T>,
+    queryOrDeps: DependencyList | QueryCallback<T> = identity,
+    deps: DependencyList = [],
+  ): Realm.Results<T> {
+    if (typeof typeOrOptions === "string" && typeof queryOrDeps === "function") {
+      /* eslint-disable-next-line react-hooks/rules-of-hooks -- We're calling `useQuery` once in any of the brances */
+      return useQuery({ type: typeOrOptions, query: queryOrDeps }, deps);
+    } else if (isClassModelConstructor(typeOrOptions) && typeof queryOrDeps === "function") {
+      /* eslint-disable-next-line react-hooks/rules-of-hooks -- We're calling `useQuery` once in any of the brances */
+      return useQuery({ type: typeOrOptions as RealmClassType<T>, query: queryOrDeps }, deps);
+    } else if (typeof typeOrOptions === "object" && typeOrOptions !== null) {
+      /* eslint-disable-next-line react-hooks/rules-of-hooks -- We're calling `useQuery` once in any of the brances */
+      return useQuery(typeOrOptions, Array.isArray(queryOrDeps) ? queryOrDeps : deps);
+    } else {
+      throw new Error("Unexpected arguments passed to useQuery");
+    }
   };
 }
