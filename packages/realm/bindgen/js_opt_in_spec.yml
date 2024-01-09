@@ -279,6 +279,7 @@ classes:
       - get_key
       - get_any
       - set_any
+      - set_collection
       - get_linked_object
       - get_backlink_count
       - get_backlink_view
