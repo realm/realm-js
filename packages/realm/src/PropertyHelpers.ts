@@ -320,12 +320,31 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
     const {
       realm,
       columnKey,
-      typeHelpers: { toBinding },
+      typeHelpers: { fromBinding, toBinding },
     } = options;
 
     return {
       get: (obj) => {
-        throw new Error("To be implemented");
+        try {
+          // We currently rely on the Core helper `get_mixed_type()` for calling `obj.get_any()`
+          // since doing it here in the SDK layer will cause the binding layer to throw for
+          // collections. It's non-trivial to do in the bindgen templates as a `binding.List`
+          // would have to be constructed using the `realm` and `obj`. Going via the helpers
+          // bypasses that as we will return a primitive (the data type). If possible, revisiting
+          // this for a more performant solution would be ideal as we now make an extra call into
+          // Core for each Mixed access, not only for collections.
+          const mixedType = binding.Helpers.getMixedType(obj, columnKey);
+          if (mixedType === binding.MixedDataType.List) {
+            return fromBinding(binding.List.make(realm.internal, obj, columnKey));
+          }
+          if (mixedType === binding.MixedDataType.Dictionary) {
+            return fromBinding(binding.Dictionary.make(realm.internal, obj, columnKey));
+          }
+          return defaultGet(options)(obj);
+        } catch (err) {
+          assert.isValid(obj);
+          throw err;
+        }
       },
       set: (obj: binding.Obj, value: unknown) => {
         assert.inTransaction(realm);
