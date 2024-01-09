@@ -20,6 +20,7 @@ import { assert, binding } from "./internal";
 
 export type LogLevel = "all" | "trace" | "debug" | "detail" | "info" | "warn" | "error" | "fatal" | "off";
 
+// TODO: Add docs.
 export enum NumericLogLevel {
   All = 0,
   Trace = 1,
@@ -32,6 +33,26 @@ export enum NumericLogLevel {
   Off = 8,
 }
 
+// TODO: Add docs.
+// (These constants map 1:1 to Core's string values.)
+export enum LogCategory {
+  Realm = "Realm",
+  Storage = "Storage",
+  Transaction = "Transaction",
+  Query = "Query",
+  Object = "Object",
+  Notification = "Notification",
+  Sync = "Sync",
+  Client = "Client",
+  Session = "Session",
+  Changeset = "Changeset",
+  Network = "Network",
+  Reset = "Reset",
+  Server = "Server",
+  App = "App",
+  SDK = "SDK",
+}
+
 /**
  * A callback passed to `Realm.App.Sync.setLogger` when instrumenting the Atlas Device Sync client with a custom logger.
  * @param level - The level of the log entry between 0 and 8 inclusively.
@@ -40,7 +61,8 @@ export enum NumericLogLevel {
  */
 export type Logger = (level: NumericLogLevel, message: string) => void;
 
-export type LoggerCallback = (level: LogLevel, message: string) => void;
+// TODO: Add docs.
+export type LoggerCallback = (category: LogCategory, level: LogLevel, message: string) => void;
 
 /** @internal */
 export function toBindingLoggerLevel(arg: LogLevel): binding.LoggerLevel {
@@ -77,8 +99,8 @@ export function fromBindingLoggerLevelToLogLevel(arg: binding.LoggerLevel): LogL
 }
 
 /** @internal */
-export const defaultLogger: LoggerCallback = function (logLevel: LogLevel, message: string) {
-  const formattedLogMessage = `[${logLevel}] ${message}`;
+export const defaultLogger: LoggerCallback = function (category: LogCategory, logLevel: LogLevel, message: string) {
+  const formattedLogMessage = `[${category} - ${logLevel}] ${message}`;
   /* eslint-disable no-console */
   if (logLevel === "error" || logLevel === "fatal") {
     console.error(formattedLogMessage);

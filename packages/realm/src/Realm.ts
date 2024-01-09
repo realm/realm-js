@@ -100,6 +100,7 @@ import {
   InvalidateEvent,
   List,
   LocalAppConfiguration,
+  LogCategory,
   LogLevel,
   LoggerCallback,
   MapToDecorator,
@@ -249,6 +250,7 @@ export class Realm {
   public static flags = flags;
   public static index = index;
   public static List = List;
+  public static LogCategory = LogCategory;
   public static mapTo = mapTo;
   public static MetadataMode = MetadataMode;
   public static NumericLogLevel = NumericLogLevel;
@@ -283,13 +285,15 @@ export class Realm {
 
   /**
    * Sets the log level.
+   * @param category - TODO: Add docs.
    * @param level - The log level to be used by the logger. The default value is `info`.
    * @note The log level can be changed during the lifetime of the application.
    * @since 12.0.0
    */
-  static setLogLevel(level: LogLevel) {
-    const bindingLoggerLevel = toBindingLoggerLevel(level);
-    binding.Logger.setDefaultLevelThreshold(bindingLoggerLevel);
+  static setLogLevel(category: LogCategory, level: LogLevel) {
+    // TODO: Adapting to new logging in Core. We may want to add an assertion about the
+    //       category as Core will throw if the category is not one of the valid values.
+    binding.LogCategoryRef.getCategory(category).setDefaultLevelThreshold(toBindingLoggerLevel(level));
   }
 
   /**
@@ -299,8 +303,8 @@ export class Realm {
    * @since 12.0.0
    */
   static setLogger(loggerCallback: LoggerCallback) {
-    const logger = binding.Helpers.makeLogger((level, message) => {
-      loggerCallback(fromBindingLoggerLevelToLogLevel(level), message);
+    const logger = binding.Helpers.makeLogger((category, level, message) => {
+      loggerCallback(category as LogCategory, fromBindingLoggerLevelToLogLevel(level), message);
     });
     binding.Logger.setDefaultLogger(logger);
   }
@@ -1369,6 +1373,7 @@ type UserType<
 > = User<UserFunctionsType, UserCustomDataType, UserProfileDataType>;
 
 type BaseSubscriptionSetType = BaseSubscriptionSet;
+type LogCategoryType = LogCategory;
 type LogLevelType = LogLevel;
 type NumericLogLevelType = NumericLogLevel;
 type MutableSubscriptionSetType = MutableSubscriptionSet;
@@ -1477,6 +1482,7 @@ export declare namespace Realm {
     FlexibleSyncConfiguration,
     IndexDecoratorType as IndexDecorator,
     ListType as List,
+    LogCategoryType as LogCategory,
     LocalAppConfiguration,
     MapToDecoratorType as MapToDecorator,
     MetadataModeType as MetadataMode,
@@ -1546,6 +1552,7 @@ export declare namespace Realm {
     // eslint-disable-next-line @typescript-eslint/no-namespace
     export namespace Sync {
       export type BaseSubscriptionSet = BaseSubscriptionSetType;
+      export type LogCategory = LogCategoryType;
       export type LogLevel = LogLevelType;
       export type NumericLogLevel = NumericLogLevelType;
       export type MutableSubscriptionSet = MutableSubscriptionSetType;
@@ -1703,6 +1710,7 @@ declare global {
       IndexDecoratorType as IndexDecorator,
       ListType as List,
       LocalAppConfiguration,
+      LogCategoryType as LogCategory,
       MapToDecoratorType as MapToDecorator,
       MetadataModeType as MetadataMode,
       Metadata,
@@ -1768,6 +1776,7 @@ declare global {
       // eslint-disable-next-line @typescript-eslint/no-namespace
       export namespace Sync {
         export type BaseSubscriptionSet = BaseSubscriptionSetType;
+        export type LogCategory = LogCategoryType;
         export type LogLevel = LogLevelType;
         export type NumericLogLevel = NumericLogLevelType;
         export type MutableSubscriptionSet = MutableSubscriptionSetType;
@@ -1862,9 +1871,9 @@ declare global {
   }
 }
 
-//Set default logger and log level.
+// Set default logger and log level.
 Realm.setLogger(defaultLogger);
-Realm.setLogLevel(defaultLoggerLevel);
+Realm.setLogLevel(LogCategory.Realm, defaultLoggerLevel);
 
 // Patch the global at runtime
 let warnedAboutGlobalRealmUse = false;

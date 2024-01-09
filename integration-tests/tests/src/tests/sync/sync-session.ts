@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
-import Realm, { ConnectionState, ObjectSchema, BSON, User, SyncConfiguration } from "realm";
+import Realm, { ConnectionState, LogCategory, ObjectSchema, BSON, SyncConfiguration } from "realm";
 import { importAppBefore } from "../../hooks";
 import { DogSchema } from "../../schemas/person-and-dog-with-object-ids";
 import { getRegisteredEmailPassCredentials } from "../../utils/credentials";
@@ -358,12 +358,11 @@ describe.skipIf(environment.missingServer, "SessionTest", () => {
       const credentials = Realm.Credentials.anonymous();
 
       const logLevelStr = "info"; // "all", "trace", "debug", "detail", "info", "warn", "error", "fatal", "off"
-      const logLevelNum = 4; // == "info", see index.d.ts, logger.hpp for definitions
 
       const promisedLog = new Promise((resolve) => {
-        Realm.App.Sync.setLogLevel(app, logLevelStr);
-        Realm.App.Sync.setLogger(app, (level, message) => {
-          if (level == logLevelNum && message.includes("Connection") && message.includes("Session")) {
+        Realm.setLogLevel(LogCategory.Realm, logLevelStr);
+        Realm.setLogger((category, level, message) => {
+          if (level == logLevelStr && message.includes("Connection") && message.includes("Session")) {
             // we should, at some point, receive a log message that looks like
             // Connection[1]: Session[1]: client_reset_config = false, Realm exists = true, client reset = false
             resolve(true);
