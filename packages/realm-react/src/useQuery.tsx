@@ -59,9 +59,9 @@ export function createUseQuery(useRealm: () => Realm): UseQueryHook {
     const updatedRef = useRef(true);
     const queryCallbackRef = useRef<QueryCallback<T> | null>(null);
 
-    // We want the user of this hook to be able pass in the `query` function inline (without the need to `useCallback` on it)
-    // This means that the query function is unstable and will be a redefined on each render of the component where `useQuery` is used
-    // Therefore we use the `deps` array to memoize the query function internally, and only use the returned `queryCallback`
+    /* eslint-disable-next-line react-hooks/exhaustive-deps -- We want the user of this hook to be able pass in the `query` function inline (without the need to `useCallback` on it)
+    This means that the query function is unstable and will be a redefined on each render of the component where `useQuery` is used
+    Therefore we use the `deps` array to memoize the query function internally, and only use the returned `queryCallback` */
     const queryCallback = useCallback(query, [...deps, ...requiredDeps]);
 
     // If the query function changes, we need to update the cachedCollection
