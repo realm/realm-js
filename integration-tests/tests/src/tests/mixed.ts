@@ -280,37 +280,38 @@ describe("Mixed", () => {
     function expectMatchingFlatList(value: unknown) {
       expect(value).instanceOf(Realm.List);
       const list = value as Realm.List<any>;
-      expect(list.length >= flatListAllTypes.length).to.be.true;
-      expect(list[0]).equals(bool);
-      expect(list[1]).equals(int);
-      expect(list[2]).equals(double);
-      expect(list[3].toString()).equals(d128.toString());
-      expect(list[4]).equals(string);
-      expect(list[5].toString()).equals(date.toString());
-      expect(list[6].toString()).equals(oid.toString());
-      expect(list[7].toString()).equals(uuid.toString());
-      expect(list[8]).equals(nullValue);
-      expectUInt8Buffer(list[9]);
-      expect(list[10]).instanceOf(Realm.Object);
-      expect(list[10].value).equals(unmanagedRealmObject.value);
+      expect(list.length).to.be.greaterThanOrEqual(flatListAllTypes.length);
+
+      let index = 0;
+      for (const item of list) {
+        if (item instanceof Realm.Object) {
+          // @ts-expect-error Property `value` does exist.
+          expect(item.value).equals(unmanagedRealmObject.value);
+        } else if (item instanceof ArrayBuffer) {
+          expectUInt8Buffer(item);
+        } else {
+          expect(String(item)).equals(String(flatListAllTypes[index]));
+        }
+        index++;
+      }
     }
 
     function expectMatchingFlatDictionary(value: unknown) {
       expect(value).instanceOf(Realm.Dictionary);
       const dictionary = value as Realm.Dictionary<any>;
-      expect(Object.keys(dictionary).length >= Object.keys(flatDictionaryAllTypes).length).to.be.true;
-      expect(dictionary.bool).equals(bool);
-      expect(dictionary.int).equals(int);
-      expect(dictionary.double).equals(double);
-      expect(dictionary.d128.toString()).equals(d128.toString());
-      expect(dictionary.string).equals(string);
-      expect(dictionary.date.toString()).equals(date.toString());
-      expect(dictionary.oid.toString()).equals(oid.toString());
-      expect(dictionary.uuid.toString()).equals(uuid.toString());
-      expect(dictionary.nullValue).equals(nullValue);
-      expectUInt8Buffer(dictionary.uint8Buffer);
-      expect(dictionary.realmObject).instanceOf(Realm.Object);
-      expect(dictionary.realmObject.value).equals(unmanagedRealmObject.value);
+      expect(Object.keys(dictionary).length).to.be.greaterThanOrEqual(Object.keys(flatDictionaryAllTypes).length);
+
+      for (const key in dictionary) {
+        const value = dictionary[key];
+        if (key === "realmObject") {
+          expect(value).instanceOf(Realm.Object);
+          expect(value.value).equals(unmanagedRealmObject.value);
+        } else if (key === "uint8Buffer") {
+          expectUInt8Buffer(value);
+        } else {
+          expect(String(value)).equals(String(flatDictionaryAllTypes[key]));
+        }
+      }
     }
 
     function expectUInt8Buffer(data: unknown) {
