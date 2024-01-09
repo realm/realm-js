@@ -29,6 +29,8 @@ import {
   INTERNAL,
   InitialSubscriptions,
   List,
+  LocalAppConfiguration,
+  LogCategory,
   LogLevel,
   LoggerCallback,
   MigrationCallback,
@@ -108,13 +110,15 @@ export class Realm {
 
   /**
    * Sets the log level.
+   * @param category - TODO: Add docs.
    * @param level - The log level to be used by the logger. The default value is `info`.
    * @note The log level can be changed during the lifetime of the application.
    * @since 12.0.0
    */
-  static setLogLevel(level: LogLevel) {
-    const bindingLoggerLevel = toBindingLoggerLevel(level);
-    binding.Logger.setDefaultLevelThreshold(bindingLoggerLevel);
+  static setLogLevel(category: LogCategory, level: LogLevel) {
+    // TODO: Adapting to new logging in Core. We may want to add an assertion about the
+    //       category as Core will throw if the category is not one of the valid values.
+    binding.LogCategoryRef.getCategory(category).setDefaultLevelThreshold(toBindingLoggerLevel(level));
   }
 
   /**
@@ -124,8 +128,8 @@ export class Realm {
    * @since 12.0.0
    */
   static setLogger(loggerCallback: LoggerCallback) {
-    const logger = binding.Helpers.makeLogger((level, message) => {
-      loggerCallback(fromBindingLoggerLevelToLogLevel(level), message);
+    const logger = binding.Helpers.makeLogger((category, level, message) => {
+      loggerCallback(category as LogCategory, fromBindingLoggerLevelToLogLevel(level), message);
     });
     binding.Logger.setDefaultLogger(logger);
   }
@@ -1273,6 +1277,31 @@ export namespace Realm {
   export import PropertyType = internal.PropertyTypeName;
 }
 
-//Set default logger and log level.
+// Set default logger and log level.
 Realm.setLogger(defaultLogger);
-Realm.setLogLevel(defaultLoggerLevel);
+Realm.setLogLevel(LogCategory.Realm, defaultLoggerLevel);
+
+// Patch the global at runtime
+let warnedAboutGlobalRealmUse = false;
+Object.defineProperty(safeGlobalThis, "Realm", {
+  get() {
+    if (flags.THROW_ON_GLOBAL_REALM) {
+      throw new Error(
+        "Accessed global Realm, please update your code to ensure you import Realm:\nimport Realm from 'realm';",
+      );
+    } else if (!warnedAboutGlobalRealmUse) {
+      // eslint-disable-next-line no-console
+      console.warn(
+        "Your app is relying on a Realm global, which will be removed in realm-js v13, please update your code to ensure you import Realm:\n\n",
+        'import Realm from "realm"; // For ES Modules\n',
+        'const Realm = require("realm"); // For CommonJS\n\n',
+        "To determine where, put this in the top of your index file:\n",
+        `import Realm from "realm";\n`,
+        `Realm.flags.THROW_ON_GLOBAL_REALM = true`,
+      );
+      warnedAboutGlobalRealmUse = true;
+    }
+    return RealmConstructor;
+  },
+  configurable: false,
+});
