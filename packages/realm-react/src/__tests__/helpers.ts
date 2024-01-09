@@ -16,6 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import fs from "node:fs";
+import path from "node:path";
+import os from "node:os";
 import { AppConfig, AppImporter, Credentials } from "@realm/app-importer";
 import { act, waitFor } from "@testing-library/react-native";
 
@@ -67,4 +70,9 @@ const importer = new AppImporter({
 
 export async function importApp(config: AppConfig): Promise<{ appId: string }> {
   return importer.importApp(config);
+}
+
+export function randomRealmPath() {
+  const tempDirPath = fs.mkdtempSync(path.join(os.tmpdir(), "realm-react-tests-"));
+  return path.join(tempDirPath, "test.realm");
 }
