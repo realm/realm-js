@@ -201,6 +201,16 @@ describe("App", () => {
       expect(Object.keys(users).length).equals(nUsers);
     });
 
+    it("double login - anonymous", async function (this: Mocha.Context & AppContext & RealmContext) {
+      const credentials = Realm.Credentials.anonymous();
+      const user1 = await this.app.logIn(credentials);
+      const user2 = await this.app.logIn(credentials);
+      expect(user1.id).equals(user2.id);
+
+      await user2.logOut();
+      await user1.logOut();
+    });
+
     it("currentUser works", async function (this: Mocha.Context & AppContext & RealmContext) {
       expect(this.app.currentUser).to.be.null;
 
