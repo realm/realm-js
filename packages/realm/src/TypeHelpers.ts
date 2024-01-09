@@ -20,12 +20,14 @@ import {
   BSON,
   ClassHelpers,
   Collection,
+  Dictionary,
   GeoBox,
   GeoCircle,
   GeoPolygon,
   INTERNAL,
   List,
   ObjCreator,
+  OrderedCollectionHelpers,
   REALM,
   Realm,
   RealmObject,
@@ -130,6 +132,39 @@ export function mixedToBinding(
     }
     // Rely on the binding for any other value
     return value as binding.MixedArg;
+  }
+}
+
+function mixedFromBinding(options: TypeOptions, value: binding.MixedArg): unknown {
+  const { realm, getClassHelpers } = options;
+  if (binding.Int64.isInt(value)) {
+    return binding.Int64.intToNum(value);
+  } else if (value instanceof binding.Timestamp) {
+    return value.toDate();
+  } else if (value instanceof binding.Float) {
+    return value.value;
+  } else if (value instanceof binding.ObjLink) {
+    const table = binding.Helpers.getTable(realm.internal, value.tableKey);
+    const linkedObj = table.getObject(value.objKey);
+    const { wrapObject } = getClassHelpers(value.tableKey);
+    return wrapObject(linkedObj);
+  } else if (value instanceof binding.List) {
+    const collectionHelpers: OrderedCollectionHelpers = {
+      toBinding: mixedToBinding.bind(null, realm.internal),
+      fromBinding: mixedFromBinding.bind(null, options),
+      get(_: binding.Results, index: number) {
+        return value.getAny(index);
+      },
+    };
+    return new List(realm, value, collectionHelpers);
+  } else if (value instanceof binding.Dictionary) {
+    const typeHelpers: TypeHelpers<Realm.Mixed> = {
+      toBinding: mixedToBinding.bind(null, realm.internal),
+      fromBinding: mixedFromBinding.bind(null, options),
+    };
+    return new Dictionary(realm, value, typeHelpers);
+  } else {
+    return value;
   }
 }
 
@@ -301,25 +336,11 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => Type
       },
     };
   },
-  [binding.PropertyType.Mixed]({ realm, getClassHelpers }) {
+  [binding.PropertyType.Mixed](options) {
+    const { realm } = options;
     return {
       toBinding: mixedToBinding.bind(null, realm.internal),
-      fromBinding(value) {
-        if (binding.Int64.isInt(value)) {
-          return binding.Int64.intToNum(value);
-        } else if (value instanceof binding.Timestamp) {
-          return value.toDate();
-        } else if (value instanceof binding.Float) {
-          return value.value;
-        } else if (value instanceof binding.ObjLink) {
-          const table = binding.Helpers.getTable(realm.internal, value.tableKey);
-          const linkedObj = table.getObject(value.objKey);
-          const { wrapObject } = getClassHelpers(value.tableKey);
-          return wrapObject(linkedObj);
-        } else {
-          return value;
-        }
-      },
+      fromBinding: mixedFromBinding.bind(null, options),
     };
   },
   [binding.PropertyType.ObjectId]({ optional }) {
