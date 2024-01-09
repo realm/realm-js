@@ -24,8 +24,8 @@ import { CollectionCallback, getObjectForPrimaryKey, getObjects } from "./helper
 import { UseRealmHook } from "./useRealm";
 
 export type UseObjectHook = {
-  <T>(type: string, primaryKey: T[keyof T]): (T & Realm.Object<T>) | null;
-  <T extends Realm.Object<any>>(type: { new (...args: any): T }, primaryKey: T[keyof T]): T | null;
+  <T>(type: string, primaryKey: T[keyof T], keyPaths?: string[]): (T & Realm.Object<T>) | null;
+  <T extends Realm.Object<any>>(type: { new (...args: any): T }, primaryKey: T[keyof T], keyPaths?: string[]): T | null;
 };
 
 /**
@@ -37,6 +37,7 @@ export function createUseObject(useRealm: UseRealmHook): UseObjectHook {
   return function useObject<T extends Realm.Object>(
     type: string | { new (...args: any): T },
     primaryKey: T[keyof T],
+    keyPaths?: string[],
   ): T | null {
     const realm = useRealm();
 
@@ -62,12 +63,16 @@ export function createUseObject(useRealm: UseRealmHook): UseObjectHook {
     // Ref: https://github.com/facebook/react/issues/14490
     const cachedObjectRef = useRef<null | CachedObject>(null);
 
+    /* eslint-disable-next-line react-hooks/exhaustive-deps -- Memoizing the keyPaths to avoid renders */
+    const memoizedKeyPaths = useMemo(() => keyPaths, [JSON.stringify(keyPaths)]);
+
     if (!cachedObjectRef.current) {
       cachedObjectRef.current = createCachedObject({
         object: originalObject ?? null,
         realm,
         updateCallback: forceRerender,
         updatedRef,
+        keyPaths: memoizedKeyPaths,
       });
     }
 
@@ -94,6 +99,7 @@ export function createUseObject(useRealm: UseRealmHook): UseObjectHook {
             realm,
             updateCallback: forceRerender,
             updatedRef,
+            keyPaths: memoizedKeyPaths,
           });
           originalObjectRef.current = originalObject;
 
@@ -104,7 +110,7 @@ export function createUseObject(useRealm: UseRealmHook): UseObjectHook {
         }
         return cachedObjectRef.current;
       },
-      [realm, originalObject, primaryKey],
+      [realm, originalObject, primaryKey, memoizedKeyPaths],
     );
 
     // Invoke the tearDown of the cachedObject when useObject is unmounted

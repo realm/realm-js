@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import Realm from "realm";
-import { createContext } from "react";
+import React, { createContext } from "react";
 
 import { createRealmProvider } from "./RealmProvider";
 import { createUseObject } from "./useObject";
@@ -93,6 +93,7 @@ type RealmContext = {
    * ```
    * @param type - The object type, depicted by a string or a class extending {@link Realm.Object}
    * @param primaryKey - The primary key of the desired object which will be retrieved using {@link Realm.objectForPrimaryKey}
+   * @param keyPaths - Indicates a lower bound on the changes relevant for the hook. This is a lower bound, since if multiple hooks add listeners (each with their own `keyPaths`) the union of these key-paths will determine the changes that are considered relevant for all listeners registered on the object. In other words: A listener might fire and cause a re-render more than the key-paths specify, if other listeners with different key-paths are present.
    * @returns either the desired {@link Realm.Object} or `null` in the case of it being deleted or not existing.
    */
   useObject: ReturnType<typeof createUseObject>;

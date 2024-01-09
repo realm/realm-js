@@ -29,21 +29,23 @@ const dogSchema: Realm.ObjectSchema = {
   properties: {
     _id: "int",
     name: "string",
+    age: "int",
   },
 };
 
 interface IDog {
   _id: number;
   name: string;
+  age: number;
 }
 
 const context = createRealmTestContext({ schema: [dogSchema] });
 const useObject = createUseObject(context.useRealm);
 
 const testDataSet = [
-  { _id: 4, name: "Vincent" },
-  { _id: 5, name: "River" },
-  { _id: 6, name: "Schatzi" },
+  { _id: 4, name: "Vincent", age: 5 },
+  { _id: 5, name: "River", age: 25 },
+  { _id: 6, name: "Schatzi", age: 13 },
 ];
 
 describe("useObject", () => {
@@ -63,10 +65,10 @@ describe("useObject", () => {
   });
 
   it("can retrieve a single object using useObject", () => {
-    const [, dog2] = testDataSet;
-    const { result } = renderHook(() => useObject<IDog>("dog", dog2._id));
+    const [, river] = testDataSet;
+    const { result } = renderHook(() => useObject<IDog>("dog", river._id));
     const object = result.current;
-    expect(object).toMatchObject(dog2);
+    expect(object).toMatchObject(river);
   });
 
   describe("missing objects", () => {
@@ -81,10 +83,35 @@ describe("useObject", () => {
       expect(renders).toHaveLength(1);
       expect(result.current).toEqual(null);
       write(() => {
-        realm.create<IDog>("dog", { _id: 12, name: "Lassie" });
+        realm.create<IDog>("dog", { _id: 12, name: "Lassie", age: 32 });
       });
       expect(renders).toHaveLength(2);
       expect(result.current?.name).toEqual("Lassie");
+    });
+  });
+
+  describe("key-path filtering", () => {
+    it("re-renders only if a property in key-paths updates", () => {
+      const [vincent] = testDataSet;
+      const { write } = context;
+      const { result, renders } = profileHook(() => useObject<IDog>("dog", vincent._id, ["name"]));
+      expect(renders).toHaveLength(1);
+      expect(result.current).toMatchObject(vincent);
+      // Update the name and except a re-render
+      write(() => {
+        if (result.current) {
+          result.current.name = "Vince!";
+        }
+      });
+      expect(renders).toHaveLength(2);
+      expect(result.current?.name).toEqual("Vince!");
+      // Update the age and don't expect a re-render
+      write(() => {
+        if (result.current) {
+          result.current.age = 5;
+        }
+      });
+      expect(renders).toHaveLength(2);
     });
   });
 });
