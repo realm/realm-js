@@ -16,12 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { useEffect, useState } from "react";
 import Realm from "realm";
 import { renderHook } from "@testing-library/react-native";
 
 import { createUseObject } from "../useObject";
-import { randomRealmPath } from "./helpers";
+import { createRealmTestContext } from "./createRealmTestContext";
 
 const dogSchema: Realm.ObjectSchema = {
   name: "dog",
@@ -37,23 +36,8 @@ interface IDog {
   name: string;
 }
 
-const configuration = {
-  schema: [dogSchema],
-  path: randomRealmPath(),
-};
-
-const useRealm = () => {
-  const [realm, setRealm] = useState(new Realm(configuration));
-  useEffect(() => {
-    return () => {
-      realm.close();
-    };
-  }, [realm, setRealm]);
-
-  return new Realm(configuration);
-};
-
-const useObject = createUseObject(useRealm);
+const context = createRealmTestContext({ schema: [dogSchema] });
+const useObject = createUseObject(context.useRealm);
 
 const testDataSet = [
   { _id: 4, name: "Vincent" },
@@ -63,14 +47,14 @@ const testDataSet = [
 
 describe("useObject hook", () => {
   beforeEach(() => {
-    const realm = new Realm(configuration);
+    context.openRealm();
+    const { realm } = context;
     realm.write(() => {
       realm.deleteAll();
       testDataSet.forEach((data) => {
         realm.create("dog", data);
       });
     });
-    realm.close();
   });
 
   afterEach(() => {

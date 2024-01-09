@@ -58,7 +58,6 @@ describe("useQueryHook", () => {
 
   beforeEach(() => {
     context.openRealm();
-
     const { realm } = context;
     realm.write(() => {
       realm.deleteAll();
