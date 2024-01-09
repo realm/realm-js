@@ -18,7 +18,7 @@
 
 import Realm, { BSON } from "realm";
 import { expect } from "chai";
-import { openRealmBefore } from "../hooks";
+import { openRealmBefore, openRealmBeforeEach } from "../hooks";
 
 interface ISingle {
   a: Realm.Mixed;
@@ -47,6 +47,12 @@ interface IMixedNullable {
 
 interface IMixedSchema {
   value: Realm.Mixed;
+}
+
+interface ICollectionsOfMixed {
+  list: Realm.List<Realm.Mixed>;
+  dictionary: Realm.Dictionary<Realm.Mixed>;
+  set: Realm.Set<Realm.Mixed>;
 }
 
 const SingleSchema: Realm.ObjectSchema = {
@@ -88,6 +94,15 @@ const MixedNullableSchema: Realm.ObjectSchema = {
 const MixedSchema: Realm.ObjectSchema = {
   name: "MixedClass",
   properties: { value: "mixed" },
+};
+
+const CollectionsOfMixedSchema: Realm.ObjectSchema = {
+  name: "CollectionsOfMixed",
+  properties: {
+    list: "mixed[]",
+    dictionary: "mixed{}",
+    set: "mixed<>",
+  },
 };
 
 describe("Mixed", () => {
@@ -136,6 +151,8 @@ describe("Mixed", () => {
       const oid = new BSON.ObjectId();
       const uuid = new BSON.UUID();
       const date = new Date();
+      const list = [1, "two"];
+      const dictionary = { number: 1, string: "two" };
 
       const data = this.realm.write(() => this.realm.create<ISingle>(SingleSchema.name, { a: oid }));
       expect(typeof data.a === typeof oid, "should be the same type BSON.ObjectId");
@@ -145,22 +162,29 @@ describe("Mixed", () => {
       expect(typeof data.a === typeof uuid, "should be the same type BSON.UUID");
       expect(String(data.a)).equals(uuid.toString(), "should have the same content BSON.UUID");
 
+      this.realm.write(() => (data.a = date));
+      expect(typeof data.a === typeof date, "should be the same type Date");
+      expect(String(data.a)).equals(date.toString(), "should have the same content Date");
+
       this.realm.write(() => (data.a = d128));
       expect(String(data.a)).equals(d128.toString(), "Should be the same BSON.Decimal128");
 
       this.realm.write(() => (data.a = 12345678));
       expect(data.a).equals(12345678, "Should be the same 12345678");
 
-      this.realm.write(() => ((data.a = null), "Should be the same null"));
+      this.realm.write(() => (data.a = null));
       expect(data.a).equals(null);
 
-      this.realm.write(() => ((data.a = undefined), "Should be the same null"));
+      this.realm.write(() => (data.a = undefined));
       expect(data.a).equals(null);
-    });
-    it("wrong type throws", function (this: RealmContext) {
-      expect(() => {
-        this.realm.write(() => this.realm.create(SingleSchema.name, { a: Object.create({}) }));
-      }).throws(Error, "Unable to convert an object with ctor 'Object' to a Mixed");
+
+      this.realm.write(() => (data.a = list));
+      expect(data.a).to.be.instanceOf(Realm.List);
+      expect((data.a as Realm.List<any>)[0]).equals(1);
+
+      this.realm.write(() => (data.a = dictionary));
+      expect(data.a).to.be.instanceOf(Realm.Dictionary);
+      expect((data.a as Realm.Dictionary<any>).number).equals(1);
     });
   });
 
@@ -220,23 +244,146 @@ describe("Mixed", () => {
       expect(value.nullable_list[4]).equals(5, "Should be equal 5");
     });
   });
-  describe("Mixed arrays", () => {
-    openRealmBefore({ schema: [MixedSchema] });
-    it("throws when creating an array of multiple values", function (this: RealmContext) {
-      const objectsBefore = this.realm.objects(MixedSchema.name);
-      expect(objectsBefore.length).equals(0);
 
-      // check if the understandable error message is thrown
-      expect(() => {
-        this.realm.write(() => {
-          this.realm.create("MixedClass", { value: [123, false, "hello"] });
+  describe("Collection types", () => {
+    openRealmBeforeEach({ schema: [MixedSchema, CollectionsOfMixedSchema] });
+
+    const bool = true;
+    const int = 123;
+    const double = 123.456;
+    const d128 = BSON.Decimal128.fromString("6.022e23");
+    const string = "hello";
+    const date = new Date();
+    const oid = new BSON.ObjectId();
+    const uuid = new BSON.UUID();
+    const nullValue = null;
+    const uint8Values = [0, 1, 2, 4, 8];
+    const uint8Buffer = new Uint8Array(uint8Values).buffer;
+    const unmanagedRealmObject: IMixedSchema = { value: 1 };
+
+    // The `unmanagedRealmObject` is not added to these collections since a managed
+    // Realm object will be added by the individual tests after one has been created.
+    const flatListAllTypes: unknown[] = [bool, int, double, d128, string, date, oid, uuid, nullValue, uint8Buffer];
+    const flatDictionaryAllTypes: Record<string, unknown> = {
+      bool,
+      int,
+      double,
+      d128,
+      string,
+      date,
+      oid,
+      uuid,
+      nullValue,
+      uint8Buffer,
+    };
+
+    function expectMatchingFlatList(value: unknown) {
+      expect(value).instanceOf(Realm.List);
+      const list = value as Realm.List<any>;
+      expect(list.length >= flatListAllTypes.length).to.be.true;
+      expect(list[0]).equals(bool);
+      expect(list[1]).equals(int);
+      expect(list[2]).equals(double);
+      expect(list[3].toString()).equals(d128.toString());
+      expect(list[4]).equals(string);
+      expect(list[5].toString()).equals(date.toString());
+      expect(list[6].toString()).equals(oid.toString());
+      expect(list[7].toString()).equals(uuid.toString());
+      expect(list[8]).equals(nullValue);
+      expectUInt8Buffer(list[9]);
+      expect(list[10]).instanceOf(Realm.Object);
+      expect(list[10].value).equals(unmanagedRealmObject.value);
+    }
+
+    function expectMatchingFlatDictionary(value: unknown) {
+      expect(value).instanceOf(Realm.Dictionary);
+      const dictionary = value as Realm.Dictionary<any>;
+      expect(Object.keys(dictionary).length >= Object.keys(flatDictionaryAllTypes).length).to.be.true;
+      expect(dictionary.bool).equals(bool);
+      expect(dictionary.int).equals(int);
+      expect(dictionary.double).equals(double);
+      expect(dictionary.d128.toString()).equals(d128.toString());
+      expect(dictionary.string).equals(string);
+      expect(dictionary.date.toString()).equals(date.toString());
+      expect(dictionary.oid.toString()).equals(oid.toString());
+      expect(dictionary.uuid.toString()).equals(uuid.toString());
+      expect(dictionary.nullValue).equals(nullValue);
+      expectUInt8Buffer(dictionary.uint8Buffer);
+      expect(dictionary.realmObject).instanceOf(Realm.Object);
+      expect(dictionary.realmObject.value).equals(unmanagedRealmObject.value);
+    }
+
+    function expectUInt8Buffer(data: unknown) {
+      expect(data).instanceOf(ArrayBuffer);
+      expect([...new Uint8Array(data as ArrayBuffer)]).eql(uint8Values);
+    }
+
+    describe("Flat collections", () => {
+      it("can create and access a JS Array with different types", function (this: RealmContext) {
+        const created = this.realm.write(() => {
+          const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
+          return this.realm.create<IMixedSchema>(MixedSchema.name, {
+            value: [...flatListAllTypes, realmObject],
+          });
         });
-      }).throws(Error, "A mixed property cannot contain an array of values.");
 
-      //  verify that the transaction has been rolled back
-      const objectsAfter = this.realm.objects(MixedSchema.name);
-      expect(objectsAfter.length).equals(0);
+        const objects = this.realm.objects(MixedSchema.name);
+        expect(objects.length).equals(2);
+        expectMatchingFlatList(created.value);
+      });
+
+      it("can create and access a Realm List with different types", function (this: RealmContext) {
+        const created = this.realm.write(() => {
+          const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
+          // Create an object with a Realm List property type (i.e. not a Mixed type).
+          const realmObjectWithList = this.realm.create<ICollectionsOfMixed>(CollectionsOfMixedSchema.name, {
+            list: [...flatListAllTypes, realmObject],
+          });
+          expect(realmObjectWithList.list).instanceOf(Realm.List);
+          // Use the Realm List as the value for the Mixed property on a different object.
+          return this.realm.create<IMixedSchema>(MixedSchema.name, { value: realmObjectWithList.list });
+        });
+
+        const objects = this.realm.objects(MixedSchema.name);
+        expect(objects.length).equals(2);
+        expectMatchingFlatList(created.value);
+      });
+
+      it("can create and access a JS Object with different types", function (this: RealmContext) {
+        const created = this.realm.write(() => {
+          const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
+          return this.realm.create<IMixedSchema>(MixedSchema.name, {
+            value: { ...flatDictionaryAllTypes, realmObject },
+          });
+        });
+
+        const objects = this.realm.objects(MixedSchema.name);
+        expect(objects.length).equals(2);
+        expectMatchingFlatDictionary(created.value);
+      });
+
+      it("can create and access a Realm Dictionary with different types", function (this: RealmContext) {
+        const created = this.realm.write(() => {
+          const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
+          // Create an object with a Realm Dictionary property type (i.e. not a Mixed type).
+          const realmObjectWithDictionary = this.realm.create<ICollectionsOfMixed>(CollectionsOfMixedSchema.name, {
+            dictionary: { ...flatDictionaryAllTypes, realmObject },
+          });
+          expect(realmObjectWithDictionary.dictionary).instanceOf(Realm.Dictionary);
+          // Use the Realm Dictionary as the value for the Mixed property on a different object.
+          return this.realm.create<IMixedSchema>(MixedSchema.name, { value: realmObjectWithDictionary.dictionary });
+        });
+
+        const objects = this.realm.objects(MixedSchema.name);
+        expect(objects.length).equals(2);
+        expectMatchingFlatDictionary(created.value);
+      });
     });
+  });
+
+  describe("Typed arrays in Mixed", () => {
+    openRealmBeforeEach({ schema: [MixedSchema] });
+
     it("supports datatypes with binary data contents", function (this: RealmContext) {
       const uint8Values1 = [0, 1, 2, 4, 8];
       const uint8Values2 = [255, 128, 64, 32, 16, 8];
