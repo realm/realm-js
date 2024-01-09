@@ -68,7 +68,7 @@ function identity<T>(value: T): T {
  */
 export function createUseQuery(useRealm: () => Realm): UseQueryHook {
   function useQuery<T extends Realm.Object<any>>(
-    { type, query = identity }: QueryHookOptions<T> | QueryHookClassBasedOptions<T>,
+    { type, query = identity, keyPaths }: QueryHookOptions<T> | QueryHookClassBasedOptions<T>,
     deps: DependencyList = [],
   ): Realm.Results<T> {
     const realm = useRealm();
@@ -99,6 +99,9 @@ export function createUseQuery(useRealm: () => Realm): UseQueryHook {
       return queryCallback(getObjects(realm, type));
     }, [type, realm, queryCallback]);
 
+    /* eslint-disable-next-line react-hooks/exhaustive-deps -- Memoizing the keyPaths to avoid renders */
+    const memoizedKeyPaths = useMemo(() => keyPaths, [JSON.stringify(keyPaths)]);
+
     // Wrap the cachedObject in useMemo, so we only replace it with a new instance if `realm` or `queryResult` change
     const { collection, tearDown } = useMemo(() => {
       return createCachedCollection<T>({
@@ -106,8 +109,9 @@ export function createUseQuery(useRealm: () => Realm): UseQueryHook {
         realm,
         updateCallback: forceRerender,
         updatedRef,
+        keyPaths: memoizedKeyPaths,
       });
-    }, [realm, queryResult]);
+    }, [realm, queryResult, memoizedKeyPaths]);
 
     // Invoke the tearDown of the cachedCollection when useQuery is unmounted
     useEffect(() => {
