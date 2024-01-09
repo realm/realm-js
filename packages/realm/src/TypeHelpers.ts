@@ -72,7 +72,10 @@ export function toArrayBuffer(value: unknown, stringToBase64 = true) {
 
 /** @internal */
 export type TypeHelpers<T = unknown> = {
-  toBinding(value: T, options?: { createObj?: ObjCreator; updateMode?: UpdateMode }): binding.MixedArg;
+  toBinding(
+    value: T,
+    options?: { createObj?: ObjCreator; updateMode?: UpdateMode; isQueryArg?: boolean },
+  ): binding.MixedArg;
   fromBinding(value: unknown): T;
 };
 
@@ -88,7 +91,11 @@ export type TypeOptions = {
 // TODO: Consider testing for expected object instance types and throw something similar to the legacy SDK:
 // "Only Realm instances are supported." (which should probably have been "RealmObject")
 // instead of relying on the binding to throw.
-export function mixedToBinding(realm: binding.Realm, value: unknown): binding.MixedArg {
+export function mixedToBinding(
+  realm: binding.Realm,
+  value: unknown,
+  { isQueryArg } = { isQueryArg: false },
+): binding.MixedArg {
   if (typeof value === "string" || typeof value === "number" || typeof value === "boolean" || value === null) {
     // Fast track pass through for the most commonly used types
     return value;
@@ -100,18 +107,19 @@ export function mixedToBinding(realm: binding.Realm, value: unknown): binding.Mi
     const otherRealm = value[REALM].internal;
     assert.isSameRealm(realm, otherRealm, "Realm object is from another Realm");
     return value[INTERNAL];
-  } else if (value instanceof Collection) {
-    throw new Error(`Using a ${value.constructor.name} as Mixed value, is not yet supported`);
-  } else if (Array.isArray(value)) {
-    throw new TypeError("A mixed property cannot contain an array of values.");
   } else {
-    if (typeof value === "object" && value !== null) {
-      if (isGeoCircle(value)) {
-        return circleToBindingGeospatial(value);
-      } else if (isGeoBox(value)) {
-        return boxToBindingGeospatial(value);
-      } else if (isGeoPolygon(value)) {
-        return polygonToBindingGeospatial(value);
+    if (isQueryArg) {
+      if (value instanceof Collection || Array.isArray(value) || value instanceof Set) {
+        throw new Error(`Using a ${value.constructor.name} as a query argument is not supported.`);
+      }
+      if (typeof value === "object") {
+        if (isGeoCircle(value)) {
+          return circleToBindingGeospatial(value);
+        } else if (isGeoBox(value)) {
+          return boxToBindingGeospatial(value);
+        } else if (isGeoPolygon(value)) {
+          return polygonToBindingGeospatial(value);
+        }
       }
     }
     // Convert typed arrays to an `ArrayBuffer`
@@ -124,6 +132,7 @@ export function mixedToBinding(realm: binding.Realm, value: unknown): binding.Mi
     return value as binding.MixedArg;
   }
 }
+
 function isGeoCircle(value: object): value is GeoCircle {
   return "distance" in value && "center" in value && typeof value["distance"] === "number";
 }
