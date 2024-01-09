@@ -50,9 +50,9 @@ export function createRealmTestContext(rootConfig: Configuration = {}): RealmTes
     write(callback: () => void) {
       act(() => {
         context.realm.write(callback);
-        context.realm.write(() => {
-          /* Doing an empty write, since beginning a write transaction will force firing of notifications */
-        });
+        // Starting another write transaction will force notifications to fire
+        context.realm.beginTransaction();
+        context.realm.cancelTransaction();
       });
     },
   };

@@ -52,7 +52,7 @@ const testDataSet = [
   { _id: 6, name: "Sadie", color: "gold", gender: "female", age: 5 },
 ];
 
-describe("useQueryHook", () => {
+describe("useQuery", () => {
   const context = createRealmTestContext({ schema: [dogSchema] });
   const useQuery = createUseQuery(context.useRealm);
 

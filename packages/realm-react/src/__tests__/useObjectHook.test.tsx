@@ -21,6 +21,7 @@ import { renderHook } from "@testing-library/react-native";
 
 import { createUseObject } from "../useObject";
 import { createRealmTestContext } from "./createRealmTestContext";
+import { profileHook } from "./profileHook";
 
 const dogSchema: Realm.ObjectSchema = {
   name: "dog",
@@ -45,7 +46,7 @@ const testDataSet = [
   { _id: 6, name: "Schatzi" },
 ];
 
-describe("useObject hook", () => {
+describe("useObject", () => {
   beforeEach(() => {
     context.openRealm();
     const { realm } = context;
@@ -63,19 +64,27 @@ describe("useObject hook", () => {
 
   it("can retrieve a single object using useObject", () => {
     const [, dog2] = testDataSet;
-
     const { result } = renderHook(() => useObject<IDog>("dog", dog2._id));
-
     const object = result.current;
-
     expect(object).toMatchObject(dog2);
   });
 
-  it("object is null", () => {
-    const { result } = renderHook(() => useObject<IDog>("dog", 12));
+  describe("missing objects", () => {
+    it("return null", () => {
+      const { result } = renderHook(() => useObject<IDog>("dog", 12));
+      expect(result.current).toEqual(null);
+    });
 
-    const object = result.current;
-
-    expect(object).toEqual(null);
+    it("rerenders and return object once created", () => {
+      const { write, realm } = context;
+      const { result, renders } = profileHook(() => useObject<IDog>("dog", 12));
+      expect(renders).toHaveLength(1);
+      expect(result.current).toEqual(null);
+      write(() => {
+        realm.create<IDog>("dog", { _id: 12, name: "Lassie" });
+      });
+      expect(renders).toHaveLength(2);
+      expect(result.current?.name).toEqual("Lassie");
+    });
   });
 });
