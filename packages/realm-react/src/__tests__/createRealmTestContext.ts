@@ -16,16 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import fs from "node:fs";
-import path from "node:path";
-import os from "node:os";
 import Realm, { Configuration } from "realm";
 import { act } from "@testing-library/react-native";
-
-export function randomRealmPath() {
-  const tempDirPath = fs.mkdtempSync(path.join(os.tmpdir(), "realm-react-tests-"));
-  return path.join(tempDirPath, "test.realm");
-}
+import { randomRealmPath } from "./helpers";
 
 export type RealmTestContext = {
   realm: Realm;

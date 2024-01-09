@@ -23,6 +23,7 @@ import { act, fireEvent, render, renderHook, waitFor } from "@testing-library/re
 
 import { createRealmContext } from "..";
 import { areConfigurationsIdentical, mergeRealmConfiguration } from "../RealmProvider";
+import { randomRealmPath } from "./helpers";
 
 const dogSchema: Realm.ObjectSchema = {
   name: "dog",
@@ -45,7 +46,7 @@ const catSchema: Realm.ObjectSchema = {
 const { RealmProvider, useRealm } = createRealmContext({
   schema: [dogSchema],
   inMemory: true,
-  path: "testArtifacts/realm-provider.realm",
+  path: randomRealmPath(),
 });
 
 const EmptyRealmContext = createRealmContext();

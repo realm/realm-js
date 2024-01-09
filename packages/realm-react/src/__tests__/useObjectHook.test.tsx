@@ -21,6 +21,7 @@ import Realm from "realm";
 import { renderHook } from "@testing-library/react-native";
 
 import { createUseObject } from "../useObject";
+import { randomRealmPath } from "./helpers";
 
 const dogSchema: Realm.ObjectSchema = {
   name: "dog",
@@ -38,7 +39,7 @@ interface IDog {
 
 const configuration = {
   schema: [dogSchema],
-  path: "testArtifacts/use-object-hook.realm",
+  path: randomRealmPath(),
 };
 
 const useRealm = () => {
