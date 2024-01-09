@@ -102,6 +102,7 @@ export {
   List,
   LocalAppConfiguration,
   LoggerCallback,
+  LogCategory,
   LogLevel,
   mapTo,
   MapToDecorator,

@@ -60,7 +60,7 @@ export class Sync {
 
   /** @deprecated Will be removed in v13.0.0. Please use {@link Realm.setLogger}. */
   static setLogger(app: App, logger: Logger) {
-    const factory = binding.Helpers.makeLoggerFactory((level, message) => {
+    const factory = binding.Helpers.makeLoggerFactory((category, level, message) => {
       logger(fromBindingLoggerLevelToNumericLogLevel(level), message);
     });
     app.internal.syncManager.setLoggerFactory(factory);
