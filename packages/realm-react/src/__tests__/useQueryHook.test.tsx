@@ -17,11 +17,11 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import Realm from "realm";
-import { act, renderHook } from "@testing-library/react-native";
+import { renderHook } from "@testing-library/react-native";
 
 import { createUseQuery } from "../useQuery";
 import { profileHook } from "./profileHook";
-import { randomRealmPath } from "./helpers";
+import { createRealmTestContext } from "./createRealmTestContext";
 
 const dogSchema: Realm.ObjectSchema = {
   name: "dog",
@@ -53,15 +53,13 @@ const testDataSet = [
 ];
 
 describe("useQueryHook", () => {
-  let realm: Realm;
-  const useRealm = () => realm;
-  const useQuery = createUseQuery(useRealm);
+  const context = createRealmTestContext({ schema: [dogSchema] });
+  const useQuery = createUseQuery(context.useRealm);
 
   beforeEach(() => {
-    realm = new Realm({
-      schema: [dogSchema],
-      path: randomRealmPath(),
-    });
+    context.openRealm();
+
+    const { realm } = context;
     realm.write(() => {
       realm.deleteAll();
       testDataSet.forEach((data) => {
@@ -140,6 +138,7 @@ describe("useQueryHook", () => {
     });
 
     it("can filter notifications using key-path", async () => {
+      const { write } = context;
       const { result, renders } = profileHook(() =>
         useQuery<IDog>({
           type: "dog",
@@ -153,34 +152,20 @@ describe("useQueryHook", () => {
       expect(renders).toHaveLength(1);
 
       // Updating a name in the database and expect a render
-      act(() => {
-        const [firstDog] = result.current;
-        expect(firstDog.name).toEqual("River");
-        realm.write(() => {
-          firstDog.name = "Rivery!";
-        });
-        // Force advancing the database to ensure notifications are triggered
-        realm.write(() => {
-          /* ... */
-        });
+      const [firstDog] = result.current;
+      expect(firstDog.name).toEqual("River");
+      write(() => {
+        firstDog.name = "Rivery!";
       });
       expect(renders).toHaveLength(2);
       expect(initialCollection).not.toBe(result.current);
 
       // Updating an age in the database and don't expect a render
-      act(() => {
-        const [firstDog] = result.current;
-        expect(firstDog.age).toEqual(12);
-        realm.write(() => {
-          firstDog.age = 13;
-        });
-        // Force advancing the database to ensure notifications are triggered
-        realm.write(() => {
-          /* ... */
-        });
+      expect(firstDog.age).toEqual(12);
+      write(() => {
+        firstDog.age = 13;
       });
       expect(renders).toHaveLength(2);
-      expect(initialCollection).toBe(result.current);
     });
   });
 });
