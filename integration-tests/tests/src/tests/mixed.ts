@@ -380,6 +380,36 @@ describe("Mixed", () => {
         expectMatchingFlatDictionary(created.value);
       });
     });
+
+    describe("Invalid types", () => {
+      it("throws when creating a JS Set", function (this: RealmContext) {
+        this.realm.write(() => {
+          expect(() => this.realm.create(MixedSchema.name, { value: new Set() })).to.throw(
+            "Using a Set as a Mixed value is not supported",
+          );
+        });
+
+        const objects = this.realm.objects(MixedSchema.name);
+        // TODO: Length should equal 0 when this PR is merged: https://github.com/realm/realm-js/pull/6356
+        // expect(objects.length).equals(0);
+        expect(objects.length).equals(1);
+      });
+
+      it("throws when creating a Realm Set", function (this: RealmContext) {
+        this.realm.write(() => {
+          const realmObjectWithSet = this.realm.create(CollectionsOfMixedSchema.name, { set: [int] });
+          expect(realmObjectWithSet.set).instanceOf(Realm.Set);
+          expect(() => this.realm.create(MixedSchema.name, { value: realmObjectWithSet.set })).to.throw(
+            "Using a RealmSet as a Mixed value is not supported",
+          );
+        });
+
+        const objects = this.realm.objects(MixedSchema.name);
+        // TODO: Length should equal 0 when this PR is merged: https://github.com/realm/realm-js/pull/6356
+        // expect(objects.length).equals(0);
+        expect(objects.length).equals(1);
+      });
+    });
   });
 
   describe("Typed arrays in Mixed", () => {
