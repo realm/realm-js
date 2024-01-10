@@ -31,6 +31,7 @@ import {
   REALM,
   Realm,
   RealmObject,
+  RealmSet,
   TypeAssertionError,
   UpdateMode,
   assert,
@@ -109,9 +110,11 @@ export function mixedToBinding(
     const otherRealm = value[REALM].internal;
     assert.isSameRealm(realm, otherRealm, "Realm object is from another Realm");
     return value[INTERNAL];
+  } else if (value instanceof RealmSet || value instanceof Set) {
+    throw new Error(`Using a ${value.constructor.name} as a Mixed value is not supported.`);
   } else {
     if (isQueryArg) {
-      if (value instanceof Collection || Array.isArray(value) || value instanceof Set) {
+      if (value instanceof Collection || Array.isArray(value)) {
         throw new Error(`Using a ${value.constructor.name} as a query argument is not supported.`);
       }
       if (typeof value === "object") {

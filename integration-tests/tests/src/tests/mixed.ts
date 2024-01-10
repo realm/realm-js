@@ -556,6 +556,44 @@ describe("Mixed", () => {
         // expect(objects.length).equals(0);
         expect(objects.length).equals(1);
       });
+
+      it("throws when updating a list item to a set", function (this: RealmContext) {
+        const { realmObjectWithSet, realmObjectWithMixed } = this.realm.write(() => {
+          const realmObjectWithSet = this.realm.create(CollectionsOfMixedSchema.name, { set: [int] });
+          const realmObjectWithMixed = this.realm.create<IMixedSchema>(MixedSchema.name, { value: ["original"] });
+          return { realmObjectWithSet, realmObjectWithMixed };
+        });
+        const list = realmObjectWithMixed.value as Realm.List<any>;
+        expect(list[0]).equals("original");
+
+        this.realm.write(() => {
+          expect(() => (list[0] = new Set())).to.throw("Using a Set as a Mixed value is not supported");
+          expect(() => (list[0] = realmObjectWithSet.set)).to.throw(
+            "Using a RealmSet as a Mixed value is not supported",
+          );
+        });
+        expect((realmObjectWithMixed.value as Realm.List<any>)[0]).equals("original");
+      });
+
+      it("throws when updating a dictionary entry to a set", function (this: RealmContext) {
+        const { realmObjectWithSet, realmObjectWithMixed } = this.realm.write(() => {
+          const realmObjectWithSet = this.realm.create(CollectionsOfMixedSchema.name, { set: [int] });
+          const realmObjectWithMixed = this.realm.create<IMixedSchema>(MixedSchema.name, {
+            value: { string: "original" },
+          });
+          return { realmObjectWithSet, realmObjectWithMixed };
+        });
+        const dictionary = realmObjectWithMixed.value as Realm.Dictionary<any>;
+        expect(dictionary.string).equals("original");
+
+        this.realm.write(() => {
+          expect(() => (dictionary.string = new Set())).to.throw("Using a Set as a Mixed value is not supported");
+          expect(() => (dictionary.string = realmObjectWithSet.set)).to.throw(
+            "Using a RealmSet as a Mixed value is not supported",
+          );
+        });
+        expect((realmObjectWithMixed.value as Realm.Dictionary<any>).string).equals("original");
+      });
     });
   });
 
