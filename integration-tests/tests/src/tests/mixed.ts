@@ -93,7 +93,9 @@ const MixedNullableSchema: Realm.ObjectSchema = {
 
 const MixedSchema: Realm.ObjectSchema = {
   name: "MixedClass",
-  properties: { value: "mixed" },
+  properties: {
+    value: "mixed",
+  },
 };
 
 const CollectionsOfMixedSchema: Realm.ObjectSchema = {
@@ -288,7 +290,7 @@ describe("Mixed", () => {
           // @ts-expect-error Property `value` does exist.
           expect(item.value).equals(unmanagedRealmObject.value);
         } else if (item instanceof ArrayBuffer) {
-          expectUInt8Buffer(item);
+          expectUint8Buffer(item);
         } else {
           expect(String(item)).equals(String(flatListAllTypes[index]));
         }
@@ -307,16 +309,16 @@ describe("Mixed", () => {
           expect(value).instanceOf(Realm.Object);
           expect(value.value).equals(unmanagedRealmObject.value);
         } else if (key === "uint8Buffer") {
-          expectUInt8Buffer(value);
+          expectUint8Buffer(value);
         } else {
           expect(String(value)).equals(String(flatDictionaryAllTypes[key]));
         }
       }
     }
 
-    function expectUInt8Buffer(data: unknown) {
-      expect(data).instanceOf(ArrayBuffer);
-      expect([...new Uint8Array(data as ArrayBuffer)]).eql(uint8Values);
+    function expectUint8Buffer(value: unknown) {
+      expect(value).instanceOf(ArrayBuffer);
+      expect([...new Uint8Array(value as ArrayBuffer)]).eql(uint8Values);
     }
 
     describe("Flat collections", () => {
@@ -378,6 +380,62 @@ describe("Mixed", () => {
         const objects = this.realm.objects(MixedSchema.name);
         expect(objects.length).equals(2);
         expectMatchingFlatDictionary(created.value);
+      });
+
+      it("updates list items via property setters", function (this: RealmContext) {
+        const created = this.realm.write(() => {
+          const realmObject = this.realm.create(MixedSchema.name, { value: "original" });
+          return this.realm.create<IMixedSchema>(MixedSchema.name, {
+            value: ["original", realmObject],
+          });
+        });
+        const list = created.value as Realm.List<any>;
+        expect(list.length).equals(2);
+        expect(list[0]).equals("original");
+        expect(list[1].value).equals("original");
+
+        this.realm.write(() => {
+          list[0] = "updated";
+          list[1].value = "updated";
+        });
+        expect((created.value as Realm.List<any>)[0]).equals("updated");
+        expect((created.value as Realm.List<any>)[1].value).equals("updated");
+
+        this.realm.write(() => {
+          list[0] = null;
+          list[1] = null;
+        });
+        expect((created.value as Realm.List<any>).length).equals(2);
+        expect((created.value as Realm.List<any>)[0]).to.be.null;
+        expect((created.value as Realm.List<any>)[1]).to.be.null;
+      });
+
+      it("updates dictionary entries via property setters", function (this: RealmContext) {
+        const created = this.realm.write(() => {
+          const realmObject = this.realm.create(MixedSchema.name, { value: "original" });
+          return this.realm.create<IMixedSchema>(MixedSchema.name, {
+            value: { string: "original", realmObject },
+          });
+        });
+
+        const dictionary = created.value as Realm.Dictionary<any>;
+        expect(Object.keys(dictionary).length).equals(2);
+        expect(dictionary.string).equals("original");
+        expect(dictionary.realmObject.value).equals("original");
+        this.realm.write(() => {
+          dictionary.string = "updated";
+          dictionary.realmObject.value = "updated";
+        });
+        expect((created.value as Realm.Dictionary<any>).string).equals("updated");
+        expect((created.value as Realm.Dictionary<any>).realmObject.value).equals("updated");
+
+        this.realm.write(() => {
+          dictionary.string = null;
+          dictionary.realmObject = null;
+        });
+        expect(Object.keys(created.value as Realm.Dictionary<any>).length).equals(2);
+        expect((created.value as Realm.Dictionary<any>).string).to.be.null;
+        expect((created.value as Realm.Dictionary<any>).realmObject).to.be.null;
       });
     });
 
