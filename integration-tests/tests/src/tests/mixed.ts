@@ -437,6 +437,41 @@ describe("Mixed", () => {
         expect((created.value as Realm.Dictionary<any>).string).to.be.null;
         expect((created.value as Realm.Dictionary<any>).realmObject).to.be.null;
       });
+
+      it("removes list items via `remove()`", function (this: RealmContext) {
+        const created = this.realm.write(() => {
+          const realmObject = this.realm.create(MixedSchema.name, { value: "original" });
+          return this.realm.create<IMixedSchema>(MixedSchema.name, {
+            value: ["original", realmObject],
+          });
+        });
+        const list = created.value as Realm.List<any>;
+        expect(list.length).equals(2);
+
+        this.realm.write(() => {
+          list.remove(1);
+        });
+        expect((created.value as Realm.List<any>).length).equals(1);
+        expect((created.value as Realm.List<any>)[0]).equals("original");
+      });
+
+      it("removes dictionary entries via `remove()`", function (this: RealmContext) {
+        const created = this.realm.write(() => {
+          const realmObject = this.realm.create(MixedSchema.name, { value: "original" });
+          return this.realm.create<IMixedSchema>(MixedSchema.name, {
+            value: { string: "original", realmObject },
+          });
+        });
+        const dictionary = created.value as Realm.Dictionary<any>;
+        expect(Object.keys(dictionary).length).equals(2);
+
+        this.realm.write(() => {
+          dictionary.remove("realmObject");
+        });
+        expect(Object.keys(created.value as Realm.Dictionary<any>).length).equals(1);
+        expect((created.value as Realm.Dictionary<any>).string).equals("original");
+        expect((created.value as Realm.Dictionary<any>).realmObject).to.be.undefined;
+      });
     });
 
     describe("Invalid types", () => {
