@@ -472,6 +472,60 @@ describe("Mixed", () => {
         expect((created.value as Realm.Dictionary<any>).string).equals("original");
         expect((created.value as Realm.Dictionary<any>).realmObject).to.be.undefined;
       });
+
+      it("filters list with different types by query path", function (this: RealmContext) {
+        const expectedFilteredCount = 5;
+        const mixedList = [...flatListAllTypes];
+
+        this.realm.write(() => {
+          // Create 2 objects that should not pass the query string filter.
+          this.realm.create(MixedSchema.name, { value: "not a list" });
+          mixedList.push(this.realm.create(MixedSchema.name, { value: "not a list" }));
+
+          // Create the objects that should pass the query string filter.
+          for (let count = 0; count < expectedFilteredCount; count++) {
+            this.realm.create(MixedSchema.name, { value: mixedList });
+          }
+        });
+        const objects = this.realm.objects(MixedSchema.name);
+        expect(objects.length).equals(expectedFilteredCount + 2);
+
+        let index = 0;
+        for (const expectedItem of mixedList) {
+          const filtered = objects.filtered(`value[${index++}] == $0`, expectedItem);
+          expect(filtered.length).equals(expectedFilteredCount);
+        }
+      });
+
+      it("filters dictionary with different types by query path", function (this: RealmContext) {
+        const expectedFilteredCount = 5;
+        const mixedDictionary = { ...flatDictionaryAllTypes };
+
+        this.realm.write(() => {
+          // Create 2 objects that should not pass the query string filter.
+          this.realm.create(MixedSchema.name, { value: "not a dictionary" });
+          mixedDictionary.realmObject = this.realm.create(MixedSchema.name, { value: "not a dictionary" });
+
+          // Create the objects that should pass the query string filter.
+          for (let count = 0; count < expectedFilteredCount; count++) {
+            this.realm.create(MixedSchema.name, { value: mixedDictionary });
+          }
+        });
+        const objects = this.realm.objects(MixedSchema.name);
+        expect(objects.length).equals(expectedFilteredCount + 2);
+
+        for (const expectedKey in mixedDictionary) {
+          const expectedItem = mixedDictionary[expectedKey];
+
+          // Use bracket notation.
+          let filtered = objects.filtered(`value['${expectedKey}'] == $0`, expectedItem);
+          expect(filtered.length).equals(expectedFilteredCount);
+
+          // Use dot notation.
+          filtered = objects.filtered(`value.${expectedKey} == $0`, expectedItem);
+          expect(filtered.length).equals(expectedFilteredCount);
+        }
+      });
     });
 
     describe("Invalid types", () => {
