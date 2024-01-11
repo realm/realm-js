@@ -648,6 +648,125 @@ describe("Mixed", () => {
           }
         });
       });
+
+      describe("Notifications", () => {
+        let runCount = 0;
+        let testList: Realm.List<any>;
+
+        beforeEach(function (this: RealmContext) {
+          runCount = 0;
+          testList = this.realm.write(() => {
+            return this.realm.create<IMixedSchema>(MixedSchema.name, { value: [] }).value as Realm.List<any>;
+          });
+          expect(testList).instanceOf(Realm.List);
+        });
+
+        /**
+         * Helper function to use as a generic handler for collection listeners.
+         * @param onEnd Callback to run once the listener reaches the end of the changes array. If the callback is Mocha.Done, it will ensure that
+         * the listener was run exactly [changesOnRun.length] times
+         * @param changesOnRun An array of Realm.CollectionChangeSet.
+         * The handler will assert equality of listener's changes with the next element of the array on every run.
+         */
+        const expectCollectionChangesOnEveryRun = (
+          onEnd: () => void | Mocha.Done,
+          changesOnRun: Realm.CollectionChangeSet[],
+        ) => {
+          return (_: Realm.OrderedCollection<any>, changes: Realm.CollectionChangeSet) => {
+            runCount++;
+
+            expect(changes.insertions).deep.equals(changesOnRun[runCount - 1].insertions);
+            expect(changes.oldModifications).deep.equals(changesOnRun[runCount - 1].oldModifications);
+            expect(changes.newModifications).deep.equals(changesOnRun[runCount - 1].newModifications);
+            expect(changes.deletions).deep.equals(changesOnRun[runCount - 1].deletions);
+
+            if (runCount >= changesOnRun.length) {
+              // Once runCount reaches given array, run the onEnd callback. If onEnd is Mocha.done then
+              // running it multiple times will cause tests to fail so this also ensures the listener fires
+              // exactly changesOnRun.length times.
+              onEnd();
+            }
+          };
+        };
+
+        describe("Collection notifications", () => {
+          it("fires when inserting to top-level list", function (this: RealmContext, done) {
+            testList.addListener(
+              expectCollectionChangesOnEveryRun(done, [
+                { insertions: [], newModifications: [], oldModifications: [], deletions: [] },
+                { insertions: [0, 1, 2], newModifications: [], oldModifications: [], deletions: [] },
+              ]),
+            );
+
+            this.realm.write(() => {
+              testList.push("Amy");
+              testList.push("Mary");
+              testList.push("John");
+            });
+          });
+
+          it("fires when updating top-level list", function (this: RealmContext, done) {
+            testList.addListener(
+              expectCollectionChangesOnEveryRun(done, [
+                { insertions: [], newModifications: [], oldModifications: [], deletions: [] },
+                { insertions: [0, 1, 2], newModifications: [], oldModifications: [], deletions: [] },
+                { insertions: [], newModifications: [0, 2], oldModifications: [0, 2], deletions: [] },
+              ]),
+            );
+
+            this.realm.write(() => {
+              testList.push("Amy");
+              testList.push("Mary");
+              testList.push("John");
+            });
+
+            this.realm.write(() => {
+              testList[0] = "Updated Amy";
+              testList[2] = "Updated John";
+            });
+          });
+
+          it("fires when deleting from top-level list", function (this: RealmContext, done) {
+            testList.addListener(
+              expectCollectionChangesOnEveryRun(done, [
+                { insertions: [], newModifications: [], oldModifications: [], deletions: [] },
+                { insertions: [0, 1, 2], newModifications: [], oldModifications: [], deletions: [] },
+                { insertions: [], newModifications: [], oldModifications: [], deletions: [2] },
+              ]),
+            );
+
+            this.realm.write(() => {
+              testList.push("Amy");
+              testList.push("Mary");
+              testList.push("John");
+            });
+
+            this.realm.write(() => testList.remove(2));
+          });
+
+          it("does not fire when updating object in top-level list", function (this: RealmContext, done) {
+            testList.addListener(
+              expectCollectionChangesOnEveryRun(done, [
+                { insertions: [], newModifications: [], oldModifications: [], deletions: [] },
+                { insertions: [0], newModifications: [], oldModifications: [], deletions: [] },
+              ]),
+            );
+
+            const realmObject = this.realm.write(() => {
+              const realmObject = this.realm.create<IMixedSchema>(MixedSchema.name, { value: "original" });
+              testList.push(realmObject);
+              return realmObject;
+            });
+            expect(testList.length).equals(1);
+            expect(realmObject.value).equals("original");
+
+            this.realm.write(() => {
+              realmObject.value = "updated";
+            });
+            expect(realmObject.value).equals("updated");
+          });
+        });
+      });
     });
 
     describe("Invalid operations", () => {
