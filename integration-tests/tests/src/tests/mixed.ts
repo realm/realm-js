@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import Realm, { BSON } from "realm";
+import Realm, { BSON, ObjectSchema } from "realm";
 import { expect } from "chai";
 
 import { openRealmBefore, openRealmBeforeEach } from "../hooks";
@@ -24,7 +24,7 @@ import { openRealmBefore, openRealmBeforeEach } from "../hooks";
 class TestObject extends Realm.Object<TestObject> {
   mixedValue!: Realm.Types.Mixed;
 
-  static schema = {
+  static schema: ObjectSchema = {
     name: "TestObject",
     properties: {
       mixedValue: "mixed",
@@ -448,9 +448,7 @@ describe("Mixed", () => {
           expect(list.length).equals(0);
 
           this.realm.write(() => {
-            for (const item of flatListAllTypes) {
-              list.push(item);
-            }
+            list.push(...flatListAllTypes);
             list.push(this.realm.create(MixedSchema.name, unmanagedRealmObject));
           });
           expectMatchingFlatList(list);
@@ -505,11 +503,11 @@ describe("Mixed", () => {
               value: { string: "original", realmObject },
             });
           });
-
           const dictionary = created.value as Realm.Dictionary<any>;
           expect(Object.keys(dictionary).length).equals(2);
           expect(dictionary.string).equals("original");
           expect(dictionary.realmObject.value).equals("original");
+
           this.realm.write(() => {
             dictionary.string = "updated";
             dictionary.realmObject.value = "updated";
@@ -882,18 +880,18 @@ describe("Mixed", () => {
               ]),
             );
 
-            const realmObject = this.realm.write(() => {
+            const realmObjectInList = this.realm.write(() => {
               const realmObject = this.realm.create(TestObject, { mixedValue: "original" });
               testList.push(realmObject);
               return realmObject;
             });
             expect(testList.length).equals(1);
-            expect(realmObject.mixedValue).equals("original");
+            expect(realmObjectInList.mixedValue).equals("original");
 
             this.realm.write(() => {
-              realmObject.mixedValue = "updated";
+              realmObjectInList.mixedValue = "updated";
             });
-            expect(realmObject.mixedValue).equals("updated");
+            expect(realmObjectInList.mixedValue).equals("updated");
           });
 
           it("does not fire when updating object in top-level dictionary", function (this: RealmContext, done) {
@@ -904,17 +902,17 @@ describe("Mixed", () => {
               ]),
             );
 
-            const realmObject = this.realm.write(() => {
+            const realmObjectInDictionary = this.realm.write(() => {
               const realmObject = this.realm.create(TestObject, { mixedValue: "original" });
               testDictionary.realmObject = realmObject;
               return realmObject;
             });
-            expect(realmObject.mixedValue).equals("original");
+            expect(realmObjectInDictionary.mixedValue).equals("original");
 
             this.realm.write(() => {
-              realmObject.mixedValue = "updated";
+              realmObjectInDictionary.mixedValue = "updated";
             });
-            expect(realmObject.mixedValue).equals("updated");
+            expect(realmObjectInDictionary.mixedValue).equals("updated");
           });
         });
 
@@ -1013,7 +1011,6 @@ describe("Mixed", () => {
         this.realm.write(() => {
           // Create an object with an embedded object property.
           const { embeddedObject } = this.realm.create(MixedWithEmbeddedSchema.name, {
-            mixedValue: null,
             embeddedObject: { value: 1 },
           });
           expect(embeddedObject).instanceOf(Realm.Object);
@@ -1031,14 +1028,12 @@ describe("Mixed", () => {
         // TODO: Length should equal 1 when this PR is merged: https://github.com/realm/realm-js/pull/6356
         // expect(objects.length).equals(1);
         expect(objects.length).equals(3);
-        expect(objects[0].mixedValue).to.be.null;
       });
 
       it("throws when setting a list or dictionary item to an embedded object", function (this: RealmContext) {
         this.realm.write(() => {
           // Create an object with an embedded object property.
           const { embeddedObject } = this.realm.create(MixedWithEmbeddedSchema.name, {
-            mixedValue: null,
             embeddedObject: { value: 1 },
           });
           expect(embeddedObject).instanceOf(Realm.Object);
@@ -1063,9 +1058,9 @@ describe("Mixed", () => {
             "Using an embedded object (EmbeddedObject) as a Mixed value is not supported",
           );
         });
-
         const objects = this.realm.objects<IMixedWithEmbedded>(MixedWithEmbeddedSchema.name);
         expect(objects.length).equals(3);
+        // Check that the list and dictionary are still empty.
         expect((objects[1].mixedValue as Realm.List<any>).length).equals(0);
         expect(Object.keys(objects[2].mixedValue as Realm.Dictionary<any>).length).equals(0);
       });
