@@ -608,6 +608,14 @@ describe("Mixed", () => {
 
             filtered = objects.filtered(`value[*] == $0`, nonExistentValue);
             expect(filtered.length).equals(0);
+
+            // Objects with a dictionary containing a key that matches `key`.
+            // TODO: Enable once Core fixes bug.
+            // filtered = objects.filtered(`value.@keys == $0`, key);
+            // expect(filtered.length).equals(expectedFilteredCount);
+
+            // filtered = objects.filtered(`value.@keys == $0`, nonExistentKey);
+            // expect(filtered.length).equals(0);
           }
         });
       });
