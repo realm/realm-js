@@ -21,6 +21,17 @@ import { expect } from "chai";
 
 import { openRealmBefore, openRealmBeforeEach } from "../hooks";
 
+class TestObject extends Realm.Object<TestObject> {
+  mixedValue!: Realm.Types.Mixed;
+
+  static schema = {
+    name: "TestObject",
+    properties: {
+      mixedValue: "mixed",
+    },
+  };
+}
+
 interface ISingle {
   a: Realm.Mixed;
   b: Realm.Mixed;
@@ -295,7 +306,7 @@ describe("Mixed", () => {
 
   describe("Collection types", () => {
     openRealmBeforeEach({
-      schema: [MixedSchema, MixedWithEmbeddedSchema, CollectionsOfMixedSchema, EmbeddedObjectSchema],
+      schema: [MixedSchema, MixedWithEmbeddedSchema, CollectionsOfMixedSchema, EmbeddedObjectSchema, TestObject],
     });
 
     const bool = true;
@@ -651,19 +662,25 @@ describe("Mixed", () => {
 
       describe("Notifications", () => {
         let runCount = 0;
+
+        let testObjectWithList: TestObject;
+        let testObjectWithDictionary: TestObject;
         let testList: Realm.List<any>;
         let testDictionary: Realm.Dictionary<any>;
 
         beforeEach(function (this: RealmContext) {
           runCount = 0;
-          testList = this.realm.write(() => {
-            return this.realm.create<IMixedSchema>(MixedSchema.name, { value: [] }).value as Realm.List<any>;
+
+          testObjectWithList = this.realm.write(() => {
+            return this.realm.create(TestObject, { mixedValue: [] });
           });
+          testList = testObjectWithList.mixedValue as Realm.List<any>;
           expect(testList).instanceOf(Realm.List);
 
-          testDictionary = this.realm.write(() => {
-            return this.realm.create<IMixedSchema>(MixedSchema.name, { value: {} }).value as Realm.Dictionary<any>;
+          testObjectWithDictionary = this.realm.write(() => {
+            return this.realm.create(TestObject, { mixedValue: {} });
           });
+          testDictionary = testObjectWithDictionary.mixedValue as Realm.Dictionary<any>;
           expect(testDictionary).instanceOf(Realm.Dictionary);
         });
 
@@ -712,6 +729,32 @@ describe("Mixed", () => {
             expect(changes.insertions).members(changesOnRun[runCount - 1].insertions);
             expect(changes.modifications).members(changesOnRun[runCount - 1].modifications);
             expect(changes.deletions).members(changesOnRun[runCount - 1].deletions);
+
+            if (runCount >= changesOnRun.length) {
+              // Once runCount reaches given array, run the onEnd callback. If onEnd is Mocha.done then
+              // running it multiple times will cause tests to fail so this also ensures the listener fires
+              // exactly changesOnRun.length times.
+              onEnd();
+            }
+          };
+        };
+
+        /**
+         * Helper function to use as a generic handler for object listeners.
+         * @param onEnd Callback to run once the listener reaches the end of the changes array. If the callback is Mocha.Done, it will ensure that
+         * the listener was run exactly [changesOnRun.length] times
+         * @param changesOnRun An array of Realm.ObjectChangeSet.
+         * The handler will assert equality of listener's changes with the next element of the array on every run.
+         */
+        const expectObjectChangesOnEveryRun = <T extends Realm.Object<T>>(
+          onEnd: () => void | Mocha.Done,
+          changesOnRun: Realm.ObjectChangeSet<T>[],
+        ) => {
+          return (_: Realm.Object<T>, changes: Realm.ObjectChangeSet<T>) => {
+            runCount++;
+
+            expect(changes.deleted).equals(changesOnRun[runCount - 1].deleted);
+            expect(changes.changedProperties).members(changesOnRun[runCount - 1].changedProperties);
 
             if (runCount >= changesOnRun.length) {
               // Once runCount reaches given array, run the onEnd callback. If onEnd is Mocha.done then
@@ -840,17 +883,17 @@ describe("Mixed", () => {
             );
 
             const realmObject = this.realm.write(() => {
-              const realmObject = this.realm.create<IMixedSchema>(MixedSchema.name, { value: "original" });
+              const realmObject = this.realm.create(TestObject, { mixedValue: "original" });
               testList.push(realmObject);
               return realmObject;
             });
             expect(testList.length).equals(1);
-            expect(realmObject.value).equals("original");
+            expect(realmObject.mixedValue).equals("original");
 
             this.realm.write(() => {
-              realmObject.value = "updated";
+              realmObject.mixedValue = "updated";
             });
-            expect(realmObject.value).equals("updated");
+            expect(realmObject.mixedValue).equals("updated");
           });
 
           it("does not fire when updating object in top-level dictionary", function (this: RealmContext, done) {
@@ -862,16 +905,38 @@ describe("Mixed", () => {
             );
 
             const realmObject = this.realm.write(() => {
-              const realmObject = this.realm.create<IMixedSchema>(MixedSchema.name, { value: "original" });
+              const realmObject = this.realm.create(TestObject, { mixedValue: "original" });
               testDictionary.realmObject = realmObject;
               return realmObject;
             });
-            expect(realmObject.value).equals("original");
+            expect(realmObject.mixedValue).equals("original");
 
             this.realm.write(() => {
-              realmObject.value = "updated";
+              realmObject.mixedValue = "updated";
             });
-            expect(realmObject.value).equals("updated");
+            expect(realmObject.mixedValue).equals("updated");
+          });
+        });
+
+        describe("Object notifications", () => {
+          it("fires when inserting, updating, and deleting in top-level list", function (this: RealmContext, done) {
+            testObjectWithList.addListener(
+              expectObjectChangesOnEveryRun<TestObject>(done, [
+                { deleted: false, changedProperties: [] },
+                { deleted: false, changedProperties: ["mixedValue"] },
+                { deleted: false, changedProperties: ["mixedValue"] },
+                { deleted: false, changedProperties: ["mixedValue"] },
+              ]),
+            );
+
+            // Insert.
+            this.realm.write(() => testList.push("Amy"));
+
+            // Update.
+            this.realm.write(() => (testList[0] = "Updated Amy"));
+
+            // Delete.
+            this.realm.write(() => testList.remove(0));
           });
         });
       });
