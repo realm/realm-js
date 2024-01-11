@@ -1069,6 +1069,34 @@ describe("Mixed", () => {
         expect((objects[1].mixedValue as Realm.List<any>).length).equals(0);
         expect(Object.keys(objects[2].mixedValue as Realm.Dictionary<any>).length).equals(0);
       });
+
+      it("invalidates the list when removed", function (this: RealmContext) {
+        const created = this.realm.write(() => {
+          return this.realm.create<IMixedSchema>(MixedSchema.name, { value: [1] });
+        });
+        const list = created.value as Realm.List<any>;
+        expect(list).instanceOf(Realm.List);
+
+        this.realm.write(() => {
+          created.value = null;
+        });
+        expect(created.value).to.be.null;
+        expect(() => list[0]).to.throw("List is no longer valid");
+      });
+
+      it("invalidates the dictionary when removed", function (this: RealmContext) {
+        const created = this.realm.write(() => {
+          return this.realm.create<IMixedSchema>(MixedSchema.name, { value: { prop: 1 } });
+        });
+        const dictionary = created.value as Realm.Dictionary<any>;
+        expect(dictionary).instanceOf(Realm.Dictionary);
+
+        this.realm.write(() => {
+          created.value = null;
+        });
+        expect(created.value).to.be.null;
+        expect(() => dictionary.prop).to.throw("This collection is no more");
+      });
     });
   });
 
