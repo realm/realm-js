@@ -49,6 +49,11 @@ interface IMixedSchema {
   value: Realm.Mixed;
 }
 
+interface IMixedWithEmbedded {
+  mixedValue: Realm.Mixed;
+  embeddedObject: { value: Realm.Mixed };
+}
+
 interface ICollectionsOfMixed {
   list: Realm.List<Realm.Mixed>;
   dictionary: Realm.Dictionary<Realm.Mixed>;
@@ -93,6 +98,22 @@ const MixedNullableSchema: Realm.ObjectSchema = {
 
 const MixedSchema: Realm.ObjectSchema = {
   name: "MixedClass",
+  properties: {
+    value: "mixed",
+  },
+};
+
+const MixedWithEmbeddedSchema: Realm.ObjectSchema = {
+  name: "MixedClassWithEmbedded",
+  properties: {
+    mixedValue: "mixed",
+    embeddedObject: "EmbeddedObject?",
+  },
+};
+
+const EmbeddedObjectSchema: Realm.ObjectSchema = {
+  name: "EmbeddedObject",
+  embedded: true,
   properties: {
     value: "mixed",
   },
@@ -191,7 +212,10 @@ describe("Mixed", () => {
   });
 
   describe("Nested types", () => {
-    openRealmBefore({ schema: [SingleSchema, VertexSchema, MixNestedSchema] });
+    openRealmBefore({
+      schema: [SingleSchema, VertexSchema, MixNestedSchema, MixedWithEmbeddedSchema, EmbeddedObjectSchema],
+    });
+
     it("support nested types", function (this: RealmContext) {
       const obj1 = this.realm.write(() => {
         const r = this.realm.create<IVertex>(VertexSchema.name, { a: 1, b: 0, c: 0 });
@@ -225,6 +249,27 @@ describe("Mixed", () => {
       expect((obj2.b as IVertex).a).equals(1, "Should be equal 1");
       expect((obj2.b as IVertex).b).equals(0, "Should be equal 0");
     });
+
+    it("throws if nested type is an embedded object", function (this: RealmContext) {
+      this.realm.write(() => {
+        // Create an object with an embedded object property.
+        const { embeddedObject } = this.realm.create(MixedWithEmbeddedSchema.name, {
+          mixedValue: null,
+          embeddedObject: { value: 1 },
+        });
+        expect(embeddedObject).instanceOf(Realm.Object);
+
+        // Create an object with the Mixed property being the embedded object.
+        expect(() => this.realm.create(MixedWithEmbeddedSchema.name, { mixedValue: embeddedObject })).to.throw(
+          "Using an embedded object (EmbeddedObject) as a Mixed value is not supported",
+        );
+      });
+      const objects = this.realm.objects<IMixedWithEmbedded>(MixedWithEmbeddedSchema.name);
+      // TODO: Length should equal 1 when this PR is merged: https://github.com/realm/realm-js/pull/6356
+      // expect(objects.length).equals(1);
+      expect(objects.length).equals(2);
+      expect(objects[0].mixedValue).to.be.null;
+    });
   });
 
   describe("Nullable types", () => {
@@ -248,7 +293,9 @@ describe("Mixed", () => {
   });
 
   describe("Collection types", () => {
-    openRealmBeforeEach({ schema: [MixedSchema, CollectionsOfMixedSchema] });
+    openRealmBeforeEach({
+      schema: [MixedSchema, MixedWithEmbeddedSchema, CollectionsOfMixedSchema, EmbeddedObjectSchema],
+    });
 
     const bool = true;
     const int = 123;
@@ -532,7 +579,7 @@ describe("Mixed", () => {
       });
     });
 
-    describe("Invalid types", () => {
+    describe("Invalid operations", () => {
       it("throws when creating a JS Set", function (this: RealmContext) {
         this.realm.write(() => {
           expect(() => this.realm.create(MixedSchema.name, { value: new Set() })).to.throw(
@@ -597,6 +644,67 @@ describe("Mixed", () => {
           );
         });
         expect((realmObjectWithMixed.value as Realm.Dictionary<any>).string).equals("original");
+      });
+
+      it("throws when creating a list or dictionary with an embedded object", function (this: RealmContext) {
+        this.realm.write(() => {
+          // Create an object with an embedded object property.
+          const { embeddedObject } = this.realm.create(MixedWithEmbeddedSchema.name, {
+            mixedValue: null,
+            embeddedObject: { value: 1 },
+          });
+          expect(embeddedObject).instanceOf(Realm.Object);
+
+          // Create two objects with the Mixed property (`value`) being a list and
+          // dictionary (respectively) containing the reference to the embedded object.
+          expect(() => this.realm.create(MixedWithEmbeddedSchema.name, { mixedValue: [embeddedObject] })).to.throw(
+            "Using an embedded object (EmbeddedObject) as a Mixed value is not supported",
+          );
+          expect(() => this.realm.create(MixedWithEmbeddedSchema.name, { mixedValue: { embeddedObject } })).to.throw(
+            "Using an embedded object (EmbeddedObject) as a Mixed value is not supported",
+          );
+        });
+        const objects = this.realm.objects<IMixedWithEmbedded>(MixedWithEmbeddedSchema.name);
+        // TODO: Length should equal 1 when this PR is merged: https://github.com/realm/realm-js/pull/6356
+        // expect(objects.length).equals(1);
+        expect(objects.length).equals(3);
+        expect(objects[0].mixedValue).to.be.null;
+      });
+
+      it("throws when setting a list or dictionary item to an embedded object", function (this: RealmContext) {
+        this.realm.write(() => {
+          // Create an object with an embedded object property.
+          const { embeddedObject } = this.realm.create(MixedWithEmbeddedSchema.name, {
+            mixedValue: null,
+            embeddedObject: { value: 1 },
+          });
+          expect(embeddedObject).instanceOf(Realm.Object);
+
+          // Create two objects with the Mixed property (`value`)
+          // being an empty list and dictionary (respectively).
+          const realmObjectWithList = this.realm.create<IMixedWithEmbedded>(MixedWithEmbeddedSchema.name, {
+            mixedValue: [],
+          });
+          expect(realmObjectWithList.mixedValue).instanceOf(Realm.List);
+
+          const realmObjectWithDictionary = this.realm.create<IMixedWithEmbedded>(MixedWithEmbeddedSchema.name, {
+            mixedValue: {},
+          });
+          expect(realmObjectWithDictionary.mixedValue).instanceOf(Realm.Dictionary);
+
+          expect(() => ((realmObjectWithList.mixedValue as Realm.List<any>)[0] = embeddedObject)).to.throw(
+            "Using an embedded object (EmbeddedObject) as a Mixed value is not supported",
+          );
+          expect(
+            () => ((realmObjectWithDictionary.mixedValue as Realm.Dictionary<any>).prop = embeddedObject),
+            "Using an embedded object (EmbeddedObject) as a Mixed value is not supported",
+          );
+        });
+
+        const objects = this.realm.objects<IMixedWithEmbedded>(MixedWithEmbeddedSchema.name);
+        expect(objects.length).equals(3);
+        expect((objects[1].mixedValue as Realm.List<any>).length).equals(0);
+        expect(Object.keys(objects[2].mixedValue as Realm.Dictionary<any>).length).equals(0);
       });
     });
   });
