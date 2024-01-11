@@ -89,11 +89,12 @@
     "eslint-plugin-react-native": "^4.0.0",
     "eslint-plugin-react": "^7.32.2",
     "node-addon-api": "^6.0.0",
-    "react-native": "0.72.6",
+    "prettier": "2.8.8",
+    "react-native": "0.73.2",
     "rollup": "^3.15.0",
     "tsx": "^4.6.2",
     "typedoc": "^0.24.8",
-    "typescript": "^4.9.3",
+    "typescript": "5.0.4",
     "wireit": "^0.9.5"
   },
   "peerDependencies": {
