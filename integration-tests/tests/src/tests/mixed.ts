@@ -652,6 +652,7 @@ describe("Mixed", () => {
       describe("Notifications", () => {
         let runCount = 0;
         let testList: Realm.List<any>;
+        let testDictionary: Realm.Dictionary<any>;
 
         beforeEach(function (this: RealmContext) {
           runCount = 0;
@@ -659,10 +660,15 @@ describe("Mixed", () => {
             return this.realm.create<IMixedSchema>(MixedSchema.name, { value: [] }).value as Realm.List<any>;
           });
           expect(testList).instanceOf(Realm.List);
+
+          testDictionary = this.realm.write(() => {
+            return this.realm.create<IMixedSchema>(MixedSchema.name, { value: {} }).value as Realm.Dictionary<any>;
+          });
+          expect(testDictionary).instanceOf(Realm.Dictionary);
         });
 
         /**
-         * Helper function to use as a generic handler for collection listeners.
+         * Helper function to use as a generic handler for ordered collection listeners.
          * @param onEnd Callback to run once the listener reaches the end of the changes array. If the callback is Mocha.Done, it will ensure that
          * the listener was run exactly [changesOnRun.length] times
          * @param changesOnRun An array of Realm.CollectionChangeSet.
@@ -689,6 +695,33 @@ describe("Mixed", () => {
           };
         };
 
+        /**
+         * Helper function to use as a generic handler for dictionary listeners.
+         * @param onEnd Callback to run once the listener reaches the end of the changes array. If the callback is Mocha.Done, it will ensure that
+         * the listener was run exactly [changesOnRun.length] times
+         * @param changesOnRun An array of Realm.DictionaryChangeSet.
+         * The handler will assert equality of listener's changes with the next element of the array on every run.
+         */
+        const expectDictionaryChangesOnEveryRun = (
+          onEnd: () => void | Mocha.Done,
+          changesOnRun: Realm.DictionaryChangeSet[],
+        ) => {
+          return (_: Realm.Dictionary<any>, changes: Realm.DictionaryChangeSet) => {
+            runCount++;
+
+            expect(changes.insertions).members(changesOnRun[runCount - 1].insertions);
+            expect(changes.modifications).members(changesOnRun[runCount - 1].modifications);
+            expect(changes.deletions).members(changesOnRun[runCount - 1].deletions);
+
+            if (runCount >= changesOnRun.length) {
+              // Once runCount reaches given array, run the onEnd callback. If onEnd is Mocha.done then
+              // running it multiple times will cause tests to fail so this also ensures the listener fires
+              // exactly changesOnRun.length times.
+              onEnd();
+            }
+          };
+        };
+
         describe("Collection notifications", () => {
           it("fires when inserting to top-level list", function (this: RealmContext, done) {
             testList.addListener(
@@ -702,6 +735,21 @@ describe("Mixed", () => {
               testList.push("Amy");
               testList.push("Mary");
               testList.push("John");
+            });
+          });
+
+          it("fires when inserting to top-level dictionary", function (this: RealmContext, done) {
+            testDictionary.addListener(
+              expectDictionaryChangesOnEveryRun(done, [
+                { insertions: [], modifications: [], deletions: [] },
+                { insertions: ["amy", "mary", "john"], modifications: [], deletions: [] },
+              ]),
+            );
+
+            this.realm.write(() => {
+              testDictionary.amy = "Amy";
+              testDictionary.mary = "Mary";
+              testDictionary.john = "John";
             });
           });
 
@@ -726,6 +774,27 @@ describe("Mixed", () => {
             });
           });
 
+          it("fires when updating top-level dictionary", function (this: RealmContext, done) {
+            testDictionary.addListener(
+              expectDictionaryChangesOnEveryRun(done, [
+                { insertions: [], modifications: [], deletions: [] },
+                { insertions: ["amy", "mary", "john"], modifications: [], deletions: [] },
+                { insertions: [], modifications: ["amy", "john"], deletions: [] },
+              ]),
+            );
+
+            this.realm.write(() => {
+              testDictionary.amy = "Amy";
+              testDictionary.mary = "Mary";
+              testDictionary.john = "John";
+            });
+
+            this.realm.write(() => {
+              testDictionary.amy = "Updated Amy";
+              testDictionary.john = "Updated John";
+            });
+          });
+
           it("fires when deleting from top-level list", function (this: RealmContext, done) {
             testList.addListener(
               expectCollectionChangesOnEveryRun(done, [
@@ -744,6 +813,24 @@ describe("Mixed", () => {
             this.realm.write(() => testList.remove(2));
           });
 
+          it("fires when deleting from top-level dictionary", function (this: RealmContext, done) {
+            testDictionary.addListener(
+              expectDictionaryChangesOnEveryRun(done, [
+                { insertions: [], modifications: [], deletions: [] },
+                { insertions: ["amy", "mary", "john"], modifications: [], deletions: [] },
+                { insertions: [], modifications: [], deletions: ["mary"] },
+              ]),
+            );
+
+            this.realm.write(() => {
+              testDictionary.amy = "Amy";
+              testDictionary.mary = "Mary";
+              testDictionary.john = "John";
+            });
+
+            this.realm.write(() => testDictionary.remove("mary"));
+          });
+
           it("does not fire when updating object in top-level list", function (this: RealmContext, done) {
             testList.addListener(
               expectCollectionChangesOnEveryRun(done, [
@@ -758,6 +845,27 @@ describe("Mixed", () => {
               return realmObject;
             });
             expect(testList.length).equals(1);
+            expect(realmObject.value).equals("original");
+
+            this.realm.write(() => {
+              realmObject.value = "updated";
+            });
+            expect(realmObject.value).equals("updated");
+          });
+
+          it("does not fire when updating object in top-level dictionary", function (this: RealmContext, done) {
+            testDictionary.addListener(
+              expectDictionaryChangesOnEveryRun(done, [
+                { insertions: [], modifications: [], deletions: [] },
+                { insertions: ["realmObject"], modifications: [], deletions: [] },
+              ]),
+            );
+
+            const realmObject = this.realm.write(() => {
+              const realmObject = this.realm.create<IMixedSchema>(MixedSchema.name, { value: "original" });
+              testDictionary.realmObject = realmObject;
+              return realmObject;
+            });
             expect(realmObject.value).equals("original");
 
             this.realm.write(() => {
