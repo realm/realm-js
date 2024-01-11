@@ -18,6 +18,7 @@
 
 import Realm, { BSON } from "realm";
 import { expect } from "chai";
+
 import { openRealmBefore, openRealmBeforeEach } from "../hooks";
 
 interface ISingle {
@@ -428,6 +429,34 @@ describe("Mixed", () => {
           const objects = this.realm.objects(MixedSchema.name);
           expect(objects.length).equals(2);
           expectMatchingFlatDictionary(created.value);
+        });
+
+        it("inserts list items via `push()`", function (this: RealmContext) {
+          const created = this.realm.write(() => this.realm.create<IMixedSchema>(MixedSchema.name, { value: [] }));
+          const list = created.value as Realm.List<any>;
+          expect(list.length).equals(0);
+
+          this.realm.write(() => {
+            for (const item of flatListAllTypes) {
+              list.push(item);
+            }
+            list.push(this.realm.create(MixedSchema.name, unmanagedRealmObject));
+          });
+          expectMatchingFlatList(list);
+        });
+
+        it("inserts dictionary entries", function (this: RealmContext) {
+          const created = this.realm.write(() => this.realm.create<IMixedSchema>(MixedSchema.name, { value: {} }));
+          const dictionary = created.value as Realm.Dictionary<any>;
+          expect(Object.keys(dictionary).length).equals(0);
+
+          this.realm.write(() => {
+            for (const key in flatDictionaryAllTypes) {
+              dictionary[key] = flatDictionaryAllTypes[key];
+            }
+            dictionary.realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
+          });
+          expectMatchingFlatDictionary(dictionary);
         });
 
         it("updates list items via property setters", function (this: RealmContext) {
