@@ -936,6 +936,26 @@ describe("Mixed", () => {
             // Delete.
             this.realm.write(() => testList.remove(0));
           });
+
+          it("fires when inserting, updating, and deleting in top-level dictionary", function (this: RealmContext, done) {
+            testObjectWithDictionary.addListener(
+              expectObjectChangesOnEveryRun<TestObject>(done, [
+                { deleted: false, changedProperties: [] },
+                { deleted: false, changedProperties: ["mixedValue"] },
+                { deleted: false, changedProperties: ["mixedValue"] },
+                { deleted: false, changedProperties: ["mixedValue"] },
+              ]),
+            );
+
+            // Insert.
+            this.realm.write(() => (testDictionary.amy = "Amy"));
+
+            // Update.
+            this.realm.write(() => (testDictionary.amy = "Updated Amy"));
+
+            // Delete.
+            this.realm.write(() => testDictionary.remove("amy"));
+          });
         });
       });
     });
