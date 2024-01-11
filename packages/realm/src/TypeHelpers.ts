@@ -107,6 +107,9 @@ export function mixedToBinding(
   } else if (value instanceof Date) {
     return binding.Timestamp.fromDate(value);
   } else if (value instanceof RealmObject) {
+    if (value.objectSchema().embedded) {
+      throw new Error(`Using an embedded object (${value.constructor.name}) as a Mixed value is not supported.`);
+    }
     const otherRealm = value[REALM].internal;
     assert.isSameRealm(realm, otherRealm, "Realm object is from another Realm");
     return value[INTERNAL];
