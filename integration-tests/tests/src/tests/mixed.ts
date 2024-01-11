@@ -390,8 +390,7 @@ describe("Mixed", () => {
             });
           });
 
-          const objects = this.realm.objects(MixedSchema.name);
-          expect(objects.length).equals(2);
+          expect(this.realm.objects(MixedSchema.name).length).equals(2);
           expectMatchingFlatList(created.value);
         });
 
@@ -407,22 +406,28 @@ describe("Mixed", () => {
             return this.realm.create<IMixedSchema>(MixedSchema.name, { value: realmObjectWithList.list });
           });
 
-          const objects = this.realm.objects(MixedSchema.name);
-          expect(objects.length).equals(2);
+          expect(this.realm.objects(MixedSchema.name).length).equals(2);
           expectMatchingFlatList(created.value);
         });
 
         it("can create and access a JS Object with different types", function (this: RealmContext) {
-          const created = this.realm.write(() => {
+          const { createdWithProto, createdWithoutProto } = this.realm.write(() => {
             const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
-            return this.realm.create<IMixedSchema>(MixedSchema.name, {
+            const createdWithProto = this.realm.create<IMixedSchema>(MixedSchema.name, {
               value: { ...flatDictionaryAllTypes, realmObject },
             });
+            const createdWithoutProto = this.realm.create<IMixedSchema>(MixedSchema.name, {
+              value: Object.assign(Object.create(null), {
+                ...flatDictionaryAllTypes,
+                realmObject,
+              }),
+            });
+            return { createdWithProto, createdWithoutProto };
           });
 
-          const objects = this.realm.objects(MixedSchema.name);
-          expect(objects.length).equals(2);
-          expectMatchingFlatDictionary(created.value);
+          expect(this.realm.objects(MixedSchema.name).length).equals(3);
+          expectMatchingFlatDictionary(createdWithProto.value);
+          expectMatchingFlatDictionary(createdWithoutProto.value);
         });
 
         it("can create and access a Realm Dictionary with different types", function (this: RealmContext) {
@@ -437,8 +442,7 @@ describe("Mixed", () => {
             return this.realm.create<IMixedSchema>(MixedSchema.name, { value: realmObjectWithDictionary.dictionary });
           });
 
-          const objects = this.realm.objects(MixedSchema.name);
-          expect(objects.length).equals(2);
+          expect(this.realm.objects(MixedSchema.name).length).equals(2);
           expectMatchingFlatDictionary(created.value);
         });
 
