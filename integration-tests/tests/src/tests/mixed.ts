@@ -526,6 +526,7 @@ describe("Mixed", () => {
         it("filters list with different types by query path", function (this: RealmContext) {
           const expectedFilteredCount = 5;
           const mixedList = [...flatListAllTypes];
+          const nonExistentValue = "nonExistentValue";
 
           this.realm.write(() => {
             // Create 2 objects that should not pass the query string filter.
@@ -541,15 +542,30 @@ describe("Mixed", () => {
           expect(objects.length).equals(expectedFilteredCount + 2);
 
           let index = 0;
-          for (const expectedItem of mixedList) {
-            const filtered = objects.filtered(`value[${index++}] == $0`, expectedItem);
+          for (const itemToMatch of mixedList) {
+            // Objects with a list item that matches the `itemToMatch` at the GIVEN index.
+            let filtered = objects.filtered(`value[${index}] == $0`, itemToMatch);
             expect(filtered.length).equals(expectedFilteredCount);
+
+            filtered = objects.filtered(`value[${index}] == $0`, nonExistentValue);
+            expect(filtered.length).equals(0);
+
+            // Objects with a list item that matches the `itemToMatch` at ANY index.
+            filtered = objects.filtered(`value[*] == $0`, itemToMatch);
+            expect(filtered.length).equals(expectedFilteredCount);
+
+            filtered = objects.filtered(`value[*] == $0`, nonExistentValue);
+            expect(filtered.length).equals(0);
+
+            index++;
           }
         });
 
         it("filters dictionary with different types by query path", function (this: RealmContext) {
           const expectedFilteredCount = 5;
           const mixedDictionary = { ...flatDictionaryAllTypes };
+          const nonExistentValue = "nonExistentValue";
+          const nonExistentKey = "nonExistentKey";
 
           this.realm.write(() => {
             // Create 2 objects that should not pass the query string filter.
@@ -564,16 +580,34 @@ describe("Mixed", () => {
           const objects = this.realm.objects(MixedSchema.name);
           expect(objects.length).equals(expectedFilteredCount + 2);
 
-          for (const expectedKey in mixedDictionary) {
-            const expectedItem = mixedDictionary[expectedKey];
+          for (const key in mixedDictionary) {
+            const valueToMatch = mixedDictionary[key];
 
-            // Use bracket notation.
-            let filtered = objects.filtered(`value['${expectedKey}'] == $0`, expectedItem);
+            // Objects with a dictionary value that matches the `valueToMatch` at the GIVEN key.
+            let filtered = objects.filtered(`value['${key}'] == $0`, valueToMatch);
             expect(filtered.length).equals(expectedFilteredCount);
 
-            // Use dot notation.
-            filtered = objects.filtered(`value.${expectedKey} == $0`, expectedItem);
+            filtered = objects.filtered(`value['${key}'] == $0`, nonExistentValue);
+            expect(filtered.length).equals(0);
+
+            filtered = objects.filtered(`value['${nonExistentKey}'] == $0`, valueToMatch);
+            expect(filtered.length).equals(0);
+
+            filtered = objects.filtered(`value.${key} == $0`, valueToMatch);
             expect(filtered.length).equals(expectedFilteredCount);
+
+            filtered = objects.filtered(`value.${key} == $0`, nonExistentValue);
+            expect(filtered.length).equals(0);
+
+            filtered = objects.filtered(`value.${nonExistentKey} == $0`, valueToMatch);
+            expect(filtered.length).equals(0);
+
+            // Objects with a dictionary value that matches the `valueToMatch` at ANY key.
+            filtered = objects.filtered(`value[*] == $0`, valueToMatch);
+            expect(filtered.length).equals(expectedFilteredCount);
+
+            filtered = objects.filtered(`value[*] == $0`, nonExistentValue);
+            expect(filtered.length).equals(0);
           }
         });
       });
