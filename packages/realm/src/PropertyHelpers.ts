@@ -361,7 +361,7 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
           const internal = binding.Dictionary.make(realm.internal, obj, columnKey);
           internal.removeAll();
           for (const key in value) {
-            internal.insertAny(key, toBinding((value as Record<string, unknown>)[key]));
+            internal.insertAny(key, toBinding(value[key]));
           }
         } else if (value instanceof RealmSet || value instanceof Set) {
           throw new Error(`Using a ${value.constructor.name} as a Mixed value is not supported.`);
