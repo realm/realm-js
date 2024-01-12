@@ -32,9 +32,6 @@ jobs:
         cache: 'npm'
         cache-dependency-path: '**/package-lock.json'
 
-    - name: Setup NPM version
-      run: npm install -g npm@8
-
     - name: Get NPM cache directory
       id: npm-cache-dir
       shell: bash
