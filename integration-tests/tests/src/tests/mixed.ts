@@ -709,10 +709,11 @@ describe("Mixed", () => {
           return (_: Realm.OrderedCollection<any>, changes: Realm.CollectionChangeSet) => {
             runCount++;
 
-            expect(changes.insertions).deep.equals(changesOnRun[runCount - 1].insertions);
-            expect(changes.oldModifications).deep.equals(changesOnRun[runCount - 1].oldModifications);
-            expect(changes.newModifications).deep.equals(changesOnRun[runCount - 1].newModifications);
-            expect(changes.deletions).deep.equals(changesOnRun[runCount - 1].deletions);
+            const expectedChanges = changesOnRun[runCount - 1];
+            expect(changes.insertions).deep.equals(expectedChanges.insertions);
+            expect(changes.oldModifications).deep.equals(expectedChanges.oldModifications);
+            expect(changes.newModifications).deep.equals(expectedChanges.newModifications);
+            expect(changes.deletions).deep.equals(expectedChanges.deletions);
 
             if (runCount >= changesOnRun.length) {
               // Once runCount reaches given array, run the onEnd callback. If onEnd is Mocha.done then
@@ -737,9 +738,10 @@ describe("Mixed", () => {
           return (_: Realm.Dictionary<any>, changes: Realm.DictionaryChangeSet) => {
             runCount++;
 
-            expect(changes.insertions).members(changesOnRun[runCount - 1].insertions);
-            expect(changes.modifications).members(changesOnRun[runCount - 1].modifications);
-            expect(changes.deletions).members(changesOnRun[runCount - 1].deletions);
+            const expectedChanges = changesOnRun[runCount - 1];
+            expect(changes.insertions).members(expectedChanges.insertions);
+            expect(changes.modifications).members(expectedChanges.modifications);
+            expect(changes.deletions).members(expectedChanges.deletions);
 
             if (runCount >= changesOnRun.length) {
               // Once runCount reaches given array, run the onEnd callback. If onEnd is Mocha.done then
@@ -764,8 +766,9 @@ describe("Mixed", () => {
           return (_: Realm.Object<T>, changes: Realm.ObjectChangeSet<T>) => {
             runCount++;
 
-            expect(changes.deleted).equals(changesOnRun[runCount - 1].deleted);
-            expect(changes.changedProperties).members(changesOnRun[runCount - 1].changedProperties);
+            const expectedChanges = changesOnRun[runCount - 1];
+            expect(changes.deleted).equals(expectedChanges.deleted);
+            expect(changes.changedProperties).members(expectedChanges.changedProperties);
 
             if (runCount >= changesOnRun.length) {
               // Once runCount reaches given array, run the onEnd callback. If onEnd is Mocha.done then
