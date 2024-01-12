@@ -21,8 +21,7 @@
       "command": "eslint --ext .js,.ts . && tsc --noEmit",
       "dependencies": [
         "../../packages/realm-network-transport:bundle",
-				"../../packages/realm:bundle",
-				"build-dependencies"
+				"../../packages/realm:bundle"
       ]
     },
 		"build": {
