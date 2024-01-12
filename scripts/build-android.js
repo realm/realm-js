@@ -25,7 +25,7 @@ const { version } = require("realm/package.json");
 
 const packageRoot = path.resolve(__dirname, "..");
 
-const NDK_VERSION = "23.1.7779620";
+const NDK_VERSION = "25.1.8937393";
 
 const { ANDROID_SDK_ROOT } = process.env;
 if (!fs.existsSync(ANDROID_SDK_ROOT)) {

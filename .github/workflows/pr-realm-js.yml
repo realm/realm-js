@@ -54,7 +54,7 @@ jobs:
     runs-on: ${{ matrix.variant.runner }}
     env:
       REALM_DISABLE_ANALYTICS: 1
-      NDK_VERSION: 23.1.7779620
+      NDK_VERSION: 25.1.8937393
     strategy:
       fail-fast: false
       matrix:
