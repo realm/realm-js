@@ -565,7 +565,7 @@ describe("Mixed", () => {
       });
 
       describe("Filtering", () => {
-        it("filters list with different types by query path", function (this: RealmContext) {
+        it("filters by query path on list with different types", function (this: RealmContext) {
           const expectedFilteredCount = 5;
           const mixedList = [...flatListAllTypes];
           const nonExistentValue = "nonExistentValue";
@@ -603,7 +603,7 @@ describe("Mixed", () => {
           }
         });
 
-        it("filters dictionary with different types by query path", function (this: RealmContext) {
+        it("filters by query path on dictionary with different types", function (this: RealmContext) {
           const expectedFilteredCount = 5;
           const mixedDictionary = { ...flatDictionaryAllTypes };
           const nonExistentValue = "nonExistentValue";
@@ -621,6 +621,8 @@ describe("Mixed", () => {
           });
           const objects = this.realm.objects(MixedSchema.name);
           expect(objects.length).equals(expectedFilteredCount + 2);
+
+          const insertedValues = Object.values(mixedDictionary);
 
           for (const key in mixedDictionary) {
             const valueToMatch = mixedDictionary[key];
@@ -658,6 +660,13 @@ describe("Mixed", () => {
 
             // filtered = objects.filtered(`value.@keys == $0`, nonExistentKey);
             // expect(filtered.length).equals(0);
+
+            // Objects with a dictionary with the key `key` matching any of the values inserted.
+            filtered = objects.filtered(`value.${key} IN $0`, insertedValues);
+            expect(filtered.length).equals(expectedFilteredCount);
+
+            filtered = objects.filtered(`value.${key} IN $0`, [nonExistentValue]);
+            expect(filtered.length).equals(0);
           }
         });
       });
