@@ -654,7 +654,7 @@ describe("Mixed", () => {
             expect(filtered.length).equals(0);
 
             // Objects with a dictionary containing a key that matches `key`.
-            // TODO: Enable once Core fixes bug.
+            // TODO: Enable once Core fixes bug: https://github.com/realm/realm-core/issues/7255
             // filtered = objects.filtered(`value.@keys == $0`, key);
             // expect(filtered.length).equals(expectedFilteredCount);
 
