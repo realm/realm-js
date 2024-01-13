@@ -19,9 +19,6 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
           cache-dependency-path: '**/package-lock.json'
 
-      - name: Setup NPM version
-        run: npm install -g npm@8
-
       - name: Publish templates
         run: templates/scripts/publish_templates.sh
         env:

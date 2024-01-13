@@ -292,10 +292,9 @@ function visitRealmClassProperty(path: NodePath<types.ClassProperty>) {
 
   const indexDecoratorCall = findDecoratorCall(decoratorsPath, "index");
   const indexCall =
-    indexDecoratorCall
-      && types.isStringLiteral(indexDecoratorCall.callExpression.arguments[0])
-        ? indexDecoratorCall.callExpression.arguments[0].value
-        : undefined;
+    indexDecoratorCall && types.isStringLiteral(indexDecoratorCall.callExpression.arguments[0])
+      ? indexDecoratorCall.callExpression.arguments[0].value
+      : undefined;
 
   const mapToDecorator = findDecoratorCall(decoratorsPath, "mapTo");
   const mapTo =
@@ -345,7 +344,7 @@ function visitRealmClassProperty(path: NodePath<types.ClassProperty>) {
       }
 
       if (indexCall) {
-        properties.push(types.objectProperty(types.identifier("indexed"), types.stringLiteral(indexCall)))
+        properties.push(types.objectProperty(types.identifier("indexed"), types.stringLiteral(indexCall)));
       }
 
       if (mapTo) {
@@ -379,7 +378,11 @@ function visitRealmClassStatic(path: NodePath<types.ClassProperty>) {
 
 function visitRealmClass(path: NodePath<types.ClassDeclaration>) {
   path.addComment("leading", " Modified by @realm/babel-plugin", true);
-  const className = path.node.id.name;
+  const classIdentifier = path.node.id;
+  if (!classIdentifier) {
+    throw new Error("Classes extending Realm.Object are expected to have a name");
+  }
+  const className = classIdentifier.name;
   // Transform properties to a static schema object
   const classProperties = path
     .get("body")

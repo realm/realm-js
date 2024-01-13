@@ -130,7 +130,7 @@ function ensureSimulator() {
   }
 }
 
-async function run(spawnLogcat, retries, retryDelay) {
+async function run(spawnLogcat) {
   // Ensure the simulator is booted and ready for the app to start
   ensureSimulator();
 
@@ -178,7 +178,7 @@ if (module.parent === null) {
   }
 
   const spawnLogcat = optionalStringToBoolean(SPAWN_LOGCAT);
-  run(spawnLogcat, retries, retryDelay).catch((err) => {
+  run(spawnLogcat).catch((err) => {
     console.error(err.stack);
     process.exit(1);
   });

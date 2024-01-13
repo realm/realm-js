@@ -308,10 +308,9 @@
     "mocha": "^10.1.0",
     "path-browserify": "^1.0.1",
     "prebuild": "^11.0.4",
-    "react-native": "0.72.6",
+    "react-native": "0.73.2",
     "rollup-plugin-dts": "^5.0.0",
     "rollup-plugin-istanbul": "^4.0.0",
-    "tsm": "^2.2.2",
     "typedoc-plugin-missing-exports": "^2.0.1"
   },
   "repository": {

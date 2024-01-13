@@ -17,9 +17,6 @@ jobs:
         cache: 'npm'
         cache-dependency-path: '**/package-lock.json'
 
-    - name: Setup NPM version
-      run: npm install -g npm@8
-
     - name: Update templates from example application
       run: templates/scripts/sync_rn_ts_to_all_templates.sh
 
