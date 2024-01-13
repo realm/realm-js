@@ -48,7 +48,7 @@
     "@types/body-parser": "^1.19.2",
     "@types/fs-extra": "^9.0.13",
     "@types/glob": "^8.0.0",
-    "@types/node": "^18.15.10",
+    "@types/node": "^20.10.5",
     "@types/node-fetch": "^2.6.2",
     "@types/yargs": "^17.0.13",
     "rollup": "^3.2.5",
