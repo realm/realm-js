@@ -11,6 +11,8 @@ on:
       - "packages/realm-app-importer/**"
       # Changing types might also affect Realm Web
       - "types/**"
+      # Or the workflow itself
+      - ".github/workflows/pr-realm-web.yml"
       # No need to run when updating documentation
       - "!**.md"
 
