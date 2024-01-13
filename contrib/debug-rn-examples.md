@@ -68,23 +68,16 @@ lines 2 and 4 should be updated
 +includeBuild('../../../../node_modules/@react-native/gradle-plugin')
 ```
 
-### 3. Apply our custom `metro` config
-We have a custom `metro` configuration which will help find any linked dependencies in the mono-repo.  First add it to the `devDependencies` in the example's `package.json`:
+### 3. Add workspace root as `watchFolders` in Metro configuration
 
-```json
-devDependencies: {
-	...
-	"@realm/metro-config": "*",
-	...
-}
-```
-
-Then replace the `metro.config.js` with the following:
+Then add the path of the workspace root the `watchFolders` in the `metro.config.js`:
 
 ```js
-module.exports = require("@realm/metro-config")({
-  projectRoot: __dirname,
-});
+const path = require("node:path");
+const workspaceRootPath = path.resolve(__dirname, "../../..");
+const config = {
+	watchFolders: [workspaceRootPath]
+};
 ```
 
 

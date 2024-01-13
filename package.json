@@ -63,7 +63,6 @@
     "packages/realm-app-importer",
     "packages/realm-react",
     "packages/realm-tools",
-    "packages/metro-config",
     "packages/mocha-reporter",
     "packages/realm-web-integration-tests",
     "integration-tests/tests",
