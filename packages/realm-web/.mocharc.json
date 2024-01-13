@@ -1,0 +1,5 @@
+{
+  "import": "tsx",
+  "file": "src/tests/setup.ts",
+  "spec": "src/tests/**/*.test.ts"
+}

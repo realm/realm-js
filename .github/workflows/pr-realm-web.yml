@@ -48,7 +48,7 @@ jobs:
           username: realm-ci
           password: ${{ secrets.REALM_CI_GITHUB_API_KEY }}
       - name: Run integration tests
-        run: npm run test:github --workspace realm-web
+        run: npm run test:github --workspace realm-web-integration-tests
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.BAAS_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.BAAS_AWS_SECRET_ACCESS_KEY }}

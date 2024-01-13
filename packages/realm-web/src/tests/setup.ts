@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2020 Realm Inc.
+// Copyright 2024 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,16 +15,8 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-
-/* eslint-env node */
-/* eslint-disable @typescript-eslint/no-var-requires  */
-
-const path = require("path");
-
-const tsConfigPath = path.resolve(__dirname, "../src/tests/tsconfig.json");
-process.env.TS_NODE_PROJECT = tsConfigPath;
-console.log(`Loading TypeScript configuration from ${tsConfigPath}`);
+import "../node/index";
 
 // We can disable no-restricted-globals, since we know this will run on node.js
-// eslint-disable-next-line no-restricted-globals
-global.__SDK_VERSION__ = "0.0.0-test";
+/* eslint-disable-next-line no-restricted-globals */
+Object.assign(globalThis, { __SDK_VERSION__: "0.0.0-test" });

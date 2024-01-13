@@ -15,7 +15,7 @@
     "bundle": "wireit",
     "start": "npm run build -- --watch",
     "lint": "eslint --ext .js,.ts .",
-    "test": "mocha 'src/tests/**/*.test.ts'",
+    "test": "mocha",
     "postversion": "ts-node --project scripts/tsconfig.json scripts/postversion.ts",
     "docs": "wireit"
   },
@@ -89,8 +89,8 @@
     "js-base64": "^3.7.2"
   },
   "optionalDependencies": {
-    "abort-controller": "^3.0.0",
-    "node-fetch": "^2.6.0"
+    "abort-controller": "^3",
+    "node-fetch": "^3"
   },
   "devDependencies": {
     "@types/chai": "^4.2.9",
@@ -102,7 +102,7 @@
     "chai": "4.3.6",
     "fs-extra": "^10.0.0",
     "mocha": "^5.2.0",
-    "node-fetch": "^2.6.9",
+    "node-fetch": "^3.3.2",
     "@realm/network-transport": "^0.7.2"
   }
 }
