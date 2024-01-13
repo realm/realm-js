@@ -171,7 +171,6 @@
     }
   },
   "dependencies": {
-    "@react-native-community/art": "^1.2.0",
     "@realm/app-importer": "*",
     "@realm/integration-tests": "*",
     "mocha-junit-reporter": "^2.0.0",
@@ -181,7 +180,8 @@
     "react-native": "0.73.2",
     "react-native-fs": "^2.20.0",
     "react-native-polyfill-globals": "^3.1.0",
-    "react-native-progress": "^4.1.2",
+    "react-native-progress": "^5.0.1",
+    "react-native-svg": "^14.1.0",
     "realm": "*",
     "text-encoding": "^0.7.0"
   },
