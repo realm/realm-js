@@ -16,5 +16,5 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 module.exports = {
-  extends: ["@react-native-community", "../../../.eslintrc"],
+  extends: ["@react-native", "../../../.eslintrc"],
 };

@@ -16,7 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-/** @format */
 import { polyfill as polyfillReadableStream } from "react-native-polyfill-globals/src/readable-stream";
 polyfillReadableStream();
 
