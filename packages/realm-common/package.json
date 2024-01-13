@@ -57,7 +57,7 @@
   "license": "Apache-2.0",
   "dependencies": {},
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^14.0.0",
+    "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-node-resolve": "^7.1.3",
     "@rollup/plugin-typescript": "^4.1.1",
     "@types/chai": "^4.2.10",
