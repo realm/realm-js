@@ -35,10 +35,13 @@ export default [
       {
         file: pkg.main,
         format: "cjs",
+        interop: "auto",
+        sourcemap: true,
       },
       {
         file: pkg.module,
         format: "es",
+        sourcemap: true,
       },
     ],
     plugins: [
@@ -57,10 +60,13 @@ export default [
       {
         file: pkg.browser[pkg.main],
         format: "cjs",
+        interop: "auto",
+        sourcemap: true,
       },
       {
         file: pkg.browser[pkg.module],
         format: "es",
+        sourcemap: true,
       },
     ],
     plugins: [
