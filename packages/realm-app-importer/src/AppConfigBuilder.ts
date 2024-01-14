@@ -45,7 +45,7 @@ export type ServiceConfig = {
     | (FlexibleSyncConfig & WithAtlas)
     | WithAtlas;
 
-  secret_config: Record<string, unknown>;
+  secret_config?: Record<string, unknown>;
   version?: number;
 };
 
@@ -55,7 +55,7 @@ export type WithAtlas = {
   wireProtocolEnabled: boolean;
 };
 
-export type ServiceRule = {
+export type MongoDBServiceRule = {
   roles: Array<{
     name: string;
     apply_when: unknown; // {}
@@ -69,6 +69,13 @@ export type ServiceRule = {
     delete: boolean;
   }>;
 };
+
+export type HTTPServiceRule = {
+  name: string;
+  actions: string[];
+};
+
+export type ServiceRule = HTTPServiceRule | MongoDBServiceRule;
 
 export type AuthProviderConfig = {
   name: string;
