@@ -21,7 +21,7 @@
 import puppeteer from "puppeteer";
 import WebpackDevServer from "webpack-dev-server";
 import webpack from "webpack";
-import MochaRemote from "mocha-remote";
+import { Server as MochaRemoteServer } from "mocha-remote-server";
 
 import { importRealmApp } from "./import-realm-app";
 
@@ -115,7 +115,7 @@ export async function run(devtools = false) {
   });
 
   // Start the mocha remote server
-  const mochaServer = new MochaRemote.Server({
+  const mochaServer = new MochaRemoteServer({
     autoRun: devtools,
   });
 
