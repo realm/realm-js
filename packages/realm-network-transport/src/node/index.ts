@@ -20,9 +20,11 @@ export * from "../index";
 
 import { DefaultNetworkTransport } from "../DefaultNetworkTransport";
 import { Fetch, AbortController } from "../types";
+import { makeRequestBodyIterable } from "../IterableReadableStream";
 
 import fetch from "node-fetch";
 import NodeAbortController from "abort-controller";
 
 DefaultNetworkTransport.fetch = fetch as Fetch;
 DefaultNetworkTransport.AbortController = NodeAbortController as AbortController;
+DefaultNetworkTransport.transformResponse = makeRequestBodyIterable;

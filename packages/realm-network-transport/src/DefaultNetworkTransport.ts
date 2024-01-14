@@ -16,7 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { makeRequestBodyIterable } from "./IterableReadableStream";
 import { deriveStatusText } from "./status-text";
 import type {
   NetworkTransport,
@@ -31,6 +30,8 @@ import type {
 export class DefaultNetworkTransport implements NetworkTransport {
   public static fetch: Fetch;
   public static AbortController: AbortController;
+  // A hook to transform responses before being returned from fetch
+  public static transformResponse: (response: FetchResponse) => FetchResponse = (response) => response;
   public static extraFetchOptions: Record<string, unknown> | undefined;
 
   public static DEFAULT_HEADERS = {
@@ -107,7 +108,7 @@ export class DefaultNetworkTransport implements NetworkTransport {
         response.statusText = statusText;
       }
       // Wraps the body of the request in an iterable interface
-      return makeRequestBodyIterable(response);
+      return DefaultNetworkTransport.transformResponse(response);
     } finally {
       // Whatever happens, cancel any timeout
       cancelTimeout();
