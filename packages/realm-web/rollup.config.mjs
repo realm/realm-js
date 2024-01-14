@@ -22,7 +22,7 @@ import nodeResolve from "@rollup/plugin-node-resolve";
 import replace from "@rollup/plugin-replace";
 import dts from "rollup-plugin-dts";
 
-import pkg from "./package.json";
+import pkg from "./package.json" assert { type: "json" };
 
 const replacer = replace({
   __SDK_VERSION__: JSON.stringify(pkg.version),
