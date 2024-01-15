@@ -34,8 +34,8 @@ jobs:
         with:
           node-version: 20
           registry-url: https://registry.npmjs.org/
-      # Install the root package (--ignore-scripts to avoid downloading or building the native module)
-      - run: npm ci --ignore-scripts
+      # Install the root package
+      - run: npm ci
       # Build and test the package
       - run: npm run bundle --workspace realm-web
       - name: Run unit tests
