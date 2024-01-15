@@ -30,6 +30,7 @@ import path = require("path");
 
 // Default to testing only the credentials that does not require manual interactions.
 const testCredentials = process.env.TEST_CREDENTIALS || "anonymous,email-password,function,jwt";
+const realmWebPath = path.dirname(require.resolve("realm-web/package.json"));
 
 const { BASE_URL = "http://localhost:8080" } = process.env;
 
@@ -95,7 +96,7 @@ export async function run(devtools = false) {
     proxy: { "/api": baseUrl },
     historyApiFallback: true,
     static: {
-      directory: path.join(__dirname, "../node_modules/realm-web"),
+      directory: realmWebPath,
       publicPath: "/realm-web",
     },
   });
