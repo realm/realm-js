@@ -19,9 +19,7 @@
 export type AppConfig = {
   name: string;
   sync?: SyncConfig;
-  security?: {
-    allowed_request_origins?: string[];
-  };
+  security?: SecurityConfig;
   // Additional config below
   secrets: Record<string, string>;
   values: Record<string, string>;
@@ -32,6 +30,10 @@ export type AppConfig = {
 
 export type SyncConfig = {
   development_mode_enabled: boolean;
+};
+
+export type SecurityConfig = {
+  allowed_request_origins?: string[];
 };
 
 export type ServiceConfig = {
@@ -216,6 +218,11 @@ export class AppConfigBuilder {
 
   function(config: FunctionConfig) {
     this.config.functions.push(config);
+    return this;
+  }
+
+  security(config: SecurityConfig) {
+    this.config.security = config;
     return this;
   }
 }

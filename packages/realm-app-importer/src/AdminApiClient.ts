@@ -343,7 +343,7 @@ export class AdminApiClient {
   public async applyAllowedRequestOrigins(appId: string, origins: string[]) {
     await this.fetch({
       route: ["groups", await this.groupId, "apps", appId, "security", "allowed_request_origins"],
-      method: "PUT",
+      method: "POST",
       body: origins,
     });
   }

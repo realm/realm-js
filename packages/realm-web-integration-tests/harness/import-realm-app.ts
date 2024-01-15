@@ -40,6 +40,7 @@ export async function importRealmApp() {
       },
     });
     const builder = new AppConfigBuilder("my-test-app")
+      .security({ allowed_request_origins: ["http://localhost:8080"] })
       .secret("jwt-secret", "2k66QfKeTRk3MdZ5vpDYgZCu2k66QfKeTRk3MdZ5vpDYgZCu")
       .secret("local-mongodb-uri", "mongodb://localhost:26000")
       .function({
@@ -199,7 +200,6 @@ export async function importRealmApp() {
           },
         ],
       );
-    // builder.config.security = { allowed_request_origins: ["http://localhost:8080"] };
     const { appId } = await importer.importApp(builder.config);
     return { appId, baseUrl };
   }
