@@ -18,25 +18,26 @@
 
 import { AppImporter, AppConfigBuilder } from "@realm/app-importer";
 
-const MDB_REALM_BASE_URL = process.env.MDB_REALM_BASE_URL || "http://localhost:9090";
-const MDB_REALM_USERNAME = process.env.MDB_REALM_USERNAME || "unique_user@domain.com";
-const MDB_REALM_PASSWORD = process.env.MDB_REALM_PASSWORD || "password";
-
-const MDB_REALM_APP_ID = process.env.MDB_REALM_APP_ID;
+const {
+  BAAS_BASE_URL = "http://localhost:9090",
+  BAAS_USERNAME = "unique_user@domain.com",
+  BAAS_PASSWORD = "password",
+  BAAS_APP_ID,
+} = process.env;
 
 export async function importRealmApp() {
   // Create a new MongoDBRealmService
-  const baseUrl = MDB_REALM_BASE_URL;
-  if (MDB_REALM_APP_ID) {
-    console.log(`Skipping import of the app (MDB_REALM_APP_ID = ${MDB_REALM_APP_ID})`);
-    return { appId: MDB_REALM_APP_ID, baseUrl };
+  const baseUrl = BAAS_BASE_URL;
+  if (BAAS_APP_ID) {
+    console.log(`Skipping import of the app (BAAS_APP_ID = ${BAAS_APP_ID})`);
+    return { appId: BAAS_APP_ID, baseUrl };
   } else {
     const importer = new AppImporter({
       baseUrl,
       credentials: {
         kind: "username-password",
-        username: MDB_REALM_USERNAME,
-        password: MDB_REALM_PASSWORD,
+        username: BAAS_USERNAME,
+        password: BAAS_PASSWORD,
       },
     });
     const builder = new AppConfigBuilder("my-test-app")

@@ -65,28 +65,16 @@ Make sure to toggle on "OpenID Connect".
 Start the integration tests dev server with dev tools enabled (to keep the browser opened) and provide both the app id and your Google client id:
 
 ```
-GOOGLE_CLIENT_ID=414565162824-bqn7utq2u2hue0qum7eu7lfpmmq8p4qg.apps.googleusercontent.com MDB_REALM_APP_ID=my-test-app-fwoue DEV_TOOLS=1 npm test
+GOOGLE_CLIENT_ID=414565162824-bqn7utq2u2hue0qum7eu7lfpmmq8p4qg.apps.googleusercontent.com BAAS_APP_ID=my-test-app-fwoue DEV_TOOLS=1 npm test
 ```
 
 After the tests have run, navigate the browser window to http://localhost:8080/google-login, click the button to "Sign in with Google" and complete the authentication flow.
 
 ## Additional environment variables
 
-To skip importing the app or use a different server, specify one or more of the following environment variables:
+To use a different server / credentials, specify one or more of the following environment variables:
 
-- `MDB_REALM_APP_ID`
-- `MDB_REALM_BASE_URL`
-- `MDB_REALM_USERNAME`
-- `MDB_REALM_PASSWORD`
-
-If you want to communicate with the server using the credentials created by the test harness, you can run the test with the following environment variable:
-
-```
-MDB_REALM_SKIP_CLEANUP=true
-```
-
-This will skip the clean-up, leaving the app derived from the `./my-test-app-template` and the `./realm-config` file containing access and refresh tokens.
-
-```
-npx realm-cli export --base-url http://localhost:9090 --config-path ./realm-config --app-id my-test-app-kuxuo
-```
+- `BAAS_APP_ID`
+- `BAAS_BASE_URL`
+- `BAAS_USERNAME`
+- `BAAS_PASSWORD`
