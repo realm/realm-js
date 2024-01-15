@@ -66,6 +66,11 @@ interface IMixedAndEmbedded {
   embeddedObject: { value: Realm.Mixed };
 }
 
+interface IMixedWithDefaultCollections {
+  mixedWithDefaultList: Realm.Mixed;
+  mixedWithDefaultDictionary: Realm.Mixed;
+}
+
 interface ICollectionsOfMixed {
   list: Realm.List<Realm.Mixed>;
   dictionary: Realm.Dictionary<Realm.Mixed>;
@@ -137,6 +142,43 @@ const CollectionsOfMixedSchema: Realm.ObjectSchema = {
     list: "mixed[]",
     dictionary: "mixed{}",
     set: "mixed<>",
+  },
+};
+
+const bool = true;
+const int = 123;
+const double = 123.456;
+const d128 = BSON.Decimal128.fromString("6.022e23");
+const string = "hello";
+const date = new Date();
+const oid = new BSON.ObjectId();
+const uuid = new BSON.UUID();
+const nullValue = null;
+const uint8Values = [0, 1, 2, 4, 8];
+const uint8Buffer = new Uint8Array(uint8Values).buffer;
+const unmanagedRealmObject: IMixedSchema = { value: 1 };
+
+// The `unmanagedRealmObject` is not added to these collections since a managed
+// Realm object will be added by the individual tests after one has been created.
+const flatListAllTypes: unknown[] = [bool, int, double, d128, string, date, oid, uuid, nullValue, uint8Buffer];
+const flatDictionaryAllTypes: Record<string, unknown> = {
+  bool,
+  int,
+  double,
+  d128,
+  string,
+  date,
+  oid,
+  uuid,
+  nullValue,
+  uint8Buffer,
+};
+
+const MixedWithDefaultCollectionsSchema: Realm.ObjectSchema = {
+  name: "MixedWithDefaultCollections",
+  properties: {
+    mixedWithDefaultList: { type: "mixed", default: [...flatListAllTypes] },
+    mixedWithDefaultDictionary: { type: "mixed", default: { ...flatDictionaryAllTypes } },
   },
 };
 
@@ -306,37 +348,15 @@ describe("Mixed", () => {
 
   describe("Collection types", () => {
     openRealmBeforeEach({
-      schema: [MixedSchema, MixedAndEmbeddedSchema, CollectionsOfMixedSchema, EmbeddedObjectSchema, TestObject],
+      schema: [
+        MixedSchema,
+        MixedAndEmbeddedSchema,
+        MixedWithDefaultCollectionsSchema,
+        CollectionsOfMixedSchema,
+        EmbeddedObjectSchema,
+        TestObject,
+      ],
     });
-
-    const bool = true;
-    const int = 123;
-    const double = 123.456;
-    const d128 = BSON.Decimal128.fromString("6.022e23");
-    const string = "hello";
-    const date = new Date();
-    const oid = new BSON.ObjectId();
-    const uuid = new BSON.UUID();
-    const nullValue = null;
-    const uint8Values = [0, 1, 2, 4, 8];
-    const uint8Buffer = new Uint8Array(uint8Values).buffer;
-    const unmanagedRealmObject: IMixedSchema = { value: 1 };
-
-    // The `unmanagedRealmObject` is not added to these collections since a managed
-    // Realm object will be added by the individual tests after one has been created.
-    const flatListAllTypes: unknown[] = [bool, int, double, d128, string, date, oid, uuid, nullValue, uint8Buffer];
-    const flatDictionaryAllTypes: Record<string, unknown> = {
-      bool,
-      int,
-      double,
-      d128,
-      string,
-      date,
-      oid,
-      uuid,
-      nullValue,
-      uint8Buffer,
-    };
 
     function expectMatchingFlatList(value: unknown) {
       expect(value).instanceOf(Realm.List);
@@ -382,7 +402,7 @@ describe("Mixed", () => {
 
     describe("Flat collections", () => {
       describe("CRUD operations", () => {
-        it("can create and access a JS Array with different types", function (this: RealmContext) {
+        it("can create and access a list with different types (input: JS Array)", function (this: RealmContext) {
           const created = this.realm.write(() => {
             const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
             return this.realm.create<IMixedSchema>(MixedSchema.name, {
@@ -394,7 +414,7 @@ describe("Mixed", () => {
           expectMatchingFlatList(created.value);
         });
 
-        it("can create and access a Realm List with different types", function (this: RealmContext) {
+        it("can create and access a list with different types (input: Realm List)", function (this: RealmContext) {
           const created = this.realm.write(() => {
             const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
             // Create an object with a Realm List property type (i.e. not a Mixed type).
@@ -410,7 +430,17 @@ describe("Mixed", () => {
           expectMatchingFlatList(created.value);
         });
 
-        it("can create and access a JS Object with different types", function (this: RealmContext) {
+        it("can create and access a list with different types (input: Default value)", function (this: RealmContext) {
+          const created = this.realm.write(() => {
+            // Pass an empty object in order to use the default value from the schema.
+            return this.realm.create<IMixedWithDefaultCollections>(MixedWithDefaultCollectionsSchema.name, {});
+          });
+
+          expect(this.realm.objects(MixedWithDefaultCollectionsSchema.name).length).equals(1);
+          expectMatchingFlatList(created.mixedWithDefaultList);
+        });
+
+        it("can create and access a dictionary with different types (input: JS Object)", function (this: RealmContext) {
           const { createdWithProto, createdWithoutProto } = this.realm.write(() => {
             const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
             const createdWithProto = this.realm.create<IMixedSchema>(MixedSchema.name, {
@@ -430,7 +460,7 @@ describe("Mixed", () => {
           expectMatchingFlatDictionary(createdWithoutProto.value);
         });
 
-        it("can create and access a Realm Dictionary with different types", function (this: RealmContext) {
+        it("can create and access a dictionary with different types (input: Realm Dictionary)", function (this: RealmContext) {
           const created = this.realm.write(() => {
             const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
             // Create an object with a Realm Dictionary property type (i.e. not a Mixed type).
@@ -444,6 +474,16 @@ describe("Mixed", () => {
 
           expect(this.realm.objects(MixedSchema.name).length).equals(2);
           expectMatchingFlatDictionary(created.value);
+        });
+
+        it("can create and access a dictionary with different types (input: Default value)", function (this: RealmContext) {
+          const created = this.realm.write(() => {
+            // Pass an empty object in order to use the default value from the schema.
+            return this.realm.create<IMixedWithDefaultCollections>(MixedWithDefaultCollectionsSchema.name, {});
+          });
+
+          expect(this.realm.objects(MixedWithDefaultCollectionsSchema.name).length).equals(1);
+          expectMatchingFlatDictionary(created.mixedWithDefaultDictionary);
         });
 
         it("inserts list items via `push()`", function (this: RealmContext) {
