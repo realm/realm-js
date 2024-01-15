@@ -60,7 +60,7 @@
     "@types/lodash-es": "^4.17.6",
     "@types/react": "^18.2.6",
     "babel-jest": "^29.6.3",
-    "babel-plugin-module-resolver": "^4.1.0",
+    "babel-plugin-module-resolver": "^5.0.0",
     "fb-watchman": "^2.0.1",
     "jest": "^29.6.3",
     "prettier": "2.8.8",
