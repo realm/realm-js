@@ -1141,6 +1141,20 @@ describe("Mixed", () => {
         expect(Object.keys(objects[2].mixedValue as Realm.Dictionary<any>).length).equals(0);
       });
 
+      it("throws when setting a list or dictionary outside a transaction", function (this: RealmContext) {
+        const created = this.realm.write(() => {
+          return this.realm.create<IMixedSchema>(MixedSchema.name, { value: "original" });
+        });
+        expect(created.value).equals("original");
+        expect(() => (created.value = ["a list item"])).to.throw(
+          "Cannot modify managed objects outside of a write transaction",
+        );
+        expect(() => (created.value = { key: "a dictionary value" })).to.throw(
+          "Cannot modify managed objects outside of a write transaction",
+        );
+        expect(created.value).equals("original");
+      });
+
       it("invalidates the list when removed", function (this: RealmContext) {
         const created = this.realm.write(() => {
           return this.realm.create<IMixedSchema>(MixedSchema.name, { value: [1] });
