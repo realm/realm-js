@@ -29,6 +29,8 @@ import istanbul from "rollup-plugin-istanbul";
 import pkg from "./package.json" assert { type: "json" };
 
 const mainExport = pkg.exports["."];
+// Default is '{,**/}*.(cts|mts|ts|tsx)', we add js, mjs and json to include "realm/binding" in the binding
+const typescriptInclude = "{,**/}*.(cts|mts|ts|tsx|js|mjs|json)";
 
 const { ENABLE_TEST_COVERAGE_INSTRUMENTATION } = process.env;
 if (ENABLE_TEST_COVERAGE_INSTRUMENTATION) {
@@ -68,6 +70,7 @@ export default [
         tsconfig: "src/platform/node/tsconfig.json",
         noEmitOnError: true,
         outputToFilesystem: true,
+        include: typescriptInclude,
       }),
     ],
     external: ["bson", "debug", "node-fetch", "node:module", "node:fs", "node:path"],
@@ -92,6 +95,7 @@ export default [
         tsconfig: "src/platform/react-native/tsconfig.json",
         noEmitOnError: true,
         outputToFilesystem: true,
+        include: typescriptInclude,
       }),
     ],
     external: ["bson", "debug", "react-native"],
