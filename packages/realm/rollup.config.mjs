@@ -30,6 +30,7 @@ import pkg from "./package.json" assert { type: "json" };
 
 const mainExport = pkg.exports["."];
 // Default is '{,**/}*.(cts|mts|ts|tsx)', we add js, mjs and json to include "realm/binding" in the binding
+// This is actually a workaround for https://github.com/rollup/plugins/issues/1663
 const typescriptInclude = "{,**/}*.(cts|mts|ts|tsx|js|mjs|json)";
 
 const { ENABLE_TEST_COVERAGE_INSTRUMENTATION } = process.env;
