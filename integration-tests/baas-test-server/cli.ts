@@ -171,8 +171,8 @@ yargs(hideBin(process.argv))
         wrapCommand(async ({ id = gha.getState("CONTAINER_ID") }) => {
           await printUserInfo();
           if (id) {
-            if (id === "all" || id === "*") {
-              console.log(`Stopping all containers:`);
+            if (id === "all" || id === "mine" || id === "*") {
+              console.log(`Stopping all your containers:`);
               const containers = await baasaas.listContainers(true);
               for (const container of containers) {
                 console.log(`→ Stopping container '${abbreviateId(container.id)}'`);
