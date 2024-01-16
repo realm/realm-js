@@ -167,21 +167,20 @@ yargs(hideBin(process.argv))
       .command(
         ["stop [id]"],
         "Stop a container running on the BaaSaaS service",
-        (yargs) => yargs.positional("id", { type: "string", default: gha.getState("container-id") }),
-        wrapCommand(async (argv) => {
+        (yargs) => yargs.positional("id", { type: "string" }),
+        wrapCommand(async ({ id = gha.getState("container-id") }) => {
           await printUserInfo();
-          if (argv.id) {
-            if (argv.id === "all" || argv.id === "*") {
+          if (id) {
+            if (id === "all" || id === "*") {
               console.log(`Stopping all containers:`);
               const containers = await baasaas.listContainers(true);
               for (const container of containers) {
                 console.log(`→ Stopping container '${abbreviateId(container.id)}'`);
-                // TODO: Re-enable once listing "mine" works as expected
-                // await baasaas.stopContainer(container.id);
+                await baasaas.stopContainer(container.id);
               }
             } else {
-              console.log(`Stopping container '${abbreviateId(argv.id)}'`);
-              await baasaas.stopContainer(expandId(argv.id));
+              console.log(`Stopping container '${abbreviateId(id)}'`);
+              await baasaas.stopContainer(expandId(id));
             }
           } else {
             const containers = await baasaas.listContainers(true);
