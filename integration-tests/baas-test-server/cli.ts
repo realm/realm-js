@@ -5,8 +5,9 @@
 import dotenv from "dotenv";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
-import { DockerCommandArgv, dockerCommand } from "./docker";
+import { DockerCommandArgv, runDocker } from "./docker";
 import { wrapCommand } from "./helpers";
+import { runBaaSaaS } from "./baasaas";
 
 dotenv.config();
 
@@ -15,7 +16,13 @@ yargs(hideBin(process.argv))
     ["docker [tag]"],
     "Runs the BaaS test image using Docker",
     (yargs) => yargs.positional("tag", { type: "string" }).option("branch", { default: "master" }),
-    wrapCommand(dockerCommand),
+    wrapCommand(runDocker),
+  )
+  .command<DockerCommandArgv>(
+    ["baasaas"],
+    "Runs the BaaS test image using the BaaSaaS service",
+    (yargs) => yargs.option("branch", { default: "master" }),
+    wrapCommand(runBaaSaaS),
   )
   .demandCommand(1)
   .parse();

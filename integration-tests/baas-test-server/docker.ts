@@ -20,12 +20,12 @@ import cp, { execSync } from "node:child_process";
 import assert from "node:assert";
 import chalk from "chalk";
 import { ExecError, UsageError } from "./helpers";
-
-const IMAGES_ENDPOINT = "https://us-east-1.aws.data.mongodb-api.com/app/baas-container-service-autzb/endpoint/images";
-const ECR_HOSTNAME = "969505754201.dkr.ecr.us-east-1.amazonaws.com";
+import { listImages } from "./baasaas";
 
 const BAAS_CONTAINER_NAME = "baas-test-server";
 const BAAS_PORT = 9090;
+const BAAS_VARIANT = process.arch === "arm64" ? "ubuntu2004-arm64" : "ubuntu2004-docker";
+const ECR_HOSTNAME = "969505754201.dkr.ecr.us-east-1.amazonaws.com";
 
 function isExecError(value: unknown): value is ExecError {
   return (
@@ -84,69 +84,14 @@ function ensureNoBaas() {
   }
 }
 
-type Image = {
-  buildVariant: string;
-  imageTag: string;
-  /*
-  _id: string;
-  project: string;
-  order: number;
-  versionId: string;
-  taskId: string;
-  execution: number;
-  timestamp: string;
-  branch: string;
-  revision: string;
-  */
-};
-
-function assertImage(value: unknown): asserts value is Image {
-  assert(typeof value === "object" && value !== null);
-  const object = value as Record<string, unknown>;
-  assert(typeof object.buildVariant === "string");
-  assert(typeof object.imageTag === "string");
-}
-
-type ImagesResponse = {
-  allBranches: string[];
-  images: Record<string, undefined | Image[]>;
-};
-
-function assertImagesResponse(value: unknown): asserts value is ImagesResponse {
-  assert(typeof value === "object" && value !== null);
-  const object = value as Record<string, unknown>;
-  assert(Array.isArray(object.allBranches));
-  const { images } = object;
-  assert(typeof images === "object" && images !== null);
-  for (const available of Object.values(images)) {
-    assert(Array.isArray(available));
-    for (const image of available) {
-      assertImage(image);
-    }
-  }
-}
-
-function getBuildVariant() {
-  if (process.arch === "arm64") {
-    return "ubuntu2004-arm64";
-  } else {
-    return "ubuntu2004-docker";
-  }
-}
-
 async function fetchBaasTag(branch: string) {
-  const expectedBuildVariant = getBuildVariant();
-  const response = await fetch(IMAGES_ENDPOINT);
-  assert(response.ok);
-  const json = await response.json();
-  assertImagesResponse(json);
-  const { allBranches, images } = json;
+  const { allBranches, images } = await listImages();
   const available = images[branch];
   if (available) {
     const firstImage = available.find((image) => {
-      return image.buildVariant === expectedBuildVariant;
+      return image.buildVariant === BAAS_VARIANT;
     });
-    assert(firstImage, `Found no image for the ${expectedBuildVariant} build variant`);
+    assert(firstImage, `Found no image for the ${BAAS_VARIANT} build variant`);
     return firstImage.imageTag;
   } else {
     throw new Error(`Unexpected branch: Choose from ${JSON.stringify(allBranches)}`);
@@ -200,7 +145,7 @@ export type DockerCommandArgv = {
   branch: string;
 };
 
-export async function dockerCommand(argv: DockerCommandArgv) {
+export async function runDocker(argv: DockerCommandArgv) {
   const { AWS_PROFILE, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY } = process.env;
   assert(AWS_ACCESS_KEY_ID && AWS_SECRET_ACCESS_KEY, "Missing AWS_ACCESS_KEY_ID or AWS_SECRET_ACCESS_KEY env");
 
