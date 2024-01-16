@@ -1,9 +1,6 @@
 name: Start BaaS test server
 description: Uses
 inputs:
-  baasaas-key:
-    description: SDK specific API key for BaaSaaS
-    required: true
   branch:
     description: BaaS branch to use when starting the server
     default: master

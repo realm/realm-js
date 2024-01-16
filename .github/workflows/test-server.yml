@@ -28,8 +28,9 @@ jobs:
         id: baas
         uses: ./.github/actions/baas-test-server
         with:
-          baasaas-key: ${{ secrets.BAASAAS_KEY }}
           branch: ${{ inputs.branch }}
           githash: ${{ inputs.githash }}
+        env:
+          BAASAAS_KEY: ${{ secrets.BAASAAS_KEY }}
       - name: Perform a request to the server
         run: curl ${{ steps.baas.outputs.baas-url }}/api/private/v1.0/version
