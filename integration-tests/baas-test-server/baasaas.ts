@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import assert from "node:assert";
+import gha from "@actions/core";
 
 const BAASAAS_BASE_URL = "https://us-east-1.aws.data.mongodb-api.com/app/baas-container-service-autzb/endpoint/";
 
@@ -25,7 +26,7 @@ function createHeaders(appendKey = false) {
     "Content-Type": "application/json",
   };
   if (appendKey) {
-    const { BAASAAS_KEY } = process.env;
+    const { BAASAAS_KEY = gha.getInput("baasaas-key") } = process.env;
     assert(BAASAAS_KEY, "Missing BAASAAS_KEY env");
     headers["apiKey"] = BAASAAS_KEY;
   }

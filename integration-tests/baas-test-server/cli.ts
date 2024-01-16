@@ -131,7 +131,10 @@ yargs(hideBin(process.argv))
       .command(
         ["start [githash]"],
         "Start a container on the BaaSaaS service",
-        (yargs) => yargs.positional("githash", { type: "string" }).option("branch", { default: "master" }),
+        (yargs) =>
+          yargs
+            .positional("githash", { type: "string", default: gha.getInput("githash") ?? undefined })
+            .option("branch", { default: gha.getInput("branch") || "master" }),
         wrapCommand(async (argv) => {
           await printUserInfo();
           const container = await baasaas.startContainer(
@@ -158,7 +161,7 @@ yargs(hideBin(process.argv))
       .command(
         ["stop [id]"],
         "Stop a container running on the BaaSaaS service",
-        (yargs) => yargs.positional("id", { type: "string" }),
+        (yargs) => yargs.positional("id", { type: "string", default: gha.getState("container-id") }),
         wrapCommand(async (argv) => {
           await printUserInfo();
           if (argv.id) {
