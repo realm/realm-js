@@ -16,26 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import chalk from "chalk";
-
 export class UsageError extends Error {}
 
 export type ExecError = {
   stdout: string;
   stderr: string;
 } & Error;
-
-export function wrapCommand<Argv>(command: (argv: Argv) => Promise<void>): (argv: Argv) => void {
-  return function (argv: Argv) {
-    command(argv).catch((err) => {
-      console.error();
-      if (err instanceof UsageError) {
-        console.error(chalk.red(err.message));
-      } else if (err instanceof Error) {
-        console.error(chalk.red(err.stack));
-      } else {
-        throw err;
-      }
-    });
-  };
-}

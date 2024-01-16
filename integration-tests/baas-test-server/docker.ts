@@ -52,13 +52,13 @@ function spawn(logPrefix: string, command: string, args: string[] = [], options:
   registerExitListeners(logPrefix, child);
 }
 
-function ensureNodeVersion() {
+export function ensureNodeVersion() {
   const [major] = process.versions.node.split(".");
   const evenMajor = parseInt(major, 10) % 2 === 0;
   assert(evenMajor, "Expected even major Node.js version (requirement of pkg dependency when building translator)");
 }
 
-function ensureDocker() {
+export function ensureDocker() {
   try {
     const version = execSync("docker --version", { encoding: "utf8" }).trim();
     console.log(`Using ${version}`);
@@ -67,7 +67,7 @@ function ensureDocker() {
   }
 }
 
-function ensureAWSCli() {
+export function ensureAWSCli() {
   try {
     const version = execSync("aws --version", { encoding: "utf8" }).trim();
     console.log(`Using ${version}`);
@@ -76,7 +76,7 @@ function ensureAWSCli() {
   }
 }
 
-function ensureNoBaas() {
+export function ensureNoBaas() {
   const container = execSync(`docker ps -q --filter "name=${BAAS_CONTAINER_NAME}"`, { encoding: "utf8" }).trim();
   if (container) {
     console.log(`Killing existing container (id = ${container})`);
@@ -84,7 +84,7 @@ function ensureNoBaas() {
   }
 }
 
-async function fetchBaasTag(branch: string) {
+export async function fetchBaasTag(branch: string) {
   const { allBranches, images } = await listImages();
   const available = images[branch];
   if (available) {
@@ -98,7 +98,7 @@ async function fetchBaasTag(branch: string) {
   }
 }
 
-function pullBaas({ profile, tag }: { profile: string; tag: string }) {
+export function pullBaas({ profile, tag }: { profile: string; tag: string }) {
   try {
     execSync(`docker pull ${tag}`, { encoding: "utf8" });
   } catch (err) {
@@ -114,7 +114,7 @@ function pullBaas({ profile, tag }: { profile: string; tag: string }) {
   }
 }
 
-function spawnBaaS({
+export function spawnBaaS({
   tag,
   accessKeyId,
   secretAccessKey,
@@ -138,28 +138,4 @@ function spawnBaaS({
     `${BAAS_PORT}:${BAAS_PORT}`,
     tag,
   ]);
-}
-
-export type DockerCommandArgv = {
-  tag: string | undefined;
-  branch: string;
-};
-
-export async function runDocker(argv: DockerCommandArgv) {
-  const { AWS_PROFILE, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY } = process.env;
-  assert(AWS_ACCESS_KEY_ID && AWS_SECRET_ACCESS_KEY, "Missing AWS_ACCESS_KEY_ID or AWS_SECRET_ACCESS_KEY env");
-
-  ensureNodeVersion();
-  ensureDocker();
-  ensureAWSCli();
-  ensureNoBaas();
-
-  if (argv.tag) {
-    spawnBaaS({ tag: argv.tag, accessKeyId: AWS_ACCESS_KEY_ID, secretAccessKey: AWS_SECRET_ACCESS_KEY });
-  } else {
-    const tag = await fetchBaasTag(argv.branch);
-    assert(AWS_PROFILE, "Missing AWS_PROFILE env");
-    pullBaas({ profile: AWS_PROFILE, tag });
-    spawnBaaS({ tag, accessKeyId: AWS_ACCESS_KEY_ID, secretAccessKey: AWS_SECRET_ACCESS_KEY });
-  }
 }

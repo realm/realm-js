@@ -2,27 +2,195 @@
 
 /* eslint header/header: 0 */
 
+import chalk from "chalk";
 import dotenv from "dotenv";
+import assert from "node:assert";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
-import { DockerCommandArgv, runDocker } from "./docker";
-import { wrapCommand } from "./helpers";
-import { runBaaSaaS } from "./baasaas";
+import waitFor from "p-wait-for";
+import gha from "@actions/core";
 
+import * as docker from "./docker";
+import * as baasaas from "./baasaas";
+import { UsageError } from "./helpers";
+
+const GITHUB_ACTIONS = process.env.GITHUB_ACTIONS === "true";
+
+// Loading .env from the package directory
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+dotenv.config({
+  path: path.resolve(__dirname, ".env"),
+});
+
+// Loading a .env from cwd too
 dotenv.config();
 
+const COMMON_ID_PREFIX = "arn:aws:ecs:us-east-1:969505754201:task/baas-container-service2/";
+
+function abbreviateId(id: string) {
+  return id.replace(COMMON_ID_PREFIX, "");
+}
+
+function expandId(id: string) {
+  return id.startsWith(COMMON_ID_PREFIX) ? id : COMMON_ID_PREFIX + id;
+}
+
+export function wrapCommand<Argv>(command: (argv: Argv) => Promise<void>): (argv: Argv) => void {
+  return function (argv: Argv) {
+    command(argv).catch((err) => {
+      console.error();
+      if (err instanceof UsageError) {
+        console.error(chalk.red(err.message));
+      } else if (err instanceof Error) {
+        console.error(chalk.red(err.stack));
+      } else {
+        throw err;
+      }
+    });
+  };
+}
+
+async function printUserInfo() {
+  const info = await baasaas.userinfo();
+  if (typeof info.data.name === "string") {
+    console.log(chalk.dim(`Authenticated as '${info.data.name}'`));
+  }
+}
+
+async function waitForContainerUrls(id: string) {
+  return waitFor(
+    async () => {
+      const { httpUrl, mongoUrl } = await baasaas.containerStatus(id);
+      return typeof httpUrl === "string" && typeof mongoUrl === "string" && waitFor.resolveWith({ httpUrl, mongoUrl });
+    },
+    { interval: 1000, timeout: 60000 },
+  );
+}
+
+async function waitForServer(baseUrl: string) {
+  const interval = 2000;
+  waitFor(
+    async () => {
+      const url = new URL("/api/private/v1.0/version", baseUrl);
+      const response = await fetch(url, { signal: AbortSignal.timeout(interval - 100) });
+      return response.ok;
+    },
+    { interval, timeout: 60000 },
+  );
+}
+
 yargs(hideBin(process.argv))
-  .command<DockerCommandArgv>(
-    ["docker [tag]"],
+  .command(
+    ["docker [githash]"],
     "Runs the BaaS test image using Docker",
-    (yargs) => yargs.positional("tag", { type: "string" }).option("branch", { default: "master" }),
-    wrapCommand(runDocker),
+    (yargs) => yargs.positional("githash", { type: "string" }).option("branch", { default: "master" }),
+    wrapCommand(async (argv) => {
+      const { AWS_PROFILE, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY } = process.env;
+      assert(AWS_ACCESS_KEY_ID && AWS_SECRET_ACCESS_KEY, "Missing AWS_ACCESS_KEY_ID or AWS_SECRET_ACCESS_KEY env");
+
+      docker.ensureNodeVersion();
+      docker.ensureDocker();
+      docker.ensureAWSCli();
+      docker.ensureNoBaas();
+
+      if (argv.githash) {
+        docker.spawnBaaS({ tag: argv.githash, accessKeyId: AWS_ACCESS_KEY_ID, secretAccessKey: AWS_SECRET_ACCESS_KEY });
+      } else {
+        const tag = await docker.fetchBaasTag(argv.branch);
+        assert(AWS_PROFILE, "Missing AWS_PROFILE env");
+        docker.pullBaas({ profile: AWS_PROFILE, tag });
+        docker.spawnBaaS({ tag, accessKeyId: AWS_ACCESS_KEY_ID, secretAccessKey: AWS_SECRET_ACCESS_KEY });
+      }
+    }),
   )
-  .command<DockerCommandArgv>(
-    ["baasaas"],
-    "Runs the BaaS test image using the BaaSaaS service",
-    (yargs) => yargs.option("branch", { default: "master" }),
-    wrapCommand(runBaaSaaS),
+  .command(["baasaas <command>"], "Manage the BaaSaaS service", (yargs) =>
+    yargs
+      .command(
+        ["list"],
+        "List running containers on the BaaSaaS service",
+        (yargs) => yargs.boolean("mine"),
+        wrapCommand(async (argv) => {
+          await printUserInfo();
+          const containers = await baasaas.listContainers(argv.mine);
+          if (argv.mine && containers.length === 0) {
+            console.log("You have no containers running");
+          } else if (containers.length === 0) {
+            console.log("There are no containers running");
+          } else if (argv.mine) {
+            console.log("Your containers:");
+          } else {
+            console.log("All containers:");
+          }
+          for (const { id, createdAt, creatorName } of containers) {
+            console.log(`→ ${abbreviateId(id)} ${chalk.dim(`(created ${createdAt} by ${creatorName})`)}`);
+          }
+        }),
+      )
+      .command(
+        ["start [githash]"],
+        "Start a container on the BaaSaaS service",
+        (yargs) => yargs.positional("githash", { type: "string" }).option("branch", { default: "master" }),
+        wrapCommand(async (argv) => {
+          await printUserInfo();
+          const container = await baasaas.startContainer(
+            argv.githash ? { githash: argv.githash } : { branch: argv.branch },
+          );
+          console.log(`Started ${abbreviateId(container.id)}`);
+          // TODO: Poll the status to await the container starting
+          // TODO: Optionally set GHA output
+          const { httpUrl, mongoUrl } = await waitForContainerUrls(container.id);
+          await waitForServer(httpUrl);
+          console.log(`BaaS listening on ${httpUrl}`);
+          console.log(`MongoDB listening on ${mongoUrl}`);
+          if (GITHUB_ACTIONS) {
+            gha.notice(`Server listening on ${httpUrl}`, { title: "Started BaaS server" });
+            gha.setOutput("container-id", container.id);
+            gha.setOutput("baas-url", httpUrl);
+            gha.setOutput("mongo-url", mongoUrl);
+            // Useful when called from a wrapper action
+            gha.saveState("container-id", container.id);
+          }
+          // TODO: On GitHub poll the triggering workflow run
+        }),
+      )
+      .command(
+        ["stop [id]"],
+        "Stop a container running on the BaaSaaS service",
+        (yargs) => yargs.positional("id", { type: "string" }),
+        wrapCommand(async (argv) => {
+          await printUserInfo();
+          if (argv.id) {
+            if (argv.id === "all" || argv.id === "*") {
+              console.log(`Stopping all containers:`);
+              const containers = await baasaas.listContainers(true);
+              for (const container of containers) {
+                console.log(`→ Stopping container '${abbreviateId(container.id)}'`);
+                // TODO: Re-enable once listing "mine" works as expected
+                // await baasaas.stopContainer(container.id);
+              }
+            } else {
+              console.log(`Stopping container '${abbreviateId(argv.id)}'`);
+              await baasaas.stopContainer(expandId(argv.id));
+            }
+          } else {
+            const containers = await baasaas.listContainers(true);
+            if (containers.length === 0) {
+              throw new UsageError("You have no containers running");
+            } else if (containers.length === 1) {
+              const [container] = containers;
+              console.log(`Stopping container '${abbreviateId(container.id)}'`);
+              await baasaas.stopContainer(container.id);
+            } else {
+              const ids = containers
+                .map(({ id, createdAt }) => `→ ${abbreviateId(id)} ${chalk.dim(`(created ${createdAt})`)}`)
+                .join("\n");
+              throw new UsageError(`You have more than one container running, please run with an id:\n${ids}`);
+            }
+          }
+        }),
+      ),
   )
   .demandCommand(1)
   .parse();
