@@ -71,11 +71,15 @@ async function waitForContainerUrls(id: string) {
 
 async function waitForServer(baseUrl: string) {
   const interval = 2000;
-  waitFor(
+  return waitFor(
     async () => {
-      const url = new URL("/api/private/v1.0/version", baseUrl);
-      const response = await fetch(url, { signal: AbortSignal.timeout(interval - 100) });
-      return response.ok;
+      try {
+        const url = new URL("/api/private/v1.0/version", baseUrl);
+        const response = await fetch(url, { signal: AbortSignal.timeout(interval - 100) });
+        return response.ok;
+      } catch (err) {
+        return false;
+      }
     },
     { interval, timeout: 60000 },
   );
@@ -140,13 +144,15 @@ yargs(hideBin(process.argv))
           const container = await baasaas.startContainer(
             argv.githash ? { githash: argv.githash } : { branch: argv.branch },
           );
-          console.log(`Started ${abbreviateId(container.id)}`);
-          // TODO: Poll the status to await the container starting
-          // TODO: Optionally set GHA output
+
+          console.log(`Started container (id = ${abbreviateId(container.id)})`);
           const { httpUrl, mongoUrl } = await waitForContainerUrls(container.id);
-          await waitForServer(httpUrl);
-          console.log(`BaaS listening on ${httpUrl}`);
+          console.log(`Server listening on ${httpUrl}`);
           console.log(`MongoDB listening on ${mongoUrl}`);
+          console.log("Server is getting ready for connections ...");
+          await waitForServer(httpUrl);
+          console.log("Server is ready 🤘");
+
           if (GITHUB_ACTIONS) {
             gha.notice(`Server listening on ${httpUrl}`, { title: "Started BaaS server" });
             gha.setOutput("container-id", container.id);

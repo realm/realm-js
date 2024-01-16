@@ -27,7 +27,6 @@ function createHeaders(appendKey = false) {
   };
   if (appendKey) {
     const { BAASAAS_KEY } = process.env;
-    console.log(process.env);
     assert(BAASAAS_KEY, "Missing BAASAAS_KEY env");
     headers["apiKey"] = BAASAAS_KEY;
   }

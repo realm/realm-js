@@ -18,5 +18,4 @@
 
 import cp from "node:child_process";
 
-console.log(process.env);
 cp.execSync("npx baas-test-server baasaas start", { stdio: "inherit" });
