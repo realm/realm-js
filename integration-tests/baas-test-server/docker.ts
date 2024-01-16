@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2022 Realm Inc.
+// Copyright 2024 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,30 +17,15 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import cp, { execSync } from "node:child_process";
-import chalk from "chalk";
-import dotenv from "dotenv";
 import assert from "node:assert";
-import yargs from "yargs";
-import { hideBin } from "yargs/helpers";
+import chalk from "chalk";
+import { ExecError, UsageError } from "./helpers";
 
 const IMAGES_ENDPOINT = "https://us-east-1.aws.data.mongodb-api.com/app/baas-container-service-autzb/endpoint/images";
 const ECR_HOSTNAME = "969505754201.dkr.ecr.us-east-1.amazonaws.com";
 
 const BAAS_CONTAINER_NAME = "baas-test-server";
 const BAAS_PORT = 9090;
-
-dotenv.config();
-
-const { AWS_PROFILE, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY } = process.env;
-assert(AWS_PROFILE, "Missing AWS_PROFILE env");
-assert(AWS_ACCESS_KEY_ID && AWS_SECRET_ACCESS_KEY, "Missing AWS_ACCESS_KEY_ID or AWS_SECRET_ACCESS_KEY env");
-
-class UsageError extends Error {}
-
-type ExecError = {
-  stdout: string;
-  stderr: string;
-} & Error;
 
 function isExecError(value: unknown): value is ExecError {
   return (
@@ -168,14 +153,14 @@ async function fetchBaasTag(branch: string) {
   }
 }
 
-function pullBaas(tag: string) {
+function pullBaas({ profile, tag }: { profile: string; tag: string }) {
   try {
     execSync(`docker pull ${tag}`, { encoding: "utf8" });
   } catch (err) {
     if (isExecError(err) && err.stderr.includes("Your authorization token has expired")) {
-      execSync(`aws --profile ${AWS_PROFILE} sso login`, { stdio: "inherit" });
+      execSync(`aws --profile ${profile} sso login`, { stdio: "inherit" });
       execSync(
-        `aws --profile ${AWS_PROFILE} ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${ECR_HOSTNAME}`,
+        `aws --profile ${profile} ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${ECR_HOSTNAME}`,
         { stdio: "inherit" },
       );
     } else {
@@ -184,7 +169,15 @@ function pullBaas(tag: string) {
   }
 }
 
-function spawnBaaS(tag: string) {
+function spawnBaaS({
+  tag,
+  accessKeyId,
+  secretAccessKey,
+}: {
+  tag: string;
+  accessKeyId: string;
+  secretAccessKey: string;
+}) {
   console.log("Starting server from tag", chalk.dim(tag));
   spawn(chalk.blueBright("baas"), "docker", [
     "run",
@@ -193,45 +186,35 @@ function spawnBaaS(tag: string) {
     "-it",
     "--rm",
     "--env",
-    `AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}`,
+    `AWS_ACCESS_KEY_ID=${accessKeyId}`,
     "--env",
-    `AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}`,
+    `AWS_SECRET_ACCESS_KEY=${secretAccessKey}`,
     "--publish",
     `${BAAS_PORT}:${BAAS_PORT}`,
     tag,
   ]);
 }
 
-yargs(hideBin(process.argv))
-  .command(
-    ["run [tag]", "$0 [tag]"],
-    "Runs the BaaS test image using Docker",
-    (yargs) => yargs.positional("tag", { type: "string" }).option("branch", { default: "master" }),
-    async (argv) => {
-      try {
-        ensureNodeVersion();
-        ensureDocker();
-        ensureAWSCli();
-        ensureNoBaas();
+export type DockerCommandArgv = {
+  tag: string | undefined;
+  branch: string;
+};
 
-        if (argv.tag) {
-          spawnBaaS(argv.tag);
-        } else {
-          const tag = await fetchBaasTag(argv.branch);
-          pullBaas(tag);
-          spawnBaaS(tag);
-        }
-      } catch (err) {
-        console.error();
-        if (err instanceof UsageError) {
-          console.error(chalk.red(err.message));
-        } else if (err instanceof Error) {
-          console.error(chalk.red(err.stack));
-        } else {
-          throw err;
-        }
-      }
-    },
-  )
-  .demandCommand(1)
-  .parse();
+export async function dockerCommand(argv: DockerCommandArgv) {
+  const { AWS_PROFILE, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY } = process.env;
+  assert(AWS_ACCESS_KEY_ID && AWS_SECRET_ACCESS_KEY, "Missing AWS_ACCESS_KEY_ID or AWS_SECRET_ACCESS_KEY env");
+
+  ensureNodeVersion();
+  ensureDocker();
+  ensureAWSCli();
+  ensureNoBaas();
+
+  if (argv.tag) {
+    spawnBaaS({ tag: argv.tag, accessKeyId: AWS_ACCESS_KEY_ID, secretAccessKey: AWS_SECRET_ACCESS_KEY });
+  } else {
+    const tag = await fetchBaasTag(argv.branch);
+    assert(AWS_PROFILE, "Missing AWS_PROFILE env");
+    pullBaas({ profile: AWS_PROFILE, tag });
+    spawnBaaS({ tag, accessKeyId: AWS_ACCESS_KEY_ID, secretAccessKey: AWS_SECRET_ACCESS_KEY });
+  }
+}

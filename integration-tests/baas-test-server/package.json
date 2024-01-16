@@ -4,6 +4,9 @@
   "private": false,
   "type": "module",
   "main": "index.js",
+  "bin": {
+    "baas-test-server": "./cli.ts"
+  },
   "scripts": {
     "start": "tsx index.ts"
   },

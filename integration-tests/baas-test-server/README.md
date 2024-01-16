@@ -1,22 +1,19 @@
 # Run BaaS from source
 
-Run the Lerna bootstrap from the root of this repository.
+We're using an NPM workspace mono-repository, so first you need to install dependencies from the package root:
 
 ```shell
-npx lerna bootstrap --scope @realm/baas-test-server
+npm install
 ```
 
 Create a `.env` file with your `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` secrets.
+Ask your team how to get these.
 
 ```shell
 # .env
 AWS_ACCESS_KEY_ID=...
 AWS_SECRET_ACCESS_KEY=...
 ```
-
-A file called `assisted_agg` will be downloaded if it does not already exist in order for MongoDB aggregation tests to run.
-* When running the tests, Mac may block execution of the file. If so, go
-   to `System Settings > Privacy & Security` (for Mac), find blocked files, then allow `assisted_agg`.
 
 Run the `start` script, sit back and relax as a mongo server is started, BaaS is pulled, built and started with a proper configuration 🤞
 
