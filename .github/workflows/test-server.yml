@@ -1,19 +1,15 @@
-name: Run test server
+name: Start BaaS test server (test)
 
 on:
   workflow_dispatch:
     inputs:
-      ngrok_subdomain:
-        description: A subdomain to prefix ".ngrok.io" used for the server.
+      branch:
         type: string
-      run_id:
-        description: The GitHub Actions run id of the triggering action, which will be used to await completion.
-        type: number
-      server_tag:
-        description: The docker tag to use when pulling the server
+        description: BaaS branch to use when starting the server
+        default: master
+      githash:
         type: string
-        # Consider updating this in the calling workflow: https://github.com/realm/realm-js/blob/1a1a0edc354059122f1d9800c66a4a0860120fcb/.github/workflows/pr-realm-js.yml#L245
-        default: latest
+        description: Specific githash to use when starting the server (this is used instead of branch if provided)
 
 jobs:
   server:
@@ -21,44 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Determine Ngrok subdomain
-        id: ngrok-config
-        run:
-          subdomain="${{ inputs.ngrok_subdomain || format('realm-js-test-server-{0}-{1}', github.run_id, github.run_attempt) }}";
-          echo "subdomain=${subdomain}" >> $GITHUB_OUTPUT;
-          echo "hostname=${subdomain}.ngrok.io" >> $GITHUB_OUTPUT;
-      - name: Start Ngrok
-        run: docker run --detach --network host --env NGROK_AUTHTOKEN ngrok/ngrok http --subdomain ${{ steps.ngrok-config.outputs.subdomain }} 9090
-        env:
-          NGROK_AUTHTOKEN: ${{ secrets.NGROK_AUTHTOKEN }}
-      - name: Preparing server entrypoint
-        # Writes an entrypoint script, which will patch the test-config to use the right hostnames, before it starts the server
-        run: |
-          echo '#!/bin/bash' >> patch-and-run.sh
-          echo 'NGROK_HOSTNAME=${{ steps.ngrok-config.outputs.hostname }}' >> patch-and-run.sh
-          # Replace localhost:9090 with the Ngrok hostname, "http" with "https" and "ws" with "wss"
-          echo 'sed -i -e "s/http:\/\/localhost:9090/https:\/\/${{ steps.ngrok-config.outputs.hostname }}/g" -e "s/ws:\/\/localhost:9090/wss:\/\/${{ steps.ngrok-config.outputs.hostname }}/g" /stitch/test_config.json' >> patch-and-run.sh
-          echo 'cat /stitch/test_config.json' >> patch-and-run.sh
-          # Start the server
-          echo '/run.sh' >> patch-and-run.sh
-          chmod u+x patch-and-run.sh
-      - name: Docker Login
-        uses: azure/docker-login@v1
-        with:
-          login-server: ghcr.io
-          username: realm-ci
-          password: ${{ secrets.REALM_CI_GITHUB_API_KEY }}
-      - name: Start server
-        run: docker run ${{ env.MODE }} --env AWS_ACCESS_KEY_ID --env AWS_SECRET_ACCESS_KEY --publish 9090:9090 --volume `pwd`/patch-and-run.sh:/patch-and-run.sh --entrypoint /patch-and-run.sh ghcr.io/realm/ci/mongodb-realm-test-server:${{ inputs.server_tag }}
-        env:
-          # Use --detach if a run_id is provided to watch for completion, --interactive otherwise
-          MODE: ${{ inputs.run_id && '--detach' || '--interactive' }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.BAAS_AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.BAAS_AWS_SECRET_ACCESS_KEY }}
-      - name: Wait for triggering run to complete
-        if:  ${{ inputs.run_id }}
-        # Using " > /dev/null" because this will print the status of all jobs and steps every second
-        # Using "--interval 60" because we don't want to hit the GitHub actions requests limit
-        run: gh run watch --interval 60 ${{ inputs.run_id }} > /dev/null
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: Start BaaS test server
+        id: baas
+        uses: ./.github/actions/baas-test-server
+      - run: curl ${{ steps.baas.outputs.baas-url }}/api/private/v1.0/version

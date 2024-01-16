@@ -1,0 +1,44 @@
+name: Start BaaS test server
+description: Uses
+inputs:
+  baasaas-key:
+    description: SDK specific API key for BaaSaaS
+    required: true
+  branch:
+    description: BaaS branch to use when starting the server
+    default: master
+  githash:
+    description: Specific githash to use when starting the server (this is used instead of branch if provided)
+outputs:
+  container-id:
+    description: The id of the container created
+    value: ${{ steps.baasaas-start.outputs.container-id }}
+  baas-url:
+    description: The url of the BaaS server created
+    value: ${{ steps.baasaas-start.outputs.baas-url }}
+  mongo-url:
+    description: The url of the MongoDB instance backing the server created
+    value: ${{ steps.baasaas-start.outputs.mongo-url }}
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-node@v3
+      with:
+        node-version: 20
+        cache: npm
+    - shell: bash
+      run: npm ci --ignore-scripts
+    - shell: bash
+      run: npx baas-test-server baasaas start ${{ inputs.githash }} --branch ${{ inputs.branch }}
+      id: baasaas-start
+      env:
+        BAASAAS_KEY: ${{ inputs.baasaas-key }}
+    # Using another action to create a post step, since "composite" actions doesn't support those
+    # See https://github.com/actions/runner/issues/1478
+    - name: Stop server
+      uses: TLizer/action-with-post-step@v1
+      with:
+        main: echo 'Nothing to do right now'
+        post: npx baas-test-server baasaas stop ${{ steps.baasaas-start.outputs.container-id }}
