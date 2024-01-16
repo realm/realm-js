@@ -1,0 +1,6 @@
+{
+  "name": "@realm/baas-test-server-action",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true
+}
