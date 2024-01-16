@@ -155,11 +155,11 @@ yargs(hideBin(process.argv))
 
           if (GITHUB_ACTIONS) {
             gha.notice(`Server listening on ${httpUrl}`, { title: "Started BaaS server" });
+            // Useful when called from a wrapper action
+            gha.saveState("CONTAINER_ID", container.id);
             gha.setOutput("container-id", container.id);
             gha.setOutput("baas-url", httpUrl);
             gha.setOutput("mongo-url", mongoUrl);
-            // Useful when called from a wrapper action
-            gha.saveState("container-id", container.id);
           }
           // TODO: On GitHub poll the triggering workflow run
         }),
@@ -168,7 +168,7 @@ yargs(hideBin(process.argv))
         ["stop [id]"],
         "Stop a container running on the BaaSaaS service",
         (yargs) => yargs.positional("id", { type: "string" }),
-        wrapCommand(async ({ id = gha.getState("container-id") }) => {
+        wrapCommand(async ({ id = gha.getState("CONTAINER_ID") }) => {
           await printUserInfo();
           if (id) {
             if (id === "all" || id === "*") {
