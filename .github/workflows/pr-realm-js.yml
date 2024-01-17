@@ -255,6 +255,7 @@ jobs:
       BAAS_BRANCH: master
       # Pin the Xcode version
       DEVELOPER_DIR: /Applications/Xcode_14.3.1.app
+      IOS_DEVICE_NAME: iPhone 14
     runs-on: ${{ matrix.variant.runner }}
     strategy:
       fail-fast: false
@@ -355,9 +356,14 @@ jobs:
           # Ensure we install the prebuild built in the previous job
           npm_config_realm_local_prebuilds: ${{github.workspace}}/packages/realm/prebuilds
 
-      - name: Invoke the simulator (making subsequent "open -a Simulator" calls work)
-        if: ${{ (matrix.variant.os == 'ios') }}
-        run: open -a ${{ env.DEVELOPER_DIR }}/Contents/Developer/Applications/Simulator.app/Contents/MacOS/Simulator
+      # The following makes subsequent "open -a Simulator" calls work
+      - name: Invoke the simulator
+        if: ${{ matrix.variant.os == 'ios' }}
+        run: open -a ${{ env.DEVELOPER_DIR }}/Contents/Developer/Applications/Simulator.app
+
+      - name: Boot the simulator
+        if: ${{ matrix.variant.os == 'ios' }}
+        run: xcrun simctl boot '${{ env.IOS_DEVICE_NAME }}'
 
       - name: Start BaaS test server
         id: baas
