@@ -420,12 +420,13 @@ export function createPropertyHelpers(property: PropertyContext, options: Helper
   }
 }
 
-function isPOJO(value: unknown): value is Record<string, unknown> {
+/** @internal */
+export function isPOJO(value: unknown): value is Record<string, unknown> {
   return (
     typeof value === "object" &&
     value !== null &&
     // Lastly check for the absence of a prototype as POJOs
     // can still be created using `Object.create(null)`.
-    (value.constructor?.name === "Object" || !Object.getPrototypeOf(value))
+    (value.constructor === Object || !Object.getPrototypeOf(value))
   );
 }
