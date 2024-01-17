@@ -8,8 +8,8 @@
     "test:android": "wireit",
     "test:ios": "wireit",
     "test:catalyst": "wireit",
-    "test:ci:android": "PLATFORM=android npm run common:ci",
-    "test:ci:ios": "pod-install && PLATFORM=ios npm run common:ci",
+    "test:ci:android": "wireit",
+    "test:ci:ios": "wireit",
     "watch:ios": "wireit",
     "watch:catalyst": "wireit",
     "watch:android": "wireit",
@@ -80,6 +80,17 @@
         }
       }
     },
+    "pod-install:ci": {
+      "command": "pod-install",
+      "env": {
+        "USE_HERMES": {
+          "external": true
+        },
+        "RCT_NEW_ARCH_ENABLED": {
+          "external": true
+        }
+      }
+    },
     "common": {
       "command": "mocha-remote --reporter @realm/mocha-reporter --watch $WATCH -- concurrently --kill-others-on-fail npm:metro npm:runner"
     },
@@ -126,6 +137,21 @@
       "env": {
         "PLATFORM": "catalyst",
         "WATCH": "false"
+      }
+    },
+    "test:ci:android": {
+      "command": "npm run common:ci",
+      "env": {
+        "PLATFORM": "android"
+      }
+    },
+    "test:ci:ios": {
+      "command": "npm run common:ci",
+      "dependencies": [
+        "pod-install:ci"
+      ],
+      "env": {
+        "PLATFORM": "ios"
       }
     },
     "watch:android": {
