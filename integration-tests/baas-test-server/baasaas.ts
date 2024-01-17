@@ -153,26 +153,32 @@ export async function userinfo() {
 }
 
 type Image = {
-  buildVariant: string;
-  imageTag: string;
-  /*
   _id: string;
   project: string;
   order: number;
   versionId: string;
+  buildVariant: string;
   taskId: string;
+  revision: string;
   execution: number;
   timestamp: string;
   branch: string;
-  revision: string;
-  */
+  imageTag: string;
 };
 
 function assertImage(value: unknown): asserts value is Image {
   assert(typeof value === "object" && value !== null);
-  const object = value as Record<string, unknown>;
-  assert(typeof object.buildVariant === "string");
-  assert(typeof object.imageTag === "string");
+  assert("_id" in value && typeof value._id === "string");
+  assert("project" in value && typeof value.project === "string");
+  assert("order" in value && typeof value.order === "number");
+  assert("versionId" in value && typeof value.versionId === "string");
+  assert("buildVariant" in value && typeof value.buildVariant === "string");
+  assert("taskId" in value && typeof value.taskId === "string");
+  assert("revision" in value && typeof value.revision === "string");
+  assert("execution" in value && typeof value.execution === "number");
+  assert("timestamp" in value && typeof value.timestamp === "string");
+  assert("branch" in value && typeof value.branch === "string");
+  assert("imageTag" in value && typeof value.imageTag === "string");
 }
 
 type Images = {
@@ -182,11 +188,9 @@ type Images = {
 
 function assertImages(value: unknown): asserts value is Images {
   assert(typeof value === "object" && value !== null);
-  const object = value as Record<string, unknown>;
-  assert(Array.isArray(object.allBranches));
-  const { images } = object;
-  assert(typeof images === "object" && images !== null);
-  for (const available of Object.values(images)) {
+  assert("allBranches" in value && Array.isArray(value.allBranches));
+  assert("images" in value && typeof value.images === "object" && value.images !== null);
+  for (const available of Object.values(value.images)) {
     assert(Array.isArray(available));
     for (const image of available) {
       assertImage(image);
