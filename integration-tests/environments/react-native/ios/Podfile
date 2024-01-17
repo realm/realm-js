@@ -73,6 +73,12 @@ target 'RealmReactNativeTests' do
           # Applying https://github.com/facebook/folly/issues/1470#issuecomment-943123653
           config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= ['$(inherited)', 'FOLLY_HAVE_CLOCK_GETTIME=1']
         end
+
+        if target.name == "RealmJS"
+          target.build_configurations.each do |config|
+            config.build_settings['BUILD_CORE'] = 'true'
+          end
+        end
       end
     end
   end

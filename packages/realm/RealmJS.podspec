@@ -33,7 +33,7 @@ Pod::Spec.new do |s|
 
   s.authors                = package['author']
   s.homepage               = package['homepage']
-  s.platform               = :ios, '13.4'
+  s.platform               = :ios, '9.0'
 
   # The source field is a required field in the podspec, but it is not meant to be used.
   # This is because the Podspec is not meant to be published into a CocoaPod repository, instead React Native uses a :path style dependency when adding this to the users projects Podfile.
@@ -41,9 +41,12 @@ Pod::Spec.new do |s|
   # @see https://github.com/react-native-community/cli/blob/master/docs/autolinking.md#platform-ios
   s.source                 = { :http => 'https://github.com/realm/realm-js/blob/main/CONTRIBUTING.md#how-to-debug-react-native-podspec' }
 
-  s.source_files           = 'react-native/ios/RealmReact/*.mm'
+  s.source_files           = 'react-native/ios/RealmReact/*.mm',
+                             'react-native/shared/*.cpp',
+                             'binding/ios/platform.mm'
 
-  s.public_header_files    = 'react-native/ios/RealmReact/*.h'
+  s.public_header_files    = 'react-native/ios/RealmReact/*.h',
+                             'react-native/ios/build/include/**/*.{h,hpp}'
 
   s.frameworks             = uses_frameworks ? ['React'] : []
 
@@ -51,45 +54,46 @@ Pod::Spec.new do |s|
 
   s.pod_target_xcconfig    = {
                                 # Setting up clang
-                                'CLANG_CXX_LANGUAGE_STANDARD' => 'c++17',
-                                #'GCC_CXX_LANGUAGE_STANDARD' => 'c++17',
+                                'CLANG_CXX_LANGUAGE_STANDARD' => 'c++20',
                                 'CLANG_CXX_LIBRARY' => 'libc++',
                                 # Setting the current project version and versioning system to get a symbol for analytics
                                 'CURRENT_PROJECT_VERSION' => s.version,
                                 'VERSIONING_SYSTEM' => 'apple-generic',
+                                'GCC_PREPROCESSOR_DEFINITIONS' => '$(inherited) REALM_ENABLE_SYNC=1',
+                                'GCC_SYMBOLS_PRIVATE_EXTERN' => 'YES',
                                 # Header search paths are prefixes to the path specified in #include macros
                                 'HEADER_SEARCH_PATHS' => [
                                   '"$(PODS_TARGET_SRCROOT)/react-native/ios/RealmReact/"',
-                                  '"$(PODS_TARGET_SRCROOT)/react-native/ios/build/_include"',
-                                  '"$(PODS_ROOT)/Headers/Public/React-Core/"'
-                                  #"'#{app_path}/ios/Pods/Headers/Public/React-Core'" # Use this line instead of 👆 while linting
+                                  '"$(PODS_TARGET_SRCROOT)/react-native/ios/build/include/"',
+                                  '"$(PODS_TARGET_SRCROOT)/binding/"',
+                                  '"$(PODS_TARGET_SRCROOT)/bindgen/src/"',
+                                  '"$(PODS_TARGET_SRCROOT)/bindgen/vendor/realm-core/bindgen/src/"'
                                 ].join(' ')
                               }
+  # Create placeholders for vendored_libraries, so they are added to the xcode project
+  s.prepare_command = <<-EOS
+  source "#{__dir__}/scripts/generate-dummy-libs.sh"
+  source "#{__dir__}/scripts/generate-input-list.sh"
+  EOS
 
-  lib_location = "react-native/ios/build/libs"
-
-  # TODO: Consider providing an option to build with the -dbg binaries instead
-  s.vendored_libraries = "#{lib_location}/librealm.a",
-                         "#{lib_location}/librealm-js-ios.a",
-                         "#{lib_location}/librealm-object-store.a",
-                         "#{lib_location}/librealm-parser.a",
-                         "#{lib_location}/librealm-sync.a"
+  s.vendored_libraries = "react-native/ios/lib/librealm.a",
+                         "react-native/ios/lib/librealm-object-store.a",
+                         "react-native/ios/lib/librealm-parser.a",
+                         "react-native/ios/lib/librealm-sync.a"
 
   s.dependency 'React'
 
-  script_location = "#{__dir__}/scripts/build-ios-on-install.sh"
-
   CMAKE_PATH = Pod::Executable::which!('cmake')
-  NODE_PATH = Pod::Executable::which!('node')
 
-  # Post install script
+  #Post install script
   s.script_phase = {
-    :name => 'Generate Realm xcframework',
+    :name => 'Retrieve libraries and headers',
     :execution_position => :before_compile,
+    :input_file_lists => ["#{__dir__}/react-native/ios/input-files.xcfilelist"],
+    :output_file_lists => ["#{__dir__}/react-native/ios/output-files.xcfilelist"],
     :script => <<-EOS
-    export CMAKE_PATH=#{CMAKE_PATH}
-    export NODE_PATH=#{NODE_PATH}
-    /bin/sh -c \"#{script_location} -c $CONFIGURATION $PLATFORM_NAME\"
+    CMAKE_PATH="#{CMAKE_PATH}"
+    source "#{__dir__}/scripts/generate-ios-libs.sh"
     EOS
   }
 end

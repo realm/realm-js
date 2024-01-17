@@ -60,9 +60,9 @@ jobs:
           - { os: android, runner: ubuntu-latest, arch: x86, artifact-path: packages/realm/react-native/android/src/main/jniLibs }
           - { os: darwin, runner: macos-latest, arch: x64, artifact-path: packages/realm/prebuilds, test-node: true, test-electron: true }
           - { os: darwin, runner: macos-latest, arch: arm64, artifact-path: packages/realm/prebuilds, test-node: true, test-electron: true }
-          - { os: ios, runner: macos-latest-xlarge, arch: simulator, artifact-path: packages/realm/react-native/ios/realm-js-ios.xcframework }
-          - { os: ios, runner: macos-latest-xlarge, arch: catalyst, artifact-path: packages/realm/react-native/ios/realm-js-ios.xcframework }
-          - { os: ios, runner: macos-latest-xlarge, arch: ios, artifact-path: packages/realm/react-native/ios/realm-js-ios.xcframework }
+          - { os: ios, runner: macos-latest-xlarge, arch: simulator, artifact-path: packages/realm/react-native/shared/jsi_init.cpp }
+          - { os: ios, runner: macos-latest-xlarge, arch: catalyst, artifact-path: packages/realm/react-native/shared/jsi_init.cpp }
+          - { os: ios, runner: macos-latest-xlarge, arch: ios, artifact-path: packages/realm/react-native/shared/jsi_init.cpp }
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -177,15 +177,9 @@ jobs:
         if: ${{ (matrix.variant.os != 'ios') && (matrix.variant.os != 'android') }}
         run: npm run build:node:prebuild:${{matrix.variant.arch}} --workspace realm
 
-      # build the c++ library for IOS
-      # the Info.plist needs to be regenerated with all libraries in place
-      - name: Build iOS
-        if: ${{ (matrix.variant.os == 'ios') }}
+      - name: Generate JSI
         run: |
-          npm run build:ios --workspace realm
-          rm -vf ${{ matrix.variant.artifact-path }}/Info.plist
-        env:
-          PLATFORMS: ${{ matrix.variant.arch }}
+          npm run bindgen:generate:jsi --workspace realm
 
       # build the c++ library for Android
       - name: Build Android
@@ -202,38 +196,9 @@ jobs:
             README.md
             ${{ matrix.variant.artifact-path }}
 
-  ios-xcframework:
-    name: Generate Info.plist with all frameworks in place
-    needs: [build]
-    if: ${{ success() || failure() }}
-    runs-on: macos-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-        with:
-          submodules: "recursive"
-
-      - name: Download prebuilds
-        uses: actions/download-artifact@v3
-        with:
-          name: realm-js-prebuilds
-
-      - name: Regenerate Info.plist
-        run: scripts/regen-info-plist.sh packages/realm/react-native/ios/realm-js-ios.xcframework
-
-      # Due to a limitation in upload-artifact a redundant file is needed to force
-      # preserving paths (https://github.com/actions/upload-artifact/issues/174)
-      - name: Upload prebuild artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: realm-js-prebuilds
-          path: |
-            README.md
-            packages/realm/react-native/ios/realm-js-ios.xcframework/Info.plist
-
   integration-tests:
     name: Test ${{ matrix.variant.environment }} on ${{ matrix.variant.os }} (${{matrix.variant.target}})
-    needs: [bundle, build, ios-xcframework]
+    needs: [bundle, build]
     if: ${{ success() || failure() }}
     env:
       REALM_DISABLE_ANALYTICS: 1

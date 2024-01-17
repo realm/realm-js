@@ -72,6 +72,7 @@
     "bundle:coverage": "ENABLE_TEST_COVERAGE_INSTRUMENTATION=true npm run bundle",
     "bindgen:configure": "wireit",
     "bindgen:build:node": "wireit",
+    "bindgen:generate:jsi": "wireit",
     "bindgen:generate:typescript": "wireit",
     "bindgen:generate:wrappers": "wireit",
     "bindgen:generate:spec-schema": "wireit",
@@ -82,10 +83,6 @@
     "build:node:prebuild:x64": "wireit",
     "build:node:prebuild:ia32": "wireit",
     "build:android": "wireit",
-    "build:ios": "wireit",
-    "build:ios:debug:simulator": "wireit",
-    "build:ios:debug:ios": "wireit",
-    "build:ios:debug:catalyst": "wireit",
     "install": "prebuild-install --runtime napi || echo 'Failed to download prebuild for Realm'",
     "docs": "wireit",
     "postinstall": "node ./scripts/submit-analytics.mjs"
@@ -129,6 +126,24 @@
       "command": "cmake --build bindgen/build --target realm-js-node",
       "dependencies": [
         "bindgen:configure"
+      ]
+    },
+    "bindgen:generate:jsi": {
+      "command": "realm-bindgen --template bindgen/src/templates/jsi.ts --spec bindgen/vendor/realm-core/bindgen/spec.yml --spec bindgen/js_spec.yml --opt-in bindgen/js_opt_in_spec.yml --output ./react-native/shared",
+      "dependencies": [
+        "bindgen:generate:spec-schema"
+      ],
+      "files": [
+        "bindgen/vendor/realm-core/bindgen/spec.yml",
+        "bindgen/vendor/realm-core/bindgen/src",
+        "bindgen/js_spec.yml",
+        "bindgen/js_opt_in_spec.yml",
+        "bindgen/src",
+        "!bindgen/src/templates",
+        "bindgen/src/templates/jsi.ts"
+      ],
+      "output": [
+        "react-native/shared/jsi_init.cpp"
       ]
     },
     "bindgen:generate:typescript": {
@@ -228,45 +243,6 @@
         "bindgen/vendor/realm-core/bindgen/src/**/*.h",
         "bindgen/src/**/*.h"
       ]
-    },
-    "build:ios": {
-      "command": "scripts/build-ios.sh -c ${CONFIGURATION:=Release} ${PLATFORMS}",
-      "files": [
-        "../../src/ios/**",
-        "bindgen/src/**/*.ts",
-        "bindgen/vendor/realm-core/bindgen/src/**/*.ts",
-        "bindgen/vendor/realm-core/bindgen/src/**/*.h",
-        "bindgen/src/**/*.h"
-      ],
-      "env": {
-        "PLATFORMS": {
-          "external": true
-        },
-        "CONFIGURATION": {
-          "external": true
-        }
-      }
-    },
-    "build:ios:debug:simulator": {
-      "command": "npm run build:ios",
-      "env": {
-        "PLATFORMS": "simulator",
-        "CONFIGURATION": "Debug"
-      }
-    },
-    "build:ios:debug:ios": {
-      "command": "npm run build:ios",
-      "env": {
-        "PLATFORMS": "ios",
-        "CONFIGURATION": "Debug"
-      }
-    },
-    "build:ios:debug:catalyst": {
-      "command": "npm run build:ios",
-      "env": {
-        "PLATFORMS": "catalyst",
-        "CONFIGURATION": "Debug"
-      }
     },
     "docs": {
       "command": "typedoc",
