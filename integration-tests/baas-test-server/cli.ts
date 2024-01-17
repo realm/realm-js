@@ -28,14 +28,8 @@ dotenv.config({
 // Loading a .env from cwd too
 dotenv.config();
 
-const COMMON_ID_PREFIX = "arn:aws:ecs:us-east-1:969505754201:task/baas-container-service2/";
-
 function abbreviateId(id: string) {
-  return id.replace(COMMON_ID_PREFIX, "");
-}
-
-function expandId(id: string) {
-  return id.startsWith(COMMON_ID_PREFIX) ? id : COMMON_ID_PREFIX + id;
+  return id.split("/").pop();
 }
 
 export function wrapCommand<Argv>(command: (argv: Argv) => Promise<void>): (argv: Argv) => void {
@@ -180,7 +174,7 @@ yargs(hideBin(process.argv))
               }
             } else {
               console.log(`Stopping container '${abbreviateId(id)}'`);
-              await baasaas.stopContainer(expandId(id));
+              await baasaas.stopContainer(id);
             }
           } else {
             const containers = await baasaas.listContainers(true);
