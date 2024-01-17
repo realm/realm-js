@@ -18,9 +18,11 @@ AWS_ACCESS_KEY_ID=...
 AWS_SECRET_ACCESS_KEY=...
 ```
 
-Run the `start` script, sit back and relax as BaaS is pulled and started.
+Run the `start` script (calls the CLI's `docker` command), sit back and relax as BaaS is pulled and started.
 
 ```shell
+npm start
+# or
 npx baas-test-server docker
 ```
 
@@ -40,8 +42,10 @@ Ask your team how to get these.
 BAASAAS_KEY=...
 ```
 
-Run the `start` script, sit back and relax as BaaS is started remotely.
+Run the `baasaas:start` script (calls the CLI's `baasaas start` command), sit back and relax as BaaS is started remotely.
 
 ```shell
+npm run baasaas:start
+# or
 npx baas-test-server baasaas start
 ```
