@@ -18,7 +18,7 @@
 
 #import "RealmReact.h"
 
-#import <realm-js-ios/jsi_init.h>
+#import <jsi/jsi_init.h>
 
 #import <React/RCTBridge+Private.h>
 #import <React/RCTInvalidating.h>

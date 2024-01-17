@@ -31,16 +31,9 @@
     },
     "pod-install:simulator": {
       "command": "pod-install || (cd ios && bundle install && bundle exec pod install)",
-      "dependencies": [
-        {
-          "script": "../../../packages/realm:build:ios:debug:simulator",
-          "cascade": false
-        }
-      ],
       "clean": "if-file-deleted",
       "files": [
-        "ios/Podfile",
-        "../../../packages/realm/react-native/ios/realm-js-ios.xcframework"
+        "ios/Podfile"
       ],
       "output": [
         "ios/Pods",
@@ -57,15 +50,8 @@
     },
     "pod-install:catalyst": {
       "command": "pod-install || (cd ios && bundle install && bundle exec pod install)",
-      "dependencies": [
-        {
-          "script": "../../../packages/realm:build:ios:debug:catalyst",
-          "cascade": false
-        }
-      ],
       "files": [
-        "ios/Podfile",
-        "../../../packages/realm/react-native/ios/realm-js-ios.xcframework"
+        "ios/Podfile"
       ],
       "output": [
         "ios/Pods",
@@ -115,6 +101,7 @@
     "test:ios": {
       "command": "npm run common",
       "dependencies": [
+        "../../../packages/realm:bindgen:generate:jsi",
         "pod-install:simulator",
         "../../../packages/realm:bundle",
         "../../../packages/mocha-reporter:bundle"
@@ -127,6 +114,7 @@
     "test:catalyst": {
       "command": "npm run common",
       "dependencies": [
+        "../../../packages/realm:bindgen:generate:jsi",
         "pod-install:catalyst",
         "../../../packages/realm:bundle",
         "../../../packages/mocha-reporter:bundle"
@@ -166,8 +154,8 @@
     "watch:ios": {
       "command": "npm run common",
       "dependencies": [
+        "../../../packages/realm:bindgen:generate:jsi",
         "pod-install:simulator",
-        "../../../packages/realm:build:ios:debug:simulator",
         "../../../packages/realm:bundle",
         "../../../packages/mocha-reporter:bundle"
       ],
@@ -179,8 +167,8 @@
     "watch:catalyst": {
       "command": "npm run common",
       "dependencies": [
+        "../../../packages/realm:bindgen:generate:jsi",
         "pod-install:catalyst",
-        "../../../packages/realm:build:ios:debug:catalyst",
         "../../../packages/realm:bundle",
         "../../../packages/mocha-reporter:bundle"
       ],
