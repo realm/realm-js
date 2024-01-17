@@ -30,10 +30,10 @@ CDN_URL="https://static.realm.io/downloads/core/v$CORE_VERSION/$PLATFORM_NAME/Re
 # Check if URL is valid and reachable
 if ! curl --output /dev/null --silent --head --fail "$CDN_URL"; then
     echo "URL $CDN_URL is not valid or reachable."
-    BUILD_CORE = "true"
+    BUILD_REALM_CORE = "1"
 fi
 
-if $BUILD_CORE == "true"; then
+if [ "$BUILD_REALM_CORE" == "1" ]; then
     echo "Building realm-core..."
     pushd $PROJECT_ROOT/bindgen/vendor/realm-core
     ./tools/build-apple-device.sh -p $PLATFORM_NAME -c $CONFIGURATION

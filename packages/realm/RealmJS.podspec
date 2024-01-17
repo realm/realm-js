@@ -5,6 +5,8 @@ package = JSON.parse(File.read(File.expand_path('package.json', __dir__)))
 
 app_path = File.expand_path('../..', __dir__)
 
+build_realm_core = ENV["BUILD_REALM_CORE"] == "1"
+
 # There is no API to detect the use of "use_frameworks!" in the Podfile which depends on this Podspec.
 # The "React" framework is only available and should be used if the Podfile calls use_frameworks!
 # Therefore we make an assumption on the location of the Podfile and check if it contains "use_frameworks!" ...
@@ -92,6 +94,7 @@ Pod::Spec.new do |s|
     :input_file_lists => ["#{__dir__}/react-native/ios/input-files.xcfilelist"],
     :output_file_lists => ["#{__dir__}/react-native/ios/output-files.xcfilelist"],
     :script => <<-EOS
+    BUILD_REALM_CORE="#{build_realm_core ? '1' : '0'}"
     CMAKE_PATH="#{CMAKE_PATH}"
     source "#{__dir__}/scripts/generate-ios-libs.sh"
     EOS
