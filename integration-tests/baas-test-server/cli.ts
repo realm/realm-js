@@ -164,6 +164,11 @@ yargs(hideBin(process.argv))
         (yargs) => yargs.positional("id", { type: "string" }),
         wrapCommand(async ({ id = gha.getState("CONTAINER_ID") }) => {
           await printUserInfo();
+          if (GITHUB_ACTIONS && !id) {
+            console.log("Skipped stopping container, since an id could not be determined.");
+            return;
+          }
+
           if (id) {
             if (id === "all" || id === "mine" || id === "*") {
               console.log(`Stopping all your containers:`);
