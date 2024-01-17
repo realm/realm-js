@@ -486,6 +486,40 @@ describe("Mixed", () => {
           expectMatchingFlatDictionary(created.mixedWithDefaultDictionary);
         });
 
+        it("can create and access a dictionary (input: Spread embedded Realm object)", function (this: RealmContext) {
+          const created = this.realm.write(() => {
+            const { embeddedObject } = this.realm.create<IMixedAndEmbedded>(MixedAndEmbeddedSchema.name, {
+              embeddedObject: { value: 1 },
+            });
+            expect(embeddedObject).instanceOf(Realm.Object);
+
+            // Spread the embedded object in order to use its entries as a dictionary in Mixed.
+            return this.realm.create<IMixedSchema>(MixedSchema.name, {
+              value: { ...embeddedObject },
+            });
+          });
+
+          expect(created.value).instanceOf(Realm.Dictionary);
+          expect(created.value).deep.equals({ value: 1 });
+        });
+
+        it("can create and access a dictionary (input: Spread custom non-Realm object)", function (this: RealmContext) {
+          const created = this.realm.write(() => {
+            class CustomClass {
+              constructor(public value: number) {}
+            }
+            const customObject = new CustomClass(1);
+
+            // Spread the embedded object in order to use its entries as a dictionary in Mixed.
+            return this.realm.create<IMixedSchema>(MixedSchema.name, {
+              value: { ...customObject },
+            });
+          });
+
+          expect(created.value).instanceOf(Realm.Dictionary);
+          expect(created.value).deep.equals({ value: 1 });
+        });
+
         it("inserts list items via `push()`", function (this: RealmContext) {
           const created = this.realm.write(() => this.realm.create<IMixedSchema>(MixedSchema.name, { value: [] }));
           const list = created.value as Realm.List<any>;
