@@ -17,19 +17,43 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import assert from "node:assert";
+// import type {  } from "undici-types";
 
 const BAASAAS_BASE_URL = "https://us-east-1.aws.data.mongodb-api.com/app/baas-container-service-autzb/endpoint/";
 
-function createHeaders(appendKey = false) {
+function createHeaders(authenticated = false) {
   const headers: HeadersInit = {
     "Content-Type": "application/json",
   };
-  if (appendKey) {
+  if (authenticated) {
     const { BAASAAS_KEY } = process.env;
     assert(BAASAAS_KEY, "Missing BAASAAS_KEY env");
     headers["apiKey"] = BAASAAS_KEY;
   }
   return headers;
+}
+
+type RequestOptions = {
+  url: URL;
+  method: string;
+  authenticated: boolean;
+};
+
+async function request<R>(
+  { url, method, authenticated }: RequestOptions,
+  assertion: (response: unknown) => asserts response is R,
+): Promise<R> {
+  const response = await fetch(url, { method, headers: createHeaders(authenticated) });
+  if (response.ok) {
+    const json = await response.json();
+    assertion(json);
+    return json;
+  } else if (response.headers.get("content-type") === "application/json") {
+    const json = await response.json();
+    throw new Error(`Request failed (${response.status} / ${response.statusText}): ${JSON.stringify(json)}`);
+  } else {
+    throw new Error(`Request failed (${response.status} / ${response.statusText})`);
+  }
 }
 
 type StartedContainer = {
@@ -57,31 +81,22 @@ export async function startContainer(options: StartContainerOptions) {
   } else if ("branch" in options) {
     url.searchParams.append("branch", options.branch);
   }
-  const response = await fetch(url, { method: "POST", headers: createHeaders(true) });
-  assert(response.ok);
-  const json = await response.json();
-  assertStartedContainer(json);
-  return json;
+  return request({ url, method: "POST", authenticated: true }, assertStartedContainer);
 }
 
-type StopContainerResponse = {
-  /* TODO: Fill in */
-};
+type StopContainerResponse = Record<never, never>;
 
 function assertStopContainerResponse(value: unknown): asserts value is StopContainerResponse {
-  /* TODO: Fill in */
+  /* nothing to assert - for now */
 }
 
 export async function stopContainer(id: string) {
   const url = new URL("stopContainer", BAASAAS_BASE_URL);
   url.searchParams.append("id", id);
-  const response = await fetch(url, { method: "POST", headers: createHeaders(true) });
-  assert(response.ok);
-  const json = await response.json();
-  assertStopContainerResponse(json);
+  return request({ url, method: "POST", authenticated: true }, assertStopContainerResponse);
 }
 
-type ContainerStatus = {
+type Container = {
   id: string;
   lastStatus: "RUNNING" | "PENDING" | string;
   startedAt?: string;
@@ -93,7 +108,7 @@ type ContainerStatus = {
   tags: unknown[];
 };
 
-function assertContainerStatus(value: unknown): asserts value is ContainerStatus {
+function assertContainer(value: unknown): asserts value is Container {
   assert(typeof value === "object" && value !== null);
   assert("id" in value && typeof value.id === "string");
   assert("lastStatus" in value && typeof value.lastStatus === "string");
@@ -116,11 +131,7 @@ function assertContainerStatus(value: unknown): asserts value is ContainerStatus
 export async function containerStatus(id: string) {
   const url = new URL("containerStatus", BAASAAS_BASE_URL);
   url.searchParams.append("id", id);
-  const response = await fetch(url, { headers: createHeaders(true) });
-  assert(response.ok);
-  const json = await response.json();
-  assertContainerStatus(json);
-  return json;
+  return request({ url, method: "GET", authenticated: true }, assertContainer);
 }
 
 type Userinfo = {
@@ -203,19 +214,15 @@ function assertImages(value: unknown): asserts value is Images {
 
 export async function listImages() {
   const url = new URL("images", BAASAAS_BASE_URL);
-  const response = await fetch(url, { headers: createHeaders(false) });
-  assert(response.ok);
-  const json = await response.json();
-  assertImages(json);
-  return json;
+  return request({ url, method: "GET", authenticated: false }, assertImages);
 }
 
-type ListContainers = ContainerStatus[];
+type ContainerList = Container[];
 
-function assertListContainers(value: unknown): asserts value is ListContainers {
+function assertContainerList(value: unknown): asserts value is ContainerList {
   assert(Array.isArray(value));
   for (const element of value) {
-    assertContainerStatus(element);
+    assertContainer(element);
   }
 }
 
@@ -224,9 +231,5 @@ export async function listContainers(mine = false) {
   if (mine) {
     url.searchParams.append("mine", "true");
   }
-  const response = await fetch(url, { headers: createHeaders(true) });
-  assert(response.ok, response.statusText);
-  const json = await response.json();
-  assertListContainers(json);
-  return json;
+  return request({ url, method: "GET", authenticated: true }, assertContainerList);
 }
