@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import assert from "node:assert";
-import gha from "@actions/core";
 
 const BAASAAS_BASE_URL = "https://us-east-1.aws.data.mongodb-api.com/app/baas-container-service-autzb/endpoint/";
 
@@ -39,7 +38,8 @@ type StartedContainer = {
 
 function assertStartedContainer(value: unknown): asserts value is StartedContainer {
   assert(typeof value === "object" && value !== null);
-  assert("id" in value && typeof value.id === "string");
+  assert("id" in value);
+  assert.equal(typeof value.id, "string");
 }
 
 type StartContainerOptions =
@@ -84,7 +84,7 @@ export async function stopContainer(id: string) {
 type ContainerStatus = {
   id: string;
   lastStatus: "RUNNING" | "PENDING" | string;
-  startedAt: string | Record<never, never>;
+  startedAt?: string;
   createdAt: string;
   creatorId: string;
   creatorName: string;
@@ -97,10 +97,13 @@ function assertContainerStatus(value: unknown): asserts value is ContainerStatus
   assert(typeof value === "object" && value !== null);
   assert("id" in value && typeof value.id === "string");
   assert("lastStatus" in value && typeof value.lastStatus === "string");
-  assert("startedAt" in value && (typeof value.startedAt === "string" || typeof value.startedAt === "object"));
   assert("createdAt" in value && typeof value.createdAt === "string");
   assert("creatorId" in value && typeof value.creatorId === "string");
   assert("creatorName" in value && typeof value.creatorName === "string");
+  if ("startedAt" in value && typeof value.startedAt !== "string") {
+    // The service will sometimes respond with an empty object in `startedAt`
+    delete value.startedAt;
+  }
   if ("httpUrl" in value) {
     assert(typeof value.httpUrl === "string");
   }
