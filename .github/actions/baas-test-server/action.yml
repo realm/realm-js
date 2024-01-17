@@ -15,6 +15,8 @@ outputs:
     description: The url of the MongoDB instance backing the server created
 
 runs:
+  # Using "composite" here would be ideal,
+  # but it doesn't support a "stop" step, which we need to shutdown the server.
   using: node20
   main: start-server.js
   post: stop-server.js
