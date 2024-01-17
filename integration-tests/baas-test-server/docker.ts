@@ -20,7 +20,7 @@ import cp, { execSync } from "node:child_process";
 import assert from "node:assert";
 import chalk from "chalk";
 import { ExecError, UsageError } from "./helpers";
-import { listImages } from "./baasaas";
+import { listImages } from "./baasaas/client";
 
 const BAAS_CONTAINER_NAME = "baas-test-server";
 const BAAS_PORT = 9090;

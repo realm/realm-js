@@ -13,7 +13,7 @@ import waitFor from "p-wait-for";
 import gha from "@actions/core";
 
 import * as docker from "./docker";
-import * as baasaas from "./baasaas";
+import * as baasaas from "./baasaas/client";
 import { UsageError } from "./helpers";
 
 const GITHUB_ACTIONS = process.env.GITHUB_ACTIONS === "true";
