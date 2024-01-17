@@ -17,6 +17,7 @@ import * as baasaas from "./baasaas";
 import { UsageError } from "./helpers";
 
 const GITHUB_ACTIONS = process.env.GITHUB_ACTIONS === "true";
+const WAIT_FOR_SERVER_TIMEOUT = 2 * 60 * 1000;
 
 // Loading .env from the package directory
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -40,6 +41,7 @@ function expandId(id: string) {
 export function wrapCommand<Argv>(command: (argv: Argv) => Promise<void>): (argv: Argv) => void {
   return function (argv: Argv) {
     command(argv).catch((err) => {
+      process.exitCode = 1;
       console.error();
       if (err instanceof UsageError) {
         console.error(chalk.red(err.message));
@@ -59,18 +61,17 @@ async function printUserInfo() {
   }
 }
 
-async function waitForContainerUrls(id: string) {
+async function waitForContainerUrls(id: string, interval = 2000, timeout = 60000) {
   return waitFor(
     async () => {
       const { httpUrl, mongoUrl } = await baasaas.containerStatus(id);
       return typeof httpUrl === "string" && typeof mongoUrl === "string" && waitFor.resolveWith({ httpUrl, mongoUrl });
     },
-    { interval: 1000, timeout: 60000 },
+    { interval, timeout },
   );
 }
 
-async function waitForServer(baseUrl: string) {
-  const interval = 2000;
+async function waitForServer(baseUrl: string, interval = 2000, timeout = WAIT_FOR_SERVER_TIMEOUT) {
   return waitFor(
     async () => {
       try {
@@ -81,7 +82,7 @@ async function waitForServer(baseUrl: string) {
         return false;
       }
     },
-    { interval, timeout: 60000 },
+    { interval, timeout },
   );
 }
 
@@ -161,7 +162,6 @@ yargs(hideBin(process.argv))
             gha.setOutput("baas-url", httpUrl);
             gha.setOutput("mongo-url", mongoUrl);
           }
-          // TODO: On GitHub poll the triggering workflow run
         }),
       )
       .command(
