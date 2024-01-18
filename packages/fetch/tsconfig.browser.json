@@ -1,0 +1,16 @@
+{
+  "extends": [
+    "./tsconfig.base.json",
+  ],
+  "compilerOptions": {
+    "lib": ["DOM", "ES2023"],
+    "noEmit":  false,
+    "allowImportingTsExtensions": false
+  },
+  "files": [
+    "src/browser.ts"
+  ],
+  "references": [
+    { "path": "tsconfig.types.json" }
+  ]
+}

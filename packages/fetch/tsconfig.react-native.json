@@ -1,0 +1,17 @@
+{
+  "extends": [
+    "./tsconfig.base.json",
+    "@react-native/typescript-config/tsconfig.json",
+  ],
+  "compilerOptions": {
+    "types": ["react-native"],
+    "noEmit":  false,
+    "allowImportingTsExtensions": false
+  },
+  "files": [
+    "src/react-native.ts"
+  ],
+  "references": [
+    { "path": "tsconfig.types.json" }
+  ]
+}

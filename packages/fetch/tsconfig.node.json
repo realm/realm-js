@@ -1,0 +1,15 @@
+{
+  "extends": [
+    "./tsconfig.base.json",
+    "@tsconfig/node18/tsconfig.json",
+  ],
+  "compilerOptions": {
+    "module": "ES2022"
+  },
+  "files": [
+    "src/node.ts"
+  ],
+  "references": [
+    { "path": "tsconfig.types.json" }
+  ]
+}

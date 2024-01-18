@@ -1,0 +1,15 @@
+{
+  "extends": [
+    "./tsconfig.base.json"
+  ],
+  "compilerOptions": {
+    "types": [],
+    "noResolve": true,
+    "lib": [
+      "ES2023"
+    ]
+  },
+  "files": [
+    "./src/types.ts"
+  ]
+}

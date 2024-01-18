@@ -1,0 +1,9 @@
+{
+  "references": [
+    { "path": "tsconfig.browser.json" },
+    { "path": "tsconfig.node.json" },
+    { "path": "tsconfig.react-native.json" },
+    { "path": "tsconfig.types.json" },
+  ],
+  "files": []
+}

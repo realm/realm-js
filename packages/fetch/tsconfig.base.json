@@ -1,0 +1,13 @@
+{
+  "extends": "@tsconfig/recommended/tsconfig.json",
+  "compilerOptions": {
+    "composite": true,
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "module": "ES2022",
+    "baseUrl": ".",
+    "paths": {
+      "@realm/fetch": ["./src/types.ts"]
+    }
+  }
+}
