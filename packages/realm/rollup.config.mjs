@@ -74,7 +74,7 @@ export default [
         include: typescriptInclude,
       }),
     ],
-    external: ["bson", "debug", "node-fetch", "node:module", "node:fs", "node:path"],
+    external: ["bson", "debug", "node:module", "node:fs", "node:path"],
   },
   {
     input: "src/platform/react-native/index.ts",

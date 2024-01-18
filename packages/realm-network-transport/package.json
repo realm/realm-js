@@ -58,14 +58,11 @@
   },
   "license": "Apache-2.0",
   "dependencies": {
-    "@realm/common": "^0.1.4",
-    "abort-controller": "^3.0.0",
-    "node-fetch": "^2.6.9"
+    "@realm/common": "^0.1.4"
   },
   "devDependencies": {
     "@types/chai": "^4.2.10",
     "@types/mocha": "^5",
-    "@types/node-fetch": "^2.6.2",
     "chai": "4.3.6",
     "mocha": "^5.2.0"
   }

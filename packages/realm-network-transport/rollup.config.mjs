@@ -44,7 +44,6 @@ export default [
         noEmitOnError: true,
       }),
     ],
-    external: ["abort-controller", "node-fetch"],
   },
   {
     input: "src/dom/index.ts",

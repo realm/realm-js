@@ -278,7 +278,6 @@
   "dependencies": {
     "bson": "^4.7.2",
     "debug": "^4.3.4",
-    "node-fetch": "^2.6.9",
     "node-machine-id": "^1.1.12",
     "prebuild-install": "^7.1.1"
   },
@@ -305,6 +304,9 @@
     "prebuild": "^11.0.4",
     "react-native": "0.73.2",
     "typedoc-plugin-missing-exports": "^2.0.1"
+  },
+  "engines": {
+    "node": ">=18"
   },
   "repository": {
     "type": "git",

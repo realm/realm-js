@@ -28,10 +28,12 @@ As a script-tag in the head of a browser:
 - A limited selection of [services](https://docs.mongodb.com/stitch/services/) are implemented at the moment:
   - MongoDB: Read, write and watch MongoDB documents.
 
+<!--
 ## Using Realm Web in a Node.js environment
 
-You must install two additional peer dependencies when importing this package from Node.js:
+You must install two additional dependencies when importing this package from Node.js:
 
 ```
 npm install node-fetch abort-controller
 ```
+-->

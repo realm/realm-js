@@ -3,9 +3,7 @@
 	"compilerOptions": {
 		"noResolve": false,
 		"types": [
-			"node",
-			"node-fetch",
-			"abort-controller"
+			"node"
 		]
 	},
 	"exclude": [

@@ -88,21 +88,15 @@
     "detect-browser": "^5.2.1",
     "js-base64": "^3.7.2"
   },
-  "optionalDependencies": {
-    "abort-controller": "^3",
-    "node-fetch": "^3"
-  },
   "devDependencies": {
     "@types/chai": "^4.2.9",
     "@types/fs-extra": "^8.1.0",
     "@types/js-base64": "^3.3.1",
     "@types/mocha": "^10.0.6",
     "@types/node": "^18.15.10",
-    "abort-controller": "^3.0.0",
     "chai": "4.3.6",
     "fs-extra": "^10.0.0",
     "mocha": "^10.2.0",
-    "node-fetch": "^3.3.2",
     "@realm/network-transport": "^0.7.2"
   }
 }

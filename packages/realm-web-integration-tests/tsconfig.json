@@ -12,7 +12,6 @@
 			"mocha",
 			"puppeteer",
 			"realm-web",
-			"node-fetch",
 			"fs-extra",
 			"mocha-remote-client",
 			"jwt-encode"
