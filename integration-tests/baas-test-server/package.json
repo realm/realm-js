@@ -4,12 +4,21 @@
   "private": false,
   "type": "module",
   "main": "index.js",
+  "bin": {
+    "baas-test-server": "./cli.ts"
+  },
   "scripts": {
-    "start": "tsx index.ts"
+    "start": "baas-test-server docker",
+    "baasaas": "baas-test-server baasaas",
+    "baasaas:start": "baas-test-server baasaas start",
+    "baasaas:stop": "baas-test-server baasaas stop",
+    "baasaas:list": "baas-test-server baasaas list"
   },
   "dependencies": {
+    "@actions/core": "^1.10.1",
     "chalk": "^4.1.2",
     "dotenv": "^16.0.2",
+    "p-wait-for": "^5.0.2",
     "yargs": "^17.7.2"
   }
 }

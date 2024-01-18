@@ -39,10 +39,13 @@ import { buildAppConfig } from "../utils/build-app-config";
 import { closeRealm } from "../utils/close-realm";
 import { createPromiseHandle } from "../utils/promise-handle";
 import { importAppBefore } from "../hooks";
+import { baseUrl } from "../utils/import-app";
 
 // IMPORTANT:
 // * Can only run on non-Apple machines, otherwise tests will await forever.
-describe.skipIf(platform() === "darwin" || environment.missingServer, "SSL Configuration", function () {
+// * Can only run if the baseUrl points to a server using TLS / HTTPs.
+const missingTLS = baseUrl.startsWith("http://");
+describe.skipIf(platform() === "darwin" || environment.missingServer || missingTLS, "SSL Configuration", function () {
   this.longTimeout();
   importAppBefore(buildAppConfig("with-flx").anonAuth().flexibleSync());
 

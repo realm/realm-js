@@ -1,31 +1,51 @@
-# Run BaaS from source
+# Run a BaaS test server
 
-Run the Lerna bootstrap from the root of this repository.
+We're using an NPM workspace mono-repository, so first you need to install dependencies from the package root:
 
 ```shell
-npx lerna bootstrap --scope @realm/baas-test-server
+npm install
 ```
 
-Create a `.env` file with your `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` secrets.
+## Run BaaS locally using docker
+
+Create a `.env` file with your `AWS_PROFILE`, `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` secrets.
+Ask your team how to get these.
 
 ```shell
 # .env
+AWS_PROFILE=...
 AWS_ACCESS_KEY_ID=...
 AWS_SECRET_ACCESS_KEY=...
 ```
 
-A file called `assisted_agg` will be downloaded if it does not already exist in order for MongoDB aggregation tests to run.
-* When running the tests, Mac may block execution of the file. If so, go
-   to `System Settings > Privacy & Security` (for Mac), find blocked files, then allow `assisted_agg`.
-
-Run the `start` script, sit back and relax as a mongo server is started, BaaS is pulled, built and started with a proper configuration 🤞
+Run the `start` script (calls the CLI's `docker` command), sit back and relax as BaaS is pulled and started.
 
 ```shell
 npm start
+# or
+npx baas-test-server docker
 ```
 
 Visit the administrative UI in your browser, if you need to.
 
 ```shell
 open http://localhost:9090
+```
+
+## Run BaaS via the BaaSaaS infrastructure
+
+Create a `.env` file with your `BAASAAS_KEY` secrets.
+Ask your team how to get these.
+
+```shell
+# .env
+BAASAAS_KEY=...
+```
+
+Run the `baasaas:start` script (calls the CLI's `baasaas start` command), sit back and relax as BaaS is started remotely.
+
+```shell
+npm run baasaas:start
+# or
+npx baas-test-server baasaas start
 ```

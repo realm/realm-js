@@ -1,0 +1,22 @@
+name: Start BaaS test server
+description: Uses
+inputs:
+  branch:
+    description: BaaS branch to use when starting the server
+    default: master
+  githash:
+    description: Specific githash to use when starting the server (this is used instead of branch if provided)
+outputs:
+  container-id:
+    description: The id of the container created
+  baas-url:
+    description: The url of the BaaS server created
+  mongo-url:
+    description: The url of the MongoDB instance backing the server created
+
+runs:
+  # Using "composite" here would be ideal,
+  # but it doesn't support a "stop" step, which we need to shutdown the server.
+  using: node20
+  main: start-server.js
+  post: stop-server.js
