@@ -22,6 +22,7 @@ concurrency:
 
 env:
   REALM_DISABLE_ANALYTICS: 1
+  BAAS_BRANCH: master
 
 jobs:
   job:
@@ -41,23 +42,15 @@ jobs:
       - name: Run unit tests
         run: npm test --workspace realm-web
 
-      - name: Generate server configuration
-        id: baas-config
-        run:
-          suffix=$(node -p 'Math.floor(Math.random()*Number.MAX_SAFE_INTEGER)');
-          subdomain="realm-js-test-server-${{ github.run_id }}-${{ github.run_attempt }}-${suffix}";
-          echo "subdomain=${subdomain}" >> $GITHUB_OUTPUT;
-          echo "url=https://${subdomain}.ngrok.io" >> $GITHUB_OUTPUT;
-
-      - name: Trigger the test server workflow to start the server
-        run: gh workflow run test-server.yml -f ngrok_subdomain=${{ steps.baas-config.outputs.subdomain }} -f run_id=${{ github.run_id }} -f server_tag=${{ env.BAAS_TAG }}
+      - name: Start BaaS test server
+        id: baas
+        uses: ./.github/actions/baas-test-server
+        with:
+          branch: ${{ env.BAAS_BRANCH }}
         env:
-          GH_TOKEN: ${{ github.token }}
-
-      - name: Wait for the server to start
-        run: npx wait-on ${{ steps.baas-config.outputs.url }}
+          BAASAAS_KEY: ${{ secrets.BAASAAS_KEY }}
 
       - name: Run integration tests
         run: npm test --workspace realm-web-integration-tests
         env:
-          BAAS_BASE_URL: ${{ steps.baas-config.outputs.url }}
+          BAAS_BASE_URL: ${{ steps.baas.outputs.baas-url }}
