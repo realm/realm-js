@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { safeGlobalThis } from "@realm/common";
+import { makeRequestBodyIterable } from "../IterableReadableStream";
 
 export * from "../index";
 
@@ -25,6 +26,7 @@ import { AbortController, Fetch } from "../types";
 
 DefaultNetworkTransport.fetch = safeGlobalThis.fetch.bind(safeGlobalThis) as Fetch;
 DefaultNetworkTransport.AbortController = safeGlobalThis.AbortController.bind(safeGlobalThis) as AbortController;
+DefaultNetworkTransport.transformResponse = makeRequestBodyIterable;
 
 // Setting this non-standard option to enable text streaming
 // See https://github.com/react-native-community/fetch#enable-text-streaming

@@ -19,9 +19,7 @@
 export type AppConfig = {
   name: string;
   sync?: SyncConfig;
-  security?: {
-    allowed_request_origins?: string[];
-  };
+  security?: SecurityConfig;
   // Additional config below
   secrets: Record<string, string>;
   values: Record<string, string>;
@@ -32,6 +30,10 @@ export type AppConfig = {
 
 export type SyncConfig = {
   development_mode_enabled: boolean;
+};
+
+export type SecurityConfig = {
+  allowed_request_origins?: string[];
 };
 
 export type ServiceConfig = {
@@ -45,7 +47,7 @@ export type ServiceConfig = {
     | (FlexibleSyncConfig & WithAtlas)
     | WithAtlas;
 
-  secret_config: Record<string, unknown>;
+  secret_config?: Record<string, unknown>;
   version?: number;
 };
 
@@ -55,7 +57,7 @@ export type WithAtlas = {
   wireProtocolEnabled: boolean;
 };
 
-export type ServiceRule = {
+export type MongoDBServiceRule = {
   roles: Array<{
     name: string;
     apply_when: unknown; // {}
@@ -69,6 +71,13 @@ export type ServiceRule = {
     delete: boolean;
   }>;
 };
+
+export type HTTPServiceRule = {
+  name: string;
+  actions: string[];
+};
+
+export type ServiceRule = HTTPServiceRule | MongoDBServiceRule;
 
 export type AuthProviderConfig = {
   name: string;
@@ -209,6 +218,11 @@ export class AppConfigBuilder {
 
   function(config: FunctionConfig) {
     this.config.functions.push(config);
+    return this;
+  }
+
+  security(config: SecurityConfig) {
+    this.config.security = config;
     return this;
   }
 }

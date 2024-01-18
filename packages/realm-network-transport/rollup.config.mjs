@@ -30,6 +30,7 @@ export default [
       {
         file: pkg.main,
         format: "cjs",
+        interop: "auto",
       },
       {
         file: pkg.module,
@@ -51,6 +52,7 @@ export default [
       {
         file: pkg.browser[pkg.main],
         format: "cjs",
+        interop: "auto",
       },
       {
         file: pkg.browser[pkg.module],
