@@ -4,6 +4,7 @@
   ],
   "compilerOptions": {
     "lib": ["DOM", "ES2023"],
+    "types": [],
     "noEmit":  false,
     "allowImportingTsExtensions": false
   },

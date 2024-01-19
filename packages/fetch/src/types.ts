@@ -16,7 +16,21 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export declare function fetch(input: string, init?: RequestInit): void;
+export declare function fetch<RequestBody>(input: string, init?: RequestInit<RequestBody>): void;
+
+export type RequestCredentials = "include" | "omit" | "same-origin";
+
+export interface Headers {
+  append(name: string, value: string): void;
+  delete(name: string): void;
+  get(name: string): string | null;
+  has(name: string): boolean;
+  set(name: string, value: string): void;
+  forEach(callbackfn: (value: string, key: string, parent: Headers) => void, thisArg?: any): void;
+  getSetCookie(): string[];
+}
+
+export type FetchHeadersInit = /*string[][] | Headers |*/ Record<string, string>;
 
 export interface RequestInit<RequestBody = unknown> {
   /**
@@ -26,13 +40,11 @@ export interface RequestInit<RequestBody = unknown> {
   /**
    * A string indicating whether credentials will be sent with the request always, never, or only when sent to a same-origin URL. Sets request's credentials.
    */
-  // credentials?: FetchRequestCredentials;
-  credentials?: unknown;
+  credentials?: RequestCredentials;
   /**
    * A Headers object, an object literal, or an array of two-item arrays to set request's headers.
    */
-  // headers?: FetchHeadersInit;
-  headers?: unknown;
+  headers?: FetchHeadersInit;
   /**
    * A cryptographic hash of the resource to be fetched by request. Sets request's integrity.
    */
@@ -49,10 +61,10 @@ export interface RequestInit<RequestBody = unknown> {
    * A string to indicate whether the request will use CORS, or will be restricted to same-origin URLs. Sets request's mode.
    */
   // mode?: FetchRequestMode;
-  mode?: unknown;
+  // mode?: unknown;
   /**
    * An AbortSignal to set request's signal.
    */
   // signal?: AbortSignal | null;
-  signal?: unknown;
+  // signal?: unknown;
 }
