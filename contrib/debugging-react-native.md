@@ -14,9 +14,12 @@ In your realm-js project, run the following commands to prepare for debug mode:
 ```
 # install js dependencies, but skip building the node binaries
 $ npm install --ignore-scripts
+```
 
-# build the xcframework
-$ ./scripts/build-ios.sh -c Debug -s
+When running `pod install` for iOS, be sure to set the environment variable `BUILD_REALM_CORE=1`.  This will flag core to be built from source with the Debug configuration.
+
+```
+BUILD_REALM_CORE=1 npx pod-install
 ```
 
 You are now prepared to either use the [ReactTestApp](#setup-reacttestapp) or [prepare a custom project](#setup-custom-react-native-project)
@@ -30,7 +33,7 @@ There is a test application in `tests/ReactTestApp` which will run all the unit 
 $ cd tests
 $ npm install
 
-# install the test app dependencies and copy realm and realm tests into node_modules using `install-local` 
+# install the test app dependencies and copy realm and realm tests into node_modules using `install-local`
 $ cd ReactTestApp
 $ npm install
 $ npx install-local
@@ -41,8 +44,8 @@ $ open ios/ReactTestApp.xcworkspace
 ```
 
 You should now be able to move onto
-- [Debugging Javascript](#debugging-javascript) 
-- [Debugging C++](#debugging-c++) 
+- [Debugging Javascript](#debugging-javascript)
+- [Debugging C++](#debugging-c++)
 
 ## Setup Custom React Native Project
 
