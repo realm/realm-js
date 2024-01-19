@@ -16,6 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import type * as types from "@realm/fetch";
+import type * as types from "./types";
 
 export const fetch = globalThis.fetch satisfies typeof types.fetch;

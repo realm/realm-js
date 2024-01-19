@@ -4,10 +4,6 @@
     "composite": true,
     "outDir": "./dist",
     "rootDir": "./src",
-    "module": "ES2022",
-    "baseUrl": ".",
-    "paths": {
-      "@realm/fetch": ["./src/types.ts"]
-    }
+    "module": "ES2022"
   }
 }
