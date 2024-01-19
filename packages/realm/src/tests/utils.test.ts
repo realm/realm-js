@@ -18,7 +18,7 @@
 
 import { expect } from "chai";
 
-import { isPOJO } from "src/PropertyHelpers";
+import { isPOJO } from "../PropertyHelpers";
 
 describe("utils/helpers", () => {
   describe("isPOJO()", () => {
