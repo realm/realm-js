@@ -32,6 +32,20 @@ declare class UniversalAbortSignal {
 
 export { UniversalAbortSignal as AbortSignal };
 
+declare class AbortController<AbortSignal = UniversalAbortSignal> {
+  /**
+   * Returns the AbortSignal object associated with this object.
+   */
+  readonly signal: AbortSignal;
+
+  /**
+   * Invoking this method will set this object's AbortSignal's aborted flag and signal to any observers that the associated activity is to be aborted.
+   */
+  abort(): void;
+}
+
+export { AbortController };
+
 export declare function fetch<
   RequestBody = UniversalRequestBody,
   AbortSignal extends UniversalAbortSignal = UniversalAbortSignal,

@@ -27,3 +27,6 @@ class PolyfilledAbortSignal extends AbortSignal {
 }
 PolyfilledAbortSignal satisfies typeof types.AbortSignal;
 export { PolyfilledAbortSignal as AbortSignal };
+
+const ReactNativeAbortController = AbortController satisfies typeof types.AbortController<AbortSignal>;
+export { ReactNativeAbortController as AbortController };
