@@ -18,17 +18,19 @@
 
 export type UniversalRequestBody = string | null;
 
-export declare class UniversalAbortSignal {
+declare class UniversalAbortSignal {
+  static timeout(time: number): UniversalAbortSignal;
   /**
    * Returns true if this AbortSignal's AbortController has signaled to abort, and false otherwise.
    */
   readonly aborted: boolean;
-  // onabort: null | ((this: AbortSignal, event: Event) => any);
 
   // The following properties are optional because they're missing from the react-native types
   readonly reason?: unknown;
   throwIfAborted?(): void;
 }
+
+export { UniversalAbortSignal as AbortSignal };
 
 export declare function fetch<
   RequestBody = UniversalRequestBody,
