@@ -22,8 +22,8 @@
     - [Building for Node.js](#building-for-nodejs)
       - [Additional steps for Windows](#additional-steps-for-windows)
       - [Building for ARM/Linux](#building-for-armlinux)
-    - [Building the documentation](#building-the-documentation)
     - [Cleaning up build files](#cleaning-up-build-files)
+    - [Building the documentation](#building-the-documentation)
   - [Running the tests](#running-the-tests)
     - [Linting the source code](#linting-the-source-code)
       - [JS/TS](#jsts)
@@ -201,8 +201,14 @@ Other editors should also be able to be configured to use the `compile_commands.
 You can build and bundle for iOS by running the following command from the root directory:
 
 ```sh
-npm run build:ios --workspace realm
+npm run bindgen:generate:jsi  --workspace realm
 npm run bundle --workspace realm
+```
+
+In the consuming project, be sure to enable building core from source by setting the environment variable `BUILD_REALM_CORE`.
+This can either be set globally or locally before running `pod install`:
+```
+BUILD_REALM_CORE=1 pod install
 ```
 
 ### Building for Android
@@ -210,6 +216,7 @@ npm run bundle --workspace realm
 You can build and bundle for Android by running the following command from the root directory:
 
 ```sh
+npm run bindgen:generate:jsi  --workspace realm
 npm run build:android --workspace realm
 npm run bundle --workspace realm
 ```
