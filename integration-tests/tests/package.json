@@ -17,13 +17,13 @@
 		"ci:coverage": "wireit"
 	},
 	"wireit": {
-    "lint": {
-      "command": "eslint --ext .js,.ts . && tsc --noEmit",
-      "dependencies": [
-        "../../packages/realm-network-transport:bundle",
+		"lint": {
+			"command": "eslint --ext .js,.ts . && tsc --noEmit",
+			"dependencies": [
+				"../../packages/realm-network-transport:bundle",
 				"../../packages/realm:bundle"
-      ]
-    },
+			]
+		},
 		"build": {
 			"command": "tsc",
 			"dependencies": [
@@ -93,7 +93,7 @@
 		"chai": "4.3.6",
 		"chai-as-promised": "^7.1.1",
 		"concurrently": "^6.0.2",
-		"jsrsasign": "^10.6.1"
+		"jsrsasign": "^11.0.0"
 	},
 	"files": [
 		"/src"
