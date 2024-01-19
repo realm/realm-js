@@ -16,10 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export type UniversalRequestBody = string | null;
+export type ResponseType = "basic" | "cors" | "default" | "error" | "opaque" | "opaqueredirect";
+export type RequestCredentials = "include" | "omit" | "same-origin";
+export type RequestMode = "cors" | "navigate" | "no-cors" | "same-origin";
 
-declare class UniversalAbortSignal {
-  static timeout(time: number): UniversalAbortSignal;
+export type RequestBody = string | null;
+
+declare class AbortSignal {
+  static timeout(time: number): AbortSignal;
   /**
    * Returns true if this AbortSignal's AbortController has signaled to abort, and false otherwise.
    */
@@ -30,13 +34,13 @@ declare class UniversalAbortSignal {
   throwIfAborted?(): void;
 }
 
-export { UniversalAbortSignal as AbortSignal };
+export { AbortSignal as AbortSignal };
 
-declare class AbortController<AbortSignal = UniversalAbortSignal> {
+declare class AbortController<PlatformAbortSignal = AbortSignal> {
   /**
    * Returns the AbortSignal object associated with this object.
    */
-  readonly signal: AbortSignal;
+  readonly signal: PlatformAbortSignal;
 
   /**
    * Invoking this method will set this object's AbortSignal's aborted flag and signal to any observers that the associated activity is to be aborted.
@@ -46,33 +50,72 @@ declare class AbortController<AbortSignal = UniversalAbortSignal> {
 
 export { AbortController };
 
-export declare function fetch<
-  RequestBody = UniversalRequestBody,
-  AbortSignal extends UniversalAbortSignal = UniversalAbortSignal,
->(input: string, init?: RequestInit<RequestBody, AbortSignal>): void;
-
-export type RequestCredentials = "include" | "omit" | "same-origin";
-export type RequestMode = "cors" | "navigate" | "no-cors" | "same-origin";
-export interface Headers extends IterableIterator<[string, string]> {
+export declare class Headers {
   append(name: string, value: string): void;
   delete(name: string): void;
   get(name: string): string | null;
   has(name: string): boolean;
   set(name: string, value: string): void;
-  forEach(callbackfn: (value: string, key: string, parent: Headers) => void): void;
-  getSetCookie(): string[];
-  keys(): IterableIterator<string>;
-  values(): IterableIterator<string>;
-  entries(): IterableIterator<[string, string]>;
+  forEach(callbackfn: (value: string, key: string, parent: this) => void): void;
+  getSetCookie?(): string[];
+  keys?(): IterableIterator<string>;
+  values?(): IterableIterator<string>;
+  entries?(): IterableIterator<[string, string]>;
+  [Symbol.iterator]?(): Iterator<[string, string]>;
 }
 
-export type FetchHeadersInit = Headers | Record<string, string> /* | string[][] */;
+export type ReadableStream = unknown;
+export type Blob = unknown;
+export type FormData = unknown;
 
-export interface RequestInit<RequestBody = unknown, AbortSignal = UniversalAbortSignal> {
+export declare class Response<PlatformHeaders extends Headers = Headers> {
+  // constructor (body?: BodyInit, init?: ResponseInit);
+
+  readonly headers: PlatformHeaders;
+  readonly ok: boolean;
+  readonly status: number;
+  readonly statusText: string;
+  readonly type: ResponseType;
+  readonly url: string;
+  readonly redirected: boolean;
+
+  readonly body?: ReadableStream | null;
+  readonly bodyUsed: boolean;
+
+  readonly arrayBuffer: () => Promise<ArrayBuffer>;
+  readonly blob: () => Promise<Blob>;
+  readonly formData: () => Promise<FormData>;
+  readonly json: () => Promise<unknown>;
+  readonly text: () => Promise<string>;
+
+  readonly clone: () => this;
+
+  /*
+  static error(): Response;
+  static json(data: any, init?: ResponseInit): Response;
+  static redirect(url: string | URL, status: ResponseRedirectStatus): Response;
+  */
+}
+
+export declare function fetch<
+  PlatformRequestBody = RequestBody,
+  PlatformHeaders extends Headers = Headers,
+  PlatformAbortSignal extends AbortSignal = AbortSignal,
+  PlatformResponse extends Response<PlatformHeaders> = Response<PlatformHeaders>,
+>(
+  input: string,
+  init?: RequestInit<PlatformRequestBody, PlatformHeaders, PlatformAbortSignal>,
+): Promise<PlatformResponse>;
+
+export interface RequestInit<
+  PlatformRequestBody = RequestBody,
+  PlatformHeaders = Headers,
+  PlatformAbortSignal = AbortSignal,
+> {
   /**
    * A BodyInit object or null to set request's body.
    */
-  body?: RequestBody;
+  body?: PlatformRequestBody;
   /**
    * A string indicating whether credentials will be sent with the request always, never, or only when sent to a same-origin URL. Sets request's credentials.
    */
@@ -80,7 +123,7 @@ export interface RequestInit<RequestBody = unknown, AbortSignal = UniversalAbort
   /**
    * A Headers object, an object literal, or an array of two-item arrays to set request's headers.
    */
-  headers?: FetchHeadersInit;
+  headers?: PlatformHeaders | Record<string, string>;
   /**
    * A cryptographic hash of the resource to be fetched by request. Sets request's integrity.
    */
@@ -100,6 +143,6 @@ export interface RequestInit<RequestBody = unknown, AbortSignal = UniversalAbort
   /**
    * An AbortSignal to set request's signal.
    */
-  signal?: AbortSignal;
+  signal?: PlatformAbortSignal;
   // signal?: unknown;
 }

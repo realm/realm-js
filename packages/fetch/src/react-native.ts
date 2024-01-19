@@ -18,7 +18,9 @@
 
 import type * as types from "./types";
 
-export const fetch = globalThis.fetch satisfies typeof types.fetch<BodyInit_, AbortSignal>;
+export const fetch = globalThis.fetch satisfies typeof types.fetch<BodyInit_, Headers, AbortSignal, Response>;
+
+export const Headers = globalThis.Headers satisfies typeof types.Headers;
 
 class PolyfilledAbortSignal extends AbortSignal {
   static timeout(): PolyfilledAbortSignal {
