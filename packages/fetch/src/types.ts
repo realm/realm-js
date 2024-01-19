@@ -20,17 +20,20 @@ export declare function fetch<RequestBody>(input: string, init?: RequestInit<Req
 
 export type RequestCredentials = "include" | "omit" | "same-origin";
 
-export interface Headers {
+export interface Headers extends IterableIterator<[string, string]> {
   append(name: string, value: string): void;
   delete(name: string): void;
   get(name: string): string | null;
   has(name: string): boolean;
   set(name: string, value: string): void;
-  forEach(callbackfn: (value: string, key: string, parent: Headers) => void, thisArg?: any): void;
+  forEach(callbackfn: (value: string, key: string, parent: Headers) => void): void;
   getSetCookie(): string[];
+  keys(): IterableIterator<string>;
+  values(): IterableIterator<string>;
+  entries(): IterableIterator<[string, string]>;
 }
 
-export type FetchHeadersInit = /*string[][] | Headers |*/ Record<string, string>;
+export type FetchHeadersInit = Headers | Record<string, string> /* | string[][] */;
 
 export interface RequestInit<RequestBody = unknown> {
   /**
