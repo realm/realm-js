@@ -16,10 +16,27 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export declare function fetch<RequestBody>(input: string, init?: RequestInit<RequestBody>): void;
+export type UniversalRequestBody = string | null;
+
+export declare class UniversalAbortSignal {
+  /**
+   * Returns true if this AbortSignal's AbortController has signaled to abort, and false otherwise.
+   */
+  readonly aborted: boolean;
+  // onabort: null | ((this: AbortSignal, event: Event) => any);
+
+  // The following properties are optional because they're missing from the react-native types
+  readonly reason?: unknown;
+  throwIfAborted?(): void;
+}
+
+export declare function fetch<
+  RequestBody = UniversalRequestBody,
+  AbortSignal extends UniversalAbortSignal = UniversalAbortSignal,
+>(input: string, init?: RequestInit<RequestBody, AbortSignal>): void;
 
 export type RequestCredentials = "include" | "omit" | "same-origin";
-
+export type RequestMode = "cors" | "navigate" | "no-cors" | "same-origin";
 export interface Headers extends IterableIterator<[string, string]> {
   append(name: string, value: string): void;
   delete(name: string): void;
@@ -35,7 +52,7 @@ export interface Headers extends IterableIterator<[string, string]> {
 
 export type FetchHeadersInit = Headers | Record<string, string> /* | string[][] */;
 
-export interface RequestInit<RequestBody = unknown> {
+export interface RequestInit<RequestBody = unknown, AbortSignal = UniversalAbortSignal> {
   /**
    * A BodyInit object or null to set request's body.
    */
@@ -63,11 +80,10 @@ export interface RequestInit<RequestBody = unknown> {
   /**
    * A string to indicate whether the request will use CORS, or will be restricted to same-origin URLs. Sets request's mode.
    */
-  // mode?: FetchRequestMode;
-  // mode?: unknown;
+  mode?: RequestMode;
   /**
    * An AbortSignal to set request's signal.
    */
-  // signal?: AbortSignal | null;
+  signal?: AbortSignal;
   // signal?: unknown;
 }

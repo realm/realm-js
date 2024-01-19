@@ -20,4 +20,4 @@ import type { BodyInit } from "undici-types";
 
 import type * as types from "./types";
 
-export const fetch = globalThis.fetch satisfies typeof types.fetch<BodyInit>;
+export const fetch = globalThis.fetch satisfies typeof types.fetch<BodyInit, AbortSignal>;
