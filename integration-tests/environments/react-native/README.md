@@ -18,13 +18,19 @@ To install this environment, run the following command from the root directory o
 npx lerna bootstrap --scope @realm/react-native-tests --include-dependencies
 ```
 
-For iOS environments run 
+For iOS environments run
 
 ```bash
-npx pod-install 
+npx pod-install
 ```
 
 within the `integration-tests/environments/react-native` directory.
+
+To build iOS with debug symbols, run `pod install` with the environment variable `BUILD_REALM_CORE`.
+
+```bash
+BUILD_REALM_CORE=1 npx pod-install
+```
 
 ## Running the tests
 
@@ -216,5 +222,5 @@ Open the `package.json` of both `react-native` and `react-native-backup`:
 Install dependencies again to run the `prepare` script (from the root of the repository):
 
 ```bash
-npx lerna bootstrap
+npm install
 ```
