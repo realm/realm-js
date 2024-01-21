@@ -20,7 +20,11 @@ import type * as types from "./types";
 
 globalThis.fetch satisfies typeof types.fetch<BodyInit_, Headers, AbortSignal, Response>;
 
-export async function fetch(input: RequestInfo, init?: RequestInit) {
+export async function fetch(input: RequestInfo, init: RequestInit = {}) {
+  // Setting additional options to signal to the RN fetch polyfill that it shouldn't consider the response a "blob"
+  // see https://github.com/react-native-community/fetch/issues/15
+  (init as Record<string, unknown>).reactNative = { textStreaming: true };
+
   const response = await globalThis.fetch(input, init);
   if (!response.statusText) {
     Object.assign(response, { status: getStatusText(response.status) });
