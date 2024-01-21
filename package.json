@@ -60,7 +60,6 @@
     "packages/realm",
     "packages/realm-web",
     "packages/realm-common",
-    "packages/realm-network-transport",
     "packages/realm-app-importer",
     "packages/realm-react",
     "packages/realm-tools",
