@@ -4,6 +4,7 @@
     "@react-native/typescript-config/tsconfig.json",
   ],
   "compilerOptions": {
+    "outDir": "./dist/react-native",
     "types": ["react-native"],
     "noEmit":  false,
     "allowImportingTsExtensions": false

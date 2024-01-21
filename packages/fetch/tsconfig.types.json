@@ -3,6 +3,7 @@
     "./tsconfig.base.json"
   ],
   "compilerOptions": {
+    "outDir": "./dist/types",
     "types": [],
     "noResolve": true,
     "lib": [

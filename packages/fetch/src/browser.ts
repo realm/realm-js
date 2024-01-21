@@ -18,7 +18,7 @@
 
 import type * as types from "./types";
 
-export const fetch = globalThis.fetch satisfies typeof types.fetch<BodyInit, Headers, AbortSignal, Response>;
 export const Headers = globalThis.Headers satisfies typeof types.Headers;
 export const AbortSignal = globalThis.AbortSignal satisfies typeof types.AbortSignal;
 export const AbortController = globalThis.AbortController satisfies typeof types.AbortController<AbortSignal>;
+export const fetch = globalThis.fetch satisfies typeof types.fetch<BodyInit, Headers, AbortSignal, Response>;

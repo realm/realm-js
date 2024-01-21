@@ -20,7 +20,7 @@ export type ResponseType = "basic" | "cors" | "default" | "error" | "opaque" | "
 export type RequestCredentials = "include" | "omit" | "same-origin";
 export type RequestMode = "cors" | "navigate" | "no-cors" | "same-origin";
 
-export type RequestBody = string | null; // TODO: Add TypedArray and ReadableStream
+export type RequestBody = ReadableStream | string | null; // TODO: Add TypedArray
 
 declare class AbortSignal {
   static timeout(time: number): AbortSignal;
@@ -101,13 +101,14 @@ export declare class Response<PlatformHeaders extends Headers = Headers> {
  * @todo Missing declarations for `constructor`, `pipeThrough`, `pipeTo` and `tee`.
  */
 
-export type ReadableStream = {
+export type ReadableStream<T = unknown> = {
   /**
    * Creates a reader and locks the stream to it.
    * While the stream is locked, no other reader can be acquired until this one is released.
    * @see https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream/getReader
    */
-  getReader(): StreamReader;
+  getReader(): ReadableStreamDefaultReader<T>;
+  getReader(options: { mode: "byob" }): unknown;
 
   /**
    * Cancel is used when you've completely finished with the stream and don't need any more data from it, even if there are chunks enqueued waiting to be read.
@@ -115,9 +116,21 @@ export type ReadableStream = {
    * @see https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream/cancel
    */
   cancel: (reason?: string) => Promise<void>;
-} & AsyncIterable<Uint8Array>;
+}; // & AsyncIterable<T>;
 
-export type StreamReader = {
+export type ReadableStreamReadDoneResult<T> = {
+  done: true;
+  value?: T;
+};
+
+export type ReadableStreamReadValueResult<T> = {
+  done: false;
+  value: T;
+};
+
+export type ReadableStreamReadResult<T> = ReadableStreamReadValueResult<T> | ReadableStreamReadDoneResult<T>;
+
+export type ReadableStreamDefaultReader<T = unknown> = {
   /**
    * a Promise that fulfills when the stream closes, or rejects if the stream throws an error or the reader's lock is released.
    */
@@ -133,13 +146,13 @@ export type StreamReader = {
    * @returns a Promise providing access to the next chunk in the stream's internal queue.
    * @see https://developer.mozilla.org/en-US/docs/Web/API/ReadableStreamDefaultReader/read
    */
-  read<T>(): Promise<{ value: T; done: false } | { value?: undefined; done: true }>;
+  read(): Promise<ReadableStreamReadResult<T>>;
   /**
    * Releases the reader's lock on the stream.
    * @see https://developer.mozilla.org/en-US/docs/Web/API/ReadableStreamDefaultReader/releaseLock
    */
   releaseLock(): void;
-} & AsyncIterable<Uint8Array>;
+}; //  & AsyncIterable<Uint8Array>;
 
 export declare function fetch<
   PlatformRequestBody = RequestBody,
@@ -188,5 +201,4 @@ export interface RequestInit<
    * An AbortSignal to set request's signal.
    */
   signal?: PlatformAbortSignal;
-  // signal?: unknown;
 }

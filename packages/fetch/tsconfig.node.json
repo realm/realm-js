@@ -4,6 +4,7 @@
     "@tsconfig/node18/tsconfig.json",
   ],
   "compilerOptions": {
+    "outDir": "./dist/node",
     "module": "ES2022"
   },
   "files": [

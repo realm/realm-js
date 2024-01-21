@@ -21,10 +21,10 @@
   },
   "exports": {
     ".": {
-      "node": "./dist/node.js",
-      "react-native": "./dist/react-native.js",
-      "browser": "./dist/browser.js",
-      "types": "./types.d.ts"
+      "node": "./dist/node/node.js",
+      "react-native": "./dist/react-native/react-native.js",
+      "browser": "./dist/browser/browser.js",
+      "types": "./dist/types/types.d.ts"
     }
   },
   "devDependencies": {

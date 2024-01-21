@@ -3,6 +3,7 @@
     "./tsconfig.base.json",
   ],
   "compilerOptions": {
+    "outDir": "./dist/browser",
     "lib": ["DOM", "ES2023"],
     "types": [],
     "noEmit":  false,
