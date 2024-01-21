@@ -12,7 +12,7 @@
 		],
 		"types": [
 			"@realm/common",
-			"@realm/network-transport",
+			"@realm/fetch",
 			"realm",
 			"js-base64",
 			"bson",

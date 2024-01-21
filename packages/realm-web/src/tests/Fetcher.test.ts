@@ -21,13 +21,13 @@ import { expect } from "chai";
 import { Fetcher } from "../Fetcher";
 import { User } from "../User";
 
-import { MockNetworkTransport, SENDING_JSON_HEADERS, ACCEPT_JSON_HEADERS } from "./utils";
+import { SENDING_JSON_HEADERS, ACCEPT_JSON_HEADERS, createMockFetch } from "./utils";
 
 describe("Fetcher", () => {
   it("constructs", () => {
     const fetcher = new Fetcher({
       appId: "test-app-id",
-      transport: new MockNetworkTransport(),
+      fetch: createMockFetch([]),
       userContext: { currentUser: null },
       locationUrlContext: {
         locationUrl: Promise.resolve("http://localhost:1337"),
@@ -37,10 +37,10 @@ describe("Fetcher", () => {
   });
 
   it("sends access token when requesting", async () => {
-    const transport = new MockNetworkTransport([{ foo: "bar" }]);
+    const fetch = createMockFetch([{ foo: "bar" }]);
     const fetcher = new Fetcher({
       appId: "test-app-id",
-      transport,
+      fetch,
       userContext: {
         currentUser: { accessToken: "my-access-token" } as User,
       },
@@ -56,7 +56,7 @@ describe("Fetcher", () => {
       headers: { Cookie: "yes-please" },
     });
     // Expect something of the request and response
-    expect(transport.requests).deep.equals([
+    expect(fetch.requests).deep.equals([
       {
         method: "POST",
         url: "http://localhost:1337/w00t",
@@ -72,10 +72,10 @@ describe("Fetcher", () => {
   });
 
   it("allows overwriting headers", async () => {
-    const transport = new MockNetworkTransport([{}]);
+    const fetch = createMockFetch([{}]);
     const fetcher = new Fetcher({
       appId: "test-app-id",
-      transport,
+      fetch,
       userContext: {
         currentUser: { accessToken: "my-access-token" } as User,
       },
@@ -92,7 +92,7 @@ describe("Fetcher", () => {
       },
     });
     // Expect something of the request
-    expect(transport.requests).deep.equals([
+    expect(fetch.requests).deep.equals([
       {
         method: "GET",
         url: "http://localhost:1337/w00t",

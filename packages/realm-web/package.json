@@ -23,7 +23,8 @@
     "bundle": {
       "command": "rollup --config",
       "dependencies": [
-        "generate-types"
+        "generate-types",
+        "../fetch:bundle"
       ],
       "files": [
         "rollup.config.mjs",
@@ -39,8 +40,7 @@
     "generate-types": {
       "command": "tsc --project src/dom/tsconfig.json --declaration --emitDeclarationOnly --declarationDir types/generated",
       "dependencies": [
-        "../realm-common:bundle",
-        "../realm-network-transport:bundle"
+        "../realm-common:bundle"
       ],
       "files": [
         "src/**/*.ts",
@@ -89,13 +89,13 @@
     "js-base64": "^3.7.2"
   },
   "devDependencies": {
+    "@realm/fetch": "^0.1.0",
     "@types/chai": "^4.2.9",
     "@types/fs-extra": "^8.1.0",
     "@types/js-base64": "^3.3.1",
     "@types/mocha": "^10.0.6",
     "chai": "4.3.6",
     "fs-extra": "^10.0.0",
-    "mocha": "^10.2.0",
-    "@realm/network-transport": "^0.7.2"
+    "mocha": "^10.2.0"
   }
 }

@@ -76,4 +76,4 @@ export const INVALID_SESSION_ERROR = new MongoDBRealmError(
 
 export * from "./MockApp";
 export * from "./MockFetcher";
-export * from "./MockNetworkTransport";
+export * from "./MockFetch";

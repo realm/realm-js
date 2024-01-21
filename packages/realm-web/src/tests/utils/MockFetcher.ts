@@ -19,14 +19,14 @@
 import { Fetcher, AuthenticatedRequest, UserContext } from "../../Fetcher";
 import { User } from "../../User";
 
-import { MockNetworkTransport } from "./MockNetworkTransport";
+import { MockFetch, createMockFetch } from "./MockFetch";
 
 /**
  * A mock of the fetcher useful when testing.
  */
 export class MockFetcher extends Fetcher {
   private readonly mockUserContext: UserContext;
-  private readonly mockTransport: MockNetworkTransport;
+  private readonly mockFetch: MockFetch;
 
   /**
    * Construct a mocked network transport which returns pre-recorded requests.
@@ -34,16 +34,16 @@ export class MockFetcher extends Fetcher {
    * @param userContext An object defining the current user.
    */
   constructor(responses: unknown[] = [], userContext: UserContext = { currentUser: null }) {
-    const mockTransport = new MockNetworkTransport(responses);
+    const mockFetch = createMockFetch(responses);
     super({
       appId: "mocked-app-id",
       userContext: userContext,
       locationUrlContext: {
         locationUrl: Promise.resolve("http://localhost:1337"),
       },
-      transport: mockTransport,
+      fetch: mockFetch,
     });
-    this.mockTransport = mockTransport;
+    this.mockFetch = mockFetch;
     this.mockUserContext = userContext;
   }
 
@@ -55,6 +55,6 @@ export class MockFetcher extends Fetcher {
    * @returns List of all requests captured.
    */
   public get requests(): AuthenticatedRequest<any>[] {
-    return this.mockTransport.requests;
+    return this.mockFetch.requests;
   }
 }

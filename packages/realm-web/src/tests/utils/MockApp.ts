@@ -19,7 +19,7 @@
 import { App } from "../../App";
 import { MemoryStorage } from "../../storage";
 
-import { MockNetworkTransport } from "./MockNetworkTransport";
+import { createMockFetch, MockFetch } from "./MockFetch";
 
 /**
  * An App using the MockTransport
@@ -28,7 +28,7 @@ export class MockApp extends App<any> {
   /**
    * The mock network transport created when creating this mock app.
    */
-  public readonly mockTransport: MockNetworkTransport;
+  public readonly mockFetch: MockFetch;
 
   /**
    * Create mocked App, useful when testing.
@@ -36,19 +36,19 @@ export class MockApp extends App<any> {
    * @param requests An array of requests returned by the underlying mocked network transport.
    */
   constructor(id = "my-mocked-app", requests: unknown[] = []) {
-    const transport = new MockNetworkTransport(requests);
+    const mockFetch = createMockFetch(requests);
     const storage = new MemoryStorage();
     super({
       id,
       baseUrl: "http://localhost:1234",
       storage,
-      transport,
+      fetch: mockFetch,
     });
-    this.mockTransport = transport;
+    this.mockFetch = mockFetch;
   }
 
   /** @returns All the requests issued via this mocked app. */
   get requests() {
-    return this.mockTransport.requests;
+    return this.mockFetch.requests;
   }
 }

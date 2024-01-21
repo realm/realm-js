@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { NetworkTransport, DefaultNetworkTransport } from "@realm/network-transport";
+import { fetch } from "@realm/fetch";
 import { ObjectId } from "bson";
 
 import { User, UserState } from "./User";
@@ -26,7 +26,7 @@ import { Storage } from "./storage";
 import { AppStorage } from "./AppStorage";
 import { getEnvironment } from "./environment";
 import { AuthResponse, Authenticator } from "./Authenticator";
-import { Fetcher, UserContext } from "./Fetcher";
+import { FetchFunction, Fetcher, UserContext } from "./Fetcher";
 import routes from "./routes";
 import { DeviceInformation, DEVICE_ID_STORAGE_KEY } from "./DeviceInformation";
 
@@ -44,7 +44,7 @@ export interface AppConfiguration extends Realm.AppConfiguration {
   /**
    * Transport to use when fetching resources.
    */
-  transport?: NetworkTransport;
+  fetch?: FetchFunction;
   /**
    * Used when persisting app state, such as tokens of authenticated users.
    */
@@ -152,13 +152,13 @@ export class App<
       this._locationUrl = Promise.resolve(this.baseUrl);
     }
     this.localApp = configuration.app;
-    const { storage, transport = new DefaultNetworkTransport() } = configuration;
+    const { storage } = configuration;
     // Construct a fetcher wrapping the network transport
     this.fetcher = new Fetcher({
       appId: this.id,
       userContext: this as UserContext,
       locationUrlContext: this,
-      transport,
+      fetch: configuration.fetch ?? fetch,
     });
     // Construct the auth providers
     this.emailPasswordAuth = new EmailPasswordAuth(this.fetcher);

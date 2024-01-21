@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Method, FetchResponse, Request } from "@realm/network-transport";
+import { RequestInit, Response } from "@realm/fetch";
 
 // TODO: Determine if the shape of an error response is specific to each service or widely used.
 
@@ -27,7 +27,7 @@ export class MongoDBRealmError extends Error {
   /**
    * The method used when requesting.
    */
-  public readonly method: Method;
+  public readonly method: string;
   /**
    * The URL of the resource which got fetched.
    */
@@ -56,15 +56,17 @@ export class MongoDBRealmError extends Error {
   /**
    * Constructs and returns an error from a request and a response.
    * Note: The caller must throw this error themselves.
+   * @param url The url of the requested resource.
    * @param request The request sent to the server.
    * @param response A raw response, as returned from the server.
    * @returns An error from a request and a response.
    */
   public static async fromRequestAndResponse(
-    request: Request<unknown>,
-    response: FetchResponse,
+    url: string,
+    request: RequestInit<unknown>,
+    response: Response,
   ): Promise<MongoDBRealmError> {
-    const { url, method } = request;
+    const { method = "unknown" } = request;
     const { status, statusText } = response;
     if (response.headers.get("content-type")?.startsWith("application/json")) {
       const body = await response.json();
@@ -85,7 +87,7 @@ export class MongoDBRealmError extends Error {
   }
 
   constructor(
-    method: Method,
+    method: string,
     url: string,
     statusCode: number,
     statusText: string,
