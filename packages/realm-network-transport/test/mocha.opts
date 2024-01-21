@@ -1,3 +1,0 @@
---watch-extensions ts
---require ts-node/register/transpile-only
---file src/node/index.ts

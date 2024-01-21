@@ -20,7 +20,6 @@ on:
         options:
         - '@realm/babel-plugin'
         - '@realm/common'
-        - '@realm/network-transport'
         - '@realm/react'
         - '@realm/tools'
         - '@realm/web'
@@ -49,13 +48,6 @@ jobs:
               "VERSION_PREFIX": "realm-common-",
               "RELEASE_TITLE": "Realm Common",
               "SDK_NAME": "Common"
-            },
-            "@realm/network-transport": {
-              "PACKAGE_PATH": "packages/realm-network-transport",
-              "PACKAGE_NAME": "@realm/network-transport",
-              "VERSION_PREFIX": "realm-network-transport-",
-              "RELEASE_TITLE": "Realm Network Transport",
-              "SDK_NAME": "Network Transport"
             },
             "@realm/react": {
               "PACKAGE_PATH": "packages/realm-react",

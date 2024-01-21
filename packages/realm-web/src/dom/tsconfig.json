@@ -4,7 +4,7 @@
 		"noResolve": true,
 		"types": [
 			"@realm/common",
-			"@realm/network-transport",
+			"@realm/fetch",
 			"js-base64",
 			"bson",
 			"buffer",

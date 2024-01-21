@@ -6,7 +6,6 @@ on:
       # Only run when the PR makes changes to the packages
       - "packages/realm-web/**"
       - "packages/realm-web-integration-tests/**"
-      - "packages/realm-network-transport/**"
       - "packages/realm-common/**"
       - "packages/realm-app-importer/**"
       # Changing types might also affect Realm Web
