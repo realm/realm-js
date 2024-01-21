@@ -87,7 +87,7 @@ export default [
       nodeResolve({
         mainFields: ["react-native", "browser", "module", "main"],
         exportConditions: ["react-native", "browser", "module", "main"],
-        resolveOnly: ["@realm/network-transport", "path-browserify"],
+        resolveOnly: ["path-browserify"],
       }),
       // We need to use `commonjs` because of "path-browserify"
       commonjs(),

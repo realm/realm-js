@@ -16,48 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { DefaultNetworkTransport, FetchHeaders, FetchResponse, Method, Request } from "@realm/network-transport";
+import { fetch } from "@realm/fetch";
 
-import { extendDebug } from "../debug";
-import * as binding from "../binding";
+type NetworkType = { fetch: typeof fetch };
 
-export type { FetchHeaders, Request };
-
-const debug = extendDebug("network");
-const transport = new DefaultNetworkTransport();
-
-type NetworkType = {
-  fetch(request: Request): Promise<FetchResponse>;
-  fetch(request: binding.Request): Promise<FetchResponse>;
-};
-
-const HTTP_METHOD: Record<binding.HttpMethod, Method> = {
-  [binding.HttpMethod.Get]: "GET",
-  [binding.HttpMethod.Post]: "POST",
-  [binding.HttpMethod.Put]: "PUT",
-  [binding.HttpMethod.Patch]: "PATCH",
-  [binding.HttpMethod.Del]: "DELETE",
-};
-
-function toFetchRequest({ method, timeoutMs, body, headers, url }: binding.Request_Relaxed) {
-  return {
-    url,
-    headers,
-    method: HTTP_METHOD[method],
-    timeoutMs: Number(timeoutMs),
-    body: body !== "" ? body : undefined,
-  };
-}
-
-export const network: NetworkType = {
-  async fetch(request) {
-    debug("Requesting %O", request);
-    const fetchRequest = typeof request.method === "string" ? request : toFetchRequest(request);
-    const response = await transport.fetch(fetchRequest);
-    debug("Responded %O", response);
-    return response;
-  },
-};
+export const network: NetworkType = { fetch };
 
 export function inject(injected: NetworkType) {
   Object.freeze(Object.assign(network, injected));

@@ -310,11 +310,12 @@ export class User<
       serviceName,
     );
 
-    const response = await network.fetch(request);
+    const response = await network.fetch(...binding.toFetchArgs(request));
     assert(response.ok, () => `Request failed: ${response.statusText} (${response.status})`);
     assert(response.body, "Expected a body in the response");
 
-    return response.body;
+    throw new Error("ReadableStream is not yet implementing AsyncIterable");
+    // return response.body;
   }
 
   /**

@@ -97,7 +97,7 @@
         "build:node",
         "bindgen:generate:typescript",
         "bindgen:generate:wrappers",
-        "../realm-network-transport:bundle"
+        "../fetch:bundle"
       ]
     },
     "bundle": {
@@ -108,9 +108,9 @@
         }
       },
       "dependencies": [
-        "../realm-network-transport:bundle",
         "bindgen:generate:typescript",
-        "bindgen:generate:wrappers"
+        "bindgen:generate:wrappers",
+        "../fetch:bundle"
       ],
       "files": [
         "rollup.config.mjs",
@@ -291,7 +291,7 @@
   },
   "devDependencies": {
     "@realm/bindgen": "^0.1.0",
-    "@realm/network-transport": "^0.7.2",
+    "@realm/fetch": "^0.1.0",
     "@types/chai": "^4.3.3",
     "@types/mocha": "^10.0.0",
     "@types/node": "^18.19.8",
