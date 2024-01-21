@@ -27,8 +27,12 @@
       "types": "./dist/types/types.d.ts"
     }
   },
+  "types": "./dist/types/types.d.ts",
   "devDependencies": {
     "@tsconfig/node18": "^18.2.2",
     "@tsconfig/recommended": "^1.0.3"
+  },
+  "engines": {
+    "node": ">=18"
   }
 }
