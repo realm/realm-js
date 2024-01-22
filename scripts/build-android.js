@@ -27,13 +27,13 @@ const packageRoot = path.resolve(__dirname, "..");
 
 const NDK_VERSION = "25.1.8937393";
 
-const { ANDROID_SDK_ROOT } = process.env;
-if (!fs.existsSync(ANDROID_SDK_ROOT)) {
-  console.error(`Missing the Android SDK ${ANDROID_SDK_ROOT}`);
+const { ANDROID_HOME } = process.env;
+if (!fs.existsSync(ANDROID_HOME)) {
+  console.error(`Missing the Android SDK ${ANDROID_HOME}`);
   process.exit(1);
 }
 
-const ndkPath = path.resolve(ANDROID_SDK_ROOT, "ndk", NDK_VERSION);
+const ndkPath = path.resolve(ANDROID_HOME, "ndk", NDK_VERSION);
 if (!fs.existsSync(ndkPath)) {
   const cmd = `sdkmanager --install "ndk;${NDK_VERSION}"`;
   console.error(`Missing Android NDK v${NDK_VERSION} (${ndkPath}) - run: ${cmd}`);
