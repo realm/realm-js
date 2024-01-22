@@ -31,6 +31,7 @@ import {
   ProviderType,
   PushClient,
   assert,
+  asyncIteratorFromResponse,
   binding,
   cleanArguments,
   createFactory,
@@ -314,8 +315,7 @@ export class User<
     assert(response.ok, () => `Request failed: ${response.statusText} (${response.status})`);
     assert(response.body, "Expected a body in the response");
 
-    throw new Error("ReadableStream is not yet implementing AsyncIterable");
-    // return response.body;
+    return asyncIteratorFromResponse(response);
   }
 
   /**
