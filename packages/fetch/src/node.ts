@@ -21,6 +21,7 @@ import type { ReadableStream } from "node:stream/web";
 
 import type * as types from "./types";
 
+// The sole purpose of this line is to verify types
 ({}) as ReadableStream satisfies types.ReadableStream;
 
 export const Headers = globalThis.Headers satisfies typeof types.Headers;

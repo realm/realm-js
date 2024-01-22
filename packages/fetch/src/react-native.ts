@@ -18,6 +18,7 @@
 
 import type * as types from "./types";
 
+// The sole purpose of this line is to verify types
 globalThis.fetch satisfies typeof types.fetch<BodyInit_, Headers, AbortSignal, Response>;
 
 export async function fetch(input: RequestInfo, init: RequestInit = {}) {
