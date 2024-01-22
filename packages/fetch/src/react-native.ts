@@ -29,6 +29,7 @@ export async function fetch(input: RequestInfo, init: RequestInit = {}) {
   if (!response.statusText) {
     Object.assign(response, { status: getStatusText(response.status) });
   }
+  return response;
 }
 
 export const Headers = globalThis.Headers satisfies typeof types.Headers;
