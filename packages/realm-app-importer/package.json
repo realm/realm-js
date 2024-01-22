@@ -6,7 +6,19 @@
   "main": "./src/index.ts",
   "scripts": {
     "lint": "eslint --ext .js,.ts .",
-    "test": "mocha"
+    "test": "mocha",
+    "type-check": "wireit"
+  },
+  "wireit": {
+    "type-check": {
+      "command": "tsc",
+      "files": [
+        "tsconfig.json"
+      ],
+      "dependencies": [
+        "../fetch:bundle"
+      ]
+    }
   },
   "files": [
     "dist",
