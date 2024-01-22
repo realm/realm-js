@@ -32,8 +32,8 @@ export type FetchFunction = typeof fetch<unknown>;
 type SimpleObject = Record<string, unknown>;
 
 /**
- * @param body.body
- * @param body A possible resonse body.
+ * @param body A possible resonse.
+ * @param body.body A possible resonse body.
  * @returns An async iterator.
  */
 function asyncIteratorFromResponseBody({ body }: Response): AsyncIterable<Uint8Array> {
@@ -296,14 +296,14 @@ export class Fetcher implements LocationUrlContext {
   public async fetchStream<RequestBody = unknown>(
     request: AuthenticatedRequest<RequestBody>,
   ): Promise<AsyncIterable<Uint8Array>> {
-    const { body } = await this.fetch({
+    const response = await this.fetch({
       ...request,
       headers: {
         Accept: "text/event-stream",
         ...request.headers,
       },
     });
-    return asyncIteratorFromResponseBody(body);
+    return asyncIteratorFromResponseBody(response);
   }
 
   /**

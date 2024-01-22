@@ -49,7 +49,11 @@ export default [
       typescript({
         tsconfig: "src/node/tsconfig.json",
       }),
-      nodeResolve(),
+      nodeResolve({
+        mainFields: ["module", "main"],
+        exportConditions: ["node", "module", "main"],
+        modulesOnly: true,
+      }),
       replacer,
     ],
     external: ["bson"],
@@ -71,11 +75,13 @@ export default [
     ],
     plugins: [
       commonjs(),
+      nodeResolve({
+        mainFields: ["browser", "module", "main"],
+        exportConditions: ["browser", "module", "main"],
+        modulesOnly: true,
+      }),
       typescript({
         tsconfig: "src/dom/tsconfig.json",
-      }),
-      nodeResolve({
-        browser: true,
       }),
       replacer,
     ],
@@ -96,7 +102,9 @@ export default [
         tsconfig: "src/dom/tsconfig.json",
       }),
       nodeResolve({
-        browser: true,
+        mainFields: ["browser", "module", "main"],
+        exportConditions: ["browser", "module", "main"],
+        modulesOnly: true,
         preferBuiltins: false,
       }),
       replacer,
@@ -114,7 +122,9 @@ export default [
         // Ensures that the @realm/fetch types are included in the bundle
         respectExternal: true,
       }),
-      nodeResolve(),
+      nodeResolve({
+        modulesOnly: true,
+      }),
     ],
     external: ["bson"],
   },
