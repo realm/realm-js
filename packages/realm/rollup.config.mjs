@@ -58,6 +58,7 @@ export default [
       nodeResolve({
         modulesOnly: true,
         preferBuiltins: true,
+        exportConditions: ["node", "module", "main"],
       }),
       replace({
         preventAssignment: true,
