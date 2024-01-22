@@ -1,5 +1,6 @@
 {
   "name": "@realm/fetch",
+  "version": "0.1.0",
   "module": "true",
   "private": true,
   "scripts": {
