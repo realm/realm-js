@@ -19,7 +19,7 @@
 			"buffer"
 		],
 		"lib": [
-			"es2019"
+			"es2022"
 		]
 	},
 	"include": [

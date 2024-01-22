@@ -31,31 +31,31 @@ export type FetchFunction = typeof fetch<unknown>;
 
 type SimpleObject = Record<string, unknown>;
 
-type StreamReader = {
-  closed: boolean;
-  cancel(reason?: string): Promise<string | undefined>;
-  read<T>(): Promise<{ value: T | undefined; done: boolean }>;
-  releaseLock(): void;
-};
-type ReadableStream = { getReader(): StreamReader; cancel: () => void };
-
 /**
+ * @param body.body
  * @param body A possible resonse body.
  * @returns An async iterator.
  */
-function asyncIteratorFromResponseBody(body: unknown): AsyncIterable<Uint8Array> {
+function asyncIteratorFromResponseBody({ body }: Response): AsyncIterable<Uint8Array> {
   if (typeof body !== "object" || body === null) {
     throw new Error("Expected a non-null object");
   } else if (Symbol.asyncIterator in body) {
     return body as AsyncIterable<Uint8Array>;
   } else if ("getReader" in body) {
-    const stream = body as ReadableStream;
     return {
       [Symbol.asyncIterator]() {
-        const reader = stream.getReader();
+        const reader = body.getReader();
         return {
-          next() {
-            return reader.read();
+          async next() {
+            const { done, value } = await reader.read();
+            if (done) {
+              // TODO: Simply return the result once https://github.com/microsoft/TypeScript-DOM-lib-generator/pull/1676 is merged and released
+              return { done, value: undefined };
+            } else if (value instanceof Uint8Array) {
+              return { done, value };
+            } else {
+              throw new Error("Expected value to be Uint8Array");
+            }
           },
           async return() {
             await reader.cancel();
@@ -192,13 +192,7 @@ export class Fetcher implements LocationUrlContext {
     }
   }
 
-  /**
-   * The id of the app, which this Fetcher was created for.
-   */
-  private readonly appId: string;
-  private readonly fetchFunction: FetchFunction;
-  private readonly userContext: UserContext;
-  private readonly locationUrlContext: LocationUrlContext;
+  private readonly config: FetcherConfig;
 
   /**
    * @param config A configuration of the fetcher.
@@ -206,21 +200,14 @@ export class Fetcher implements LocationUrlContext {
    * @param config.fetch The fetch function used when fetching.
    * @param config.userContext An object used to determine the requesting user.
    * @param config.locationUrlContext An object used to determine the location / base URL.
-   * @param config.transport
    */
-  constructor({ appId, fetch, userContext, locationUrlContext }: FetcherConfig) {
-    this.appId = appId;
-    this.fetchFunction = fetch;
-    this.userContext = userContext;
-    this.locationUrlContext = locationUrlContext;
+  constructor(config: FetcherConfig) {
+    this.config = config;
   }
 
   clone(config: Partial<FetcherConfig>): Fetcher {
     return new Fetcher({
-      appId: this.appId,
-      fetch: this.fetchFunction,
-      userContext: this.userContext,
-      locationUrlContext: this.locationUrlContext,
+      ...this.config,
       ...config,
     });
   }
@@ -231,16 +218,16 @@ export class Fetcher implements LocationUrlContext {
    * @returns The response from the server.
    */
   public async fetch<RequestBody = unknown>(request: AuthenticatedRequest<RequestBody>): Promise<Response> {
-    const { path, url, tokenType = "access", user = this.userContext.currentUser, ...restOfRequest } = request;
+    const { path, url, tokenType = "access", user = this.config.userContext.currentUser, ...restOfRequest } = request;
 
     if (typeof path === "string" && typeof url === "string") {
       throw new Error("Use of 'url' and 'path' mutually exclusive");
     } else if (typeof path === "string") {
       // Derive the URL
-      const url = (await this.locationUrlContext.locationUrl) + path;
+      const url = (await this.config.locationUrlContext.locationUrl) + path;
       return this.fetch({ ...request, path: undefined, url });
     } else if (typeof url === "string") {
-      const response = await this.fetchFunction(url, {
+      const response = await this.config.fetch(url, {
         ...restOfRequest,
         headers: {
           ...Fetcher.buildAuthorizationHeader(user, tokenType),
@@ -323,13 +310,13 @@ export class Fetcher implements LocationUrlContext {
    * @returns The path of the app route.
    */
   public get appRoute() {
-    return routes.api().app(this.appId);
+    return routes.api().app(this.config.appId);
   }
 
   /**
    * @returns A promise of the location URL of the app.
    */
   public get locationUrl(): Promise<string> {
-    return this.locationUrlContext.locationUrl;
+    return this.config.locationUrlContext.locationUrl;
   }
 }

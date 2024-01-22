@@ -118,9 +118,10 @@ export type ReadableStream<T = unknown> = {
   cancel: (reason?: string) => Promise<void>;
 }; // & AsyncIterable<T>;
 
-export type ReadableStreamReadDoneResult<T> = {
+export type ReadableStreamReadDoneResult = {
   done: true;
-  value?: T;
+  // TODO: Make this `value: undefined` when https://github.com/microsoft/TypeScript-DOM-lib-generator/pull/1676 is merged and released
+  value?: unknown;
 };
 
 export type ReadableStreamReadValueResult<T> = {
@@ -128,7 +129,9 @@ export type ReadableStreamReadValueResult<T> = {
   value: T;
 };
 
-export type ReadableStreamReadResult<T> = ReadableStreamReadValueResult<T> | ReadableStreamReadDoneResult<T>;
+export type ReadableStreamReadResult<TValue = unknown> =
+  | ReadableStreamReadValueResult<TValue>
+  | ReadableStreamReadDoneResult;
 
 export type ReadableStreamDefaultReader<T = unknown> = {
   /**
