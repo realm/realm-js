@@ -18,6 +18,9 @@
 
 import { Response } from "@realm/fetch";
 
+// Falling back on a known string used in code transpiled by Babel
+const asyncIteratorSymbol: typeof Symbol.asyncIterator = Symbol.asyncIterator || "@@asyncIterator";
+
 /** @internal */
 export function asyncIteratorFromResponse({ body }: Response): AsyncIterable<Uint8Array> {
   if (typeof body !== "object" || body === null) {
@@ -26,7 +29,7 @@ export function asyncIteratorFromResponse({ body }: Response): AsyncIterable<Uin
     return body as AsyncIterable<Uint8Array>;
   } else if ("getReader" in body) {
     return {
-      [Symbol.asyncIterator]() {
+      [asyncIteratorSymbol]() {
         const reader = body.getReader();
         return {
           async next() {
