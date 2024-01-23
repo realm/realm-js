@@ -21,9 +21,6 @@ import {
   ClassHelpers,
   Collection,
   Dictionary,
-  GeoBox,
-  GeoCircle,
-  GeoPolygon,
   INTERNAL,
   List,
   ObjCreator,
@@ -38,6 +35,9 @@ import {
   binding,
   boxToBindingGeospatial,
   circleToBindingGeospatial,
+  isGeoBox,
+  isGeoCircle,
+  isGeoPolygon,
   polygonToBindingGeospatial,
   safeGlobalThis,
 } from "./internal";
@@ -141,12 +141,14 @@ export function mixedToBinding(
         }
       }
     }
+
     // Convert typed arrays to an `ArrayBuffer`
     for (const TypedArray of TYPED_ARRAY_CONSTRUCTORS) {
       if (value instanceof TypedArray) {
         return value.buffer.slice(value.byteOffset, value.byteOffset + value.byteLength);
       }
     }
+
     // Rely on the binding for any other value
     return value as binding.MixedArg;
   }
@@ -183,21 +185,6 @@ function mixedFromBinding(options: TypeOptions, value: binding.MixedArg): unknow
   } else {
     return value;
   }
-}
-
-function isGeoCircle(value: object): value is GeoCircle {
-  return "distance" in value && "center" in value && typeof value["distance"] === "number";
-}
-
-function isGeoBox(value: object): value is GeoBox {
-  return "bottomLeft" in value && "topRight" in value;
-}
-
-function isGeoPolygon(value: object): value is GeoPolygon {
-  return (
-    ("type" in value && value["type"] === "Polygon" && "coordinates" in value && Array.isArray(value["coordinates"])) ||
-    ("outerRing" in value && Array.isArray(value["outerRing"]))
-  );
 }
 
 function defaultToBinding(value: unknown): binding.MixedArg {
