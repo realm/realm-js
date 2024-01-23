@@ -297,23 +297,31 @@ export class Realm {
    * @note The log level can be changed during the lifetime of the application.
    * @since 12.0.0
    */
-  public static setLogLevel(arg: LogLevel | LogArgs) {
+  static setLogLevel(_arg: LogLevel | LogArgs) {
     // It is not possible to overload a static function: https://github.com/microsoft/TypeScript/issues/18945
-    if ((arg as LogArgs).level) {
-      const level = (arg as LogArgs).level;
-      const category = (arg as LogArgs).category;
-      if (category) {
-        assert(category in Object.values(LogCategory));
-        binding.LogCategoryRef.getCategory(category).setDefaultLevelThreshold(toBindingLoggerLevel(level));
+    // FIXME: do use `arguments` but find a proper type
+    if (arguments.length === 1) {
+      // eslint-disable-next-line prefer-rest-params
+      const arg = arguments[0];
+      if (arg.level) {
+        const level = arg.level;
+        if (arg[0].category) {
+          const category = arg.category;
+          assert(Object.values(LogCategory).includes(category));
+          binding.LogCategoryRef.getCategory(category).setDefaultLevelThreshold(toBindingLoggerLevel(level));
+        } else {
+          Object.values(LogCategory).forEach((category) => {
+            Realm.setLogLevel({ level, category });
+          });
+        }
       } else {
+        const level = arg;
         Object.values(LogCategory).forEach((category) => {
           Realm.setLogLevel({ level, category });
         });
       }
     } else {
-      Object.values(LogCategory).forEach((category) => {
-        Realm.setLogLevel({ level: arg, category } as LogArgs);
-      });
+      throw new Error(`Wrong number of arguments - expected 1, got ${arguments.length}`);
     }
   }
 
@@ -1907,7 +1915,7 @@ declare global {
 
 // Set default logger and log level.
 Realm.setLogger(defaultLogger);
-Realm.setLogLevel(LogCategory.Realm, defaultLoggerLevel);
+Realm.setLogLevel({ category: LogCategory.Realm, level: defaultLoggerLevel });
 
 // Patch the global at runtime
 let warnedAboutGlobalRealmUse = false;
