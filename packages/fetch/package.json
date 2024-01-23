@@ -21,7 +21,10 @@
     }
   },
   "exports": {
-    "node": "./dist/node/node.js",
+    "node": {
+      "import": "./dist/node-esm/node.js",
+      "require": "./dist/node-cjs/node.js"
+    },
     "react-native": "./dist/react-native/react-native.js",
     "browser": "./dist/browser/browser.js",
     "types": "./dist/types/types.d.ts"

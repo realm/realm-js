@@ -1,0 +1,9 @@
+{
+  "extends": [
+    "./tsconfig.base.json",
+    "@tsconfig/node18/tsconfig.json",
+  ],
+  "files": [
+    "src/node.ts"
+  ]
+}
