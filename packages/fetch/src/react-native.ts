@@ -32,7 +32,7 @@ export async function fetch(input: RequestInfo, init: ReactNativeRequestInit = {
 
   const response = await globalThis.fetch(input, init);
   if (!response.statusText) {
-    Object.assign(response, { status: getStatusText(response.status) });
+    Object.assign(response, { statusText: getStatusText(response.status) });
   }
   return response;
 }
