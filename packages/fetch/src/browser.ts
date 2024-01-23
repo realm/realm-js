@@ -21,6 +21,7 @@ import type * as types from "./types";
 export const Headers = globalThis.Headers satisfies typeof types.Headers;
 export const AbortSignal = globalThis.AbortSignal satisfies typeof types.AbortSignal;
 export const AbortController = globalThis.AbortController satisfies typeof types.AbortController<AbortSignal>;
+// Binding the function to avoid "Failed to execute 'fetch' on 'Window': Illegal invocation".
 export const fetch = globalThis.fetch.bind(globalThis) satisfies typeof types.fetch<
   BodyInit,
   Headers,
