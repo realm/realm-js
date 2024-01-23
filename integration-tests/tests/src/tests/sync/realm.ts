@@ -149,6 +149,7 @@ const IndexedTypesSchema: Realm.ObjectSchema = {
     optIntCol: { type: "int", optional: true, indexed: true },
     optStringCol: { type: "string", optional: true, indexed: true },
     optDateCol: { type: "date", optional: true, indexed: true },
+    listOfStringsCol: { type: "list", objectType: "string", indexed: true },
   },
 };
 
@@ -1506,6 +1507,7 @@ describe("Realmtest", () => {
           intCol: 1,
           stringCol: "1",
           dateCol: new Date(1),
+          listOfStringsCol: ["one", "two", "three"],
         });
       });
 
@@ -1536,6 +1538,11 @@ describe("Realmtest", () => {
         IndexedSchema.properties = { dataCol: { type: "data", indexed: true } };
         new Realm({ schema: [IndexedSchema], path: "4.realm" });
       }).throws("Property 'IndexedSchema.dataCol' of type 'data' cannot be indexed.");
+
+      expect(() => {
+        IndexedSchema.properties = { listOfIntsCol: { type: "list", objectType: "int", indexed: true } };
+        new Realm({ schema: [IndexedSchema], path: "5.realm" });
+      }).throws("Property 'IndexedSchema.listOfIntsCol' of type 'array' cannot be indexed.");
 
       // primary key
       IndexedSchema.properties = { intCol: { type: "int", indexed: true } };
