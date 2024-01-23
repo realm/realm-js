@@ -32,7 +32,7 @@ describe("SharedRealm operations", () => {
       };
       let logs: Log[] = [];
 
-      Realm.setLogger((category, level, message) => {
+      Realm.setLogger(({ category, level, message }) => {
         logs.push({ category, level, message });
       });
 
