@@ -22,12 +22,13 @@ import Realm from "realm";
 
 import { importAppBefore } from "../hooks";
 import { buildAppConfig } from "../utils/build-app-config";
+import { baseUrl } from "../utils/import-app";
 
 describe.skipIf(environment.missingServer, "passing node-fetch to AppConfiguration", () => {
   importAppBefore(buildAppConfig().anonAuth());
 
   it("is supported", async function (this: AppContext) {
-    const app = new Realm.App({ id: this.app.id, fetch: nodeFetch });
+    const app = new Realm.App({ id: this.app.id, baseUrl, fetch: nodeFetch });
     const user = await app.logIn(Realm.Credentials.anonymous());
     expect(typeof user.id).equals("string");
   });
