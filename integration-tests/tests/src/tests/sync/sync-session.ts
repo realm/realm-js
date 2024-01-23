@@ -359,7 +359,7 @@ describe("SessionTest", () => {
       const logLevelStr = "info"; // "all", "trace", "debug", "detail", "info", "warn", "error", "fatal", "off"
 
       const promisedLog = new Promise((resolve) => {
-        Realm.setLogLevel(LogCategory.Realm, logLevelStr);
+        Realm.setLogLevel({ category: LogCategory.Realm, level: logLevelStr });
         Realm.setLogger((category, level, message) => {
           if (level == logLevelStr && message.includes("Connection") && message.includes("Session")) {
             // we should, at some point, receive a log message that looks like

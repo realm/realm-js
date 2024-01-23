@@ -71,6 +71,6 @@ import Realm, { LogCategory } from "realm";
 
 // Disable the logger to avoid console flooding
 const { defaultLogLevel = "off" } = environment;
-Realm.setLogLevel(LogCategory.Realm, defaultLogLevel);
+Realm.setLogLevel({ category: LogCategory.Realm, level: defaultLogLevel });
 
 Realm.flags.THROW_ON_GLOBAL_REALM = true;
