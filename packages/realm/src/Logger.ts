@@ -62,7 +62,14 @@ export enum LogCategory {
 export type Logger = (level: NumericLogLevel, message: string) => void;
 
 // TODO: Add docs.
-export type LoggerCallback = (category: LogCategory, level: LogLevel, message: string) => void;
+export type LoggerCallback1 = (level: LogLevel, message: string) => void;
+export type LoggerCallbackArgs = {
+  category: LogCategory;
+  level: LogLevel;
+  message: string;
+};
+export type LoggerCallback2 = (args: LoggerCallbackArgs) => void;
+export type LoggerCallback = LoggerCallback1 | LoggerCallback2;
 
 /** @internal */
 export function toBindingLoggerLevel(arg: LogLevel): binding.LoggerLevel {

@@ -33,6 +33,11 @@ import {
   LogCategory,
   LogLevel,
   LoggerCallback,
+  LoggerCallback1,
+  LoggerCallback2,
+  MapToDecorator,
+  Metadata,
+  MetadataMode,
   MigrationCallback,
   ObjectSchema,
   ProgressRealmPromise,
@@ -80,6 +85,11 @@ type ObjectSchemaExtra = {
 
 export type RealmEventName = "change" | "schema" | "beforenotify";
 
+export type LogArgs = {
+  level: LogLevel;
+  category?: LogCategory;
+};
+
 /**
  * Asserts the event passed as string is a valid RealmEvent value.
  * @throws A {@link TypeAssertionError} if an unexpected name is passed via {@link name}.
@@ -110,15 +120,29 @@ export class Realm {
 
   /**
    * Sets the log level.
-   * @param category - TODO: Add docs.
    * @param level - The log level to be used by the logger. The default value is `info`.
+   * @param category - The category/component to set the log level for. If omitted, log level is set for all known categories.
    * @note The log level can be changed during the lifetime of the application.
    * @since 12.0.0
    */
-  static setLogLevel(category: LogCategory, level: LogLevel) {
-    // TODO: Adapting to new logging in Core. We may want to add an assertion about the
-    //       category as Core will throw if the category is not one of the valid values.
-    binding.LogCategoryRef.getCategory(category).setDefaultLevelThreshold(toBindingLoggerLevel(level));
+  public static setLogLevel(arg: LogLevel | LogArgs) {
+    // It is not possible to overload a static function: https://github.com/microsoft/TypeScript/issues/18945
+    if ((arg as LogArgs).level) {
+      const level = (arg as LogArgs).level;
+      const category = (arg as LogArgs).category;
+      if (category) {
+        assert(category in Object.values(LogCategory));
+        binding.LogCategoryRef.getCategory(category).setDefaultLevelThreshold(toBindingLoggerLevel(level));
+      } else {
+        Object.values(LogCategory).forEach((category) => {
+          Realm.setLogLevel({ level, category });
+        });
+      }
+    } else {
+      Object.values(LogCategory).forEach((category) => {
+        Realm.setLogLevel({ level: arg, category } as LogArgs);
+      });
+    }
   }
 
   /**
@@ -128,9 +152,22 @@ export class Realm {
    * @since 12.0.0
    */
   static setLogger(loggerCallback: LoggerCallback) {
-    const logger = binding.Helpers.makeLogger((category, level, message) => {
-      loggerCallback(category as LogCategory, fromBindingLoggerLevelToLogLevel(level), message);
-    });
+    let logger: binding.Logger;
+
+    // This is a hack to check which of the two logger callbacks which are used
+    // It only works as the two callback type have different number of arguments, and it will
+    // probably produce odd error messages if the logger is set by `setLogger((...args) => console.log(args))`.
+    if (loggerCallback.length === 2) {
+      const cb = loggerCallback as LoggerCallback1;
+      logger = binding.Helpers.makeLogger((_category, level, message) => {
+        cb(fromBindingLoggerLevelToLogLevel(level), message);
+      });
+    } else {
+      const cb = loggerCallback as LoggerCallback2;
+      logger = binding.Helpers.makeLogger((category, level, message) => {
+        cb({ category: category as LogCategory, level: fromBindingLoggerLevelToLogLevel(level), message });
+      });
+    }
     binding.Logger.setDefaultLogger(logger);
   }
 
