@@ -96,21 +96,10 @@ Next you need to define some environment variables. The best way to do this is i
 
 ```sh
 # Location of your Android SDK
-export ANDROID_SDK_ROOT=$HOME/Library/Android/sdk
-
-# Location of your Android NDK
-export ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/23.2.8568313
-export ANDROID_NDK=$ANDROID_NDK_HOME
-
-# Other required locations
-export ANDROID_SDK_HOME=$HOME/.android
-export ANDROID_EMULATOR_HOME=$HOME/.android
-export ANDROID_AVD_HOME=$HOME/.android/avd
+export ANDROID_HOME=$HOME/Library/Android/sdk
 
 # Add the Android SDK tools to your PATH
-export PATH=$PATH:$ANDROID_SDK_ROOT/tools/bin
-export PATH=$PATH:$ANDROID_SDK_ROOT/platform-tools
-export PATH=$PATH:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin
+export PATH=$PATH:$ANDROID_HOME/tools:$ANDROID_HOME/tools/bin:$ANDROID_HOME/platform-tools
 ```
 
 Then you can install the SDK and NDK by running: (you can alternatively do this via **Tools > SDK Manager** in Android Studio)
