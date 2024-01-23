@@ -16,7 +16,7 @@
         "tsconfig.json"
       ],
       "dependencies": [
-        "../fetch:bundle"
+        "../fetch:build"
       ]
     }
   },

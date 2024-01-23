@@ -4,10 +4,10 @@
   "module": "true",
   "private": true,
   "scripts": {
-    "bundle": "wireit"
+    "build": "wireit"
   },
   "wireit": {
-    "bundle": {
+    "build": {
       "command": "tsc --build",
       "files": [
         "src",

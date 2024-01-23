@@ -24,7 +24,7 @@
       "command": "rollup --config",
       "dependencies": [
         "generate-types",
-        "../fetch:bundle"
+        "../fetch:build"
       ],
       "files": [
         "rollup.config.mjs",

@@ -97,7 +97,7 @@
         "build:node",
         "bindgen:generate:typescript",
         "bindgen:generate:wrappers",
-        "../fetch:bundle"
+        "../fetch:build"
       ]
     },
     "bundle": {
@@ -110,7 +110,7 @@
       "dependencies": [
         "bindgen:generate:typescript",
         "bindgen:generate:wrappers",
-        "../fetch:bundle"
+        "../fetch:build"
       ],
       "files": [
         "rollup.config.mjs",
