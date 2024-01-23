@@ -21,6 +21,29 @@ allprojects {
 
 apply plugin: 'com.android.library'
 
+def getReactNativeDirectory() {
+    def reactNativeDirectory = file("${rootProject.projectDir}/../../../../node_modules/react-native")
+    if (reactNativeDirectory.exists()) {
+        return reactNativeDirectory
+    throw new GradleException(
+        "Unable to find the React Native directory"
+    )
+}
+
+
+def reactNativeRootDir = getReactNativeDirectory()
+
+def reactNativeProperties = new Properties()
+file("$reactNativeRootDir/ReactAndroid/gradle.properties").withInputStream { reactNativeProperties.load(i) }
+
+def REACT_NATIVE_VERSION = reactProperties.getProperty("VERSION_NAME")
+
+def reactNativeArchitectures() {
+    def value = project.getProperties().get("reactNativeArchitectures")
+    return value ? value.split(",") : ["armeabi-v7a", "x86", "x86_64", "arm64-v8a"]
+}
+
+
 android {
     namespace 'io.realm.react'
     compileSdkVersion rootProject.hasProperty('compileSdkVersion') ? rootProject.compileSdkVersion : 28
@@ -31,10 +54,11 @@ android {
         targetSdkVersion rootProject.hasProperty('targetSdkVersion') ? rootProject.targetSdkVersion : 28
         externalNativeBuild {
             cmake {
-                arguments '-DANDROID_STL=c++_shared'
+                arguments "-DANDROID_STL=c++_shared",
+                          "-DREACT_NATIVE_VERSION=${REACT_NATIVE_VERSION}"
                 targets 'realm-js-android'
                 cppFlags ''
-                abiFilters "armeabi-v7a", "x86", "x86_64", "arm64-v8a"
+                abiFilters (*reactNativeArchitectures())
             }
         }
     }
