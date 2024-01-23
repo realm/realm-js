@@ -16,9 +16,18 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { IndexSet, Int64, ObjKey, Request_Relaxed, SyncSession, Timestamp, WeakSyncSession } from "realm/binding";
+import {
+  HttpMethod,
+  IndexSet,
+  Int64,
+  Int64Type,
+  ObjKey,
+  Request,
+  SyncSession,
+  Timestamp,
+  WeakSyncSession,
+} from "realm/binding";
 import { AbortSignal, fetch } from "@realm/fetch";
-import { HttpMethod } from "realm/binding";
 
 /** @internal */
 export * from "realm/binding";
@@ -132,13 +141,18 @@ function fromBindingFetchMethod(method: HttpMethod) {
   }
 }
 
-export function toFetchArgs({ url, method, timeoutMs, body, headers }: Request_Relaxed): Parameters<typeof fetch> {
+function fromBindingTimeoutSignal(timeoutMs: Int64Type): AbortSignal | undefined {
+  const timeout = Number(timeoutMs);
+  return timeout > 0 ? AbortSignal.timeout(timeout) : undefined;
+}
+
+export function toFetchArgs({ url, method, timeoutMs, body, headers }: Request): Parameters<typeof fetch> {
   return [
     url,
     {
       body: fromBindingFetchBody(body),
       method: fromBindingFetchMethod(method),
-      signal: AbortSignal.timeout(Number(timeoutMs)),
+      signal: fromBindingTimeoutSignal(timeoutMs),
       headers,
     },
   ];
