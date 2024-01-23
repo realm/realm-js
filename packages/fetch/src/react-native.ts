@@ -40,10 +40,15 @@ export async function fetch(input: RequestInfo, init: ReactNativeRequestInit = {
 export const Headers = globalThis.Headers satisfies typeof types.Headers;
 
 class PolyfilledAbortSignal extends AbortSignal {
-  static timeout(): PolyfilledAbortSignal {
-    throw new Error("Not yet implemented");
+  static timeout(ms: number): PolyfilledAbortSignal {
+    const controller = new AbortController();
+    setTimeout(() => {
+      controller.abort();
+    }, ms);
+    return controller.signal;
   }
 }
+
 PolyfilledAbortSignal satisfies typeof types.AbortSignal;
 export { PolyfilledAbortSignal as AbortSignal };
 
