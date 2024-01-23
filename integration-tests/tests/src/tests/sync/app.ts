@@ -104,6 +104,14 @@ describe("App", () => {
       expect(() => new Realm.App(1234)).throws("Expected 'config' to be an object, got a number");
     });
 
+    it("uses fetch passed through config", async function () {
+      async function fakeFetch(): Promise<never> {
+        throw new Error("Boom!");
+      }
+      const app = new Realm.App({ id: "test-app", fetch: fakeFetch });
+      await expect(app.logIn(Realm.Credentials.anonymous())).eventually.rejectedWith("Boom!");
+    });
+
     it("logging in throws on invalid baseURL", async function () {
       const invalidUrlConf = { id: missingAppConfig.id, baseUrl: "http://localhost:9999" };
       const app = new Realm.App(invalidUrlConf);

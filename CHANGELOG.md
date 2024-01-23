@@ -4,7 +4,7 @@
 * None
 
 ### Enhancements
-* None
+* Added an optional `fetch` parameter to the `AppConfiguration`. Use this to specify a custom implementation of the `fetch` function used by the app to perform network requests.
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)

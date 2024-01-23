@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2022 Realm Inc.
+// Copyright 2024 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,12 +16,19 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-// NOTE: This file is only supposed to be imported from a Node.js environment
+import { expect } from "chai";
+import nodeFetch from "node-fetch";
+import Realm from "realm";
 
-import "./analytics";
-import "./clean-exit";
-import "./path";
-import "./sync-proxy";
-import "./custom-inspect";
-import "./ssl";
-import "./node-fetch";
+import { importAppBefore } from "../hooks";
+import { buildAppConfig } from "../utils/build-app-config";
+
+describe.skipIf(environment.missingServer, "passing node-fetch to AppConfiguration", () => {
+  importAppBefore(buildAppConfig().anonAuth());
+
+  it("is supported", async function (this: AppContext) {
+    const app = new Realm.App({ id: this.app.id, fetch: nodeFetch });
+    const user = await app.logIn(Realm.Credentials.anonymous());
+    expect(typeof user.id).equals("string");
+  });
+});

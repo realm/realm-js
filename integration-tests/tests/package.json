@@ -88,7 +88,8 @@
     "chai": "4.3.6",
     "chai-as-promised": "^7.1.1",
     "concurrently": "^6.0.2",
-    "jsrsasign": "^11.0.0"
+    "jsrsasign": "^11.0.0",
+    "node-fetch": "^3.3.2"
   },
   "files": [
     "/src"
