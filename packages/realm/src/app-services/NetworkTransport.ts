@@ -33,8 +33,9 @@ function flattenHeaders(headers: Headers) {
 /** @internal */
 export function createNetworkTransport() {
   return binding.Helpers.makeNetworkTransport((request, callback) => {
-    debug("requesting %O", request);
-    network.fetch(...toFetchArgs(request)).then(
+    const [url, init] = toFetchArgs(request);
+    debug("requesting %s %O", url, init);
+    network.fetch(url, init).then(
       async (response) => {
         debug("responded %O", response);
         const headers = flattenHeaders(response.headers);
