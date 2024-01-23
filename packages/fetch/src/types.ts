@@ -67,7 +67,7 @@ export declare class Headers {
 export type Blob = unknown;
 export type FormData = unknown;
 
-export declare class Response<PlatformHeaders extends Headers = Headers> {
+export declare class Response<PlatformHeaders extends Headers = Headers, PlatformResponseBody = ReadableStream | null> {
   // constructor (body?: BodyInit, init?: ResponseInit);
 
   readonly headers: PlatformHeaders;
@@ -78,7 +78,7 @@ export declare class Response<PlatformHeaders extends Headers = Headers> {
   readonly url: string;
   readonly redirected: boolean;
 
-  readonly body?: ReadableStream | null;
+  readonly body?: PlatformResponseBody;
   readonly bodyUsed: boolean;
 
   readonly arrayBuffer: () => Promise<ArrayBuffer>;
@@ -161,11 +161,14 @@ export declare function fetch<
   PlatformRequestBody = RequestBody,
   PlatformHeaders extends Headers = Headers,
   PlatformAbortSignal extends AbortSignal = AbortSignal,
-  PlatformResponse extends Response<PlatformHeaders> = Response<PlatformHeaders>,
+  PlatformResponseBody = ReadableStream | null,
 >(
   input: string,
   init?: RequestInit<PlatformRequestBody, PlatformHeaders, PlatformAbortSignal>,
-): Promise<PlatformResponse>;
+): Promise<Response<PlatformHeaders, PlatformResponseBody>>;
+
+/* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+export type AnyFetch = typeof fetch<any, any, any, any>;
 
 export interface RequestInit<
   PlatformRequestBody = RequestBody,

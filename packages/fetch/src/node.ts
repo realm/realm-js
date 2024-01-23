@@ -34,5 +34,5 @@ export const fetch = globalThis.fetch.bind(globalThis) satisfies typeof types.fe
   BodyInit,
   Headers,
   AbortSignal,
-  Response
+  Response["body"]
 >;
