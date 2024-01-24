@@ -48,7 +48,6 @@ export function importAppBefore(config: AppConfig | { config: AppConfig }, sdkCo
     } else {
       const { appId, baseUrl } = await importApp(config);
       this.app = new Realm.App({ id: appId, baseUrl, ...sdkConfig });
-      this.baseUrl = baseUrl;
 
       // Extract the sync database name from the config
       const databaseNames: (string | undefined)[] = config.services

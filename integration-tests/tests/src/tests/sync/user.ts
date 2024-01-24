@@ -27,6 +27,7 @@ import {
   randomVerifiableEmail,
 } from "../../utils/generators";
 import { buildAppConfig } from "../../utils/build-app-config";
+import { baseUrl } from "../../utils/import-app";
 
 type AnyApp = Realm.App<any, any>;
 type AnyUser = Realm.User<any, any, any>;
@@ -677,9 +678,10 @@ describe.skipIf(environment.missingServer, "User", () => {
       const credentials = Realm.Credentials.anonymous();
       const user = await this.app.logIn(credentials);
       const appId = this.app.id;
+
       //@ts-expect-error Wanting to prove that a completely new app instance will still return the current logged in user
       delete this.app;
-      this.app = new Realm.App({ id: appId, baseUrl: this.baseUrl });
+      this.app = new Realm.App({ id: appId, baseUrl: baseUrl });
 
       {
         const currentUser = this.app.currentUser;
