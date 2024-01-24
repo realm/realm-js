@@ -148,7 +148,7 @@ export type ReadableStreamDefaultReader<T = unknown> = {
    * @returns a Promise that resolves when the stream is canceled. Calling this method signals a loss of interest in the stream by a consumer.
    * @see https://developer.mozilla.org/en-US/docs/Web/API/ReadableStreamDefaultReader/cancel
    */
-  cancel(reason?: string): Promise<unknown>; // TODO: Should have returned Promise<string | undefined, but node types conflict
+  cancel(reason?: string): Promise<void>;
   /**
    * @returns a Promise providing access to the next chunk in the stream's internal queue.
    * @see https://developer.mozilla.org/en-US/docs/Web/API/ReadableStreamDefaultReader/read
