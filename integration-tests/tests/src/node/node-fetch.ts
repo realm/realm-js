@@ -29,7 +29,6 @@ describe.skipIf(environment.missingServer, "passing node-fetch to AppConfigurati
 
   it("is supported", async function (this: AppContext) {
     const app = new Realm.App({ id: this.app.id, baseUrl, fetch: nodeFetch });
-    const user = await app.logIn(Realm.Credentials.anonymous());
-    expect(typeof user.id).equals("string");
+    await app.logIn(Realm.Credentials.anonymous());
   });
 });

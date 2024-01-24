@@ -32,8 +32,8 @@ export type FetchFunction = typeof fetch<unknown>;
 type SimpleObject = Record<string, unknown>;
 
 /**
- * @param body A possible resonse.
- * @param body.body A possible resonse body.
+ * @param response A possible response.
+ * @param response.body A possible response body.
  * @returns An async iterator.
  */
 function asyncIteratorFromResponseBody({ body }: Response): AsyncIterable<Uint8Array> {

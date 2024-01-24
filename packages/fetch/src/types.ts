@@ -34,7 +34,7 @@ declare class AbortSignal {
   throwIfAborted?(): void;
 }
 
-export { AbortSignal as AbortSignal };
+export { AbortSignal };
 
 declare class AbortController<PlatformAbortSignal = AbortSignal> {
   /**
@@ -90,6 +90,9 @@ export declare class Response<PlatformHeaders extends Headers = Headers, Platfor
   readonly clone: () => this;
 
   /*
+  // Not all our supported runtimes implement these statics
+  // see https://developer.mozilla.org/en-US/docs/Web/API/Response
+
   static error(): Response;
   static json(data: any, init?: ResponseInit): Response;
   static redirect(url: string | URL, status: ResponseRedirectStatus): Response;
@@ -117,6 +120,7 @@ export type ReadableStream<T = unknown> = {
    */
   cancel: (reason?: string) => Promise<void>;
 }; // & AsyncIterable<T>;
+// Should be [AsyncIterable](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream#async_iteration), but not all our supported runtimes implement this.
 
 export type ReadableStreamReadDoneResult = {
   done: true;
@@ -155,7 +159,7 @@ export type ReadableStreamDefaultReader<T = unknown> = {
    * @see https://developer.mozilla.org/en-US/docs/Web/API/ReadableStreamDefaultReader/releaseLock
    */
   releaseLock(): void;
-}; //  & AsyncIterable<Uint8Array>;
+};
 
 export declare function fetch<
   PlatformRequestBody = RequestBody,
@@ -176,7 +180,7 @@ export interface RequestInit<
   PlatformAbortSignal = AbortSignal,
 > {
   /**
-   * A BodyInit object or null to set request's body.
+   * The request's body.
    */
   body?: PlatformRequestBody;
   /**
@@ -184,7 +188,7 @@ export interface RequestInit<
    */
   credentials?: RequestCredentials;
   /**
-   * A Headers object, an object literal, or an array of two-item arrays to set request's headers.
+   * The request's headers.
    */
   headers?: PlatformHeaders | Record<string, string>;
   /**

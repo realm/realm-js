@@ -382,7 +382,7 @@ export class AdminApiClient {
       }
       const response = await fetch(url, {
         ...rest,
-        body: body ? JSON.stringify(body) : undefined,
+        body: body === undefined || body === "" ? undefined : JSON.stringify(body),
         headers,
       });
       if (response.ok) {
