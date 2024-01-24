@@ -324,7 +324,7 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
     } = options;
 
     return {
-      get: (obj) => {
+      get(obj) {
         try {
           // We currently rely on the Core helper `get_mixed_type()` for calling `obj.get_any()`
           // since doing it here in the SDK layer will cause the binding layer to throw for
@@ -346,17 +346,14 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
           throw err;
         }
       },
-      set: (obj: binding.Obj, value: unknown) => {
+      set(obj: binding.Obj, value: unknown) {
         assert.inTransaction(realm);
 
-        if (value instanceof List || Array.isArray(value)) {
+        if (isList(value)) {
           obj.setCollection(columnKey, binding.CollectionType.List);
           const internal = binding.List.make(realm.internal, obj, columnKey);
-          let index = 0;
-          for (const item of value) {
-            internal.insertAny(index++, toBinding(item));
-          }
-        } else if (value instanceof Dictionary || isPOJO(value)) {
+          insertIntoListInMixed(value, internal, toBinding);
+        } else if (isDictionary(value)) {
           obj.setCollection(columnKey, binding.CollectionType.Dictionary);
           const internal = binding.Dictionary.make(realm.internal, obj, columnKey);
           internal.removeAll();
@@ -372,6 +369,29 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
     };
   },
 };
+
+function isList(value: unknown): value is List | unknown[] {
+  return value instanceof List || Array.isArray(value);
+}
+
+function isDictionary(value: unknown): value is Dictionary | Record<string, unknown> {
+  return value instanceof Dictionary || isPOJO(value);
+}
+
+function insertIntoListInMixed(list: List | unknown[], internal: binding.List, toBinding: TypeHelpers["toBinding"]) {
+  let index = 0;
+  for (const item of list) {
+    if (isList(item)) {
+      internal.insertCollection(index, binding.CollectionType.List);
+      insertIntoListInMixed(item, internal.getList(index), toBinding);
+    } else if (isDictionary(item)) {
+      // TODO
+    } else {
+      internal.insertAny(index, toBinding(item));
+    }
+    index++;
+  }
+}
 
 function getPropertyHelpers(type: binding.PropertyType, options: PropertyOptions): PropertyHelpers {
   const { typeHelpers, columnKey, embedded, objectType } = options;

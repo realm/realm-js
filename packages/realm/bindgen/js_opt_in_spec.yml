@@ -375,12 +375,14 @@ classes:
   List:
     methods:
       - make
+      - get_list
       - move
       - remove
       - remove_all
       - swap
       - delete_all
       - insert_any
+      - insert_collection
       - insert_embedded
       - set_any
       - set_embedded
