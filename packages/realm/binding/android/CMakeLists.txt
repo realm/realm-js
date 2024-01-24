@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 3.18.1)
 
-set(REACT_NATIVE_VERSION "0.71.0-rc.5")
-
 set(REACT_NATIVE_ROOT_DIR "${PACKAGE_ROOT_DIR}/node_modules/react-native")
 set(REACT_NATIVE_AAR_DIR "${CMAKE_BINARY_DIR}/../react-native-aar") # TODO: Could we use CMAKE_BINARY_DIR instead?
 set(REACT_NATIVE_VERSION "0.71.0")
@@ -14,7 +12,7 @@ add_library(realm-js-android SHARED
     platform.cpp
     jni_utils.cpp
     io_realm_react_RealmReactModule.cpp
-    ../../node_modules/react-native/ReactAndroid/src/main/jni/react/turbomodule/ReactCommon/CallInvokerHolder.cpp
+    ${REACT_NATIVE_ROOT_DIR}/ReactAndroid/src/main/jni/react/turbomodule/ReactCommon/CallInvokerHolder.cpp
 )
 
 set_target_properties(realm-js-android PROPERTIES
@@ -110,9 +108,9 @@ endif()
 find_library(FBJNI_LIBRARY fbjni PATHS ${FBJNI_LIB_DIR} NO_CMAKE_FIND_ROOT_PATH)
 target_include_directories(realm-js-android PUBLIC
     ${FBJNI_INCLUDE_DIR}
-    ../../node_modules/react-native/ReactAndroid/src/main/java/com/facebook/react/turbomodule/core/jni/
-    ../../node_modules/react-native/ReactAndroid/src/main/jni/react/turbomodule/
-    ../../node_modules/react-native/ReactCommon/callinvoker/
+    ${REACT_NATIVE_ROOT_DIR}/ReactAndroid/src/main/java/com/facebook/react/turbomodule/core/jni/
+    ${REACT_NATIVE_ROOT_DIR}/ReactAndroid/src/main/jni/react/turbomodule/
+    ${REACT_NATIVE_ROOT_DIR}/ReactCommon/callinvoker/
 )
 
 target_link_libraries(realm-js-android

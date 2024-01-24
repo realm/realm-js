@@ -84,7 +84,7 @@ if(CMAKE_GENERATOR MATCHES "^Ninja")
 endif()
 
 if(DEFINED CMAKE_JS_VERSION)
-    list(APPEND CMAKE_MODULE_PATH "${PACKAGE_ROOT_DIR}/cmake")
+    list(APPEND CMAKE_MODULE_PATH "./cmake")
     include(NodeJSTargets)
 endif()
 
@@ -100,7 +100,7 @@ if(REALM_JS_BUILD_CORE_FROM_SOURCE)
 
     add_subdirectory(vendor/realm-core EXCLUDE_FROM_ALL)
 endif()
-        
+
 add_library(realm-js OBJECT)
 
 target_link_libraries(realm-js Realm::ObjectStore)
@@ -119,10 +119,11 @@ endif()
 
 target_include_directories(realm-js PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
-# TODO move platform.hpp and delete this line.
-target_include_directories(realm-js PRIVATE "${PACKAGE_ROOT_DIR}/src")
-
 set(SDK_DIR ${PACKAGE_ROOT_DIR}/packages/realm)
+set(BINDING_DIR ${SDK_DIR}/binding)
+
+target_include_directories(realm-js PRIVATE "${BINDING_DIR}")
+
 
 file(GLOB_RECURSE SDK_TS_FILES
     LIST_DIRECTORIES false
@@ -178,7 +179,7 @@ if(DEFINED CMAKE_JS_VERSION)
         SOURCES ${SDK_TS_FILES}
     )
 
-    target_sources(realm-js PRIVATE node_init.cpp ${CMAKE_JS_SRC} ${PACKAGE_ROOT_DIR}/src/node/platform.cpp)
+    target_sources(realm-js PRIVATE node_init.cpp ${CMAKE_JS_SRC} ${BINDING_DIR}/node/platform.cpp)
 else()
     include(jsi.cmake)
 
@@ -194,9 +195,9 @@ else()
     target_sources(realm-js PRIVATE jsi_init.cpp ${CMAKE_JS_SRC})
 
     if(ANDROID)
-        add_subdirectory(${PACKAGE_ROOT_DIR}/src/android android)
+        add_subdirectory(${BINDING_DIR}/android android)
     elseif(CMAKE_SYSTEM_NAME STREQUAL iOS)
-        add_subdirectory(${PACKAGE_ROOT_DIR}/src/ios ios)
+        add_subdirectory(${BINDING_DIR}/ios ios)
     else()
         # disabling for now to simplify the bootstrapping process.
         # message(FATAL_ERROR "Only support JSI builds for Android and iOS")

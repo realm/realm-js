@@ -6,8 +6,9 @@ set -o pipefail
 # Start in the root directory of the project.
 cd "$(dirname "$0")/.."
 PROJECT_ROOT=$(pwd)
-SDK_PATH=$PROJECT_ROOT/packages/realm
-BINDGEN_PATH=$PROJECT_ROOT/packages/realm/bindgen
+SDK_PATH=$PROJECT_ROOT
+BINDGEN_PATH=$PROJECT_ROOT/bindgen
+BINDING_PATH=$PROJECT_ROOT/binding
 SCRIPT=$(basename "${BASH_SOURCE[0]}")
 
 function usage {
@@ -97,15 +98,15 @@ DEVELOPER_DIR="${DEVELOPER_DIR:-${SELECTED_DEVELOPER_DIR}}"
 
 # Configure CMake project
 SDKROOT="$DEVELOPER_DIR/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/" cmake "$BINDGEN_PATH" -GXcode \
-    -DCMAKE_TOOLCHAIN_FILE="$PROJECT_ROOT/packages/realm/bindgen/vendor/realm-core/tools/cmake/xcode.toolchain.cmake" \
+    -DCMAKE_TOOLCHAIN_FILE="$BINDGEN_PATH/vendor/realm-core/tools/cmake/xcode.toolchain.cmake" \
     -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY="$(pwd)/out/$<CONFIG>\$EFFECTIVE_PLATFORM_NAME" \
 
 DEVELOPER_DIR="$DEVELOPER_DIR" xcodebuild build \
     -scheme realm-js-ios \
     "${DESTINATIONS[@]}" \
     -configuration $CONFIGURATION \
-    CC="$PROJECT_ROOT/scripts/ccache-clang.sh" \
-    CXX="$PROJECT_ROOT/scripts/ccache-clang++.sh" \
+    CC="$PROJECT_ROOT/../../scripts/ccache-clang.sh" \
+    CXX="$PROJECT_ROOT/../../scripts/ccache-clang++.sh" \
     ONLY_ACTIVE_ARCH=NO \
     BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
     SUPPORTS_MACCATALYST=YES
@@ -116,7 +117,7 @@ done
 
 rm -rf _include
 mkdir -p _include/realm-js-ios
-cp "$PROJECT_ROOT"/src/jsi/jsi_init.h _include/realm-js-ios/
+cp "$BINDING_PATH"/jsi/jsi_init.h _include/realm-js-ios/
 
 rm -rf ../realm-js-ios.xcframework
 xcodebuild -create-xcframework \

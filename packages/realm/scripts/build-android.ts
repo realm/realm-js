@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2021 Realm Inc.
+// Copyright 2023 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,19 +15,25 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
+/* eslint-disable no-console */
 
-const commandLineArgs = require("command-line-args");
-const fs = require("fs-extra");
-const path = require("path");
-const exec = require("child_process").execFileSync;
-
-const { version } = require("realm/package.json");
+import commandLineArgs from "command-line-args";
+import fs from "node:fs";
+import path from "node:path";
+import { execFileSync as exec } from "node:child_process";
+import { version } from "../package.json";
 
 const packageRoot = path.resolve(__dirname, "..");
 
 const NDK_VERSION = "25.1.8937393";
 
 const { ANDROID_HOME } = process.env;
+
+if (!ANDROID_HOME) {
+  console.error(`Missing env variable ANDROID_HOME`);
+  process.exit(1);
+}
+
 if (!fs.existsSync(ANDROID_HOME)) {
   console.error(`Missing the Android SDK ${ANDROID_HOME}`);
   process.exit(1);
@@ -66,11 +72,11 @@ const cmakePath = process.platform === "win32" ? "cmake.exe" : "cmake";
 const buildPath = path.resolve(packageRoot, "build-android");
 if (options.clean) {
   if (fs.existsSync(buildPath)) {
-    fs.removeSync(buildPath);
+    fs.rmSync(buildPath, { recursive: true, force: true });
   }
 }
 
-fs.ensureDirSync(buildPath, { recursive: true });
+fs.mkdirSync(buildPath, { recursive: true });
 
 for (const arch of architectures) {
   console.log(`\nBuilding Realm JS Android for ${arch} (${buildType})`);
@@ -91,7 +97,7 @@ for (const arch of architectures) {
     "-DANDROID_NATIVE_API_LEVEL=16",
     `-DCMAKE_BUILD_TYPE=${buildType}`,
     "-DANDROID_STL=c++_shared",
-    path.resolve(packageRoot, "packages/realm/bindgen"),
+    path.resolve(packageRoot, "./bindgen"),
   ];
   exec(cmakePath, args, { cwd: archBuildDir, stdio: "inherit" });
 
@@ -105,8 +111,6 @@ generateVersionFile();
 function generateVersionFile() {
   const targetFile = path.resolve(
     packageRoot,
-    "packages",
-    "realm",
     "react-native",
     "android",
     "src",
