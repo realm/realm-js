@@ -19,6 +19,17 @@
 import type * as types from "./types";
 
 // The sole purpose of this line is to verify types
+const TypeTest: unknown = {};
+
+// This type assertion is left as a comment, because "react-native"'s fetch implementation lacks a ReadableStream.
+// The MongoDB "watch" implementation needs the `request.body` being `ReadableStream`.
+// For this, end-users must install the fetch polyfill installable via https://www.npmjs.com/package/react-native-polyfill-globals
+// TypeTest as ReadableStream satisfies types.ReadableStream;
+
+// To ensure users cannot pass a request body that the platform cannot handle
+TypeTest as types.RequestBody satisfies BodyInit_;
+
+// The sole purpose of this line is to verify types
 globalThis.fetch satisfies typeof types.fetch<BodyInit_, Headers, AbortSignal, Response>;
 
 type ReactNativeRequestInit = {

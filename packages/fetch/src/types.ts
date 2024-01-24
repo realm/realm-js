@@ -20,9 +20,22 @@ export type ResponseType = "basic" | "cors" | "default" | "error" | "opaque" | "
 export type RequestCredentials = "include" | "omit" | "same-origin";
 export type RequestMode = "cors" | "navigate" | "no-cors" | "same-origin";
 
-export type RequestBody = ReadableStream | string | null; // TODO: Add TypedArray
+export type TypedArray =
+  | Int8Array
+  | Uint8Array
+  | Uint8ClampedArray
+  | Int16Array
+  | Uint16Array
+  | Int32Array
+  | Uint32Array
+  | Float32Array
+  | Float64Array
+  | BigInt64Array
+  | BigUint64Array;
 
-declare class AbortSignal {
+export type RequestBody = ArrayBuffer | TypedArray | string;
+
+export declare class AbortSignal {
   static timeout(time: number): AbortSignal;
   /**
    * Returns true if this AbortSignal's AbortController has signaled to abort, and false otherwise.
@@ -34,9 +47,7 @@ declare class AbortSignal {
   throwIfAborted?(): void;
 }
 
-export { AbortSignal };
-
-declare class AbortController<PlatformAbortSignal = AbortSignal> {
+export declare class AbortController<PlatformAbortSignal = AbortSignal> {
   /**
    * Returns the AbortSignal object associated with this object.
    */
@@ -47,8 +58,6 @@ declare class AbortController<PlatformAbortSignal = AbortSignal> {
    */
   abort(): void;
 }
-
-export { AbortController };
 
 export declare class Headers {
   append(name: string, value: string): void;

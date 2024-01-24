@@ -22,7 +22,11 @@ import type { ReadableStream } from "node:stream/web";
 import type * as types from "./types";
 
 // The sole purpose of this line is to verify types
-({}) as ReadableStream satisfies types.ReadableStream;
+const TypeTest: unknown = {};
+
+TypeTest as ReadableStream satisfies types.ReadableStream;
+// To ensure users cannot pass a request body that the platform cannot handle
+TypeTest as types.RequestBody satisfies BodyInit;
 
 export const Headers = globalThis.Headers satisfies typeof types.Headers;
 export const AbortSignal = globalThis.AbortSignal satisfies typeof types.AbortSignal;
