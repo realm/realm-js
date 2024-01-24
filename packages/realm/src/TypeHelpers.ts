@@ -168,14 +168,7 @@ function mixedFromBinding(options: TypeOptions, value: binding.MixedArg): unknow
     const { wrapObject } = getClassHelpers(value.tableKey);
     return wrapObject(linkedObj);
   } else if (value instanceof binding.List) {
-    const collectionHelpers: OrderedCollectionHelpers = {
-      toBinding: mixedToBinding.bind(null, realm.internal),
-      fromBinding: mixedFromBinding.bind(null, options),
-      get(_: binding.Results, index: number) {
-        return value.getAny(index);
-      },
-    };
-    return new List(realm, value, collectionHelpers);
+    return new List(realm, value, getCollectionHelpersForMixed(realm, options));
   } else if (value instanceof binding.Dictionary) {
     const typeHelpers: TypeHelpers<Realm.Mixed> = {
       toBinding: mixedToBinding.bind(null, realm.internal),
@@ -185,6 +178,24 @@ function mixedFromBinding(options: TypeOptions, value: binding.MixedArg): unknow
   } else {
     return value;
   }
+}
+
+function getCollectionHelpersForMixed(realm: Realm, options: TypeOptions) {
+  const helpers: OrderedCollectionHelpers = {
+    toBinding: mixedToBinding.bind(null, realm.internal),
+    fromBinding: mixedFromBinding.bind(null, options),
+    get(results: binding.Results, index: number) {
+      const elementType = binding.Helpers.getMixedElementType(results, index);
+      if (elementType === binding.MixedDataType.List) {
+        return new List(realm, results.getList(index), helpers);
+      }
+      if (elementType === binding.MixedDataType.Dictionary) {
+        // TODO
+      }
+      return results.getAny(index);
+    },
+  };
+  return helpers;
 }
 
 function defaultToBinding(value: unknown): binding.MixedArg {

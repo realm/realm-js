@@ -245,6 +245,7 @@ classes:
       - feed_buffer
       - make_ssl_verify_callback
       - get_mixed_type
+      - get_mixed_element_type
 
   LogCategoryRef:
     methods:
@@ -315,6 +316,7 @@ classes:
       - index_of_obj
       - get_obj
       - get_any
+      - get_list
       - sort_by_names
       - snapshot
       - max
