@@ -188,6 +188,7 @@ jobs:
         run: npm run build:node:prebuild:${{matrix.variant.arch}} --workspace realm
 
       - name: Generate JSI
+        if: ${{ (matrix.variant.os == 'ios') && (matrix.variant.os == 'android') }}
         run: |
           npm run bindgen:generate:jsi --workspace realm
 
