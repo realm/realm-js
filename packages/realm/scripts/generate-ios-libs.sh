@@ -21,11 +21,11 @@ mkdir -p build
 pushd build
 
 # Get core version
-CORE_VERSION=$(grep "^VERSION=" $BINDGEN_PATH/vendor/realm-core/dependencies.list | cut -d '=' -f2)
-TAR_FILE_NAME=realm-Release-v$CORE_VERSION-$PLATFORM_NAME-devel.tar.gz
+CORE_VERSION=v$(grep "^VERSION=" $BINDGEN_PATH/vendor/realm-core/dependencies.list | cut -d '=' -f2)
+TAR_FILE_NAME=realm-Release-$CORE_VERSION-$PLATFORM_NAME-devel.tar.gz
 
 # There are only Release builds available on the CDN
-CDN_URL="https://static.realm.io/downloads/core/v$CORE_VERSION/$PLATFORM_NAME/Release/$TAR_FILE_NAME"
+CDN_URL="https://static.realm.io/downloads/core/$CORE_VERSION/$PLATFORM_NAME/Release/$TAR_FILE_NAME"
 
 # Check if URL is valid and reachable
 if ! curl --output /dev/null --silent --head --fail "$CDN_URL"; then
@@ -37,7 +37,7 @@ if [ "$BUILD_REALM_CORE" == "1" ]; then
     echo "Building realm-core..."
     pushd $PROJECT_ROOT/bindgen/vendor/realm-core
     env -i PATH=$PATH DEVELOPER_DIR=$DEVELOPER_DIR ./tools/build-apple-device.sh -p $PLATFORM_NAME -c $CONFIGURATION -v $CORE_VERSION -f -DREALM_BUILD_LIB_ONLY=1
-    cp -R _CPack_Packages/$PLATFORM_NAME/TGZ/realm-$CONFIGURATION-v$CORE_VERSION-$PLATFORM_NAME/devel/* $PROJECT_ROOT/react-native/ios/build
+    cp -R _CPack_Packages/$PLATFORM_NAME/TGZ/realm-$CONFIGURATION-$CORE_VERSION-$PLATFORM_NAME/devel/* $PROJECT_ROOT/react-native/ios/build
     popd
 else
     # Download core prebuild and extract
