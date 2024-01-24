@@ -376,6 +376,7 @@ classes:
     methods:
       - make
       - get_list
+      - get_dictionary
       - move
       - remove
       - remove_all
@@ -400,10 +401,13 @@ classes:
       - make
       - get_keys
       - get_values
+      - get_list
+      - get_dictionary
       - contains
       - add_key_based_notification_callback
       - insert_any
       - insert_embedded
+      - insert_collection
       - try_get_any
       - remove_all
       - try_erase

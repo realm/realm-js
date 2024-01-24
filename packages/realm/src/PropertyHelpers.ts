@@ -357,9 +357,7 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
           obj.setCollection(columnKey, binding.CollectionType.Dictionary);
           const internal = binding.Dictionary.make(realm.internal, obj, columnKey);
           internal.removeAll();
-          for (const key in value) {
-            internal.insertAny(key, toBinding(value[key]));
-          }
+          insertIntoDictionaryInMixed(value, internal, toBinding);
         } else if (value instanceof RealmSet || value instanceof Set) {
           throw new Error(`Using a ${value.constructor.name} as a Mixed value is not supported.`);
         } else {
@@ -385,11 +383,31 @@ function insertIntoListInMixed(list: List | unknown[], internal: binding.List, t
       internal.insertCollection(index, binding.CollectionType.List);
       insertIntoListInMixed(item, internal.getList(index), toBinding);
     } else if (isDictionary(item)) {
-      // TODO
+      internal.insertCollection(index, binding.CollectionType.Dictionary);
+      insertIntoDictionaryInMixed(item, internal.getDictionary(index), toBinding);
     } else {
       internal.insertAny(index, toBinding(item));
     }
     index++;
+  }
+}
+
+function insertIntoDictionaryInMixed(
+  dictionary: Dictionary | Record<string, unknown>,
+  internal: binding.Dictionary,
+  toBinding: TypeHelpers["toBinding"],
+) {
+  for (const key in dictionary) {
+    const value = dictionary[key];
+    if (isList(value)) {
+      internal.insertCollection(key, binding.CollectionType.List);
+      insertIntoListInMixed(value, internal.getList(key), toBinding);
+    } else if (isDictionary(value)) {
+      internal.insertCollection(key, binding.CollectionType.Dictionary);
+      insertIntoDictionaryInMixed(value, internal.getDictionary(key), toBinding);
+    } else {
+      internal.insertAny(key, toBinding(value));
+    }
   }
 }
 
