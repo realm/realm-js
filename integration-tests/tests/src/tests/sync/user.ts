@@ -679,7 +679,7 @@ describe.skipIf(environment.missingServer, "User", () => {
       const appId = this.app.id;
       //@ts-expect-error Wanting to prove that a completely new app instance will still return the current logged in user
       delete this.app;
-      this.app = new Realm.App(appId);
+      this.app = new Realm.App({ id: appId, baseUrl: this.baseUrl });
 
       {
         const currentUser = this.app.currentUser;
