@@ -152,7 +152,6 @@ export class App<
       this._locationUrl = Promise.resolve(this.baseUrl);
     }
     this.localApp = configuration.app;
-    const { storage } = configuration;
     // Construct a fetcher wrapping the network transport
     this.fetcher = new Fetcher({
       appId: this.id,
@@ -163,7 +162,7 @@ export class App<
     // Construct the auth providers
     this.emailPasswordAuth = new EmailPasswordAuth(this.fetcher);
     // Construct the storage
-    const baseStorage = storage || getEnvironment().defaultStorage;
+    const baseStorage = configuration.storage || getEnvironment().defaultStorage;
     this.storage = new AppStorage(baseStorage, this.id);
     this.authenticator = new Authenticator(this.fetcher, baseStorage, () => this.deviceInformation);
     // Hydrate the app state from storage
