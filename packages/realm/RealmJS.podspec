@@ -44,7 +44,7 @@ Pod::Spec.new do |s|
   s.source                 = { :http => 'https://github.com/realm/realm-js/blob/main/CONTRIBUTING.md#how-to-debug-react-native-podspec' }
 
   s.source_files           = 'react-native/ios/RealmReact/*.mm',
-                             'react-native/shared/*.cpp',
+                             'binding/jsi/*.cpp',
                              'binding/ios/platform.mm'
 
   s.public_header_files    = 'react-native/ios/RealmReact/*.h'

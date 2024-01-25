@@ -196,8 +196,6 @@ else()
 
     if(ANDROID)
         add_subdirectory(${BINDING_DIR}/android android)
-    elseif(CMAKE_SYSTEM_NAME STREQUAL iOS)
-        add_subdirectory(${BINDING_DIR}/ios ios)
     else()
         # disabling for now to simplify the bootstrapping process.
         # message(FATAL_ERROR "Only support JSI builds for Android and iOS")
