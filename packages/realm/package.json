@@ -132,7 +132,7 @@
       ]
     },
     "bindgen:generate:jsi": {
-      "command": "realm-bindgen --template bindgen/src/templates/jsi.ts --spec bindgen/vendor/realm-core/bindgen/spec.yml --spec bindgen/js_spec.yml --opt-in bindgen/js_opt_in_spec.yml --output ./react-native/shared",
+      "command": "realm-bindgen --template bindgen/src/templates/jsi.ts --spec bindgen/vendor/realm-core/bindgen/spec.yml --spec bindgen/js_spec.yml --opt-in bindgen/js_opt_in_spec.yml --output ./binding/jsi",
       "dependencies": [
         "bindgen:generate:spec-schema"
       ],
@@ -146,7 +146,7 @@
         "bindgen/src/templates/jsi.ts"
       ],
       "output": [
-        "react-native/shared/jsi_init.cpp"
+        "binding/jsi/jsi_init.cpp"
       ]
     },
     "bindgen:generate:typescript": {
