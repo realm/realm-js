@@ -6,9 +6,6 @@ set -o pipefail
 # Start in the root directory of the project.
 cd "$(dirname "$0")/.."
 
-# Take homebrew installs as well
-CMAKE_DIRECTORY=$(dirname "$CMAKE_PATH")
-export PATH="$CMAKE_DIRECTORY:$PATH"
 
 PROJECT_ROOT=$PODS_TARGET_SRCROOT
 BINDGEN_PATH=$PROJECT_ROOT/bindgen
@@ -34,6 +31,10 @@ if ! curl --output /dev/null --silent --head --fail "$CDN_URL"; then
 fi
 
 if [ "$BUILD_REALM_CORE" == "1" ]; then
+    # Take homebrew installs as well
+    CMAKE_DIRECTORY=$(dirname "$CMAKE_PATH")
+    export PATH="$CMAKE_DIRECTORY:$PATH"
+
     echo "Building realm-core..."
     pushd $PROJECT_ROOT/bindgen/vendor/realm-core
     env -i PATH=$PATH DEVELOPER_DIR=$DEVELOPER_DIR ./tools/build-apple-device.sh -p $PLATFORM_NAME -c $CONFIGURATION -v $CORE_VERSION -f -DREALM_BUILD_LIB_ONLY=1
