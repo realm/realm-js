@@ -204,7 +204,7 @@ Install additional dependencies:
 ```bash
 cd react-native
 npm install mocha mocha-junit-reporter mocha-remote-client react-native-fs path-browserify @react-native-community/art react-native-progress
-npm install mocha-remote-server fs-extra promise-timeout --save-dev
+npm install mocha-remote-server promise-timeout --save-dev
 ```
 
 Open the `package.json` of both `react-native` and `react-native-backup`:

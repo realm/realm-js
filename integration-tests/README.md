@@ -141,7 +141,7 @@ Because of limitations (see below), we need to explicitly require in the files d
 Because we want our tests to run in many environments, we've a limited runtime available. Tests have access to the following globals:
 
 - [the Mocha hook globals](https://mochajs.org/#hooks) (describe, it, after, before, etc.).
-- `fs` the lowest common denominator of the [`fs-extra`](https://www.npmjs.com/package/fs-extra) and [`react-native-fs`](https://www.npmjs.com/package/react-native-fs) APIs.
+- `fs` the lowest common denominator of the [`node:fs`](https://nodejs.org/api/fs.html) and [`react-native-fs`](https://www.npmjs.com/package/react-native-fs) APIs.
 - `path` the lowest common denominator of the Node.js path interface and a [node-independent implementation of Node's path](https://www.npmjs.com/package/path-browserify) module.
 - `it.skipIf` and `describe.skipIf` skips tests based on the environment, see `tests/src/utils/skip-if.ts` for a detailed explanation.
 

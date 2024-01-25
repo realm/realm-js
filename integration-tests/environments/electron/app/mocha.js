@@ -29,8 +29,8 @@ const client = new Client({
   tests(context) {
     console.log("Loading tests!");
     // Set the Realm global for the tests to use
-    global.fs = require("fs-extra");
-    global.path = require("path");
+    global.fs = require("node:fs");
+    global.path = require("node:path");
     global.environment = {
       ...context,
       electron: processType,

@@ -12,7 +12,6 @@
 			"mocha",
 			"puppeteer",
 			"realm-web",
-			"fs-extra",
 			"mocha-remote-client",
 			"jwt-encode"
 		],

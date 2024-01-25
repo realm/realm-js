@@ -16,10 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+const fs = require("node:fs");
 const os = require("node:os");
+const path = require("node:path");
 const { Client } = require("mocha-remote-client");
-const fs = require("fs-extra");
-const path = require("path");
 const v8 = require("v8");
 const vm = require("vm");
 
