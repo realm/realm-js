@@ -196,7 +196,6 @@ else()
 
     if(ANDROID)
         add_subdirectory(${BINDING_DIR}/android android)
-    else()
         # disabling for now to simplify the bootstrapping process.
         # message(FATAL_ERROR "Only support JSI builds for Android and iOS")
     endif()

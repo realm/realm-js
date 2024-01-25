@@ -37,6 +37,8 @@ if [ "$BUILD_REALM_CORE" == "1" ]; then
 
     echo "Building realm-core..."
     pushd $PROJECT_ROOT/bindgen/vendor/realm-core
+
+    # The `env` call here ensures the environment variables are correctly derived.  Without this, the c/c++ compilers will not be found by cmake, when invoked from xcode
     env -i PATH=$PATH DEVELOPER_DIR=$DEVELOPER_DIR ./tools/build-apple-device.sh -p $PLATFORM_NAME -c $CONFIGURATION -v $CORE_VERSION -f -DREALM_BUILD_LIB_ONLY=1
     cp -R _CPack_Packages/$PLATFORM_NAME/TGZ/realm-$CONFIGURATION-$CORE_VERSION-$PLATFORM_NAME/devel/* $PROJECT_ROOT/react-native/ios/build
     popd
