@@ -11,7 +11,7 @@
 			"detect-browser"
 		],
 		"lib": [
-			"es2019",
+			"es2022",
 			"dom"
 		]
 	},
