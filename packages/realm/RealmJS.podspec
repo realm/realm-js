@@ -47,8 +47,7 @@ Pod::Spec.new do |s|
                              'react-native/shared/*.cpp',
                              'binding/ios/platform.mm'
 
-  s.public_header_files    = 'react-native/ios/RealmReact/*.h',
-                             'react-native/ios/build/include/**/*.{h,hpp}'
+  s.public_header_files    = 'react-native/ios/RealmReact/*.h'
 
   s.frameworks             = uses_frameworks ? ['React'] : []
 
@@ -85,7 +84,7 @@ Pod::Spec.new do |s|
 
   s.dependency 'React'
 
-  CMAKE_PATH = Pod::Executable::which!('cmake')
+  CMAKE_PATH = Pod::Executable::which('cmake')
 
   #Post install script
   s.script_phase = {

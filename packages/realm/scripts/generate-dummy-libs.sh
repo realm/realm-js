@@ -3,6 +3,7 @@
 BUILD_DIR=react-native/ios/build
 LIB_DIR=react-native/ios/lib
 
+# TODO: Maybe this is too aggressive
 rm -rf $LIB_DIR
 mkdir $LIB_DIR
 pushd $LIB_DIR
