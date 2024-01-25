@@ -16,9 +16,13 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { FetchHeaders, binding, network } from "../internal";
+import { toFetchArgs } from "src/binding";
+import { binding, extendDebug, network } from "../internal";
+import type { Headers } from "@realm/fetch";
 
-function flattenHeaders(headers: FetchHeaders) {
+const debug = extendDebug("network");
+
+function flattenHeaders(headers: Headers) {
   const result: Record<string, string> = {};
   headers.forEach((value: string, key: string) => {
     result[key] = value;
@@ -27,10 +31,13 @@ function flattenHeaders(headers: FetchHeaders) {
 }
 
 /** @internal */
-export function createNetworkTransport() {
+export function createNetworkTransport(fetch = network.fetch) {
   return binding.Helpers.makeNetworkTransport((request, callback) => {
-    network.fetch(request).then(
+    const [url, init] = toFetchArgs(request);
+    debug("requesting %s %O", url, init);
+    fetch(url, init).then(
       async (response) => {
+        debug("responded %O", response);
         const headers = flattenHeaders(response.headers);
         const contentType = headers["content-type"];
         const body = contentType ? await response.text() : "";

@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { FetchResponse, ReadableStream } from ".";
+import { Response, ReadableStream } from "./types";
 
 // Falling back on a known string used in code transpiled by Babel
 const asyncIteratorSymbol = Symbol.asyncIterator || "@@asyncIterator";
@@ -56,7 +56,7 @@ export function makeStreamIterable(stream: ReadableStream): ReadableStream {
   }
 }
 
-const RESPONSE_HANDLER: ProxyHandler<FetchResponse> = {
+const RESPONSE_HANDLER: ProxyHandler<Response> = {
   get(target, prop, receiver) {
     if (prop === "body") {
       const body = target.body;
@@ -74,6 +74,6 @@ const RESPONSE_HANDLER: ProxyHandler<FetchResponse> = {
  * @param response
  * @returns An async iterator.
  */
-export function makeRequestBodyIterable(response: FetchResponse): FetchResponse {
+export function makeRequestBodyIterable(response: Response): Response {
   return new Proxy(response, RESPONSE_HANDLER);
 }

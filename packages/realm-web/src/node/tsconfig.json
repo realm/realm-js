@@ -4,14 +4,14 @@
 		"noResolve": false,
 		"types": [
 			"@realm/common",
-			"@realm/network-transport",
+			"@realm/fetch",
 			"js-base64",
 			"bson",
 			"buffer",
 			"node"
 		],
 		"lib": [
-			"es2019"
+			"es2022"
 		]
 	},
 	"exclude": [

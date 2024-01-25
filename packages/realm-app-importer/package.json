@@ -6,7 +6,19 @@
   "main": "./src/index.ts",
   "scripts": {
     "lint": "eslint --ext .js,.ts .",
-    "test": "mocha"
+    "test": "mocha",
+    "type-check": "wireit"
+  },
+  "wireit": {
+    "type-check": {
+      "command": "tsc",
+      "files": [
+        "tsconfig.json"
+      ],
+      "dependencies": [
+        "../fetch:build"
+      ]
+    }
   },
   "files": [
     "dist",
@@ -31,22 +43,19 @@
   },
   "license": "Apache-2.0",
   "dependencies": {
-    "@realm/network-transport": "*",
+    "@realm/fetch": "^0.1.0",
     "body-parser": "^1.20.1",
     "chalk": "^4.1.2",
     "debug": "^4.3.4",
     "deepmerge": "^4.2.2",
     "fs-extra": "^10.1.0",
     "glob": "^8.0.3",
-    "node-fetch": "^2.6.9",
     "yargs": "^17.6.0"
   },
   "devDependencies": {
     "@types/body-parser": "^1.19.2",
     "@types/fs-extra": "^9.0.13",
     "@types/glob": "^8.0.0",
-    "@types/node": "^18.15.10",
-    "@types/node-fetch": "^2.6.2",
     "@types/yargs": "^17.0.13"
   }
 }

@@ -27,8 +27,7 @@
       "dependencies": [
         "../../../packages/realm:bundle",
         "../../../packages/realm:build:node",
-        "../../../packages/mocha-reporter:bundle",
-        "../../../packages/realm-network-transport:bundle"
+        "../../../packages/mocha-reporter:bundle"
       ]
     },
     "test:renderer": {
@@ -36,8 +35,7 @@
       "dependencies": [
         "../../../packages/realm:bundle",
         "../../../packages/realm:build:node",
-        "../../../packages/mocha-reporter:bundle",
-        "../../../packages/realm-network-transport:bundle"
+        "../../../packages/mocha-reporter:bundle"
       ]
     }
   },

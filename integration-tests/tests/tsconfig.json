@@ -13,7 +13,6 @@
 			"es2020"
 		],
 		"types": [
-			"@realm/network-transport",
 			"realm",
 			"bson",
 			"buffer",

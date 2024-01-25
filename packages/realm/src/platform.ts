@@ -18,4 +18,4 @@
 
 export { deviceInfo } from "./platform/device-info";
 export { fs } from "./platform/file-system";
-export { network, FetchHeaders, Request } from "./platform/network";
+export { network } from "./platform/network";

@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import type { AnyFetch } from "@realm/fetch";
 import {
   AnyUser,
   Credentials,
@@ -140,6 +141,11 @@ export type AppConfiguration = {
    * @since 12.2.0
    */
   metadata?: Metadata;
+
+  /**
+   * Overrides the fetch function used to perform network requests.
+   */
+  fetch?: AnyFetch;
 };
 
 /**
@@ -261,7 +267,7 @@ export class App<
   constructor(configOrId: AppConfiguration | string) {
     const config: AppConfiguration = typeof configOrId === "string" ? { id: configOrId } : configOrId;
     assert.object(config, "config");
-    const { id, baseUrl, app, timeout, multiplexSessions = true, baseFilePath, metadata } = config;
+    const { id, baseUrl, app, timeout, multiplexSessions = true, baseFilePath, metadata, fetch } = config;
     assert.string(id, "id");
     if (timeout !== undefined) {
       assert.number(timeout, "timeout");
@@ -276,6 +282,9 @@ export class App<
         assert(metadata.encryptionKey, "encryptionKey is required");
       }
     }
+    if (fetch !== undefined) {
+      assert.function(fetch, "fetch");
+    }
 
     fs.ensureDirectoryForFile(fs.joinPaths(baseFilePath || fs.getDefaultDirectoryPath(), "mongodb-realm"));
     // TODO: This used getSharedApp in the legacy SDK, but it's failing AppTests
@@ -283,7 +292,7 @@ export class App<
       {
         appId: id,
         deviceInfo: App.deviceInfo,
-        transport: createNetworkTransport(),
+        transport: createNetworkTransport(fetch),
         baseUrl,
         defaultRequestTimeoutMs: timeout ? binding.Int64.numToInt(timeout) : undefined,
       },

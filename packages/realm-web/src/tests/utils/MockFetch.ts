@@ -16,34 +16,26 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { NetworkTransport, Request, FetchResponse, FetchHeaders } from "@realm/network-transport";
+import { fetch, RequestInit } from "@realm/fetch";
+
+type RequestWithUrl = {
+  url: string;
+  body?: unknown;
+} & Omit<RequestInit, "body">;
 
 import { MongoDBRealmError } from "../..";
 
+export type MockFetch = typeof fetch<any> & {
+  requests: RequestWithUrl[];
+};
+
 /**
  * Perform mocked requests and get pre-recorded responses
+ * @param responses A list of pre-recorded responses
+ * @returns A mock for fetch
  */
-export class MockNetworkTransport implements NetworkTransport {
-  /**
-   * List of all requests captured.
-   */
-  public readonly requests: Request<unknown>[] = [];
-
-  /**
-   * Responses sent back on each expected request.
-   */
-  public readonly responses: unknown[];
-
-  /**
-   * Construct a mocked network transport which returns pre-recorded requests.
-   * @param responses An array of pre-recorded requests.
-   */
-  constructor(responses: unknown[] = []) {
-    this.responses = responses;
-  }
-
-  /** @inheritdoc */
-  fetch<RequestBody>(request: Request<RequestBody>): Promise<FetchResponse> {
+export function createMockFetch(responses: unknown[]): MockFetch {
+  const mock: MockFetch = (url: string, request: RequestInit = {}) => {
     if (!request.headers || Object.keys(request.headers).length === 0) {
       delete request.headers;
     }
@@ -55,9 +47,9 @@ export class MockNetworkTransport implements NetworkTransport {
     if (request.body === undefined) {
       delete request.body;
     }
-    this.requests.push(request);
-    if (this.responses.length > 0) {
-      const [response] = this.responses.splice(0, 1);
+    mock.requests.push({ ...request, url });
+    if (responses.length > 0) {
+      const [response] = responses.splice(0, 1);
       if (response instanceof MongoDBRealmError) {
         return Promise.resolve({
           ok: false,
@@ -75,8 +67,8 @@ export class MockNetworkTransport implements NetworkTransport {
                 return "application/json";
               }
             },
-          } as FetchHeaders,
-        } as FetchResponse);
+          },
+        } as Response);
       } else {
         return Promise.resolve({
           ok: true,
@@ -87,18 +79,16 @@ export class MockNetworkTransport implements NetworkTransport {
                 return "application/json";
               }
             },
-          } as FetchHeaders,
-        } as FetchResponse);
+          },
+        } as Response);
       }
     } else {
       throw new Error(
-        `Unexpected request (method = ${request.method}, url = ${request.url}, body = ${JSON.stringify(request.body)})`,
+        `Unexpected request (method = ${request.method}, url = ${url}, body = ${JSON.stringify(request.body)})`,
       );
     }
-  }
+  };
+  mock.requests = [];
 
-  /** @inheritdoc */
-  fetchWithCallbacks(): void {
-    throw new Error("Not implemented");
-  }
+  return mock;
 }

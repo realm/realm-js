@@ -99,8 +99,7 @@
       "dependencies": [
         "../../../packages/realm:build:android",
         "../../../packages/realm:bundle",
-        "../../../packages/mocha-reporter:bundle",
-        "../../../packages/realm-network-transport:bundle"
+        "../../../packages/mocha-reporter:bundle"
       ],
       "env": {
         "PLATFORM": "android",
@@ -118,8 +117,7 @@
       "dependencies": [
         "pod-install:simulator",
         "../../../packages/realm:bundle",
-        "../../../packages/mocha-reporter:bundle",
-        "../../../packages/realm-network-transport:bundle"
+        "../../../packages/mocha-reporter:bundle"
       ],
       "env": {
         "PLATFORM": "ios",
@@ -131,8 +129,7 @@
       "dependencies": [
         "pod-install:catalyst",
         "../../../packages/realm:bundle",
-        "../../../packages/mocha-reporter:bundle",
-        "../../../packages/realm-network-transport:bundle"
+        "../../../packages/mocha-reporter:bundle"
       ],
       "env": {
         "PLATFORM": "catalyst",
@@ -159,8 +156,7 @@
       "dependencies": [
         "../../../packages/realm:build:android",
         "../../../packages/realm:bundle",
-        "../../../packages/mocha-reporter:bundle",
-        "../../../packages/realm-network-transport:bundle"
+        "../../../packages/mocha-reporter:bundle"
       ],
       "env": {
         "PLATFORM": "android",
@@ -173,8 +169,7 @@
         "pod-install:simulator",
         "../../../packages/realm:build:ios:debug:simulator",
         "../../../packages/realm:bundle",
-        "../../../packages/mocha-reporter:bundle",
-        "../../../packages/realm-network-transport:bundle"
+        "../../../packages/mocha-reporter:bundle"
       ],
       "env": {
         "PLATFORM": "ios",
@@ -187,8 +182,7 @@
         "pod-install:catalyst",
         "../../../packages/realm:build:ios:debug:catalyst",
         "../../../packages/realm:bundle",
-        "../../../packages/mocha-reporter:bundle",
-        "../../../packages/realm-network-transport:bundle"
+        "../../../packages/mocha-reporter:bundle"
       ],
       "env": {
         "PLATFORM": "catalyst",

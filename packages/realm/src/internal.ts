@@ -39,6 +39,8 @@ export * from "./assert";
 /** @internal */
 export * from "./ranges";
 /** @internal */
+export * from "./async-iterator-from-response";
+/** @internal */
 export * from "./Listeners";
 /** @internal */
 export * from "./JSONCacheMap";

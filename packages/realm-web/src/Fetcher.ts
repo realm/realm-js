@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { NetworkTransport, Request, FetchResponse, Headers } from "@realm/network-transport";
+import { fetch, RequestInit, Response } from "@realm/fetch";
 
 import { MongoDBRealmError } from "./MongoDBRealmError";
 
@@ -24,33 +24,38 @@ import { User } from "./User";
 import routes from "./routes";
 import { deserialize, serialize } from "./utils/ejson";
 
+/**
+ * Some fetch function
+ */
+export type FetchFunction = typeof fetch<unknown>;
+
 type SimpleObject = Record<string, unknown>;
 
-type StreamReader = {
-  closed: boolean;
-  cancel(reason?: string): Promise<string | undefined>;
-  read<T>(): Promise<{ value: T | undefined; done: boolean }>;
-  releaseLock(): void;
-};
-type ReadableStream = { getReader(): StreamReader; cancel: () => void };
-
 /**
- * @param body A possible resonse body.
+ * @param response A possible response.
+ * @param response.body A possible response body.
  * @returns An async iterator.
  */
-function asyncIteratorFromResponseBody(body: unknown): AsyncIterable<Uint8Array> {
+function asyncIteratorFromResponseBody({ body }: Response): AsyncIterable<Uint8Array> {
   if (typeof body !== "object" || body === null) {
     throw new Error("Expected a non-null object");
   } else if (Symbol.asyncIterator in body) {
     return body as AsyncIterable<Uint8Array>;
   } else if ("getReader" in body) {
-    const stream = body as ReadableStream;
     return {
       [Symbol.asyncIterator]() {
-        const reader = stream.getReader();
+        const reader = body.getReader();
         return {
-          next() {
-            return reader.read();
+          async next() {
+            const { done, value } = await reader.read();
+            if (done) {
+              // TODO: Simply return the result once https://github.com/microsoft/TypeScript-DOM-lib-generator/pull/1676 is merged and released
+              return { done, value: undefined };
+            } else if (value instanceof Uint8Array) {
+              return { done, value };
+            } else {
+              throw new Error("Expected value to be Uint8Array");
+            }
           },
           async return() {
             await reader.cancel();
@@ -84,11 +89,12 @@ export type LocationUrlContext = {
 
 type TokenType = "access" | "refresh" | "none";
 
-interface RequestWithUrl<RequestBody> extends Request<RequestBody> {
+interface RequestWithUrl<RequestBody> extends RequestInit<RequestBody> {
   path?: never;
+  url: string;
 }
 
-interface RequestWithPath<RequestBody> extends Omit<Request<RequestBody>, "url"> {
+interface RequestWithPath<RequestBody> extends Omit<RequestInit<RequestBody>, "url"> {
   /** Construct a URL from the location URL prepended is path */
   path: string;
   url?: never;
@@ -118,9 +124,9 @@ export type FetcherConfig = {
    */
   appId: string;
   /**
-   * The underlying network transport.
+   * The underlying fetch function.
    */
-  transport: NetworkTransport;
+  fetch: FetchFunction;
   /**
    * An object which can be used to determine the currently active user.
    */
@@ -132,7 +138,7 @@ export type FetcherConfig = {
 };
 
 /**
- * Wraps a NetworkTransport from the "@realm/network-transport" package.
+ * Wraps the fetch from the "@realm/fetch" package.
  * Extracts error messages and throws `MongoDBRealmError` objects upon failures.
  * Injects access or refresh tokens for a current or specific user.
  * Refreshes access tokens if requests fails due to a 401 error.
@@ -145,7 +151,7 @@ export class Fetcher implements LocationUrlContext {
    * @param tokenType The type of token (access or refresh).
    * @returns An object containing the user's token as "Authorization" header or undefined if no user is given.
    */
-  private static buildAuthorizationHeader(user: User | null, tokenType: TokenType): Headers {
+  private static buildAuthorizationHeader(user: User | null, tokenType: TokenType): Record<string, string> {
     if (!user || tokenType === "none") {
       return {};
     } else if (tokenType === "access") {
@@ -178,7 +184,7 @@ export class Fetcher implements LocationUrlContext {
    * @param body The body string or object passed from a request.
    * @returns An object optionally specifying the "Content-Type" header.
    */
-  private static buildJsonHeader(body: string | undefined): Headers {
+  private static buildJsonHeader(body: string | undefined): Record<string, string> {
     if (body && body.length > 0) {
       return { "Content-Type": "application/json" };
     } else {
@@ -186,34 +192,22 @@ export class Fetcher implements LocationUrlContext {
     }
   }
 
-  /**
-   * The id of the app, which this Fetcher was created for.
-   */
-  private readonly appId: string;
-  private readonly transport: NetworkTransport;
-  private readonly userContext: UserContext;
-  private readonly locationUrlContext: LocationUrlContext;
+  private readonly config: FetcherConfig;
 
   /**
    * @param config A configuration of the fetcher.
    * @param config.appId The application id.
-   * @param config.transport The transport used when fetching.
+   * @param config.fetch The fetch function used when fetching.
    * @param config.userContext An object used to determine the requesting user.
    * @param config.locationUrlContext An object used to determine the location / base URL.
    */
-  constructor({ appId, transport, userContext, locationUrlContext }: FetcherConfig) {
-    this.appId = appId;
-    this.transport = transport;
-    this.userContext = userContext;
-    this.locationUrlContext = locationUrlContext;
+  constructor(config: FetcherConfig) {
+    this.config = config;
   }
 
   clone(config: Partial<FetcherConfig>): Fetcher {
     return new Fetcher({
-      appId: this.appId,
-      transport: this.transport,
-      userContext: this.userContext,
-      locationUrlContext: this.locationUrlContext,
+      ...this.config,
       ...config,
     });
   }
@@ -223,19 +217,18 @@ export class Fetcher implements LocationUrlContext {
    * @param request The request which should be sent to the server.
    * @returns The response from the server.
    */
-  public async fetch<RequestBody = unknown>(request: AuthenticatedRequest<RequestBody>): Promise<FetchResponse> {
-    const { path, url, tokenType = "access", user = this.userContext.currentUser, ...restOfRequest } = request;
+  public async fetch<RequestBody = unknown>(request: AuthenticatedRequest<RequestBody>): Promise<Response> {
+    const { path, url, tokenType = "access", user = this.config.userContext.currentUser, ...restOfRequest } = request;
 
     if (typeof path === "string" && typeof url === "string") {
       throw new Error("Use of 'url' and 'path' mutually exclusive");
     } else if (typeof path === "string") {
       // Derive the URL
-      const url = (await this.locationUrlContext.locationUrl) + path;
+      const url = (await this.config.locationUrlContext.locationUrl) + path;
       return this.fetch({ ...request, path: undefined, url });
     } else if (typeof url === "string") {
-      const response = await this.transport.fetch({
+      const response = await this.config.fetch(url, {
         ...restOfRequest,
-        url,
         headers: {
           ...Fetcher.buildAuthorizationHeader(user, tokenType),
           ...request.headers,
@@ -257,7 +250,7 @@ export class Fetcher implements LocationUrlContext {
           user.refreshToken = null;
         }
         // Throw an error with a message extracted from the body
-        throw await MongoDBRealmError.fromRequestAndResponse(request as Request<RequestBody>, response);
+        throw await MongoDBRealmError.fromRequestAndResponse(url, request, response);
       }
     } else {
       throw new Error("Expected either 'url' or 'path'");
@@ -303,27 +296,27 @@ export class Fetcher implements LocationUrlContext {
   public async fetchStream<RequestBody = unknown>(
     request: AuthenticatedRequest<RequestBody>,
   ): Promise<AsyncIterable<Uint8Array>> {
-    const { body } = await this.fetch({
+    const response = await this.fetch({
       ...request,
       headers: {
         Accept: "text/event-stream",
         ...request.headers,
       },
     });
-    return asyncIteratorFromResponseBody(body);
+    return asyncIteratorFromResponseBody(response);
   }
 
   /**
    * @returns The path of the app route.
    */
   public get appRoute() {
-    return routes.api().app(this.appId);
+    return routes.api().app(this.config.appId);
   }
 
   /**
    * @returns A promise of the location URL of the app.
    */
   public get locationUrl(): Promise<string> {
-    return this.locationUrlContext.locationUrl;
+    return this.config.locationUrlContext.locationUrl;
   }
 }

@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2023 Realm Inc.
+// Copyright 2024 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,6 +15,56 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
+
+import type * as types from "./types";
+
+// The sole purpose of this line is to verify types
+const TypeTest: unknown = {};
+
+// This type assertion is left as a comment, because "react-native"'s fetch implementation lacks a ReadableStream.
+// The MongoDB "watch" implementation needs the `request.body` being `ReadableStream`.
+// For this, end-users must install the fetch polyfill installable via https://www.npmjs.com/package/react-native-polyfill-globals
+// TypeTest as ReadableStream satisfies types.ReadableStream;
+
+// To ensure users cannot pass a request body that the platform cannot handle
+TypeTest as types.RequestBody satisfies BodyInit_;
+
+// The sole purpose of this line is to verify types
+globalThis.fetch satisfies typeof types.fetch<BodyInit_, Headers, AbortSignal, Response>;
+
+type ReactNativeRequestInit = {
+  reactNative?: { textStreaming: boolean };
+} & RequestInit;
+
+export async function fetch(input: RequestInfo, init: ReactNativeRequestInit = {}) {
+  // Setting additional options to signal to the RN fetch polyfill that it shouldn't consider the response a "blob"
+  // see https://github.com/react-native-community/fetch/issues/15
+  init.reactNative = { textStreaming: true };
+
+  const response = await globalThis.fetch(input, init);
+  if (!response.statusText) {
+    Object.assign(response, { statusText: getStatusText(response.status) });
+  }
+  return response;
+}
+
+export const Headers = globalThis.Headers satisfies typeof types.Headers;
+
+class PolyfilledAbortSignal extends AbortSignal {
+  static timeout(ms: number): PolyfilledAbortSignal {
+    const controller = new AbortController();
+    setTimeout(() => {
+      controller.abort();
+    }, ms);
+    return controller.signal;
+  }
+}
+
+PolyfilledAbortSignal satisfies typeof types.AbortSignal;
+export { PolyfilledAbortSignal as AbortSignal };
+
+const ReactNativeAbortController = AbortController satisfies typeof types.AbortController<AbortSignal>;
+export { ReactNativeAbortController as AbortController };
 
 /**
  * @see https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
@@ -75,6 +125,6 @@ const HTTP_STATUS_TEXTS: Record<number, string | undefined> = {
   511: "Network Authentication Required",
 };
 
-export function deriveStatusText(status: number): string | undefined {
+export function getStatusText(status: number): string | undefined {
   return HTTP_STATUS_TEXTS[status];
 }

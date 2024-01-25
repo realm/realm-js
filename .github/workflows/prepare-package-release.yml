@@ -15,7 +15,6 @@ on:
         options:
         - '@realm/babel-plugin'
         - '@realm/common'
-        - '@realm/network-transport'
         - '@realm/react'
         - '@realm/tools'
         - '@realm/web'
@@ -40,11 +39,6 @@ jobs:
                 "PACKAGE_PATH": "packages/realm-common",
                 "PACKAGE_NAME": "@realm/common",
                 "VERSION_PREFIX": "realm-common-"
-              },
-              "@realm/network-transport": {
-                "PACKAGE_PATH": "packages/realm-network-transport",
-                "PACKAGE_NAME": "@realm/network-transport",
-                "VERSION_PREFIX": "realm-network-transport-"
               },
               "@realm/react": {
                 "PACKAGE_PATH": "packages/realm-react",

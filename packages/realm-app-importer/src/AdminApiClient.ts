@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { DefaultNetworkTransport, FetchRequestInit } from "@realm/network-transport";
+import { fetch, RequestInit } from "@realm/fetch";
 import {
   App,
   AppResponse,
@@ -52,10 +52,11 @@ export type Credentials =
 
 export type AuthenticationMode = "access" | "refresh" | "none";
 
-type ClientFetchRequest = Omit<FetchRequestInit, "headers"> & {
+type ClientFetchRequest = Omit<RequestInit, "headers" | "body"> & {
   route: string[];
   headers?: Record<string, string>;
   authentication?: AuthenticationMode;
+  body?: unknown;
 };
 
 type AdminApiClientConfig = {
@@ -362,9 +363,9 @@ export class AdminApiClient {
   }
 
   private async fetch(request: ClientFetchRequest): Promise<unknown> {
+    const { route, body, headers = {}, authentication = "access", ...rest } = request;
+    const url = [this.config.baseUrl, AdminApiClient.baseRoute, ...route].join("/");
     try {
-      const { route, body, headers = {}, authentication = "access", ...rest } = request;
-      const url = [this.config.baseUrl, AdminApiClient.baseRoute, ...route].join("/");
       if (authentication === "access") {
         if (!this.accessToken) {
           throw new Error("Not yet authenticated");
@@ -379,14 +380,11 @@ export class AdminApiClient {
       if (typeof body === "object") {
         headers["content-type"] = "application/json";
       }
-      const response = await DefaultNetworkTransport.fetch(url, {
+      const response = await fetch(url, {
         ...rest,
-        body: JSON.stringify(body),
+        body: body === undefined || body === "" ? undefined : JSON.stringify(body),
         headers,
-        // Setting additional options to signal to the RN fetch polyfill that it shouldn't consider the response a "blob"
-        // see https://github.com/react-native-community/fetch/issues/15
-        reactNative: { textStreaming: true },
-      } as FetchRequestInit);
+      });
       if (response.ok) {
         if (response.headers.get("content-type") === "application/json") {
           return response.json();

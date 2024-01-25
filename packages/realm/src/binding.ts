@@ -16,7 +16,18 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { IndexSet, Int64, ObjKey, SyncSession, Timestamp, WeakSyncSession } from "realm/binding";
+import {
+  HttpMethod,
+  IndexSet,
+  Int64,
+  Int64Type,
+  ObjKey,
+  Request,
+  SyncSession,
+  Timestamp,
+  WeakSyncSession,
+} from "realm/binding";
+import { AbortSignal, fetch } from "@realm/fetch";
 
 /** @internal */
 export * from "realm/binding";
@@ -104,4 +115,45 @@ export function stringToObjKey(input: string): ObjKey {
 export function isEmptyObjKey(objKey: ObjKey) {
   // This relies on the JS representation of an ObjKey being a bigint
   return Int64.equals(objKey as unknown as Int64, -1);
+}
+
+function fromBindingFetchBody(body: string) {
+  if (body.length === 0) {
+    return undefined;
+  } else {
+    return body;
+  }
+}
+
+const HTTP_METHOD: Record<HttpMethod, string> = {
+  [HttpMethod.Get]: "GET",
+  [HttpMethod.Post]: "POST",
+  [HttpMethod.Put]: "PUT",
+  [HttpMethod.Patch]: "PATCH",
+  [HttpMethod.Del]: "DELETE",
+};
+
+function fromBindingFetchMethod(method: HttpMethod) {
+  if (method in HTTP_METHOD) {
+    return HTTP_METHOD[method];
+  } else {
+    throw new Error(`Unexpected method ${method}`);
+  }
+}
+
+function fromBindingTimeoutSignal(timeoutMs: Int64Type): AbortSignal | undefined {
+  const timeout = Number(timeoutMs);
+  return timeout > 0 ? AbortSignal.timeout(timeout) : undefined;
+}
+
+export function toFetchArgs({ url, method, timeoutMs, body, headers }: Request): Parameters<typeof fetch> {
+  return [
+    url,
+    {
+      body: fromBindingFetchBody(body),
+      method: fromBindingFetchMethod(method),
+      signal: fromBindingTimeoutSignal(timeoutMs),
+      headers,
+    },
+  ];
 }

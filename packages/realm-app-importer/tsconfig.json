@@ -7,13 +7,22 @@
 		"module": "es2022",
 		"moduleResolution": "node",
 		"forceConsistentCasingInFileNames": true,
+		"skipLibCheck": true,
 		"noResolve": true,
+		"noEmit": true,
+		"types": [
+			"@realm/fetch",
+			"debug"
+		],
 		"lib": [
-			"es2019",
+			"es2022",
 			"dom"
 		]
 	},
 	"include": [
 		"src/**/*.ts"
 	],
+	"exclude": [
+		"src/tests/*.ts"
+	]
 }

@@ -29,7 +29,7 @@ import {
   DEFAULT_AUTH_OPTIONS,
   INVALID_SESSION_ERROR,
   MockApp,
-  MockNetworkTransport,
+  createMockFetch,
 } from "./utils";
 
 describe("App", () => {
@@ -82,7 +82,7 @@ describe("App", () => {
   });
 
   it("fetches the location first", async () => {
-    const transport = new MockNetworkTransport([
+    const fetch = createMockFetch([
       LOCATION_RESPONSE,
       {
         user_id: "totally-valid-user-id",
@@ -94,13 +94,13 @@ describe("App", () => {
     const app = new App({
       id: "my-mocked-app",
       storage: new MemoryStorage(),
-      transport,
+      fetch,
       baseUrl: "http://localhost:1234",
     });
     const credentials = Credentials.anonymous();
     await app.logIn(credentials, false);
     // Expect the request made it to the transport
-    expect(transport.requests).deep.equals([
+    expect(fetch.requests).deep.equals([
       LOCATION_REQUEST,
       {
         method: "POST",
@@ -114,7 +114,7 @@ describe("App", () => {
   });
 
   it("skips fetching the location if asked to", async () => {
-    const transport = new MockNetworkTransport([
+    const fetch = createMockFetch([
       {
         user_id: "totally-valid-user-id",
         access_token: "deadbeef",
@@ -125,14 +125,14 @@ describe("App", () => {
     const app = new App({
       id: "my-mocked-app",
       storage: new MemoryStorage(),
-      transport,
+      fetch,
       baseUrl: "http://localhost:1234",
       skipLocationRequest: true,
     });
     const credentials = Credentials.anonymous();
     await app.logIn(credentials, false);
     // Expect only a single request made via the transport
-    expect(transport.requests).deep.equals([
+    expect(fetch.requests).deep.equals([
       {
         method: "POST",
         url: `http://localhost:1234/api/client/v2.0/app/my-mocked-app/auth/providers/anon-user/login`,
@@ -146,7 +146,7 @@ describe("App", () => {
 
   it("can log in a user", async () => {
     const storage = new MemoryStorage();
-    const transport = new MockNetworkTransport([
+    const fetch = createMockFetch([
       { hostname: "http://localhost:1337" },
       {
         user_id: "totally-valid-user-id",
@@ -174,7 +174,7 @@ describe("App", () => {
     const app = new App({
       id: "my-mocked-app",
       storage,
-      transport,
+      fetch,
       baseUrl: "http://localhost:1234",
     });
     const credentials = Credentials.emailPassword("gilfoyle@testing.mongodb.com", "v3ry-s3cret");
@@ -190,7 +190,7 @@ describe("App", () => {
     expect(user.state).equals(UserState.Active);
     expect(user.isLoggedIn).equals(true);
     // Expect the request made it to the transport
-    expect(transport.requests).deep.equals([
+    expect(fetch.requests).deep.equals([
       LOCATION_REQUEST,
       {
         method: "POST",
@@ -215,7 +215,7 @@ describe("App", () => {
 
   it("can log out a user", async () => {
     const storage = new MemoryStorage();
-    const transport = new MockNetworkTransport([
+    const fetch = createMockFetch([
       { hostname: "http://localhost:1337" },
       {
         user_id: "totally-valid-user-id",
@@ -227,7 +227,7 @@ describe("App", () => {
     ]);
     const app = new App({
       id: "my-mocked-app",
-      transport,
+      fetch,
       storage,
       baseUrl: "http://localhost:1234",
     });
@@ -246,7 +246,7 @@ describe("App", () => {
     expect(user.isLoggedIn).equals(false);
     expect(app.allUsers).deep.equals({ [user.id]: user });
     // Assume the correct requests made it to the transport
-    expect(transport.requests).deep.equals([
+    expect(fetch.requests).deep.equals([
       LOCATION_REQUEST,
       {
         method: "POST",
@@ -268,7 +268,7 @@ describe("App", () => {
   });
 
   it("can log in a user, when another user is already logged in", async () => {
-    const transport = new MockNetworkTransport([
+    const fetch = createMockFetch([
       { hostname: "http://localhost:1337" },
       {
         user_id: "totally-valid-user-id-1",
@@ -299,7 +299,7 @@ describe("App", () => {
     ]);
     const app = new App({
       id: "my-mocked-app",
-      transport,
+      fetch,
       baseUrl: "http://localhost:1234",
     });
     // Log in two different users
@@ -312,7 +312,7 @@ describe("App", () => {
       await app.logIn(credentials);
     }
     // Expect the request made it to the transport
-    expect(transport.requests).deep.equals([
+    expect(fetch.requests).deep.equals([
       LOCATION_REQUEST,
       {
         method: "POST",
@@ -355,7 +355,7 @@ describe("App", () => {
 
   it("can delete a user", async () => {
     const storage = new MemoryStorage();
-    const transport = new MockNetworkTransport([
+    const fetch = createMockFetch([
       { hostname: "http://localhost:1337" },
       {
         user_id: "totally-valid-user-id",
@@ -386,7 +386,7 @@ describe("App", () => {
     const app = new App({
       id: "my-mocked-app",
       storage,
-      transport,
+      fetch,
       baseUrl: "http://localhost:1234",
     });
     const credentials = Credentials.emailPassword("gilfoyle@testing.mongodb.com", "v3ry-s3cret");
@@ -403,7 +403,7 @@ describe("App", () => {
 
   it("can remove an active user", async () => {
     const storage = new MemoryStorage();
-    const transport = new MockNetworkTransport([
+    const fetch = createMockFetch([
       { hostname: "http://localhost:1337" },
       {
         user_id: "totally-valid-user-id",
@@ -416,7 +416,7 @@ describe("App", () => {
     const app = new App({
       id: "my-mocked-app",
       storage,
-      transport,
+      fetch,
       baseUrl: "http://localhost:1234",
     });
     const credentials = Credentials.anonymous();
@@ -430,7 +430,7 @@ describe("App", () => {
     expect(user.state).equals("removed");
     expect(app.allUsers).deep.equals({});
     // Assume the correct requests made it to the transport
-    expect(transport.requests).deep.equals([
+    expect(fetch.requests).deep.equals([
       LOCATION_REQUEST,
       {
         method: "POST",
@@ -453,7 +453,7 @@ describe("App", () => {
 
   it("throws if asked to switch to or remove an unknown user", async () => {
     const storage = new MemoryStorage();
-    const transport = new MockNetworkTransport([
+    const fetch = createMockFetch([
       { hostname: "http://localhost:1337" },
       {
         user_id: "totally-valid-user-id",
@@ -465,7 +465,7 @@ describe("App", () => {
     const app = new App({
       id: "my-mocked-app",
       storage,
-      transport,
+      fetch,
       baseUrl: "http://localhost:1234",
     });
     const credentials = Credentials.anonymous();
@@ -501,7 +501,7 @@ describe("App", () => {
     expect(app.allUsers).deep.equals({ [user.id]: user });
     expect(user.state).equals("active");
     // Assume the correct requests made it to the transport
-    expect(transport.requests).deep.equals([
+    expect(fetch.requests).deep.equals([
       LOCATION_REQUEST,
       {
         method: "POST",
@@ -644,7 +644,7 @@ describe("App", () => {
 
   it("expose a callable functions factory", async () => {
     const storage = new MemoryStorage();
-    const transport = new MockNetworkTransport([
+    const fetch = createMockFetch([
       { hostname: "http://localhost:1337" },
       {
         user_id: "totally-valid-user-id",
@@ -657,7 +657,7 @@ describe("App", () => {
     const app = new App({
       id: "my-mocked-app",
       storage,
-      transport,
+      fetch,
       baseUrl: "http://localhost:1234",
     });
     const credentials = Credentials.anonymous();
@@ -665,7 +665,7 @@ describe("App", () => {
     // Call the function
     const response = await user.functions.hello();
     expect(response).to.deep.equal({ msg: "hi there!" });
-    expect(transport.requests).to.deep.equal([
+    expect(fetch.requests).to.deep.equal([
       LOCATION_REQUEST,
       {
         method: "POST",
@@ -689,7 +689,7 @@ describe("App", () => {
 
   it("hydrates users from storage", () => {
     const storage = new MemoryStorage();
-    const transport = new MockNetworkTransport([]);
+    const fetch = createMockFetch([]);
 
     // Fill data into the storage that can be hydrated
     const appStorage = storage.prefix("app(my-mocked-app)");
@@ -718,7 +718,7 @@ describe("App", () => {
     const app = new App({
       id: "my-mocked-app",
       storage,
-      transport,
+      fetch,
       baseUrl: "http://localhost:1337",
     });
 
@@ -740,7 +740,7 @@ describe("App", () => {
 
   it("saves users to storage when logging in", async () => {
     const storage = new MemoryStorage();
-    const transport = new MockNetworkTransport([
+    const fetch = createMockFetch([
       { hostname: "http://localhost:1337" },
       {
         user_id: "totally-valid-user-id",
@@ -752,7 +752,7 @@ describe("App", () => {
     const app = new App({
       id: "my-mocked-app",
       storage,
-      transport,
+      fetch,
       baseUrl: "http://localhost:1234",
     });
 
@@ -773,7 +773,7 @@ describe("App", () => {
     const app1 = new App({
       id: "my-mocked-app",
       storage,
-      transport: new MockNetworkTransport([
+      fetch: createMockFetch([
         LOCATION_RESPONSE,
         {
           user_id: "alices-id",
@@ -802,7 +802,7 @@ describe("App", () => {
     const app2 = new App({
       id: "my-mocked-app",
       storage,
-      transport: new MockNetworkTransport([
+      fetch: createMockFetch([
         LOCATION_RESPONSE,
         {
           user_id: "charlies-id",
@@ -856,45 +856,46 @@ describe("App", () => {
   });
 
   it("returns the same user when logged in twice", async () => {
+    const fetch = createMockFetch([
+      LOCATION_RESPONSE,
+      {
+        user_id: "gilfoyles-id",
+        access_token: "gilfoyles-first-access-token",
+        refresh_token: "gilfoyles-first-refresh-token",
+        device_id: "000000000000000000000000",
+      },
+      {
+        user_id: "dineshs-id",
+        access_token: "dineshs-first-access-token",
+        refresh_token: "dineshs-first-refresh-token",
+        device_id: "000000000000000000000000",
+      },
+      {
+        user_id: "gilfoyles-id",
+        access_token: "gilfoyles-second-access-token",
+        refresh_token: "gilfoyles-second-refresh-token",
+        device_id: "000000000000000000000000",
+      },
+      {},
+      {
+        user_id: "gilfoyles-id",
+        access_token: "gilfoyles-third-access-token",
+        refresh_token: "gilfoyles-third-refresh-token",
+        device_id: "000000000000000000000000",
+      },
+      {},
+      {
+        user_id: "gilfoyles-id",
+        access_token: "gilfoyles-forth-access-token",
+        refresh_token: "gilfoyles-forth-refresh-token",
+        device_id: "000000000000000000000000",
+      },
+    ]);
     const storage = new MemoryStorage();
     const app = new App({
       id: "my-mocked-app",
       storage,
-      transport: new MockNetworkTransport([
-        LOCATION_RESPONSE,
-        {
-          user_id: "gilfoyles-id",
-          access_token: "gilfoyles-first-access-token",
-          refresh_token: "gilfoyles-first-refresh-token",
-          device_id: "000000000000000000000000",
-        },
-        {
-          user_id: "dineshs-id",
-          access_token: "dineshs-first-access-token",
-          refresh_token: "dineshs-first-refresh-token",
-          device_id: "000000000000000000000000",
-        },
-        {
-          user_id: "gilfoyles-id",
-          access_token: "gilfoyles-second-access-token",
-          refresh_token: "gilfoyles-second-refresh-token",
-          device_id: "000000000000000000000000",
-        },
-        {},
-        {
-          user_id: "gilfoyles-id",
-          access_token: "gilfoyles-third-access-token",
-          refresh_token: "gilfoyles-third-refresh-token",
-          device_id: "000000000000000000000000",
-        },
-        {},
-        {
-          user_id: "gilfoyles-id",
-          access_token: "gilfoyles-forth-access-token",
-          refresh_token: "gilfoyles-forth-refresh-token",
-          device_id: "000000000000000000000000",
-        },
-      ]),
+      fetch,
       baseUrl: "http://localhost:1337",
     });
     // Login twice with the same user

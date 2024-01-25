@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2020 Realm Inc.
+// Copyright 2024 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,15 +16,19 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export * from "../index";
+import { expect } from "chai";
+import nodeFetch from "node-fetch";
+import Realm from "realm";
 
-import { DefaultNetworkTransport } from "../DefaultNetworkTransport";
-import { Fetch, AbortController } from "../types";
-import { makeRequestBodyIterable } from "../IterableReadableStream";
+import { importAppBefore } from "../hooks";
+import { buildAppConfig } from "../utils/build-app-config";
+import { baseUrl } from "../utils/import-app";
 
-import fetch from "node-fetch";
-import NodeAbortController from "abort-controller";
+describe.skipIf(environment.missingServer, "passing node-fetch to AppConfiguration", () => {
+  importAppBefore(buildAppConfig().anonAuth());
 
-DefaultNetworkTransport.fetch = fetch as Fetch;
-DefaultNetworkTransport.AbortController = NodeAbortController as AbortController;
-DefaultNetworkTransport.transformResponse = makeRequestBodyIterable;
+  it("is supported", async function (this: AppContext) {
+    const app = new Realm.App({ id: this.app.id, baseUrl, fetch: nodeFetch });
+    await app.logIn(Realm.Credentials.anonymous());
+  });
+});

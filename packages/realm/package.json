@@ -97,7 +97,7 @@
         "build:node",
         "bindgen:generate:typescript",
         "bindgen:generate:wrappers",
-        "../realm-network-transport:bundle"
+        "../fetch:build"
       ]
     },
     "bundle": {
@@ -108,9 +108,9 @@
         }
       },
       "dependencies": [
-        "../realm-network-transport:bundle",
         "bindgen:generate:typescript",
-        "bindgen:generate:wrappers"
+        "bindgen:generate:wrappers",
+        "../fetch:build"
       ],
       "files": [
         "rollup.config.mjs",
@@ -278,7 +278,6 @@
   "dependencies": {
     "bson": "^4.7.2",
     "debug": "^4.3.4",
-    "node-fetch": "^2.6.9",
     "node-machine-id": "^1.1.12",
     "prebuild-install": "^7.1.1"
   },
@@ -292,10 +291,10 @@
   },
   "devDependencies": {
     "@realm/bindgen": "^0.1.0",
-    "@realm/network-transport": "^0.7.2",
+    "@realm/fetch": "^0.1.0",
     "@types/chai": "^4.3.3",
     "@types/mocha": "^10.0.0",
-    "@types/node": "^18.15.10",
+    "@types/node": "^18.19.8",
     "@types/path-browserify": "^1.0.0",
     "command-line-args": "^5.2.1",
     "chai": "4.3.6",
@@ -306,6 +305,9 @@
     "prebuild": "^11.0.4",
     "react-native": "0.73.2",
     "typedoc-plugin-missing-exports": "^2.0.1"
+  },
+  "engines": {
+    "node": ">=18"
   },
   "repository": {
     "type": "git",

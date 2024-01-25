@@ -12,14 +12,14 @@
 		],
 		"types": [
 			"@realm/common",
-			"@realm/network-transport",
+			"@realm/fetch",
 			"realm",
 			"js-base64",
 			"bson",
 			"buffer"
 		],
 		"lib": [
-			"es2019"
+			"es2022"
 		]
 	},
 	"include": [

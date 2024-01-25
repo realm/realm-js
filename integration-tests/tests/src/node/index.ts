@@ -24,3 +24,4 @@ import "./path";
 import "./sync-proxy";
 import "./custom-inspect";
 import "./ssl";
+import "./node-fetch";

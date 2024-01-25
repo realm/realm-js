@@ -1,0 +1,41 @@
+{
+  "name": "@realm/fetch",
+  "version": "0.1.0",
+  "module": "true",
+  "private": true,
+  "scripts": {
+    "build": "wireit"
+  },
+  "wireit": {
+    "build": {
+      "command": "tsc --build",
+      "files": [
+        "src",
+        "types.d.ts",
+        "tsconfig.json",
+        "tsconfig.*.json"
+      ],
+      "output": [
+        "dist"
+      ]
+    }
+  },
+  "exports": {
+    "node": {
+      "import": "./dist/node-esm/node.js",
+      "require": "./dist/node-cjs/node.js"
+    },
+    "react-native": "./dist/react-native/react-native.js",
+    "browser": "./dist/browser/browser.js",
+    "types": "./dist/types/types.d.ts"
+  },
+  "react-native": "./dist/react-native/react-native.js",
+  "types": "./dist/types/types.d.ts",
+  "devDependencies": {
+    "@tsconfig/node18": "^18.2.2",
+    "@tsconfig/recommended": "^1.0.3"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

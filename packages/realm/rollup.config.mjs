@@ -58,6 +58,7 @@ export default [
       nodeResolve({
         modulesOnly: true,
         preferBuiltins: true,
+        exportConditions: ["node", "module", "main"],
       }),
       replace({
         preventAssignment: true,
@@ -74,7 +75,7 @@ export default [
         include: typescriptInclude,
       }),
     ],
-    external: ["bson", "debug", "node-fetch", "node:module", "node:fs", "node:path"],
+    external: ["bson", "debug", "node:module", "node:fs", "node:path"],
   },
   {
     input: "src/platform/react-native/index.ts",
@@ -87,7 +88,7 @@ export default [
       nodeResolve({
         mainFields: ["react-native", "browser", "module", "main"],
         exportConditions: ["react-native", "browser", "module", "main"],
-        resolveOnly: ["@realm/network-transport", "path-browserify"],
+        resolveOnly: ["@realm/fetch", "path-browserify"],
       }),
       // We need to use `commonjs` because of "path-browserify"
       commonjs(),

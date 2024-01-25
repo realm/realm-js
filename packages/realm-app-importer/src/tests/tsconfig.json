@@ -1,11 +1,16 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-      "noResolve": false,
-      "types": [
-          "mocha",
-          "chai",
-          "node"
-      ]
-  }
+    "composite": true,
+    "noResolve": false,
+    "types": [
+      "mocha",
+      "chai",
+      "node"
+    ]
+  },
+  "include": [
+    "**/*.ts"
+  ],
+  "exclude": []
 }
