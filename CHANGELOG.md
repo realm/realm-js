@@ -7,8 +7,9 @@
 * Added an optional `fetch` parameter to the `AppConfiguration`. Use this to specify a custom implementation of the `fetch` function used by the app to perform network requests.
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None
+* Handle `EOPNOTSUPP` when using `posix_fallocate()` and fallback to manually consume space. This should enable android users to open a Realm on restrictive file systems. ([#6349](https://github.com/realm/realm-js/issues/6349), since v12.4.0)
+* Application may crash with `incoming_changesets.size() != 0` when a download message is mistaken for a bootstrap message. This can happen if the synchronization session is paused and resumed at a specific time. ([realm/realm-core#7238](https://github.com/realm/realm-core/pull/7238), since v10.12.0)
+* Fixed errors complaining about missing symbols such as `__atomic_is_lock_free` on ARMv7 Linux. ([realm/realm-core#7257](https://github.com/realm/realm-core/pull/7257))
 
 ### Compatibility
 * React Native >= v0.71.4
