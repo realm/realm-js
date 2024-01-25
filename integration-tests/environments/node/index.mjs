@@ -16,10 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import fs from "node:fs";
 import os from "node:os";
+import path from "node:path";
 import { Client } from "mocha-remote-client";
-import fs from "fs-extra";
-import path from "path";
 
 import v8 from "node:v8";
 import vm from "node:vm";
