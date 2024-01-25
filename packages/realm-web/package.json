@@ -91,7 +91,7 @@
   "devDependencies": {
     "@realm/fetch": "^0.1.0",
     "@types/chai": "^4.2.9",
-    "@types/fs-extra": "^8.1.0",
+    "@types/fs-extra": "^11.0.4",
     "@types/js-base64": "^3.3.1",
     "@types/mocha": "^10.0.6",
     "chai": "4.3.6",
