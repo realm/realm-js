@@ -296,6 +296,8 @@ export class Realm {
    * @param category - The category/component to set the log level for. If omitted, log level is set for all known categories.
    * @note The log level can be changed during the lifetime of the application.
    * @since 12.0.0
+   * @example
+   * Realm.setLogLevel({ category: LogCategory.Realm, level: "all" });
    */
   static setLogLevel(_arg: LogLevel | LogArgs) {
     // It is not possible to overload a static function: https://github.com/microsoft/TypeScript/issues/18945
@@ -328,8 +330,12 @@ export class Realm {
   /**
    * Sets the logger callback.
    * @param loggerCallback - The callback invoked by the logger. The default callback uses `console.log`, `console.warn` and `console.error`, depending on the level of the message.
-   * @note The logger callback needs to be setup before opening the first realm.
+   * @note The logger callback needs to be setup before opening the first Realm.
    * @since 12.0.0
+   * @example
+   * Realm.setLogger(({ category, level, message }) => {
+   *   console.log(`[${category} - ${level}] ${message}`);
+   * });
    */
   static setLogger(loggerCallback: LoggerCallback) {
     let logger: binding.Logger;

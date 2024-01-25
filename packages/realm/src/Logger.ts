@@ -20,7 +20,23 @@ import { assert, binding } from "./internal";
 
 export type LogLevel = "all" | "trace" | "debug" | "detail" | "info" | "warn" | "error" | "fatal" | "off";
 
-// TODO: Add docs.
+/**
+ * Log levels used by Realm
+ *
+ * Off      Be silent.
+ * Fatal    Be silent unless when an error is fatal.
+ * error    Be silent unless when there is an error.
+ * warn     Be silent unless when there is an error or a warning.
+ * Info     Reveal information about what is going on, but in a
+ *          minimalistic fashion to avoid general overhead from logging
+ *          and to keep volume down.
+ * Detail   Same as 'Info', but prioritize completeness over minimalism.
+ * Debug    Reveal information that can aid debugging, no longer paying
+ *          attention to efficiency.
+ * Trace    A version of 'Debug' that allows for very high volume
+ *          output.
+ * All      Same as 'Trace' but with even more output.
+ */
 export enum NumericLogLevel {
   All = 0,
   Trace = 1,
@@ -33,8 +49,25 @@ export enum NumericLogLevel {
   Off = 8,
 }
 
-// TODO: Add docs.
-// (These constants map 1:1 to Core's string values.)
+/**
+ * When debugging, you might not need log messages from everything. To help focusing, Realm groups log events
+ * in categories.
+ *
+ * Realm         Top level category.
+ * Storage       Everything about mutating and querying the database.
+ * Query         Query operations.
+ * Object        Mutations of the database.
+ * Notification  Reporting changes to the database.
+ * Sync          Everything about Atlas Device Sync.
+ * Client        Catch-all category for Device Sync client operations.
+ * Session       Connection level activity.
+ * Changeset     Reception, upload and integration of changesets.
+ * Network       Low level network activity.
+ * Reset         Client reset operations.
+ * Server        All server activity (only relevant for test runs).
+ * App           Activity at the app level.
+ * SDK           Tracing of SDK activity.
+ */
 export enum LogCategory {
   Realm = "Realm",
   Storage = "Storage",
@@ -61,13 +94,28 @@ export enum LogCategory {
  */
 export type Logger = (level: NumericLogLevel, message: string) => void;
 
-// TODO: Add docs.
+/**
+ * A callback passed to `Realm.setLogger`.
+ *
+ * @param level   - The level of the log entry.
+ * @param message - The message of the log entry.
+ * @since 12.0.0
+ * @deprecated Will be removed in v13.0.0
+ */
 export type LoggerCallback1 = (level: LogLevel, message: string) => void;
 export type LoggerCallbackArgs = {
   category: LogCategory;
   level: LogLevel;
   message: string;
 };
+/**
+ * A callback passed to `Realm.setLogger`. Arguments are passed as a POJO.
+ *
+ * @param category   - The category (origin) of the log entry.
+ * @param level      - The level of the log entry.
+ * @param message    - The message of the log entry.
+ * @since
+ */
 export type LoggerCallback2 = (args: LoggerCallbackArgs) => void;
 export type LoggerCallback = LoggerCallback1 | LoggerCallback2;
 
