@@ -52,7 +52,7 @@
   "dependencies": {
     "@electron/remote": "^2.0.9",
     "@realm/integration-tests": "*",
-    "fs-extra": "^9.1.0",
+    "fs-extra": "^11.2.0",
     "mocha-remote-client": "^1.8.0",
     "@realm/app-importer": "*"
   },
