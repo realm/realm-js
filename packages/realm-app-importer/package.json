@@ -49,7 +49,7 @@
     "debug": "^4.3.4",
     "deepmerge": "^4.2.2",
     "fs-extra": "^11.2.0",
-    "glob": "^8.0.3",
+    "glob": "^10.3.10",
     "yargs": "^17.6.0"
   },
   "devDependencies": {
