@@ -301,13 +301,13 @@ export class Realm {
    */
   static setLogLevel(_arg: LogLevel | LogArgs) {
     // It is not possible to overload a static function: https://github.com/microsoft/TypeScript/issues/18945
-    // FIXME: do use `arguments` but find a proper type
+    // FIXME: don't use `arguments` but find a proper type
     if (arguments.length === 1) {
       // eslint-disable-next-line prefer-rest-params
       const arg = arguments[0];
       if (arg.level) {
         const level = arg.level;
-        if (arg[0].category) {
+        if (arg.category) {
           const category = arg.category;
           assert(Object.values(LogCategory).includes(category));
           binding.LogCategoryRef.getCategory(category).setDefaultLevelThreshold(toBindingLoggerLevel(level));
