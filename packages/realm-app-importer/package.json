@@ -54,7 +54,7 @@
   },
   "devDependencies": {
     "@types/body-parser": "^1.19.2",
-    "@types/fs-extra": "^9.0.13",
+    "@types/fs-extra": "^11.0.4",
     "@types/glob": "^8.0.0",
     "@types/yargs": "^17.0.13"
   }
