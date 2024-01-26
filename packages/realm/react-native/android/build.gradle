@@ -1,42 +1,35 @@
+import org.apache.tools.ant.taskdefs.condition.Os
+
 buildscript {
     repositories {
         google()
         mavenCentral()
+        mavenLocal()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.2.1'
+        classpath 'com.android.tools.build:gradle:7.3.1'
     }
 }
-
-allprojects {
-    repositories {
-        mavenLocal()
-        mavenCentral()
-        maven {
-            // All of React Native (JS, Obj-C sources, Android binaries) is installed from npm
-            url "$projectDir/../../react-native/android"
-        }
-    }
-}
-
 apply plugin: 'com.android.library'
 
 def getReactNativeDirectory() {
     def reactNativeDirectory = file("${rootProject.projectDir}/../../../../node_modules/react-native")
     if (reactNativeDirectory.exists()) {
         return reactNativeDirectory
+    }
     throw new GradleException(
         "Unable to find the React Native directory"
     )
 }
 
+def sanitizeFilePath(String filePath) {
+    if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+        filePath = filePath.replace(File.separatorChar, '/' as char)
+    }
+    return filePath
+}
 
-def reactNativeRootDir = getReactNativeDirectory()
-
-def reactNativeProperties = new Properties()
-file("$reactNativeRootDir/ReactAndroid/gradle.properties").withInputStream { reactNativeProperties.load(i) }
-
-def REACT_NATIVE_VERSION = reactProperties.getProperty("VERSION_NAME")
+def REACT_NATIVE_ROOT_DIR = sanitizeFilePath(getReactNativeDirectory().path);
 
 def reactNativeArchitectures() {
     def value = project.getProperties().get("reactNativeArchitectures")
@@ -48,41 +41,51 @@ android {
     namespace 'io.realm.react'
     compileSdkVersion rootProject.hasProperty('compileSdkVersion') ? rootProject.compileSdkVersion : 28
     buildToolsVersion rootProject.hasProperty('buildToolsVersion') ? rootProject.buildToolsVersion : '28.0.3'
-
+    buildFeatures {
+        prefab = true
+    }
     defaultConfig {
         minSdkVersion rootProject.hasProperty('minSdkVersion') ? rootProject.minSdkVersion : 16
         targetSdkVersion rootProject.hasProperty('targetSdkVersion') ? rootProject.targetSdkVersion : 28
         externalNativeBuild {
             cmake {
                 arguments "-DANDROID_STL=c++_shared",
-                          "-DREACT_NATIVE_VERSION=${REACT_NATIVE_VERSION}"
+                          "-DREACT_NATIVE_ROOT_DIR=${REACT_NATIVE_ROOT_DIR}"
                 targets 'realm-js-android'
                 cppFlags ''
                 abiFilters (*reactNativeArchitectures())
             }
         }
     }
+
     buildTypes {
         debug {
             jniDebuggable true
+            packagingOptions {
+                doNotStrip "**/librealm.so"
+            }
         }
     }
+
     externalNativeBuild {
         cmake {
             path file('../../bindgen/CMakeLists.txt')
             version '3.22.1'
         }
     }
-}
-
-def dependencyType = 'implementation'
-try {
-    project.getConfigurations().getByName('implementation')
-} catch (UnknownConfigurationException e) {
-    dependencyType = 'compile' // Pre 3.0 Android Gradle Plugin
+    packagingOptions {
+        excludes = [
+                "META-INF",
+                "META-INF/**",
+                "**/libc++_shared.so",
+                "**/libfbjni.so",
+                "**/libjsi.so",
+                "**/libreactnativejni.so",
+                "**/libturbomodulejsijni.so",
+        ]
+    }
 }
 
 project.dependencies {
-    add(dependencyType, fileTree(dir: 'libs', include: ['*.jar']))
-    add(dependencyType, 'com.facebook.react:react-native:+')
+    implementation "com.facebook.react:react-android"
 }

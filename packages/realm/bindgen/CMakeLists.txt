@@ -183,17 +183,8 @@ if(DEFINED CMAKE_JS_VERSION)
 else()
     include(jsi.cmake)
 
-    bindgen(
-        TEMPLATE ${SDK_DIR}/bindgen/src/templates/jsi.ts
-        OUTPUTS jsi_init.cpp
-        OUTDIR ${CMAKE_CURRENT_BINARY_DIR}
-        SPECS ${JS_SPEC_FILE}
-        OPTIN ${JS_OPT_IN_FILE}
-        SOURCES ${SDK_TS_FILES}
-    )
-
-    target_sources(realm-js PRIVATE jsi_init.cpp ${CMAKE_JS_SRC})
-
+    target_sources(realm-js PRIVATE ${BINDING_DIR}/jsi/jsi_init.cpp ${CMAKE_JS_SRC})
+    target_include_directories(realm-js PRIVATE vendor/realm-core/bindgen/src)
     if(ANDROID)
         add_subdirectory(${BINDING_DIR}/android android)
         # disabling for now to simplify the bootstrapping process.
