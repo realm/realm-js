@@ -91,7 +91,7 @@
     "eslint-plugin-react": "^7.32.2",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-native": "^4.0.0",
-    "node-addon-api": "^6.0.0",
+    "node-addon-api": "^7.0.0",
     "prettier": "2.8.8",
     "react-native": "0.73.2",
     "rollup": "^4.9.5",
