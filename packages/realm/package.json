@@ -302,7 +302,7 @@
     "cross-env": "^7.0.3",
     "mocha": "^10.1.0",
     "path-browserify": "^1.0.1",
-    "prebuild": "^11.0.4",
+    "prebuild": "^12.1.0",
     "react-native": "0.73.2",
     "typedoc-plugin-missing-exports": "^2.0.1"
   },
