@@ -587,9 +587,9 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
       // Used as a flag for knowing when to stop watching.
       const lastDocument = { _id: numInserts, isLast: true };
 
-      function assertIsInsert<
-        T extends Document = TestDocument,
-      >(event: ChangeEvent<T>): asserts event is InsertEvent<T> {
+      function assertIsInsert<T extends Document = TestDocument>(
+        event: ChangeEvent<T>,
+      ): asserts event is InsertEvent<T> {
         if (event.operationType !== "insert") {
           throw new Error(`Expected an insert event, got ${event.operationType}.`);
         }

@@ -35,7 +35,10 @@ class RealmListeners {
    * Keeps tracked of registered listener callbacks for Realm class notifications.
    */
 
-  constructor(private realm: Realm, private eventType: RealmEvent) {
+  constructor(
+    private realm: Realm,
+    private eventType: RealmEvent,
+  ) {
     this.eventType = eventType;
   }
   private listeners = new Set<RealmListenerCallback>();
