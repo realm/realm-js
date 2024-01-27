@@ -215,7 +215,7 @@
     "@react-native/typescript-config": "0.73.1",
     "@types/react": "^18.2.6",
     "@types/react-test-renderer": "^18.0.0",
-    "concurrently": "^6.0.2",
+    "concurrently": "^8.2.2",
     "mocha-github-actions-reporter": "^0.3.1",
     "mocha-remote-cli": "^1.8.0",
     "pod-install": "^0.1.39",
