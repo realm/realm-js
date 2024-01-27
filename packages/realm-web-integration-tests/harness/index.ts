@@ -127,7 +127,10 @@ export async function run(devtools = false) {
   await mochaServer.start();
 
   // Start up the browser, running the tests
-  const browser = await puppeteer.launch({ devtools });
+  const browser = await puppeteer.launch({
+    devtools,
+    headless: devtools ? false : "new",
+  });
 
   process.once("exit", () => {
     browser.close();
