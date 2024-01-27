@@ -67,7 +67,11 @@ export class TypeAssertionError extends AssertionError {
   }
 
   /** @internal */
-  constructor(/** @internal */ private expected: string, /** @internal */ private value: unknown, target?: string) {
+  constructor(
+    /** @internal */ private expected: string,
+    /** @internal */ private value: unknown,
+    target?: string,
+  ) {
     super(TypeAssertionError.message(expected, value, target));
   }
 

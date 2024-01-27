@@ -55,7 +55,11 @@ function tryWrap(body: string) {
 }
 
 class CppJsiFunc extends CppFunc {
-  constructor(private addon: JsiAddon, name: string, props?: CppFuncProps) {
+  constructor(
+    private addon: JsiAddon,
+    name: string,
+    props?: CppFuncProps,
+  ) {
     super(name, "jsi::Value", jsi_callback_args, props);
   }
 

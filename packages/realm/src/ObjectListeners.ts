@@ -28,7 +28,10 @@ export class ObjectListeners<T> {
    */
   private internal!: binding.ObjectNotifier | null;
 
-  constructor(private realm: binding.Realm, private object: RealmObject<T>) {
+  constructor(
+    private realm: binding.Realm,
+    private object: RealmObject<T>,
+  ) {
     this.properties = getClassHelpers(this.object.constructor as typeof RealmObject).properties;
   }
 
