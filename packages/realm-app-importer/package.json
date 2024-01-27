@@ -44,18 +44,6 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@realm/fetch": "^0.1.0",
-    "body-parser": "^1.20.1",
-    "chalk": "^5.3.0",
-    "debug": "^4.3.4",
-    "deepmerge": "^4.2.2",
-    "fs-extra": "^11.2.0",
-    "glob": "^8.0.3",
-    "yargs": "^17.6.0"
-  },
-  "devDependencies": {
-    "@types/body-parser": "^1.19.2",
-    "@types/fs-extra": "^11.0.4",
-    "@types/glob": "^8.0.0",
-    "@types/yargs": "^17.0.13"
+    "debug": "^4.3.4"
   }
 }

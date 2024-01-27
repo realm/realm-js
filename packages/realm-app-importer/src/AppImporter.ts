@@ -24,12 +24,6 @@ import { Deployment } from "./types";
 
 const debug = createDebug("realm:app-importer");
 
-/**
- * First level keys are file globs and the values are objects that are spread over the content of the files matching the glob.
- * @example { "config.json": { name: "overridden-name" }, "services/local-mongodb/rules/*.json": { database: "another-database" } }
- */
-export type TemplateReplacements = Record<string, Record<string, unknown>>;
-
 export type ImportedApp = { appName: string; appId: string };
 
 /* eslint-disable no-console */
@@ -129,7 +123,6 @@ export class AppImporter {
 
   /**
    * @param appTemplatePath The path to a template directory containing the configuration files needed to import the app.
-   * @param replacements An object with file globs as keys and a replacement object as values. Allows for just-in-time replacements of configuration parameters.
    * @returns A promise of an object containing the app id.
    */
   public async importApp(config: AppConfig): Promise<ImportedApp> {
