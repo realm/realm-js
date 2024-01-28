@@ -1,5 +1,12 @@
 name: Test Coverage
-on: ["push", "pull_request"]
+on:
+  pull_request:
+    paths:
+      # Trigger only when files affecting coverage has changed
+      - "**.ts"
+      - "**.js"
+      # Or the workflow itself
+      - ".github/workflows/pr-coverage.yml"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
