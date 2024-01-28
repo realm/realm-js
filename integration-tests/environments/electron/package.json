@@ -42,7 +42,7 @@
   "devDependencies": {
     "@realm/mocha-reporter": "*",
     "command-line-args": "^5.2.1",
-    "electron": "^24.1.2",
+    "electron": "^28.1.4",
     "electron-builder": "^24.9.1",
     "mocha-github-actions-reporter": "^0.3.0",
     "mocha-junit-reporter": "^2.2.0",
