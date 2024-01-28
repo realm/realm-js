@@ -86,7 +86,7 @@
     "@realm/common": "^0.1.4",
     "bson": "^4.5.4",
     "detect-browser": "^5.2.1",
-    "js-base64": "^3.7.2"
+    "js-base64": "^3.7.6"
   },
   "devDependencies": {
     "@realm/fetch": "^0.1.0",

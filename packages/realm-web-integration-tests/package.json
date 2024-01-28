@@ -32,7 +32,7 @@
   "dependencies": {
     "@realm/app-importer": "^0.1.0",
     "chai": "4.3.6",
-    "js-base64": "^3.7.2",
+    "js-base64": "^3.7.6",
     "jwt-encode": "^1.0.1",
     "mocha-remote-cli": "^1.8.0",
     "mocha-remote-server": "^1.8.0",

@@ -304,7 +304,7 @@
     "path-browserify": "^1.0.1",
     "prebuild": "^12.1.0",
     "react-native": "0.73.2",
-    "typedoc-plugin-missing-exports": "^2.0.1"
+    "typedoc-plugin-missing-exports": "^2.2.0"
   },
   "engines": {
     "node": ">=18"
