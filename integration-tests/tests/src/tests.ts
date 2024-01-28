@@ -59,6 +59,7 @@ import "./tests/objects";
 import "./tests/observable";
 import "./tests/queries";
 import "./tests/realm-constructor";
+import "./tests/received-message-bug";
 import "./tests/results";
 import "./tests/schema";
 import "./tests/serialization";
