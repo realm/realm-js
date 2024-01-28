@@ -198,12 +198,15 @@
     "path-browserify": "^1.0.1",
     "react": "18.2.0",
     "react-native": "0.73.2",
+    "react-native-fetch-api": "^3.0.0",
     "react-native-fs": "^2.20.0",
+    "react-native-get-random-values": "^1.10.0",
     "react-native-polyfill-globals": "^3.1.0",
     "react-native-progress": "^5.0.1",
     "react-native-svg": "^14.1.0",
     "realm": "*",
-    "text-encoding": "^0.7.0"
+    "text-encoding": "^0.7.0",
+    "web-streams-polyfill": "^3.3.2"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
