@@ -270,7 +270,7 @@ jobs:
           - { os: darwin, target: "test:ci:main", runner: macos-latest, environment: electron }
           - { os: darwin, target: "test:ci:renderer", runner: macos-latest, environment: electron }
           - { os: darwin, target: "test:ci", runner: macos-latest, environment: node }
-          - { os: android, target: "test:ci:android", runner: macos-latest-large, environment: react-native, arch: "armeabi-v7a" }
+          - { os: android, target: "test:ci:android", runner: ubuntu-latest, environment: react-native, arch: "armeabi-v7a" }
           - { os: ios, target: "test:ci:ios", runner: macos-latest-xlarge, environment: react-native, arch: "ios" }
           #- { os: ios, target: "test:ci:catalyst", runner: macos-latest, environment: react-native, arch: "catalyst" }
     timeout-minutes: 60
@@ -392,8 +392,15 @@ jobs:
         timeout-minutes: 75
         run: npm run ${{ matrix.variant.target}} --prefix integration-tests/environments/${{ matrix.variant.environment }}
 
+      - name: Enable KVM group perms
+        if: ${{ matrix.variant.os == 'android' }}
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
       - name: Setup Java Gradle cache for android test app
-        if: ${{ (matrix.variant.os == 'android') }}
+        if: ${{ matrix.variant.os == 'android' }}
         uses: actions/cache@v3
         with:
           path: |
@@ -404,7 +411,7 @@ jobs:
             ${{ runner.os }}-gradle-
 
       - name: Setup Android Emulator cache
-        if: ${{ (matrix.variant.os == 'android') }}
+        if: ${{ matrix.variant.os == 'android' }}
         uses: actions/cache@v3
         id: avd-cache
         with:
@@ -414,13 +421,13 @@ jobs:
           key: avd-29
 
       - uses: actions/setup-java@v3
-        if: ${{ (matrix.variant.os == 'android') }}
+        if: ${{ matrix.variant.os == 'android' }}
         with:
           distribution: 'zulu' # See 'Supported distributions' for available options
           java-version: '17'
 
       - name: Run ${{matrix.variant.target}} (${{ matrix.variant.os}} / ${{ matrix.variant.environment }})
-        if: ${{ (matrix.variant.os == 'android') }}
+        if: ${{ matrix.variant.os == 'android' }}
         env:
           MOCHA_REMOTE_CONTEXT: ${{ steps.mocha-env.outputs.context }}
         timeout-minutes: 75
