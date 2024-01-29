@@ -5,9 +5,9 @@
 # where "react-native" is installed as a sibling to our package instead of being a dev-dependency of our package.
 
 if(NOT DEFINED NODE_PATH)
-set(NODE_PATH $ENV{NODE_PATH})
+    set(NODE_PATH $ENV{NODE_PATH})
     if(NOT NODE_PATH)
-    find_program(NODE_PATH node)
+        find_program(NODE_PATH node)
     endif()
 endif()
 

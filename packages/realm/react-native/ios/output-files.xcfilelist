@@ -1,4 +1,3 @@
-
 $(SRCROOT)/react-native/ios/build/lib/librealm.a
 $(SRCROOT)/react-native/ios/build/lib/librealm-sync.a
 $(SRCROOT)/react-native/ios/build/lib/librealm-parser.a
