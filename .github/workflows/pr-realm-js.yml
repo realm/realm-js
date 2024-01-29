@@ -21,16 +21,16 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  bundle:
-    name: Bundle TypeScript
+  generate-shared-artifacts:
+    name: Generate Shared Artifacts
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: "recursive"
       - name: Setup node version
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
@@ -39,15 +39,19 @@ jobs:
         run: npm ci --ignore-scripts
       - name: Bundle all packages
         run: npm run bundle
+      - name: Generate JSI
+        run: |
+          npm run bindgen:generate:jsi --workspace realm
       # Due to a limitation in upload-artifact a redundant file is needed to force
       # preserving paths (https://github.com/actions/upload-artifact/issues/174)
       - name: Upload dist artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: realm-js-bundles
+          name: realm-js-shared
           path: |
             README.md
             packages/*/dist
+            packages/realm/binding/jsi/jsi_init.cpp
 
   build:
     name: Build for ${{ matrix.variant.os }} ${{ matrix.variant.arch }}
@@ -70,17 +74,14 @@ jobs:
           - { os: android, runner: ubuntu-latest, arch: x86, artifact-path: packages/realm/react-native/android/src/main/jniLibs }
           - { os: darwin, runner: macos-latest, arch: x64, artifact-path: packages/realm/prebuilds, test-node: true, test-electron: true }
           - { os: darwin, runner: macos-latest, arch: arm64, artifact-path: packages/realm/prebuilds, test-node: true, test-electron: true }
-          - { os: ios, runner: macos-latest-xlarge, arch: simulator, artifact-path: packages/realm/react-native/shared/jsi_init.cpp }
-          - { os: ios, runner: macos-latest-xlarge, arch: catalyst, artifact-path: packages/realm/react-native/shared/jsi_init.cpp }
-          - { os: ios, runner: macos-latest-xlarge, arch: ios, artifact-path: packages/realm/react-native/shared/jsi_init.cpp }
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: "recursive"
 
       - name: Setup node version
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
@@ -92,7 +93,7 @@ jobs:
 
       - name: Restore NPM cache
         id: npm-cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{ steps.npm-cache-dir.outputs.dir }}
           key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
@@ -100,7 +101,7 @@ jobs:
             ${{ runner.os }}-node-
 
       - name: Setup Wireit cache
-        uses: google/wireit@setup-github-actions-caching/v1
+        uses: takameyer/wireit@wireit-caching-gha
 
       - name: MSVC Setup
         if: ${{ runner.os == 'Windows' }}
@@ -187,11 +188,6 @@ jobs:
         if: ${{ (matrix.variant.os != 'ios') && (matrix.variant.os != 'android') }}
         run: npm run build:node:prebuild:${{matrix.variant.arch}} --workspace realm
 
-      - name: Generate JSI
-        if: ${{ (matrix.variant.os == 'ios') && (matrix.variant.os == 'android') }}
-        run: |
-          npm run bindgen:generate:jsi --workspace realm
-
       # build the c++ library for Android
       - name: Build Android
         if: ${{ (matrix.variant.os == 'android') }}
@@ -209,7 +205,7 @@ jobs:
 
   integration-tests:
     name: Test ${{ matrix.variant.environment }} on ${{ matrix.variant.os }} (${{matrix.variant.target}})
-    needs: [bundle, build]
+    needs: [generate-shared-artifacts, build]
     if: ${{ success() || failure() }}
     env:
       REALM_DISABLE_ANALYTICS: 1
@@ -220,7 +216,7 @@ jobs:
       SPAWN_LOGCAT: true
       BAAS_BRANCH: master
       # Pin the Xcode version
-      DEVELOPER_DIR: /Applications/Xcode_14.3.1.app
+      DEVELOPER_DIR: /Applications/Xcode_14.2.app
       IOS_DEVICE_NAME: iPhone 14
     runs-on: ${{ matrix.variant.runner }}
     strategy:
@@ -230,9 +226,9 @@ jobs:
           - { os: linux, target: "test:ci", runner: ubuntu-latest, environment: node }
           - { os: linux, target: "test:ci:main", runner: ubuntu-latest, environment: electron }
           - { os: linux, target: "test:ci:renderer", runner: ubuntu-latest, environment: electron }
-          #- { os: windows, target: "test:ci", runner: windows-latest, environment: node}
-          #- { os: windows, target: "test:ci:main", runner: windows-latest, environment: electron }
-          #- { os: windows, target: "test:ci:renderer", runner: windows-latest, environment: electron }
+          # - { os: windows, target: "test:ci", runner: windows-latest, environment: node}
+          # - { os: windows, target: "test:ci:main", runner: windows-latest, environment: electron }
+          # - { os: windows, target: "test:ci:renderer", runner: windows-latest, environment: electron }
           - { os: darwin, target: "test:ci:main", runner: macos-latest, environment: electron }
           - { os: darwin, target: "test:ci:renderer", runner: macos-latest, environment: electron }
           - { os: darwin, target: "test:ci", runner: macos-latest, environment: node }
@@ -242,12 +238,12 @@ jobs:
     timeout-minutes: 60
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: "recursive"
 
       - name: Setup node version
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
@@ -259,7 +255,7 @@ jobs:
 
       - name: Restore NPM cache
         id: npm-cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{ steps.npm-cache-dir.outputs.dir }}
           key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
@@ -267,14 +263,14 @@ jobs:
             ${{ runner.os }}-node-
 
       - name: Restore Wireit cache
-        uses: google/wireit@setup-github-actions-caching/v1
+        uses: takameyer/wireit@wireit-caching-gha
 
       - name: Restore React Native cache
         if: ${{ matrix.variant.environment == 'react-native' }}
         uses: actions/cache@v3
         with:
           path: '**/Pods'
-          key: ${{ runner.os }}-${{matrix.variant.environment}}-${{ hashFiles('**/Podfile.lock', './src/**', './vendor/**') }}
+          key: ${{ runner.os }}-${{matrix.variant.environment}}-${{ hashFiles('**/Podfile.lock', './packages/realm/binding/src/**', './packages/realm/bindgen/vendor/**', './packages/realm/RealmJS.podspec', './packages/realm/scripts/*') }}
           restore-keys: |
             ${{ runner.os }}-${{matrix.variant.environment}}-
 
@@ -306,10 +302,10 @@ jobs:
           sudo apt-get install xvfb
           echo "wrapper=xvfb-run" >> $GITHUB_ENV
 
-      - name: Download bundles
-        uses: actions/download-artifact@v3
+      - name: Download shared artifacts
+        uses: actions/download-artifact@v4
         with:
-          name: realm-js-bundles
+          name: realm-js-shared
 
       - name: Download prebuilds
         uses: actions/download-artifact@v3
@@ -360,7 +356,7 @@ jobs:
 
       - name: Setup Java Gradle cache for android test app
         if: ${{ (matrix.variant.os == 'android') }}
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ~/.gradle/caches
@@ -371,7 +367,7 @@ jobs:
 
       - name: Setup Android Emulator cache
         if: ${{ (matrix.variant.os == 'android') }}
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         id: avd-cache
         with:
           path: |
