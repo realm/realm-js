@@ -26,13 +26,13 @@ type RealmClassType<T = any> = { new (...args: any): T };
 type QueryCallback<T> = (collection: Realm.Results<T>) => Realm.Results<T>;
 type DependencyList = ReadonlyArray<unknown>;
 
-type QueryHookOptions<T> = {
+export type QueryHookOptions<T> = {
   type: string;
   query?: QueryCallback<T>;
   keyPaths?: string | string[];
 };
 
-type QueryHookClassBasedOptions<T> = {
+export type QueryHookClassBasedOptions<T> = {
   type: RealmClassType<T>;
   query?: QueryCallback<T>;
   keyPaths?: string[];

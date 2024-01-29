@@ -24,6 +24,9 @@ import { createUseObject } from "./useObject";
 import { createUseQuery } from "./useQuery";
 import { createUseRealm } from "./useRealm";
 
+export type { UseObjectHook } from "./useObject";
+export type { UseQueryHook, QueryHookOptions, QueryHookClassBasedOptions } from "./useQuery";
+
 type RealmContext = {
   /**
    * The Provider component that is required to wrap any component using
