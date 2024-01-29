@@ -9,10 +9,10 @@ if(NOT DEFINED NODE_PATH)
     if(NOT NODE_PATH)
         find_program(NODE_PATH node)
     endif()
-endif()
-
-if(NOT DEFINED NODE_PATH)
-    message(FATAL_ERROR "Node.js not found")
+    # if node is still not defined after the above attempts, then stop everything
+    if(NOT DEFINED NODE_PATH)
+        message(FATAL_ERROR "Node.js not found")
+    endif()
 endif()
 
 execute_process(
