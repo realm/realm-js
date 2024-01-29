@@ -912,184 +912,186 @@ describe.skipIf(environment.missingServer, "SessionTest", () => {
       expect(encryptedRealmCopy).to.be.undefined;
     });
 
-    it("has expected behaviour", async function (this: AppContext) {
-      this.longTimeout();
-      const credentials1 = await getRegisteredEmailPassCredentials(this.app);
-      const credentials2 = await getRegisteredEmailPassCredentials(this.app);
-      const credentials3 = await getRegisteredEmailPassCredentials(this.app);
-      const partition = generatePartition();
+    for (let i = 0; i < 50; i++) {
+      it.only("has expected behaviour " + i, async function (this: AppContext) {
+        this.longTimeout();
+        const credentials1 = await getRegisteredEmailPassCredentials(this.app);
+        const credentials2 = await getRegisteredEmailPassCredentials(this.app);
+        const credentials3 = await getRegisteredEmailPassCredentials(this.app);
+        const partition = generatePartition();
 
-      /*
+        /*
       Test 1:  check whether calls to `writeCopyTo` are allowed at the right times
       */
-      let user1 = await this.app.logIn(credentials1);
-      const config1: Realm.Configuration = {
-        sync: {
-          user: user1,
-          partitionValue: partition,
-          //@ts-expect-error internal field
-          _sessionStopPolicy: "immediately", // Make it safe to delete files after realm.close()
-        },
-        schema: [PersonForSyncSchema, DogForSyncSchema],
-      };
+        let user1 = await this.app.logIn(credentials1);
+        const config1: Realm.Configuration = {
+          sync: {
+            user: user1,
+            partitionValue: partition,
+            //@ts-expect-error internal field
+            _sessionStopPolicy: "immediately", // Make it safe to delete files after realm.close()
+          },
+          schema: [PersonForSyncSchema, DogForSyncSchema],
+        };
 
-      const realm1 = await Realm.open(config1);
-      const realm1Path = realm1.path;
+        const realm1 = await Realm.open(config1);
+        const realm1Path = realm1.path;
 
-      realm1.write(() => {
-        for (let i = 0; i < 25; i++) {
-          realm1.create("Person", {
-            _id: new BSON.ObjectId(),
-            age: i,
-            firstName: "John",
-            lastName: "Smith",
-            partition,
-          });
-        }
-      });
+        realm1.write(() => {
+          for (let i = 0; i < 25; i++) {
+            realm1.create("Person", {
+              _id: new BSON.ObjectId(),
+              age: i,
+              firstName: "John",
+              lastName: "Smith",
+              partition,
+            });
+          }
+        });
 
-      await realm1.syncSession?.uploadAllLocalChanges();
-      await realm1.syncSession?.downloadAllServerChanges();
+        await realm1.syncSession?.uploadAllLocalChanges();
+        await realm1.syncSession?.downloadAllServerChanges();
 
-      const outputConfig1 = {
-        schema: [PersonForSyncSchema, DogForSyncSchema],
-        path: realm1Path + "copy1.realm",
-      };
-      // changes are synced -- we should be able to copy the realm
-      realm1.writeCopyTo(outputConfig1);
+        const outputConfig1 = {
+          schema: [PersonForSyncSchema, DogForSyncSchema],
+          path: realm1Path + "copy1.realm",
+        };
+        // changes are synced -- we should be able to copy the realm
+        realm1.writeCopyTo(outputConfig1);
 
-      // log out the user that created the realm
-      await user1.logOut();
+        // log out the user that created the realm
+        await user1.logOut();
 
-      realm1.syncSession?.pause();
+        realm1.syncSession?.pause();
 
-      // add another 2500 people
-      realm1.write(() => {
-        for (let i = 0; i < 2500; i++) {
-          realm1.create("Person", {
-            _id: new BSON.ObjectId(),
-            age: i,
-            firstName: "John",
-            lastName: "Smith",
-            partition,
-          });
-        }
-      });
+        // add another 2500 people
+        realm1.write(() => {
+          for (let i = 0; i < 2500; i++) {
+            realm1.create("Person", {
+              _id: new BSON.ObjectId(),
+              age: i,
+              firstName: "John",
+              lastName: "Smith",
+              partition,
+            });
+          }
+        });
 
-      // Log user back in to attempt to copy synced changes
-      user1 = await this.app.logIn(credentials1);
-      const realm2Path = `${realm1Path}copy2.realm`;
-      const outputConfig2: Realm.Configuration = {
-        sync: {
-          user: user1,
-          partitionValue: partition,
-          //@ts-expect-error internal field
-          _sessionStopPolicy: "immediately", // Make it safe to delete files after realm.close()
-        },
-        schema: [PersonForSyncSchema, DogForSyncSchema],
-        path: realm2Path,
-      };
+        // Log user back in to attempt to copy synced changes
+        user1 = await this.app.logIn(credentials1);
+        const realm2Path = `${realm1Path}copy2.realm`;
+        const outputConfig2: Realm.Configuration = {
+          sync: {
+            user: user1,
+            partitionValue: partition,
+            //@ts-expect-error internal field
+            _sessionStopPolicy: "immediately", // Make it safe to delete files after realm.close()
+          },
+          schema: [PersonForSyncSchema, DogForSyncSchema],
+          path: realm2Path,
+        };
 
-      // we haven't uploaded our recent changes -- we're not allowed to copy
-      expect(() => {
+        // we haven't uploaded our recent changes -- we're not allowed to copy
+        expect(() => {
+          realm1.writeCopyTo(outputConfig2);
+        }).throws("All client changes must be integrated in server before writing copy");
+
+        // log back in and upload the changes we made locally
+        realm1.syncSession?.resume();
+        user1 = await this.app.logIn(credentials1);
+        await realm1.syncSession?.uploadAllLocalChanges();
+
+        // create copy no. 2 of the realm
         realm1.writeCopyTo(outputConfig2);
-      }).throws("All client changes must be integrated in server before writing copy");
 
-      // log back in and upload the changes we made locally
-      realm1.syncSession?.resume();
-      user1 = await this.app.logIn(credentials1);
-      await realm1.syncSession?.uploadAllLocalChanges();
-
-      // create copy no. 2 of the realm
-      realm1.writeCopyTo(outputConfig2);
-
-      /*
+        /*
       Test 2:  check that a copied realm can be opened by another user, and that
         the contents of the original realm and the copy are as expected
       */
-      // log in a new user, open the realm copy we created just above
-      const user2 = await this.app.logIn(credentials2);
-      const config2: Realm.Configuration = {
-        sync: {
-          user: user2,
-          partitionValue: partition,
-          //@ts-expect-error internal field
-          _sessionStopPolicy: "immediately", // Make it safe to delete files after realm.close()
-        },
-        schema: [PersonForSyncSchema, DogForSyncSchema],
-        path: realm2Path,
-      };
+        // log in a new user, open the realm copy we created just above
+        const user2 = await this.app.logIn(credentials2);
+        const config2: Realm.Configuration = {
+          sync: {
+            user: user2,
+            partitionValue: partition,
+            //@ts-expect-error internal field
+            _sessionStopPolicy: "immediately", // Make it safe to delete files after realm.close()
+          },
+          schema: [PersonForSyncSchema, DogForSyncSchema],
+          path: realm2Path,
+        };
 
-      const realm2 = await Realm.open(config2);
+        const realm2 = await Realm.open(config2);
 
-      let realm1Persons = realm1.objects("Person");
-      let realm2Persons = realm2.objects("Person");
-      expect(realm1Persons.length).equals(
-        realm2Persons.length,
-        "The same number of people should be in the two realms",
-      );
+        let realm1Persons = realm1.objects("Person");
+        let realm2Persons = realm2.objects("Person");
+        expect(realm1Persons.length).equals(
+          realm2Persons.length,
+          "The same number of people should be in the two realms",
+        );
 
-      // add another 25 people locally to the original realm
-      realm1.syncSession?.pause();
-      realm1.write(() => {
-        for (let i = 0; i < 25; i++) {
-          realm1.create("Person", {
-            _id: new BSON.ObjectId(),
-            age: i,
-            firstName: "John",
-            lastName: "Smith",
-            partition,
-          });
-        }
-      });
+        // add another 25 people locally to the original realm
+        realm1.syncSession?.pause();
+        realm1.write(() => {
+          for (let i = 0; i < 25; i++) {
+            realm1.create("Person", {
+              _id: new BSON.ObjectId(),
+              age: i,
+              firstName: "John",
+              lastName: "Smith",
+              partition,
+            });
+          }
+        });
 
-      realm1Persons = realm1.objects("Person");
-      realm2Persons = realm2.objects("Person");
-      expect(realm1Persons.length).equals(realm2Persons.length + 25, "realm1 should have an additional 25 people");
-      realm1.syncSession?.resume();
+        realm1Persons = realm1.objects("Person");
+        realm2Persons = realm2.objects("Person");
+        expect(realm1Persons.length).equals(realm2Persons.length + 25, "realm1 should have an additional 25 people");
+        realm1.syncSession?.resume();
 
-      await realm1.syncSession?.uploadAllLocalChanges();
-      await realm1.syncSession?.downloadAllServerChanges();
+        await realm1.syncSession?.uploadAllLocalChanges();
+        await realm1.syncSession?.downloadAllServerChanges();
 
-      await user2.logOut();
-      realm2.close();
-      Realm.deleteFile(config2);
+        await user2.logOut();
+        realm2.close();
+        Realm.deleteFile(config2);
 
-      /*
+        /*
       Test 3:  open a copy of our realm with a new user and a new
         partition key.  We expect it to fail because of the mismatch
         in partition keys
       */
-      const realm3Path = realm1Path + "copy3.realm";
-      const outputConfig3 = { ...config1, path: realm3Path };
-      realm1.writeCopyTo(outputConfig3);
+        const realm3Path = realm1Path + "copy3.realm";
+        const outputConfig3 = { ...config1, path: realm3Path };
+        realm1.writeCopyTo(outputConfig3);
 
-      const user3 = await this.app.logIn(credentials3);
-      const otherPartition = generatePartition();
-      const config3: Realm.Configuration = {
-        sync: {
-          user: user3,
-          partitionValue: otherPartition,
-          //@ts-expect-error internal field
-          _sessionStopPolicy: "immediately", // Make it safe to delete files after realm.close()
-          clientReset: {
-            mode: "manual",
-            onManual: (...args) => console.log("error", args),
+        const user3 = await this.app.logIn(credentials3);
+        const otherPartition = generatePartition();
+        const config3: Realm.Configuration = {
+          sync: {
+            user: user3,
+            partitionValue: otherPartition,
+            //@ts-expect-error internal field
+            _sessionStopPolicy: "immediately", // Make it safe to delete files after realm.close()
+            clientReset: {
+              mode: "manual",
+              onManual: (...args) => console.log("error", args),
+            },
           },
-        },
-        schema: [PersonForSyncSchema, DogForSyncSchema],
-        path: realm3Path,
-      };
+          schema: [PersonForSyncSchema, DogForSyncSchema],
+          path: realm3Path,
+        };
 
-      let realm3;
-      try {
-        realm3 = await Realm.open(config3);
-        throw new Error("successfully opened invalid realm");
-      } catch (e: any) {
-        expect(e.message).contains("Bad server version");
-      }
+        let realm3;
+        try {
+          realm3 = await Realm.open(config3);
+          throw new Error("successfully opened invalid realm");
+        } catch (e: any) {
+          expect(e.message).contains("Bad server version");
+        }
 
-      expect(realm3).to.be.undefined;
-    });
+        expect(realm3).to.be.undefined;
+      });
+    }
   });
 });
