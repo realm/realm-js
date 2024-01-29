@@ -29,7 +29,7 @@ type DependencyList = ReadonlyArray<unknown>;
 type QueryHookOptions<T> = {
   type: string;
   query?: QueryCallback<T>;
-  keyPaths?: string[];
+  keyPaths?: string | string[];
 };
 
 type QueryHookClassBasedOptions<T> = {
@@ -100,7 +100,7 @@ export function createUseQuery(useRealm: () => Realm): UseQueryHook {
     }, [type, realm, queryCallback]);
 
     /* eslint-disable-next-line react-hooks/exhaustive-deps -- Memoizing the keyPaths to avoid renders */
-    const memoizedKeyPaths = useMemo(() => keyPaths, [JSON.stringify(keyPaths)]);
+    const memoizedKeyPaths = useMemo(() => typeof keyPaths === "string" ? [keyPaths] : keyPaths, [JSON.stringify(keyPaths)]);
 
     // Wrap the cachedObject in useMemo, so we only replace it with a new instance if `realm` or `queryResult` change
     const { collection, tearDown } = useMemo(() => {

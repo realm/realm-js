@@ -90,7 +90,7 @@ describe("useObject", () => {
   });
 
   describe("key-path filtering", () => {
-    it("re-renders only if a property in key-paths updates", () => {
+    it("can filter notifications using key-path array", async () => {
       const [vincent] = testDataSet;
       const { write } = context;
       const { result, renders } = profileHook(() => useObject<IDog>("dog", vincent._id, ["name"]));
@@ -108,6 +108,29 @@ describe("useObject", () => {
       write(() => {
         if (result.current) {
           result.current.age = 5;
+        }
+      });
+      expect(renders).toHaveLength(2);
+    });
+
+    it("can filter notifications using key-path string", async () => {
+      const [vincent] = testDataSet;
+      const { write } = context;
+      const { result, renders } = profileHook(() => useObject<IDog>("dog", vincent._id, "age"));
+      expect(renders).toHaveLength(1);
+      expect(result.current).toMatchObject(vincent);
+      // Update the name and except a re-render
+      write(() => {
+        if (result.current) {
+          result.current.age = 13;
+        }
+      });
+      expect(renders).toHaveLength(2);
+      expect(result.current?.age).toEqual(13);
+      // Update the age and don't expect a re-render
+      write(() => {
+        if (result.current) {
+          result.current.name = "Vince!";
         }
       });
       expect(renders).toHaveLength(2);

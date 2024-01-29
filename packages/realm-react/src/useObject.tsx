@@ -24,8 +24,8 @@ import { CollectionCallback, getObjectForPrimaryKey, getObjects } from "./helper
 import { UseRealmHook } from "./useRealm";
 
 export type UseObjectHook = {
-  <T>(type: string, primaryKey: T[keyof T], keyPaths?: string[]): (T & Realm.Object<T>) | null;
-  <T extends Realm.Object<any>>(type: { new (...args: any): T }, primaryKey: T[keyof T], keyPaths?: string[]): T | null;
+  <T>(type: string, primaryKey: T[keyof T], keyPaths?: string | string[]): (T & Realm.Object<T>) | null;
+  <T extends Realm.Object<any>>(type: { new (...args: any): T }, primaryKey: T[keyof T], keyPaths?: string | string[]): T | null;
 };
 
 /**
@@ -37,7 +37,7 @@ export function createUseObject(useRealm: UseRealmHook): UseObjectHook {
   return function useObject<T extends Realm.Object>(
     type: string | { new (...args: any): T },
     primaryKey: T[keyof T],
-    keyPaths?: string[],
+    keyPaths?: string | string[],
   ): T | null {
     const realm = useRealm();
 
@@ -64,7 +64,7 @@ export function createUseObject(useRealm: UseRealmHook): UseObjectHook {
     const cachedObjectRef = useRef<null | CachedObject>(null);
 
     /* eslint-disable-next-line react-hooks/exhaustive-deps -- Memoizing the keyPaths to avoid renders */
-    const memoizedKeyPaths = useMemo(() => keyPaths, [JSON.stringify(keyPaths)]);
+    const memoizedKeyPaths = useMemo(() => typeof keyPaths === "string" ? [keyPaths] : keyPaths, [JSON.stringify(keyPaths)]);
 
     if (!cachedObjectRef.current) {
       cachedObjectRef.current = createCachedObject({

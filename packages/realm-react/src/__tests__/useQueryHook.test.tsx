@@ -165,5 +165,36 @@ describe("useQuery", () => {
       });
       expect(renders).toHaveLength(2);
     });
+
+    it("can filter notifications using key-path string", async () => {
+      const { write } = context;
+      const { result, renders } = profileHook(() =>
+        useQuery<IDog>({
+          type: "dog",
+          query: (dogs) => dogs.filtered("name != $0", "Vincent"),
+          keyPaths: "age",
+        }),
+      );
+
+      const initialCollection = result.current;
+      expect(initialCollection).toHaveLength(5);
+      expect(renders).toHaveLength(1);
+
+      // Updating an age in the database and expect a render
+      const [firstDog] = result.current;
+      expect(firstDog.name).toEqual("River");
+      write(() => {
+        firstDog.age = 16;
+      });
+      expect(renders).toHaveLength(2);
+      expect(initialCollection).not.toBe(result.current);
+
+      // Updating a name in the database and don't expect a render
+      expect(firstDog.age).toEqual(16);
+      write(() => {
+        firstDog.name = "Rivery!";
+      });
+      expect(renders).toHaveLength(2);
+    });
   });
 });
