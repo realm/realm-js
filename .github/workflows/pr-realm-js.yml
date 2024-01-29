@@ -410,9 +410,15 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      - name: Setup Android Emulator cache
+      - uses: actions/setup-java@v3
         if: ${{ matrix.variant.os == 'android' }}
-        uses: actions/cache@v3
+        with:
+          distribution: 'zulu' # See 'Supported distributions' for available options
+          java-version: '17'
+        
+      - name: AVD cache
+        if: ${{ matrix.variant.os == 'android' }}
+        uses: actions/cache@v4
         id: avd-cache
         with:
           path: |
@@ -420,11 +426,15 @@ jobs:
             ~/.android/adb*
           key: avd-29
 
-      - uses: actions/setup-java@v3
-        if: ${{ matrix.variant.os == 'android' }}
+      - name: create AVD and generate snapshot for caching
+        if: steps.avd-cache.outputs.cache-hit != 'true'
+        uses: reactivecircus/android-emulator-runner@v2
         with:
-          distribution: 'zulu' # See 'Supported distributions' for available options
-          java-version: '17'
+          api-level: ${{ matrix.api-level }}
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: false
+          script: echo "Generated AVD snapshot for caching."
 
       - name: Run ${{matrix.variant.target}} (${{ matrix.variant.os}} / ${{ matrix.variant.environment }})
         if: ${{ matrix.variant.os == 'android' }}
@@ -435,7 +445,7 @@ jobs:
         with:
           api-level: 29
           force-avd-creation: false
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
           arch: x86_64
           ndk: ${{ env.NDK_VERSION }}
