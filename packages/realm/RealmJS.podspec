@@ -5,7 +5,9 @@ package = JSON.parse(File.read(File.expand_path('package.json', __dir__)))
 
 app_path = File.expand_path('../..', __dir__)
 
-build_realm_core = ENV["BUILD_REALM_CORE"] == "1"
+build_realm_core = ENV["REALM_BUILD_CORE"] == "1"
+
+cmake_path = Pod::Executable::which('cmake')
 
 # There is no API to detect the use of "use_frameworks!" in the Podfile which depends on this Podspec.
 # The "React" framework is only available and should be used if the Podfile calls use_frameworks!
@@ -59,6 +61,8 @@ Pod::Spec.new do |s|
                                 'CLANG_CXX_LIBRARY' => 'libc++',
                                 # Setting the current project version and versioning system to get a symbol for analytics
                                 'CURRENT_PROJECT_VERSION' => s.version,
+                                'REALM_BUILD_CORE' => build_realm_core,
+                                'CMAKE_PATH' => cmake_path,
                                 'VERSIONING_SYSTEM' => 'apple-generic',
                                 'GCC_PREPROCESSOR_DEFINITIONS' => '$(inherited) REALM_ENABLE_SYNC=1',
                                 'GCC_SYMBOLS_PRIVATE_EXTERN' => 'YES',
@@ -77,25 +81,19 @@ Pod::Spec.new do |s|
   source "#{__dir__}/scripts/generate-input-list.sh"
   EOS
 
-  s.vendored_libraries = "react-native/ios/lib/librealm.a",
-                         "react-native/ios/lib/librealm-object-store.a",
-                         "react-native/ios/lib/librealm-parser.a",
-                         "react-native/ios/lib/librealm-sync.a"
+  s.vendored_libraries = "react-native/ios/lib/*.a"
 
   s.dependency 'React'
 
-  CMAKE_PATH = Pod::Executable::which('cmake')
 
   #Post install script
   s.script_phase = {
     :name => 'Retrieve libraries and headers',
     :execution_position => :before_compile,
-    :input_file_lists => ["#{__dir__}/react-native/ios/input-files.xcfilelist"],
-    :output_file_lists => ["#{__dir__}/react-native/ios/output-files.xcfilelist"],
+    :input_file_lists => ["$(PODS_TARGET_SRCROOT)/react-native/ios/input-files.xcfilelist"],
+    :output_file_lists => ["$(PODS_TARGET_SRCROOT)/react-native/ios/output-files.xcfilelist"],
     :script => <<-EOS
-    BUILD_REALM_CORE="#{build_realm_core ? '1' : '0'}"
-    CMAKE_PATH="#{CMAKE_PATH}"
-    source "#{__dir__}/scripts/generate-ios-libs.sh"
+    source "$PODS_TARGET_SRCROOT/scripts/generate-ios-libs.sh"
     EOS
   }
 end

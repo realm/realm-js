@@ -16,10 +16,10 @@ In your realm-js project, run the following commands to prepare for debug mode:
 $ npm install --ignore-scripts
 ```
 
-When running `pod install` for iOS, be sure to set the environment variable `BUILD_REALM_CORE=1`.  This will flag core to be built from source with the Debug configuration.
+When running `pod install` for iOS, be sure to set the environment variable `REALM_BUILD_CORE=1`.  This will flag core to be built from source with the Debug configuration.
 
 ```
-BUILD_REALM_CORE=1 npx pod-install
+REALM_BUILD_CORE=1 npx pod-install
 ```
 
 You are now prepared to either use the [ReactTestApp](#setup-reacttestapp) or [prepare a custom project](#setup-custom-react-native-project)
