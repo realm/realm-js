@@ -50,8 +50,7 @@ const testDataSet = [
 
 describe("useObject", () => {
   beforeEach(() => {
-    context.openRealm();
-    const { realm } = context;
+    const realm = context.openRealm();
     realm.write(() => {
       realm.deleteAll();
       testDataSet.forEach((data) => {
@@ -61,7 +60,7 @@ describe("useObject", () => {
   });
 
   afterEach(() => {
-    Realm.clearTestState();
+    context.cleanup();
   });
 
   it("can retrieve a single object using useObject", () => {

@@ -57,8 +57,7 @@ describe("useQuery", () => {
   const useQuery = createUseQuery(context.useRealm);
 
   beforeEach(() => {
-    context.openRealm();
-    const { realm } = context;
+    const realm = context.openRealm();
     realm.write(() => {
       realm.deleteAll();
       testDataSet.forEach((data) => {
@@ -68,7 +67,7 @@ describe("useQuery", () => {
   });
 
   afterEach(() => {
-    Realm.clearTestState();
+    context.cleanup();
   });
 
   it("can retrieve collections using useQuery", () => {
@@ -98,13 +97,13 @@ describe("useQuery", () => {
     expect(collection[99]).toBe(undefined);
   });
 
-  it("can filter objects via a query argument", () => {
+  it("can filter objects via type and callback", () => {
     const { result } = renderHook(() => useQuery<IDog>("dog", (dogs) => dogs.filtered("age > 10")));
     expect(result.current.length).toBe(3);
   });
 
-  describe("passing an options object", () => {
-    it("can filter objects via a query option", () => {
+  describe("passing an object of options as argument", () => {
+    it("can filter objects via a 'query' property", () => {
       const { result, renders } = profileHook(() =>
         useQuery<IDog>({
           type: "dog",
@@ -115,7 +114,7 @@ describe("useQuery", () => {
       expect(renders).toHaveLength(1);
     });
 
-    it("can update filter objects via a query option", () => {
+    it("can update filter objects via a 'query' property", () => {
       const { result, renders, rerender } = profileHook(
         ({ age }) =>
           useQuery<IDog>(
@@ -136,7 +135,7 @@ describe("useQuery", () => {
       expect(renders).toHaveLength(2);
     });
 
-    it("can filter notifications using key-path", async () => {
+    it("can filter notifications using key-path array", async () => {
       const { write } = context;
       const { result, renders } = profileHook(() =>
         useQuery<IDog>({
