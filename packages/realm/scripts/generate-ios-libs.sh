@@ -27,10 +27,10 @@ CDN_URL="https://static.realm.io/downloads/core/$CORE_VERSION/$PLATFORM_NAME/Rel
 # Check if URL is valid and reachable
 if ! curl --output /dev/null --silent --head --fail "$CDN_URL"; then
     echo "URL $CDN_URL is not valid or reachable."
-    BUILD_REALM_CORE = "1"
+    REALM_BUILD_CORE = "true"
 fi
 
-if [ "$BUILD_REALM_CORE" == "1" ]; then
+if [ "$REALM_BUILD_CORE" == "true" ]; then
     # Take homebrew installs as well
     CMAKE_DIRECTORY=$(dirname "$CMAKE_PATH")
     export PATH="$CMAKE_DIRECTORY:$PATH"

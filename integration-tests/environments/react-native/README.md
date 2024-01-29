@@ -26,10 +26,10 @@ npx pod-install
 
 within the `integration-tests/environments/react-native` directory.
 
-To build iOS with debug symbols, run `pod install` with the environment variable `BUILD_REALM_CORE`.
+To build iOS with debug symbols, run `pod install` with the environment variable `REALM_BUILD_CORE`.
 
 ```bash
-BUILD_REALM_CORE=1 npx pod-install
+REALM_BUILD_CORE=1 npx pod-install
 ```
 
 ## Running the tests

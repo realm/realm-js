@@ -108,6 +108,7 @@ coverage/
 # Generated artifacts
 /packages/realm/bindgen/vendor/bindgen-lib/generated/
 /packages/realm/generated/
+/packages/realm/binding/jsi/jsi_init.cpp
 
 # Build artifacts
 /packages/realm/dist/
