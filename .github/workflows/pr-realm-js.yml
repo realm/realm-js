@@ -256,6 +256,8 @@ jobs:
       # Pin the Xcode version
       DEVELOPER_DIR: /Applications/Xcode_14.3.1.app
       IOS_DEVICE_NAME: iPhone 14
+      ANDROID_API_LEVEL: 29
+      ANDROID_ARCH: x86_64
     runs-on: ${{ matrix.variant.runner }}
     strategy:
       fail-fast: false
@@ -424,13 +426,14 @@ jobs:
           path: |
             ~/.android/avd/*
             ~/.android/adb*
-          key: avd-29-x86_64
+          key: avd-${{ env.ANDROID_API_LEVEL }}-${{ env.ANDROID_ARCH }}
 
       - name: create AVD and generate snapshot for caching
         if: matrix.variant.os == 'android' && steps.avd-cache.outputs.cache-hit != 'true'
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: ${{ matrix.api-level }}
+          api-level: ${{ env.ANDROID_API_LEVEL }}
+          arch: ${{ env.ANDROID_ARCH }}
           force-avd-creation: false
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: false
@@ -443,11 +446,11 @@ jobs:
         timeout-minutes: 75
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 29
+          api-level: ${{ env.ANDROID_API_LEVEL }}
+          arch: ${{ env.ANDROID_ARCH }}
           force-avd-creation: false
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
-          arch: x86_64
           ndk: ${{ env.NDK_VERSION }}
           cmake: 3.22.1
           script: npm run ${{ matrix.variant.target}} --prefix integration-tests/environments/${{ matrix.variant.environment }}
