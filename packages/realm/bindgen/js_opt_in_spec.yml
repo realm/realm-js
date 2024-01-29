@@ -447,7 +447,7 @@ classes:
       - current_user
       - all_users
       - sync_manager
-      - get_uncached_app
+      - get_app
       - clear_cached_apps
       - log_in_with_credentials
       - log_out_user

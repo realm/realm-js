@@ -27,7 +27,7 @@ jest.mock("react-native/Libraries/Animated/NativeAnimatedHelper");
 describe("AppProvider", () => {
   it("returns the configured app with useApp", async () => {
     const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <AppProvider id="someId" app={{ name: "someName", version: "42" }} baseUrl="someurl">
+      <AppProvider id="someId" app={{ name: "someName", version: "42" }} baseUrl="http://someurl">
         {children}
       </AppProvider>
     );
