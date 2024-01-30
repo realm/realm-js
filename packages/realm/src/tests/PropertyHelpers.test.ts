@@ -20,7 +20,7 @@ import { expect } from "chai";
 
 import { isPOJO } from "../PropertyHelpers";
 
-describe("utils/helpers", () => {
+describe("PropertyHelpers", () => {
   describe("isPOJO()", () => {
     it("returns true for object literal", () => {
       const object = {};
