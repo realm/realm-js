@@ -376,7 +376,7 @@ describe("Mixed", () => {
           // @ts-expect-error Property `value` does exist.
           expect(item.value).equals(unmanagedRealmObject.value);
         } else if (item instanceof ArrayBuffer) {
-          expectUint8Buffer(item);
+          expectMatchingUint8Buffer(item);
         } else {
           expect(String(item)).equals(String(flatListAllTypes[index]));
         }
@@ -394,14 +394,14 @@ describe("Mixed", () => {
           expect(value).instanceOf(Realm.Object);
           expect(value.value).equals(unmanagedRealmObject.value);
         } else if (key === "uint8Buffer") {
-          expectUint8Buffer(value);
+          expectMatchingUint8Buffer(value);
         } else {
           expect(String(value)).equals(String(flatDictionaryAllTypes[key]));
         }
       }
     }
 
-    function expectUint8Buffer(value: unknown) {
+    function expectMatchingUint8Buffer(value: unknown) {
       expect(value).instanceOf(ArrayBuffer);
       expect([...new Uint8Array(value as ArrayBuffer)]).eql(uint8Values);
     }
