@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
-import Realm, { LogCategory } from "realm";
+import Realm, { LogCategory, LogArgs, LoggerCallbackArgs } from "realm";
 
 import { openRealmBefore, openRealmBeforeEach } from "../hooks";
 import { createLocalConfig } from "../utils/open-realm";
@@ -32,10 +32,12 @@ describe("SharedRealm operations", () => {
       };
       let logs: Log[] = [];
 
-      Realm.setLogger(({ category, level, message }) => {
+      const logger = (args: LoggerCallbackArgs) => {
+        const { category, level, message } = args;
         logs.push({ category, level, message });
-      });
+      };
 
+      Realm.setLogger(logger);
       Realm.setLogLevel({ category: LogCategory.Realm, level: "all" });
 
       const realm = await Realm.open({

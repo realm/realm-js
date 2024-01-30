@@ -30,8 +30,10 @@ import {
   InitialSubscriptions,
   List,
   LocalAppConfiguration,
+  LogArgs,
   LogCategory,
   LogLevel,
+  LoggerCallbackArgs,
   LoggerCallback,
   LoggerCallback1,
   LoggerCallback2,
@@ -84,11 +86,6 @@ type ObjectSchemaExtra = {
 };
 
 export type RealmEventName = "change" | "schema" | "beforenotify";
-
-export type LogArgs = {
-  level: LogLevel;
-  category?: LogCategory;
-};
 
 /**
  * Asserts the event passed as string is a valid RealmEvent value.
@@ -1200,10 +1197,240 @@ import * as internal from "./internal";
 // Needed to avoid complaints about a self-reference
 import RealmItself = Realm;
 
+<<<<<<< HEAD
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace Realm {
   export import Realm = RealmItself;
   export import flags = internal.flags;
+=======
+type AppType<
+  FunctionsFactoryType extends DefaultFunctionsFactory = DefaultFunctionsFactory,
+  CustomDataType extends DefaultObject = DefaultObject,
+> = App<FunctionsFactoryType, CustomDataType>;
+type BSONType = typeof BSON;
+type ClientResetModeType = ClientResetMode;
+type CollectionType<
+  KeyType = unknown,
+  ValueType = unknown,
+  EntryType = [KeyType, ValueType],
+  T = ValueType,
+  ChangeCallbackType = unknown,
+> = Collection<KeyType, ValueType, EntryType, T, ChangeCallbackType>;
+type CompensatingWriteErrorType = CompensatingWriteError;
+type ConnectionStateType = ConnectionState;
+type CredentialsType = Credentials;
+type DictionaryType<T = unknown> = Dictionary<T>;
+type IndexDecoratorType = IndexDecorator;
+type ListType<T = unknown> = List<T>;
+type MapToDecoratorType = MapToDecorator;
+type MetadataModeType = MetadataMode;
+type MetadataType = Metadata;
+type Mixed = unknown;
+type ObjectType = string | RealmObjectConstructor;
+type OpenRealmBehaviorTypeType = OpenRealmBehaviorType;
+type OpenRealmTimeOutBehaviorType = OpenRealmTimeOutBehavior;
+type ProgressDirectionType = ProgressDirection;
+type ProgressModeType = ProgressMode;
+type PropertySchemaParseErrorType = PropertySchemaParseError;
+type ProviderTypeType = ProviderType;
+type ProxyTypeType = ProxyType;
+type ResultsType<T = unknown> = Results<T>;
+type SchemaParseErrorType = SchemaParseError;
+type SessionStateType = SessionState;
+type SessionStopPolicyType = SessionStopPolicy;
+type SetType<T = unknown> = RealmSet<T>;
+type SSLConfigurationType = SSLConfiguration;
+type SSLVerifyCallbackType = SSLVerifyCallback;
+type SSLVerifyObjectType = SSLVerifyObject;
+type SyncErrorType = SyncError;
+type SyncSessionType = SyncSession;
+type TypesType = typeof Types;
+type UpdateModeType = UpdateMode;
+type UserStateType = UserState;
+type UserType<
+  UserFunctionsType extends DefaultFunctionsFactory = DefaultFunctionsFactory,
+  UserCustomDataType extends DefaultObject = DefaultObject,
+  UserProfileDataType extends DefaultUserProfileData = DefaultUserProfileData,
+> = User<UserFunctionsType, UserCustomDataType, UserProfileDataType>;
+
+type BaseSubscriptionSetType = BaseSubscriptionSet;
+type LogArgsType = LogArgs;
+type LoggerCallbackArgsType = LoggerCallbackArgs;
+type LogCategoryType = LogCategory;
+type LogLevelType = LogLevel;
+type NumericLogLevelType = NumericLogLevel;
+type MutableSubscriptionSetType = MutableSubscriptionSet;
+type PartitionValueType = PartitionValue;
+type SubscriptionOptionsType = SubscriptionOptions;
+type SubscriptionSetType = SubscriptionSet;
+type SubscriptionSetStateType = SubscriptionSetState;
+type SubscriptionType = Subscription;
+
+type ObjectIdType = BSON.ObjectId;
+type Decimal128Type = BSON.Decimal128;
+type UUIDType = BSON.UUID;
+
+type ApiKeyType = ApiKey;
+type EmailPasswordAuthType = EmailPasswordAuth;
+type ApiKeyAuthType = ApiKeyAuth;
+
+type AggregatePipelineStageType = AggregatePipelineStage;
+type BaseChangeEventType<T extends OperationType> = BaseChangeEvent<T>;
+type ChangeEventType<T extends Document> = ChangeEvent<T>;
+type ChangeEventIdType = ChangeEventId;
+type CountOptionsType = CountOptions;
+type DeleteEventType<T extends Document> = DeleteEvent<T>;
+type DeleteResultType = DeleteResult;
+type DocumentType<IdType> = Document<IdType>;
+type DocumentKeyType<IdType> = DocumentKey<IdType>;
+type DocumentNamespaceType = DocumentNamespace;
+type DropDatabaseEventType = DropDatabaseEvent;
+type DropEventType = DropEvent;
+type FilterType = Filter;
+type FindOneAndModifyOptionsType = FindOneAndModifyOptions;
+type FindOneOptionsType = FindOneOptions;
+type FindOptionsType = FindOptions;
+type InsertEventType<T extends Document> = InsertEvent<T>;
+type InsertManyResultType<IdType> = InsertManyResult<IdType>;
+type InsertOneResultType<IdType> = InsertOneResult<IdType>;
+type InvalidateEventType = InvalidateEvent;
+type MongoDBType = MongoDB;
+type MongoDBCollectionType<T extends Document> = MongoDBCollection<T>;
+type MongoDBDatabaseType = MongoDBDatabase;
+type NewDocumentType<T extends Document> = NewDocument<T>;
+type OperationTypeType = OperationType;
+type OrderedCollectionType<T = unknown> = OrderedCollection<T>;
+type RenameEventType = RenameEvent;
+type ReplaceEventType<T extends Document> = ReplaceEvent<T>;
+type UpdateType = Update;
+type UpdateDescriptionType = UpdateDescription;
+type UpdateEventType<T extends Document> = UpdateEvent<T>;
+type UpdateOptionsType = UpdateOptions;
+type UpdateResultType<IdType> = UpdateResult<IdType>;
+type WaitForSyncType = WaitForSync;
+
+type GlobalDate = Date;
+
+// IMPORTANT: This needs to match the namespace below!
+// eslint-disable-next-line @typescript-eslint/no-namespace
+export declare namespace Realm {
+  // TODO: Decide if we want to deprecate this as well
+  export type Object<T = DefaultObject> = RealmObject<T>;
+  export {
+    // Pure type exports below
+    AppType as App,
+    AppChangeCallback,
+    AppConfiguration,
+    AppServicesFunction,
+    /** @deprecated Will be removed in v13.0.0. Please use {@link AppServicesFunction} */
+    AppServicesFunction as RealmFunction,
+    BaseConfiguration,
+    BaseObjectSchema,
+    BaseSyncConfiguration,
+    BSONType as BSON,
+    CanonicalObjectSchema,
+    /** @deprecated Will be removed in v13.0.0. Please use {@link CanonicalPropertySchema} */
+    CanonicalObjectSchemaProperty,
+    CanonicalPropertySchema,
+    CanonicalPropertiesTypes,
+    ClientResetModeType as ClientResetMode,
+    ClientResetFallbackCallback,
+    ClientResetBeforeCallback,
+    ClientResetAfterCallback,
+    ClientResetManualConfiguration,
+    ClientResetDiscardUnsyncedChangesConfiguration,
+    ClientResetRecoverUnsyncedChangesConfiguration,
+    /** @deprecated Will be removed in v13.0.0. Please use {@link ClientResetRecoverUnsyncedChangesConfiguration} */
+    ClientResetRecoverUnsyncedChangesConfiguration as ClientResetRecoveryConfiguration,
+    ClientResetRecoverOrDiscardUnsyncedChangesConfiguration,
+    ClientResetConfig,
+    CollectionChangeCallback,
+    CollectionChangeSet,
+    CollectionPropertyTypeName,
+    CollectionType as Collection,
+    CompensatingWriteErrorType as CompensatingWriteError,
+    CompensatingWriteInfo,
+    ConfigurationWithoutSync,
+    ConfigurationWithSync,
+    Configuration,
+    ConnectionNotificationCallback,
+    ConnectionStateType as ConnectionState,
+    CredentialsType as Credentials,
+    DefaultFunctionsFactory,
+    DefaultUserProfileData,
+    DictionaryType as Dictionary,
+    DictionaryChangeCallback,
+    DictionaryChangeSet,
+    ErrorCallback,
+    FlexibleSyncConfiguration,
+    IndexDecoratorType as IndexDecorator,
+    ListType as List,
+    LogArgsType as LogArgs,
+    LoggerCallbackArgsType as LoggerCallbackArgs,
+    LogCategoryType as LogCategory,
+    LocalAppConfiguration,
+    MapToDecoratorType as MapToDecorator,
+    MetadataModeType as MetadataMode,
+    MetadataType as Metadata,
+    MigrationCallback,
+    Mixed,
+    NumericLogLevelType as NumericLogLevel,
+    ObjectChangeCallback,
+    ObjectChangeSet,
+    ObjectSchema,
+    /** @deprecated Will be removed in v13.0.0. Please use {@link PropertySchema} */
+    ObjectSchemaProperty,
+    ObjectType,
+    OpenRealmBehaviorConfiguration,
+    OpenRealmBehaviorTypeType as OpenRealmBehaviorType,
+    OpenRealmTimeOutBehaviorType as OpenRealmTimeOutBehavior,
+    OrderedCollectionType as OrderedCollection,
+    PartitionSyncConfiguration,
+    PrimaryKey,
+    PrimitivePropertyTypeName,
+    ProgressDirectionType as ProgressDirection,
+    ProgressModeType as ProgressMode,
+    ProgressNotificationCallback,
+    PropertiesTypes,
+    PropertySchema,
+    PropertySchemaParseErrorType as PropertySchemaParseError,
+    PropertySchemaShorthand,
+    PropertySchemaStrict,
+    PropertyTypeName,
+    ProviderTypeType as ProviderType,
+    ProxyTypeType as ProxyType,
+    RealmEventName,
+    RealmObjectConstructor,
+    /** @deprecated Will be removed in v13.0.0. Please use {@link RealmObjectConstructor} */
+    RealmObjectConstructor as ObjectClass,
+    RelationshipPropertyTypeName,
+    ResultsType as Results,
+    SchemaParseErrorType as SchemaParseError,
+    SessionStateType as SessionState,
+    SessionStopPolicyType as SessionStopPolicy,
+    SetType as Set,
+    SortDescriptor,
+    SSLConfigurationType as SSLConfiguration,
+    SSLVerifyCallbackType as SSLVerifyCallback,
+    SSLVerifyObjectType as SSLVerifyObject,
+    SubscriptionSetStateType as SubscriptionSetState,
+    SyncConfiguration,
+    SyncErrorType as SyncError,
+    TypesType as Types,
+    UpdateModeType as UpdateMode,
+    UserChangeCallback,
+    UserStateType as UserState,
+    UserType as User,
+    WaitForSyncType as WaitForSync,
+    GeoBox,
+    GeoCircle,
+    GeoPoint,
+    GeoPolygon,
+    CanonicalGeoPolygon,
+    CanonicalGeoPoint,
+    GeoPosition,
+  };
+>>>>>>> 9d90f43db (Make linter happy)
 
   export import Object = internal.RealmObject;
   export import App = internal.App;
@@ -1313,6 +1540,7 @@ export namespace Realm {
   export import CanonicalGeoPoint = internal.CanonicalGeoPoint;
   export import GeoPosition = internal.GeoPosition;
 
+<<<<<<< HEAD
   // Deprecated exports below
   /** @deprecated Will be removed in v13.0.0. Please use {@link internal.AppServicesFunction} */
   export import RealmFunction = internal.AppServicesFunction;
@@ -1326,6 +1554,294 @@ export namespace Realm {
   export import ObjectClass = internal.RealmObjectConstructor;
   /** @deprecated Will be removed in v13.0.0. Please use {@link internal.PropertyTypeName} */
   export import PropertyType = internal.PropertyTypeName;
+=======
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  export namespace Services {
+    export type MongoDB = MongoDBType;
+    export type MongoDBDatabase = MongoDBDatabaseType;
+    /** @deprecated Please read {@link https://www.mongodb.com/docs/atlas/app-services/reference/push-notifications/} */
+    export type Push = PushClient;
+    // eslint-disable-next-line @typescript-eslint/no-namespace
+    export namespace MongoDB {
+      export type AggregatePipelineStage = AggregatePipelineStageType;
+      export type BaseChangeEvent<T extends OperationType> = BaseChangeEventType<T>;
+      export type ChangeEvent<T extends Document> = ChangeEventType<T>;
+      export type ChangeEventId = ChangeEventIdType;
+      export type CountOptions = CountOptionsType;
+      export type DeleteEvent<T extends Document> = DeleteEventType<T>;
+      export type DeleteResult = DeleteResultType;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      export type Document<IdType = any> = DocumentType<IdType>;
+      export type DocumentKey<IdType> = DocumentKeyType<IdType>;
+      export type DocumentNamespace = DocumentNamespaceType;
+      export type DropDatabaseEvent = DropDatabaseEventType;
+      export type DropEvent = DropEventType;
+      export type Filter = FilterType;
+      export type FindOneAndModifyOptions = FindOneAndModifyOptionsType;
+      export type FindOneOptions = FindOneOptionsType;
+      export type FindOptions = FindOptionsType;
+      export type InsertEvent<T extends Document> = InsertEventType<T>;
+      export type InsertManyResult<IdType> = InsertManyResultType<IdType>;
+      export type InsertOneResult<IdType> = InsertOneResultType<IdType>;
+      export type InvalidateEvent = InvalidateEventType;
+      export type MongoDBCollection<T extends Document> = MongoDBCollectionType<T>;
+      export type NewDocument<T extends Document> = NewDocumentType<T>;
+      export type OperationType = OperationTypeType;
+      export type RenameEvent = RenameEventType;
+      export type ReplaceEvent<T extends Document> = ReplaceEventType<T>;
+      export type Update = UpdateType;
+      export type UpdateDescription = UpdateDescriptionType;
+      export type UpdateEvent<T extends Document> = UpdateEventType<T>;
+      export type UpdateOptions = UpdateOptionsType;
+      export type UpdateResult<IdType> = UpdateResultType<IdType>;
+    }
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  export namespace Types {
+    export type Bool = boolean;
+    export type String = string;
+    export type Int = number;
+    export type Float = number;
+    export type Double = number;
+    export type Decimal128 = Realm.BSON.Decimal128;
+    export type ObjectId = Realm.BSON.ObjectId;
+    export type UUID = Realm.BSON.UUID;
+    export type Date = GlobalDate;
+    export type Data = ArrayBuffer;
+    export type List<T> = Realm.List<T>;
+    export type Set<T> = Realm.Set<T>;
+    export type Dictionary<T> = Realm.Dictionary<T>;
+    export type Mixed = unknown;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    export type LinkingObjects<ObjectTypeT, LinkingPropertyName> = Realm.Results<ObjectTypeT>;
+  }
+}
+
+// Exporting a deprecated global for backwards compatibility
+const RealmConstructor = Realm;
+declare global {
+  /** @deprecated Will be removed in v13.0.0. Please use an import statement. */
+  export class Realm extends RealmConstructor {}
+  // IMPORTANT: This needs to match the namespace above!
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  export namespace Realm {
+    // TODO: Decide if we want to deprecate this as well
+    export type Object<T = DefaultObject> = RealmObject<T>;
+    export {
+      // Pure type exports below
+      AppType as App,
+      AppChangeCallback,
+      AppConfiguration,
+      AppServicesFunction,
+      /** @deprecated Will be removed in v13.0.0. Please use {@link AppServicesFunction} */
+      AppServicesFunction as RealmFunction,
+      BaseConfiguration,
+      BaseObjectSchema,
+      BaseSyncConfiguration,
+      BSONType as BSON,
+      CanonicalObjectSchema,
+      /** @deprecated Will be removed in v13.0.0. Please use {@link CanonicalPropertySchema} */
+      CanonicalObjectSchemaProperty,
+      CanonicalPropertySchema,
+      CanonicalPropertiesTypes,
+      ClientResetModeType as ClientResetMode,
+      ClientResetFallbackCallback,
+      ClientResetBeforeCallback,
+      ClientResetAfterCallback,
+      ClientResetManualConfiguration,
+      ClientResetDiscardUnsyncedChangesConfiguration,
+      ClientResetRecoverUnsyncedChangesConfiguration,
+      /** @deprecated Will be removed in v13.0.0. Please use {@link ClientResetRecoverUnsyncedChangesConfiguration} */
+      ClientResetRecoverUnsyncedChangesConfiguration as ClientResetRecoveryConfiguration,
+      ClientResetRecoverOrDiscardUnsyncedChangesConfiguration,
+      ClientResetConfig,
+      CollectionChangeCallback,
+      CollectionChangeSet,
+      CollectionPropertyTypeName,
+      CollectionType as Collection,
+      CompensatingWriteErrorType as CompensatingWriteError,
+      CompensatingWriteInfo,
+      ConfigurationWithoutSync,
+      ConfigurationWithSync,
+      Configuration,
+      ConnectionNotificationCallback,
+      ConnectionStateType as ConnectionState,
+      CredentialsType as Credentials,
+      DefaultFunctionsFactory,
+      DefaultUserProfileData,
+      DictionaryType as Dictionary,
+      DictionaryChangeCallback,
+      DictionaryChangeSet,
+      ErrorCallback,
+      FlexibleSyncConfiguration,
+      IndexDecoratorType as IndexDecorator,
+      ListType as List,
+      LocalAppConfiguration,
+      LogArgsType as LogArgs,
+      LoggerCallbackArgsType as LoggerCallbackArgs,
+      LogCategoryType as LogCategory,
+      MapToDecoratorType as MapToDecorator,
+      MetadataModeType as MetadataMode,
+      Metadata,
+      MigrationCallback,
+      Mixed,
+      NumericLogLevelType as NumericLogLevel,
+      ObjectChangeCallback,
+      ObjectChangeSet,
+      ObjectSchema,
+      /** @deprecated Will be removed in v13.0.0. Please use {@link PropertySchema} */
+      ObjectSchemaProperty,
+      ObjectType,
+      OpenRealmBehaviorConfiguration,
+      OpenRealmBehaviorTypeType as OpenRealmBehaviorType,
+      OpenRealmTimeOutBehaviorType as OpenRealmTimeOutBehavior,
+      PartitionSyncConfiguration,
+      PrimaryKey,
+      PrimitivePropertyTypeName,
+      ProgressDirectionType as ProgressDirection,
+      ProgressModeType as ProgressMode,
+      ProgressNotificationCallback,
+      PropertiesTypes,
+      PropertySchema,
+      PropertySchemaParseErrorType as PropertySchemaParseError,
+      PropertySchemaShorthand,
+      PropertySchemaStrict,
+      PropertyTypeName,
+      ProviderTypeType as ProviderType,
+      RealmObjectConstructor,
+      /** @deprecated Will be removed in v13.0.0. Please use {@link RealmObjectConstructor} */
+      RealmObjectConstructor as ObjectClass,
+      RelationshipPropertyTypeName,
+      ResultsType as Results,
+      SchemaParseErrorType as SchemaParseError,
+      SessionStateType as SessionState,
+      SessionStopPolicyType as SessionStopPolicy,
+      SetType as Set,
+      SortDescriptor,
+      SSLConfigurationType as SSLConfiguration,
+      SSLVerifyCallbackType as SSLVerifyCallback,
+      SSLVerifyObjectType as SSLVerifyObject,
+      SubscriptionSetStateType as SubscriptionSetState,
+      SyncConfiguration,
+      SyncErrorType as SyncError,
+      TypesType as Types,
+      UpdateModeType as UpdateMode,
+      UserChangeCallback,
+      UserStateType as UserState,
+      GeoBox,
+      GeoCircle,
+      GeoPoint,
+      GeoPolygon,
+      CanonicalGeoPolygon,
+      CanonicalGeoPoint,
+      GeoPosition,
+      UserType as User,
+      WaitForSyncType as WaitForSync,
+    };
+
+    // eslint-disable-next-line @typescript-eslint/no-namespace
+    export namespace App {
+      export type Credentials = CredentialsType;
+      // eslint-disable-next-line @typescript-eslint/no-namespace
+      export namespace Sync {
+        export type BaseSubscriptionSet = BaseSubscriptionSetType;
+        export type LogCategory = LogCategoryType;
+        export type LogLevel = LogLevelType;
+        export type NumericLogLevel = NumericLogLevelType;
+        export type MutableSubscriptionSet = MutableSubscriptionSetType;
+        export type PartitionValue = PartitionValueType;
+        export type SubscriptionOptions = SubscriptionOptionsType;
+        export type SubscriptionSet = SubscriptionSetType;
+        export type SubscriptionSetState = SubscriptionSetStateType;
+        /** @deprecated Please use {@link SubscriptionSetState} */
+        export type SubscriptionsState = SubscriptionSetStateType;
+        export type Subscription = SubscriptionType;
+        export type SyncSession = SyncSessionType;
+        /**
+         * @deprecated Got renamed to {@SyncSession} and please use named imports
+         */
+        export type Session = SyncSessionType;
+      }
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-namespace
+    export namespace BSON {
+      export type ObjectId = ObjectIdType;
+      export type Decimal128 = Decimal128Type;
+      export type UUID = UUIDType;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-namespace
+    export namespace Auth {
+      export type EmailPasswordAuth = EmailPasswordAuthType;
+      export type ApiKey = ApiKeyType;
+      export type ApiKeyAuth = ApiKeyAuthType;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-namespace
+    export namespace Services {
+      export type MongoDB = MongoDBType;
+      export type MongoDBDatabase = MongoDBDatabaseType;
+      /** @deprecated Please read {@link https://www.mongodb.com/docs/atlas/app-services/reference/push-notifications/} */
+      export type Push = PushClient;
+      // eslint-disable-next-line @typescript-eslint/no-namespace
+      export namespace MongoDB {
+        export type AggregatePipelineStage = AggregatePipelineStageType;
+        export type BaseChangeEvent<T extends OperationType> = BaseChangeEventType<T>;
+        export type ChangeEvent<T extends Document> = ChangeEventType<T>;
+        export type ChangeEventId = ChangeEventIdType;
+        export type CountOptions = CountOptionsType;
+        export type DeleteEvent<T extends Document> = DeleteEventType<T>;
+        export type DeleteResult = DeleteResultType;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        export type Document<IdType = any> = DocumentType<IdType>;
+        export type DocumentKey<IdType> = DocumentKeyType<IdType>;
+        export type DocumentNamespace = DocumentNamespaceType;
+        export type DropDatabaseEvent = DropDatabaseEventType;
+        export type DropEvent = DropEventType;
+        export type Filter = FilterType;
+        export type FindOneAndModifyOptions = FindOneAndModifyOptionsType;
+        export type FindOneOptions = FindOneOptionsType;
+        export type FindOptions = FindOptionsType;
+        export type InsertEvent<T extends Document> = InsertEventType<T>;
+        export type InsertManyResult<IdType> = InsertManyResultType<IdType>;
+        export type InsertOneResult<IdType> = InsertOneResultType<IdType>;
+        export type InvalidateEvent = InvalidateEventType;
+        export type MongoDBCollection<T extends Document> = MongoDBCollectionType<T>;
+        export type NewDocument<T extends Document> = NewDocumentType<T>;
+        export type OperationType = OperationTypeType;
+        export type RenameEvent = RenameEventType;
+        export type ReplaceEvent<T extends Document> = ReplaceEventType<T>;
+        export type Update = UpdateType;
+        export type UpdateDescription = UpdateDescriptionType;
+        export type UpdateEvent<T extends Document> = UpdateEventType<T>;
+        export type UpdateOptions = UpdateOptionsType;
+        export type UpdateResult<IdType> = UpdateResultType<IdType>;
+      }
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-namespace
+    export namespace Types {
+      export type Bool = boolean;
+      export type String = string;
+      export type Int = number;
+      export type Float = number;
+      export type Double = number;
+      export type Decimal128 = Realm.BSON.Decimal128;
+      export type ObjectId = Realm.BSON.ObjectId;
+      export type UUID = Realm.BSON.UUID;
+      export type Date = GlobalDate;
+      export type Data = ArrayBuffer;
+      export type List<T> = Realm.List<T>;
+      export type Set<T> = Realm.Set<T>;
+      export type Dictionary<T> = Realm.Dictionary<T>;
+      export type Mixed = unknown;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      export type LinkingObjects<ObjectTypeT, LinkingPropertyName> = Realm.Results<ObjectTypeT>;
+    }
+  }
+>>>>>>> 9d90f43db (Make linter happy)
 }
 
 // Set default logger and log level.

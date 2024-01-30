@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
-import Realm, { ConnectionState, LogCategory, ObjectSchema, BSON, SyncConfiguration } from "realm";
+import Realm, { ConnectionState, LogCategory, LoggerCallbackArgs, ObjectSchema, BSON, SyncConfiguration } from "realm";
 import { importAppBefore } from "../../hooks";
 import { DogSchema } from "../../schemas/person-and-dog-with-object-ids";
 import { getRegisteredEmailPassCredentials } from "../../utils/credentials";
@@ -360,13 +360,15 @@ describe("SessionTest", () => {
 
       const promisedLog = new Promise((resolve) => {
         Realm.setLogLevel({ category: LogCategory.Realm, level: logLevelStr });
-        Realm.setLogger((category, level, message) => {
+        const logger = (args: LoggerCallbackArgs) => {
+          const { category, level, message } = args;
           if (level == logLevelStr && message.includes("Connection") && message.includes("Session")) {
             // we should, at some point, receive a log message that looks like
             // Connection[1]: Session[1]: client_reset_config = false, Realm exists = true, client reset = false
             resolve(true);
           }
-        });
+        };
+        Realm.setLogger(logger);
       });
 
       const user = await app.logIn(credentials);
