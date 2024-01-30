@@ -87,6 +87,14 @@ export enum LogCategory {
 }
 
 /**
+ * Type for `Realm.setLogLevel`
+ */
+export type LogArgs = {
+  level: LogLevel;
+  category?: LogCategory;
+};
+
+/**
  * A callback passed to `Realm.App.Sync.setLogger` when instrumenting the Atlas Device Sync client with a custom logger.
  * @param level - The level of the log entry between 0 and 8 inclusively.
  * Use this as an index into `['all', 'trace', 'debug', 'detail', 'info', 'warn', 'error', 'fatal', 'off']` to get the name of the level.
