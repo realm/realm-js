@@ -72,7 +72,6 @@ type RealmContext = {
    * The result of this can be consumed directly by the `data` argument of any React Native
    * VirtualizedList or FlatList.  If the component used for the list's `renderItem` prop is {@link React.Memo}ized,
    * then only the modified object will re-render.
-   * 
    * @example
    * ```tsx
    * // Return all collection items
@@ -91,7 +90,6 @@ type RealmContext = {
    *   keyPaths: ["name"]
    * }, [category]);
    * ```
-   * 
    * @param options
    * @param options.type - The object type, depicted by a string or a class extending Realm.Object
    * @param options.query - A function that takes a {@link Realm.Collection} and returns a {@link Realm.Collection} of the same type. This allows for filtering and sorting of the collection, before it is returned.
@@ -198,7 +196,6 @@ export const useRealm = defaultContext.useRealm;
  * The result of this can be consumed directly by the `data` argument of any React Native
  * VirtualizedList or FlatList.  If the component used for the list's `renderItem` prop is {@link React.Memo}ized,
  * then only the modified object will re-render.
- * 
  * @example
  * ```tsx
  * // Return all collection items
@@ -217,7 +214,6 @@ export const useRealm = defaultContext.useRealm;
  *   keyPaths: ["name"]
  * }, [category]);
  * ```
- * 
  * @param options
  * @param options.type - The object type, depicted by a string or a class extending Realm.Object
  * @param options.query - A function that takes a {@link Realm.Collection} and returns a {@link Realm.Collection} of the same type. This allows for filtering and sorting of the collection, before it is returned.

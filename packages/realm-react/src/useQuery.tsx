@@ -100,7 +100,10 @@ export function createUseQuery(useRealm: () => Realm): UseQueryHook {
     }, [type, realm, queryCallback]);
 
     /* eslint-disable-next-line react-hooks/exhaustive-deps -- Memoizing the keyPaths to avoid renders */
-    const memoizedKeyPaths = useMemo(() => typeof keyPaths === "string" ? [keyPaths] : keyPaths, [JSON.stringify(keyPaths)]);
+    const memoizedKeyPaths = useMemo(
+      () => (typeof keyPaths === "string" ? [keyPaths] : keyPaths),
+      [JSON.stringify(keyPaths)],
+    );
 
     // Wrap the cachedObject in useMemo, so we only replace it with a new instance if `realm` or `queryResult` change
     const { collection, tearDown } = useMemo(() => {

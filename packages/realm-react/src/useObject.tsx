@@ -25,7 +25,11 @@ import { UseRealmHook } from "./useRealm";
 
 export type UseObjectHook = {
   <T>(type: string, primaryKey: T[keyof T], keyPaths?: string | string[]): (T & Realm.Object<T>) | null;
-  <T extends Realm.Object<any>>(type: { new (...args: any): T }, primaryKey: T[keyof T], keyPaths?: string | string[]): T | null;
+  <T extends Realm.Object<any>>(
+    type: { new (...args: any): T },
+    primaryKey: T[keyof T],
+    keyPaths?: string | string[],
+  ): T | null;
 };
 
 /**
@@ -64,7 +68,10 @@ export function createUseObject(useRealm: UseRealmHook): UseObjectHook {
     const cachedObjectRef = useRef<null | CachedObject>(null);
 
     /* eslint-disable-next-line react-hooks/exhaustive-deps -- Memoizing the keyPaths to avoid renders */
-    const memoizedKeyPaths = useMemo(() => typeof keyPaths === "string" ? [keyPaths] : keyPaths, [JSON.stringify(keyPaths)]);
+    const memoizedKeyPaths = useMemo(
+      () => (typeof keyPaths === "string" ? [keyPaths] : keyPaths),
+      [JSON.stringify(keyPaths)],
+    );
 
     if (!cachedObjectRef.current) {
       cachedObjectRef.current = createCachedObject({
