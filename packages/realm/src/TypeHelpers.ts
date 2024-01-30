@@ -94,6 +94,15 @@ export type TypeOptions = {
 // TODO: Consider testing for expected object instance types and throw something similar to the legacy SDK:
 // "Only Realm instances are supported." (which should probably have been "RealmObject")
 // instead of relying on the binding to throw.
+/**
+ * Convert an SDK value to a Binding value representation.
+ * @param realm The Realm used.
+ * @param value The value to convert.
+ * @param options Options needed.
+ * @param options.isQueryArg Whether the value to convert is a query argument used
+ *  for `OrderedCollection.filtered()`. If so, this will be validated differently.
+ * @returns The `MixedArg` binding representation.
+ */
 export function mixedToBinding(
   realm: binding.Realm,
   value: unknown,
@@ -120,6 +129,8 @@ export function mixedToBinding(
       if (value instanceof Collection || Array.isArray(value)) {
         throw new Error(`Using a ${value.constructor.name} as a query argument is not supported.`);
       }
+      // Geospatial types can currently only be used when querying and
+      // are not yet supported as standalone data types in the schema.
       if (typeof value === "object") {
         if (isGeoCircle(value)) {
           return circleToBindingGeospatial(value);
