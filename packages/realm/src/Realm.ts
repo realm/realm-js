@@ -100,8 +100,10 @@ import {
   InvalidateEvent,
   List,
   LocalAppConfiguration,
+  LogArgs,
   LogCategory,
   LogLevel,
+  LoggerCallbackArgs,
   LoggerCallback,
   LoggerCallback1,
   LoggerCallback2,
@@ -215,11 +217,6 @@ type ObjectSchemaExtra = {
 };
 
 export type RealmEventName = "change" | "schema" | "beforenotify";
-
-export type LogArgs = {
-  level: LogLevel;
-  category?: LogCategory;
-};
 
 /**
  * Asserts the event passed as string is a valid RealmEvent value.
@@ -1421,6 +1418,8 @@ type UserType<
 > = User<UserFunctionsType, UserCustomDataType, UserProfileDataType>;
 
 type BaseSubscriptionSetType = BaseSubscriptionSet;
+type LogArgsType = LogArgs;
+type LoggerCallbackArgsType = LoggerCallbackArgs;
 type LogCategoryType = LogCategory;
 type LogLevelType = LogLevel;
 type NumericLogLevelType = NumericLogLevel;
@@ -1530,6 +1529,8 @@ export declare namespace Realm {
     FlexibleSyncConfiguration,
     IndexDecoratorType as IndexDecorator,
     ListType as List,
+    LogArgsType as LogArgs,
+    LoggerCallbackArgsType as LoggerCallbackArgs,
     LogCategoryType as LogCategory,
     LocalAppConfiguration,
     MapToDecoratorType as MapToDecorator,
@@ -1758,6 +1759,8 @@ declare global {
       IndexDecoratorType as IndexDecorator,
       ListType as List,
       LocalAppConfiguration,
+      LogArgsType as LogArgs,
+      LoggerCallbackArgsType as LoggerCallbackArgs,
       LogCategoryType as LogCategory,
       MapToDecoratorType as MapToDecorator,
       MetadataModeType as MetadataMode,
