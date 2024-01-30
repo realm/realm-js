@@ -65,24 +65,14 @@ type RealmContext = {
   useRealm: ReturnType<typeof createUseRealm>;
 
   /**
-   * @overload
-   * @example
-   * ```tsx
-   * // Return all collection items
-   * const collection = useQuery(Object);
+   * Returns a {@link Realm.Collection} of {@link Realm.Object}s from a given type.
+   * The hook will update on any changes to any object in the collection
+   * and return an empty array if the collection is empty.
    *
-   * // Return all collection items sorted by name and filtered by category
-   * const filteredAndSorted = useQuery(Object, (collection) => collection.filtered('category == $0',category).sorted('name'), [category]);
-   * ```
-   * @param type - The object type, depicted by a string or a class extending Realm.Object
-   * @param query - A function that takes a {@link Realm.Collection} and returns a {@link Realm.Collection} of the same type.
-   * This allows for filtering and sorting of the collection, before it is returned.
-   * @param deps - An array of dependencies that will be passed to {@link React.useMemo}
-   * @returns a collection of realm objects or an empty array
-   */
-
-  /**
-   * @overload
+   * The result of this can be consumed directly by the `data` argument of any React Native
+   * VirtualizedList or FlatList.  If the component used for the list's `renderItem` prop is {@link React.Memo}ized,
+   * then only the modified object will re-render.
+   * 
    * @example
    * ```tsx
    * // Return all collection items
@@ -101,22 +91,13 @@ type RealmContext = {
    *   keyPaths: ["name"]
    * }, [category]);
    * ```
+   * 
    * @param options
    * @param options.type - The object type, depicted by a string or a class extending Realm.Object
-   * @param options.query - A function that takes a {@link Realm.Collection} and returns a {@link Realm.Collection} of the same type.
-   * This allows for filtering and sorting of the collection, before it is returned.
+   * @param options.query - A function that takes a {@link Realm.Collection} and returns a {@link Realm.Collection} of the same type. This allows for filtering and sorting of the collection, before it is returned.
+   * @param options.keyPaths - Indicates a lower bound on the changes relevant for the hook. This is a lower bound, since if multiple hooks add listeners (each with their own `keyPaths`) the union of these key-paths will determine the changes that are considered relevant for all listeners registered on the collection. In other words: A listener might fire and cause a re-render more than the key-paths specify, if other listeners with different key-paths are present.
    * @param deps - An array of dependencies that will be passed to {@link React.useMemo}
    * @returns a collection of realm objects or an empty array
-   */
-
-  /**
-   * Returns a {@link Realm.Collection} of {@link Realm.Object}s from a given type.
-   * The hook will update on any changes to any object in the collection
-   * and return an empty array if the collection is empty.
-   *
-   * The result of this can be consumed directly by the `data` argument of any React Native
-   * VirtualizedList or FlatList.  If the component used for the list's `renderItem` prop is {@link React.Memo}ized,
-   * then only the modified object will re-render.
    */
   useQuery: ReturnType<typeof createUseQuery>;
   /**
@@ -210,24 +191,14 @@ export const RealmProvider = defaultContext.RealmProvider;
 export const useRealm = defaultContext.useRealm;
 
 /**
- * @overload
- * @example
- * ```tsx
- * // Return all collection items
- * const collection = useQuery(Object);
+ * Returns a {@link Realm.Collection} of {@link Realm.Object}s from a given type.
+ * The hook will update on any changes to any object in the collection
+ * and return an empty array if the collection is empty.
  *
- * // Return all collection items sorted by name and filtered by category
- * const filteredAndSorted = useQuery(Object, (collection) => collection.filtered('category == $0',category).sorted('name'), [category]);
- * ```
- * @param type - The object type, depicted by a string or a class extending Realm.Object
- * @param query - A function that takes a {@link Realm.Collection} and returns a {@link Realm.Collection} of the same type.
- * This allows for filtering and sorting of the collection, before it is returned.
- * @param deps - An array of dependencies that will be passed to {@link React.useMemo}
- * @returns a collection of realm objects or an empty array
- */
-
-/**
- * @overload
+ * The result of this can be consumed directly by the `data` argument of any React Native
+ * VirtualizedList or FlatList.  If the component used for the list's `renderItem` prop is {@link React.Memo}ized,
+ * then only the modified object will re-render.
+ * 
  * @example
  * ```tsx
  * // Return all collection items
@@ -246,22 +217,13 @@ export const useRealm = defaultContext.useRealm;
  *   keyPaths: ["name"]
  * }, [category]);
  * ```
+ * 
  * @param options
  * @param options.type - The object type, depicted by a string or a class extending Realm.Object
- * @param options.query - A function that takes a {@link Realm.Collection} and returns a {@link Realm.Collection} of the same type.
- * This allows for filtering and sorting of the collection, before it is returned.
+ * @param options.query - A function that takes a {@link Realm.Collection} and returns a {@link Realm.Collection} of the same type. This allows for filtering and sorting of the collection, before it is returned.
+ * @param options.keyPaths - Indicates a lower bound on the changes relevant for the hook. This is a lower bound, since if multiple hooks add listeners (each with their own `keyPaths`) the union of these key-paths will determine the changes that are considered relevant for all listeners registered on the collection. In other words: A listener might fire and cause a re-render more than the key-paths specify, if other listeners with different key-paths are present.
  * @param deps - An array of dependencies that will be passed to {@link React.useMemo}
  * @returns a collection of realm objects or an empty array
- */
-
-/**
- * Returns a {@link Realm.Collection} of {@link Realm.Object}s from a given type.
- * The hook will update on any changes to any object in the collection
- * and return an empty array if the collection is empty.
- *
- * The result of this can be consumed directly by the `data` argument of any React Native
- * VirtualizedList or FlatList.  If the component used for the list's `renderItem` prop is {@link React.Memo}ized,
- * then only the modified object will re-render.
  */
 export const useQuery = defaultContext.useQuery;
 
