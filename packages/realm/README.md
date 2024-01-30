@@ -1,19 +1,26 @@
 > [!NOTE]
 > Realm is now Atlas Device SDK - [Learn More](https://www.mongodb.com/blog/post/realm-now-part-atlas-platform?utm_medium=github_atlas_CTA&utm_source=realm_js_github)
 
-<img align="right" style="min-width:150px;width:30%;" src="https://raw.githubusercontent.com/realm/realm-js/main/media/atlas-device-sync.svg" alt="Atlas Device Sync">
+<picture>
+    <source srcset="https://raw.githubusercontent.com/realm/realm-js/main/media/logo-dark.svg" media="(prefers-color-scheme: dark)" alt="realm by MongoDB">
+    <img src="https://raw.githubusercontent.com/realm/realm-js/main/media/logo.svg" alt="realm by MongoDB">
+</picture>
 
-# Atlas Device SDK
+# The Realm database
 
-Atlas Device SDK is a suite of app development tools optimized for data access and persistence on mobile and edge devices. Use the SDKs to build data-driven mobile, edge, web, desktop, and IoT apps.
+Realm is a mobile database that runs directly inside phones, tablets or wearables. This project hosts the JavaScript & TypeScript implementation of Realm. Currently, we support React Native (JSC & Hermes on iOS & Android), Node.js and Electron (on Windows, MacOS and Linux).
 
-This project hosts the JavaScript / TypeScript versions of the SDK. Currently, we support React Native (JSC & Hermes on iOS & Android), Node.js and Electron (on Windows, MacOS and Linux).
+## What is the Atlas Device SDKs?
 
-An integral part of this SDK is a mobile database that runs directly inside phones, tablets or wearables. This used to be called Realm and is still referred to as Realm throughout our codebase as we're currently focused on improving the experience over renaming everything, causing lots of breaking changes, etc.
+<img align="right" style="min-width:150px;width:20%;" src="https://raw.githubusercontent.com/realm/realm-js/main/media/atlas-device-sync.svg" alt="Atlas Device Sync">
+
+The [Atlas Device SDKs](https://www.mongodb.com/docs/realm/sdk/) are a connection of language & platform specific SDKs, each with a suite of app development tools optimized for data access and persistence on mobile and edge devices. Use the SDKs to build data-driven mobile, edge, web, desktop, and IoT apps.
+
+It might help to think of the Realm database as the persistance layer of the Atlas Device SDKs.
 
 ## Features
 
-* **Mobile-first:** It is the first database built from the ground up to run directly inside phones, tablets and wearables.
+* **Mobile-first:** Realm is the first database built from the ground up to run directly inside phones, tablets and wearables.
 * **Simple:** Data is directly [exposed as objects](https://www.mongodb.com/docs/realm/sdk/node/realm-files/) and [queryable by code](https://www.mongodb.com/docs/realm/sdk/node/crud/query-data/), removing the need for ORM's riddled with performance & maintenance issues.
 * **Modern:** The database supports relationships, generics, and vectorization.
 * **Fast:** It is faster than even raw SQLite on common operations, while maintaining an extremely rich feature set.
