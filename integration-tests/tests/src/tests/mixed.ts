@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import Realm, { BSON } from "realm";
+import Realm, { BSON, ObjectSchema } from "realm";
 import { expect } from "chai";
 
 import { openRealmBefore, openRealmBeforeEach } from "../hooks";
@@ -66,7 +66,7 @@ interface ICollectionsOfMixed {
   set: Realm.Set<Realm.Mixed>;
 }
 
-const SingleSchema: Realm.ObjectSchema = {
+const SingleSchema: ObjectSchema = {
   name: "mixed",
   properties: {
     a: "mixed",
@@ -76,7 +76,7 @@ const SingleSchema: Realm.ObjectSchema = {
   },
 };
 
-const VertexSchema: Realm.ObjectSchema = {
+const VertexSchema: ObjectSchema = {
   name: "Vertex",
   properties: {
     a: "int",
@@ -85,7 +85,7 @@ const VertexSchema: Realm.ObjectSchema = {
   },
 };
 
-const MixNestedSchema: Realm.ObjectSchema = {
+const MixNestedSchema: ObjectSchema = {
   name: "Nested",
   properties: {
     a: "mixed",
@@ -94,7 +94,7 @@ const MixNestedSchema: Realm.ObjectSchema = {
   },
 };
 
-const MixedNullableSchema: Realm.ObjectSchema = {
+const MixedNullableSchema: ObjectSchema = {
   name: "mixed",
   properties: {
     nullable: "mixed",
@@ -102,14 +102,14 @@ const MixedNullableSchema: Realm.ObjectSchema = {
   },
 };
 
-const MixedSchema: Realm.ObjectSchema = {
+const MixedSchema: ObjectSchema = {
   name: "MixedClass",
   properties: {
     value: "mixed",
   },
 };
 
-const MixedAndEmbeddedSchema: Realm.ObjectSchema = {
+const MixedAndEmbeddedSchema: ObjectSchema = {
   name: "MixedAndEmbedded",
   properties: {
     mixedValue: "mixed",
@@ -117,7 +117,7 @@ const MixedAndEmbeddedSchema: Realm.ObjectSchema = {
   },
 };
 
-const EmbeddedObjectSchema: Realm.ObjectSchema = {
+const EmbeddedObjectSchema: ObjectSchema = {
   name: "EmbeddedObject",
   embedded: true,
   properties: {
@@ -125,7 +125,7 @@ const EmbeddedObjectSchema: Realm.ObjectSchema = {
   },
 };
 
-const CollectionsOfMixedSchema: Realm.ObjectSchema = {
+const CollectionsOfMixedSchema: ObjectSchema = {
   name: "CollectionsOfMixed",
   properties: {
     list: "mixed[]",
@@ -163,7 +163,7 @@ const flatDictionaryAllTypes: Record<string, unknown> = {
   uint8Buffer,
 };
 
-const MixedWithDefaultCollectionsSchema: Realm.ObjectSchema = {
+const MixedWithDefaultCollectionsSchema: ObjectSchema = {
   name: "MixedWithDefaultCollections",
   properties: {
     mixedWithDefaultList: { type: "mixed", default: [...flatListAllTypes] },
