@@ -43,6 +43,9 @@ export type QueryHookClassBasedOptions<T> = {
 export type UseQueryHook = {
   <T>(options: QueryHookOptions<T>, deps?: DependencyList): Realm.Results<T & Realm.Object<T>>;
   <T extends AnyRealmObject>(options: QueryHookClassBasedOptions<T>, deps?: DependencyList): Realm.Results<T>;
+  <T>(type: string): Realm.Results<T & Realm.Object<T>>;
+  <T extends AnyRealmObject>(type: RealmClassType<T>): Realm.Results<T>;
+
   /** @deprecated To help the `react-hooks/exhaustive-deps` eslint rule detect missing dependencies, we've suggest passing a option object as the first argument */
   <T>(type: string, query?: QueryCallback<T>, deps?: DependencyList): Realm.Results<T & Realm.Object<T>>;
   /** @deprecated To help the `react-hooks/exhaustive-deps` eslint rule detect missing dependencies, we've suggest passing a option object as the first argument */
