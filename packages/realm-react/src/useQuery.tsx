@@ -22,6 +22,8 @@ import Realm from "realm";
 import { createCachedCollection } from "./cachedCollection";
 import { getObjects } from "./helpers";
 
+/* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+type AnyRealmObject = Realm.Object<any>;
 type RealmClassType<T = any> = { new (...args: any): T };
 type QueryCallback<T> = (collection: Realm.Results<T>) => Realm.Results<T>;
 type DependencyList = ReadonlyArray<unknown>;
@@ -39,15 +41,16 @@ export type QueryHookClassBasedOptions<T> = {
 };
 
 export type UseQueryHook = {
+  <T>(options: QueryHookOptions<T>, deps?: DependencyList): Realm.Results<T & Realm.Object<T>>;
+  <T extends AnyRealmObject>(options: QueryHookClassBasedOptions<T>, deps?: DependencyList): Realm.Results<T>;
+  /** @deprecated To help the `react-hooks/exhaustive-deps` eslint rule detect missing dependencies, we've suggest passing a option object as the first argument */
   <T>(type: string, query?: QueryCallback<T>, deps?: DependencyList): Realm.Results<T & Realm.Object<T>>;
-  <T extends Realm.Object<any>>(
+  /** @deprecated To help the `react-hooks/exhaustive-deps` eslint rule detect missing dependencies, we've suggest passing a option object as the first argument */
+  <T extends AnyRealmObject>(
     type: RealmClassType<T>,
     query?: QueryCallback<T>,
     deps?: DependencyList,
   ): Realm.Results<T>;
-
-  <T>(options: QueryHookOptions<T>, deps?: DependencyList): Realm.Results<T & Realm.Object<T>>;
-  <T extends Realm.Object<any>>(options: QueryHookClassBasedOptions<T>, deps?: DependencyList): Realm.Results<T>;
 };
 
 function isClassModelConstructor(value: unknown): value is RealmClassType<unknown> {
@@ -67,7 +70,7 @@ function identity<T>(value: T): T {
  * @returns useObject - Hook that is used to gain access to a {@link Realm.Collection}
  */
 export function createUseQuery(useRealm: () => Realm): UseQueryHook {
-  function useQuery<T extends Realm.Object<any>>(
+  function useQuery<T extends AnyRealmObject>(
     { type, query = identity, keyPaths }: QueryHookOptions<T> | QueryHookClassBasedOptions<T>,
     deps: DependencyList = [],
   ): Realm.Results<T> {
@@ -99,9 +102,9 @@ export function createUseQuery(useRealm: () => Realm): UseQueryHook {
       return queryCallback(getObjects(realm, type));
     }, [type, realm, queryCallback]);
 
-    /* eslint-disable-next-line react-hooks/exhaustive-deps -- Memoizing the keyPaths to avoid renders */
     const memoizedKeyPaths = useMemo(
       () => (typeof keyPaths === "string" ? [keyPaths] : keyPaths),
+      /* eslint-disable-next-line react-hooks/exhaustive-deps -- Memoizing the keyPaths to avoid renders */
       [JSON.stringify(keyPaths)],
     );
 
@@ -132,7 +135,7 @@ export function createUseQuery(useRealm: () => Realm): UseQueryHook {
     return collectionRef.current as Realm.Results<T>;
   }
 
-  return function useQueryOverload<T extends Realm.Object<any>>(
+  return function useQueryOverload<T extends AnyRealmObject>(
     typeOrOptions: QueryHookOptions<T> | QueryHookClassBasedOptions<T> | string | RealmClassType<T>,
     queryOrDeps: DependencyList | QueryCallback<T> = identity,
     deps: DependencyList = [],
