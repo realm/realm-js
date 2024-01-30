@@ -358,9 +358,16 @@ describe("Mixed", () => {
       ],
     });
 
-    function expectMatchingFlatList(value: unknown) {
+    function expectRealmList(value: unknown): asserts value is Realm.List<any> {
       expect(value).instanceOf(Realm.List);
-      const list = value as Realm.List<any>;
+    }
+
+    function expectRealmDictionary(value: unknown): asserts value is Realm.Dictionary<any> {
+      expect(value).instanceOf(Realm.Dictionary);
+    }
+
+    function expectMatchingFlatList(list: unknown) {
+      expectRealmList(list);
       expect(list.length).to.be.greaterThanOrEqual(flatListAllTypes.length);
 
       let index = 0;
@@ -377,9 +384,8 @@ describe("Mixed", () => {
       }
     }
 
-    function expectMatchingFlatDictionary(value: unknown) {
-      expect(value).instanceOf(Realm.Dictionary);
-      const dictionary = value as Realm.Dictionary<any>;
+    function expectMatchingFlatDictionary(dictionary: unknown) {
+      expectRealmDictionary(dictionary);
       expect(Object.keys(dictionary).length).to.be.greaterThanOrEqual(Object.keys(flatDictionaryAllTypes).length);
 
       for (const key in dictionary) {
@@ -403,7 +409,7 @@ describe("Mixed", () => {
     describe("Flat collections", () => {
       describe("CRUD operations", () => {
         it("can create and access a list with different types (input: JS Array)", function (this: RealmContext) {
-          const created = this.realm.write(() => {
+          const { value: list } = this.realm.write(() => {
             const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
             return this.realm.create<IMixedSchema>(MixedSchema.name, {
               value: [...flatListAllTypes, realmObject],
@@ -411,33 +417,33 @@ describe("Mixed", () => {
           });
 
           expect(this.realm.objects(MixedSchema.name).length).equals(2);
-          expectMatchingFlatList(created.value);
+          expectMatchingFlatList(list);
         });
 
         it("can create and access a list with different types (input: Realm List)", function (this: RealmContext) {
-          const created = this.realm.write(() => {
+          const { value: list } = this.realm.write(() => {
             const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
             // Create an object with a Realm List property type (i.e. not a Mixed type).
             const realmObjectWithList = this.realm.create<ICollectionsOfMixed>(CollectionsOfMixedSchema.name, {
               list: [...flatListAllTypes, realmObject],
             });
-            expect(realmObjectWithList.list).instanceOf(Realm.List);
+            expectRealmList(realmObjectWithList.list);
             // Use the Realm List as the value for the Mixed property on a different object.
             return this.realm.create<IMixedSchema>(MixedSchema.name, { value: realmObjectWithList.list });
           });
 
           expect(this.realm.objects(MixedSchema.name).length).equals(2);
-          expectMatchingFlatList(created.value);
+          expectMatchingFlatList(list);
         });
 
         it("can create and access a list with different types (input: Default value)", function (this: RealmContext) {
-          const created = this.realm.write(() => {
+          const { mixedWithDefaultList } = this.realm.write(() => {
             // Pass an empty object in order to use the default value from the schema.
             return this.realm.create<IMixedWithDefaultCollections>(MixedWithDefaultCollectionsSchema.name, {});
           });
 
           expect(this.realm.objects(MixedWithDefaultCollectionsSchema.name).length).equals(1);
-          expectMatchingFlatList(created.mixedWithDefaultList);
+          expectMatchingFlatList(mixedWithDefaultList);
         });
 
         it("can create and access a dictionary with different types (input: JS Object)", function (this: RealmContext) {
@@ -461,33 +467,33 @@ describe("Mixed", () => {
         });
 
         it("can create and access a dictionary with different types (input: Realm Dictionary)", function (this: RealmContext) {
-          const created = this.realm.write(() => {
+          const { value: dictionary } = this.realm.write(() => {
             const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
             // Create an object with a Realm Dictionary property type (i.e. not a Mixed type).
             const realmObjectWithDictionary = this.realm.create<ICollectionsOfMixed>(CollectionsOfMixedSchema.name, {
               dictionary: { ...flatDictionaryAllTypes, realmObject },
             });
-            expect(realmObjectWithDictionary.dictionary).instanceOf(Realm.Dictionary);
+            expectRealmDictionary(realmObjectWithDictionary.dictionary);
             // Use the Realm Dictionary as the value for the Mixed property on a different object.
             return this.realm.create<IMixedSchema>(MixedSchema.name, { value: realmObjectWithDictionary.dictionary });
           });
 
           expect(this.realm.objects(MixedSchema.name).length).equals(2);
-          expectMatchingFlatDictionary(created.value);
+          expectMatchingFlatDictionary(dictionary);
         });
 
         it("can create and access a dictionary with different types (input: Default value)", function (this: RealmContext) {
-          const created = this.realm.write(() => {
+          const { mixedWithDefaultDictionary } = this.realm.write(() => {
             // Pass an empty object in order to use the default value from the schema.
             return this.realm.create<IMixedWithDefaultCollections>(MixedWithDefaultCollectionsSchema.name, {});
           });
 
           expect(this.realm.objects(MixedWithDefaultCollectionsSchema.name).length).equals(1);
-          expectMatchingFlatDictionary(created.mixedWithDefaultDictionary);
+          expectMatchingFlatDictionary(mixedWithDefaultDictionary);
         });
 
         it("can create and access a dictionary (input: Spread embedded Realm object)", function (this: RealmContext) {
-          const created = this.realm.write(() => {
+          const { value: dictionary } = this.realm.write(() => {
             const { embeddedObject } = this.realm.create<IMixedAndEmbedded>(MixedAndEmbeddedSchema.name, {
               embeddedObject: { value: 1 },
             });
@@ -499,12 +505,12 @@ describe("Mixed", () => {
             });
           });
 
-          expect(created.value).instanceOf(Realm.Dictionary);
-          expect(created.value).deep.equals({ value: 1 });
+          expectRealmDictionary(dictionary);
+          expect(dictionary).deep.equals({ value: 1 });
         });
 
         it("can create and access a dictionary (input: Spread custom non-Realm object)", function (this: RealmContext) {
-          const created = this.realm.write(() => {
+          const { value: dictionary } = this.realm.write(() => {
             class CustomClass {
               constructor(public value: number) {}
             }
@@ -516,13 +522,15 @@ describe("Mixed", () => {
             });
           });
 
-          expect(created.value).instanceOf(Realm.Dictionary);
-          expect(created.value).deep.equals({ value: 1 });
+          expectRealmDictionary(dictionary);
+          expect(dictionary).deep.equals({ value: 1 });
         });
 
         it("inserts list items via `push()`", function (this: RealmContext) {
-          const created = this.realm.write(() => this.realm.create<IMixedSchema>(MixedSchema.name, { value: [] }));
-          const list = created.value as Realm.List<any>;
+          const { value: list } = this.realm.write(() => {
+            return this.realm.create<IMixedSchema>(MixedSchema.name, { value: [] });
+          });
+          expectRealmList(list);
           expect(list.length).equals(0);
 
           this.realm.write(() => {
@@ -533,8 +541,10 @@ describe("Mixed", () => {
         });
 
         it("inserts dictionary entries", function (this: RealmContext) {
-          const created = this.realm.write(() => this.realm.create<IMixedSchema>(MixedSchema.name, { value: {} }));
-          const dictionary = created.value as Realm.Dictionary<any>;
+          const { value: dictionary } = this.realm.write(() => {
+            return this.realm.create<IMixedSchema>(MixedSchema.name, { value: {} });
+          });
+          expectRealmDictionary(dictionary);
           expect(Object.keys(dictionary).length).equals(0);
 
           this.realm.write(() => {
@@ -547,13 +557,13 @@ describe("Mixed", () => {
         });
 
         it("updates list items via property setters", function (this: RealmContext) {
-          const created = this.realm.write(() => {
+          const { value: list } = this.realm.write(() => {
             const realmObject = this.realm.create(MixedSchema.name, { value: "original" });
             return this.realm.create<IMixedSchema>(MixedSchema.name, {
               value: ["original", realmObject],
             });
           });
-          const list = created.value as Realm.List<any>;
+          expectRealmList(list);
           expect(list.length).equals(2);
           expect(list[0]).equals("original");
           expect(list[1].value).equals("original");
@@ -562,26 +572,26 @@ describe("Mixed", () => {
             list[0] = "updated";
             list[1].value = "updated";
           });
-          expect((created.value as Realm.List<any>)[0]).equals("updated");
-          expect((created.value as Realm.List<any>)[1].value).equals("updated");
+          expect(list[0]).equals("updated");
+          expect(list[1].value).equals("updated");
 
           this.realm.write(() => {
             list[0] = null;
             list[1] = null;
           });
-          expect((created.value as Realm.List<any>).length).equals(2);
-          expect((created.value as Realm.List<any>)[0]).to.be.null;
-          expect((created.value as Realm.List<any>)[1]).to.be.null;
+          expect(list.length).equals(2);
+          expect(list[0]).to.be.null;
+          expect(list[1]).to.be.null;
         });
 
         it("updates dictionary entries via property setters", function (this: RealmContext) {
-          const created = this.realm.write(() => {
+          const { value: dictionary } = this.realm.write(() => {
             const realmObject = this.realm.create(MixedSchema.name, { value: "original" });
             return this.realm.create<IMixedSchema>(MixedSchema.name, {
               value: { string: "original", realmObject },
             });
           });
-          const dictionary = created.value as Realm.Dictionary<any>;
+          expectRealmDictionary(dictionary);
           expect(Object.keys(dictionary).length).equals(2);
           expect(dictionary.string).equals("original");
           expect(dictionary.realmObject.value).equals("original");
@@ -590,51 +600,51 @@ describe("Mixed", () => {
             dictionary.string = "updated";
             dictionary.realmObject.value = "updated";
           });
-          expect((created.value as Realm.Dictionary<any>).string).equals("updated");
-          expect((created.value as Realm.Dictionary<any>).realmObject.value).equals("updated");
+          expect(dictionary.string).equals("updated");
+          expect(dictionary.realmObject.value).equals("updated");
 
           this.realm.write(() => {
             dictionary.string = null;
             dictionary.realmObject = null;
           });
-          expect(Object.keys(created.value as Realm.Dictionary<any>).length).equals(2);
-          expect((created.value as Realm.Dictionary<any>).string).to.be.null;
-          expect((created.value as Realm.Dictionary<any>).realmObject).to.be.null;
+          expect(Object.keys(dictionary).length).equals(2);
+          expect(dictionary.string).to.be.null;
+          expect(dictionary.realmObject).to.be.null;
         });
 
         it("removes list items via `remove()`", function (this: RealmContext) {
-          const created = this.realm.write(() => {
+          const { value: list } = this.realm.write(() => {
             const realmObject = this.realm.create(MixedSchema.name, { value: "original" });
             return this.realm.create<IMixedSchema>(MixedSchema.name, {
               value: ["original", realmObject],
             });
           });
-          const list = created.value as Realm.List<any>;
+          expectRealmList(list);
           expect(list.length).equals(2);
 
           this.realm.write(() => {
             list.remove(1);
           });
-          expect((created.value as Realm.List<any>).length).equals(1);
-          expect((created.value as Realm.List<any>)[0]).equals("original");
+          expect(list.length).equals(1);
+          expect(list[0]).equals("original");
         });
 
         it("removes dictionary entries via `remove()`", function (this: RealmContext) {
-          const created = this.realm.write(() => {
+          const { value: dictionary } = this.realm.write(() => {
             const realmObject = this.realm.create(MixedSchema.name, { value: "original" });
             return this.realm.create<IMixedSchema>(MixedSchema.name, {
               value: { string: "original", realmObject },
             });
           });
-          const dictionary = created.value as Realm.Dictionary<any>;
+          expectRealmDictionary(dictionary);
           expect(Object.keys(dictionary).length).equals(2);
 
           this.realm.write(() => {
             dictionary.remove("realmObject");
           });
-          expect(Object.keys(created.value as Realm.Dictionary<any>).length).equals(1);
-          expect((created.value as Realm.Dictionary<any>).string).equals("original");
-          expect((created.value as Realm.Dictionary<any>).realmObject).to.be.undefined;
+          expect(Object.keys(dictionary).length).equals(1);
+          expect(dictionary.string).equals("original");
+          expect(dictionary.realmObject).to.be.undefined;
         });
       });
 
@@ -759,13 +769,13 @@ describe("Mixed", () => {
             return this.realm.create(TestObject, { mixedValue: [] });
           });
           testList = testObjectWithList.mixedValue as Realm.List<any>;
-          expect(testList).instanceOf(Realm.List);
+          expectRealmList(testList);
 
           testObjectWithDictionary = this.realm.write(() => {
             return this.realm.create(TestObject, { mixedValue: {} });
           });
           testDictionary = testObjectWithDictionary.mixedValue as Realm.Dictionary<any>;
-          expect(testDictionary).instanceOf(Realm.Dictionary);
+          expectRealmDictionary(testDictionary);
         });
 
         /**
@@ -1050,7 +1060,7 @@ describe("Mixed", () => {
     });
 
     describe("Invalid operations", () => {
-      it("throws when creating a JS Set", function (this: RealmContext) {
+      it("throws when creating a set (input: JS Set)", function (this: RealmContext) {
         this.realm.write(() => {
           expect(() => this.realm.create(MixedSchema.name, { value: new Set() })).to.throw(
             "Using a Set as a Mixed value is not supported",
@@ -1063,11 +1073,11 @@ describe("Mixed", () => {
         expect(objects.length).equals(1);
       });
 
-      it("throws when creating a Realm Set", function (this: RealmContext) {
+      it("throws when creating a set (input: Realm Set)", function (this: RealmContext) {
         this.realm.write(() => {
-          const realmObjectWithSet = this.realm.create(CollectionsOfMixedSchema.name, { set: [int] });
-          expect(realmObjectWithSet.set).instanceOf(Realm.Set);
-          expect(() => this.realm.create(MixedSchema.name, { value: realmObjectWithSet.set })).to.throw(
+          const { set } = this.realm.create(CollectionsOfMixedSchema.name, { set: [int] });
+          expect(set).instanceOf(Realm.Set);
+          expect(() => this.realm.create(MixedSchema.name, { value: set })).to.throw(
             "Using a RealmSet as a Mixed value is not supported",
           );
         });
@@ -1079,41 +1089,37 @@ describe("Mixed", () => {
       });
 
       it("throws when updating a list item to a set", function (this: RealmContext) {
-        const { realmObjectWithSet, realmObjectWithMixed } = this.realm.write(() => {
+        const { set, list } = this.realm.write(() => {
           const realmObjectWithSet = this.realm.create(CollectionsOfMixedSchema.name, { set: [int] });
           const realmObjectWithMixed = this.realm.create<IMixedSchema>(MixedSchema.name, { value: ["original"] });
-          return { realmObjectWithSet, realmObjectWithMixed };
+          return { set: realmObjectWithSet.set, list: realmObjectWithMixed.value };
         });
-        const list = realmObjectWithMixed.value as Realm.List<any>;
+        expectRealmList(list);
         expect(list[0]).equals("original");
 
         this.realm.write(() => {
           expect(() => (list[0] = new Set())).to.throw("Using a Set as a Mixed value is not supported");
-          expect(() => (list[0] = realmObjectWithSet.set)).to.throw(
-            "Using a RealmSet as a Mixed value is not supported",
-          );
+          expect(() => (list[0] = set)).to.throw("Using a RealmSet as a Mixed value is not supported");
         });
-        expect((realmObjectWithMixed.value as Realm.List<any>)[0]).equals("original");
+        expect(list[0]).equals("original");
       });
 
       it("throws when updating a dictionary entry to a set", function (this: RealmContext) {
-        const { realmObjectWithSet, realmObjectWithMixed } = this.realm.write(() => {
+        const { set, dictionary } = this.realm.write(() => {
           const realmObjectWithSet = this.realm.create(CollectionsOfMixedSchema.name, { set: [int] });
           const realmObjectWithMixed = this.realm.create<IMixedSchema>(MixedSchema.name, {
             value: { string: "original" },
           });
-          return { realmObjectWithSet, realmObjectWithMixed };
+          return { set: realmObjectWithSet.set, dictionary: realmObjectWithMixed.value };
         });
-        const dictionary = realmObjectWithMixed.value as Realm.Dictionary<any>;
+        expectRealmDictionary(dictionary);
         expect(dictionary.string).equals("original");
 
         this.realm.write(() => {
           expect(() => (dictionary.string = new Set())).to.throw("Using a Set as a Mixed value is not supported");
-          expect(() => (dictionary.string = realmObjectWithSet.set)).to.throw(
-            "Using a RealmSet as a Mixed value is not supported",
-          );
+          expect(() => (dictionary.string = set)).to.throw("Using a RealmSet as a Mixed value is not supported");
         });
-        expect((realmObjectWithMixed.value as Realm.Dictionary<any>).string).equals("original");
+        expect(dictionary.string).equals("original");
       });
 
       it("throws when creating a list or dictionary with an embedded object", function (this: RealmContext) {
@@ -1149,21 +1155,21 @@ describe("Mixed", () => {
 
           // Create two objects with the Mixed property (`value`)
           // being an empty list and dictionary (respectively).
-          const realmObjectWithList = this.realm.create<IMixedAndEmbedded>(MixedAndEmbeddedSchema.name, {
+          const { mixedValue: list } = this.realm.create<IMixedAndEmbedded>(MixedAndEmbeddedSchema.name, {
             mixedValue: [],
           });
-          expect(realmObjectWithList.mixedValue).instanceOf(Realm.List);
+          expectRealmList(list);
 
-          const realmObjectWithDictionary = this.realm.create<IMixedAndEmbedded>(MixedAndEmbeddedSchema.name, {
+          const { mixedValue: dictionary } = this.realm.create<IMixedAndEmbedded>(MixedAndEmbeddedSchema.name, {
             mixedValue: {},
           });
-          expect(realmObjectWithDictionary.mixedValue).instanceOf(Realm.Dictionary);
+          expectRealmDictionary(dictionary);
 
-          expect(() => ((realmObjectWithList.mixedValue as Realm.List<any>)[0] = embeddedObject)).to.throw(
+          expect(() => (list[0] = embeddedObject)).to.throw(
             "Using an embedded object (EmbeddedObject) as a Mixed value is not supported",
           );
           expect(
-            () => ((realmObjectWithDictionary.mixedValue as Realm.Dictionary<any>).prop = embeddedObject),
+            () => (dictionary.prop = embeddedObject),
             "Using an embedded object (EmbeddedObject) as a Mixed value is not supported",
           );
         });
@@ -1192,8 +1198,8 @@ describe("Mixed", () => {
         const created = this.realm.write(() => {
           return this.realm.create<IMixedSchema>(MixedSchema.name, { value: [1] });
         });
-        const list = created.value as Realm.List<any>;
-        expect(list).instanceOf(Realm.List);
+        const list = created.value;
+        expectRealmList(list);
 
         this.realm.write(() => {
           created.value = null;
@@ -1206,8 +1212,8 @@ describe("Mixed", () => {
         const created = this.realm.write(() => {
           return this.realm.create<IMixedSchema>(MixedSchema.name, { value: { prop: 1 } });
         });
-        const dictionary = created.value as Realm.Dictionary<any>;
-        expect(dictionary).instanceOf(Realm.Dictionary);
+        const dictionary = created.value;
+        expectRealmDictionary(dictionary);
 
         this.realm.write(() => {
           created.value = null;
