@@ -133,6 +133,24 @@ describe("useObject", () => {
       expect(renders).toHaveLength(2);
     });
   });
+
+  describe("passing options object as argument", () => {
+    it("rerenders on updates", () => {
+      const { write, realm } = context;
+
+      const vincent = realm.objectForPrimaryKey("dog", 4);
+      assert(vincent);
+
+      const { result, renders } = profileHook(() => useObject<IDog>({ type: "dog", primaryKey: 4, keyPaths: "name" }));
+      expect(renders).toHaveLength(1);
+      write(() => {
+        vincent.name = "Vinnie";
+      });
+      expect(renders).toHaveLength(2);
+      expect(result.current?.name).toEqual("Vinnie");
+      // Expect no renders when updating a property outside key-paths
+      write(() => {
+        vincent.age = 30;
       });
       expect(renders).toHaveLength(2);
     });

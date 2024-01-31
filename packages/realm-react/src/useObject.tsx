@@ -20,19 +20,36 @@ import { useEffect, useMemo, useReducer, useRef } from "react";
 import Realm from "realm";
 
 import { CachedObject, createCachedObject } from "./cachedObject";
-import { CollectionCallback, getObjectForPrimaryKey, getObjects } from "./helpers";
+import {
+  AnyRealmObject,
+  CollectionCallback,
+  getObjectForPrimaryKey,
+  getObjects,
+  isClassModelConstructor,
+} from "./helpers";
 import { UseRealmHook } from "./useRealm";
 
 /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-type AnyRealmObject = Realm.Object<any>;
+type RealmClassType<T = any> = { new (...args: any): T };
+
+export type ObjectHookOptions<T> = {
+  type: string;
+  primaryKey: T[keyof T];
+  keyPaths?: string | string[];
+};
+
+export type ObjectHookClassBasedOptions<T> = {
+  type: RealmClassType<T>;
+  primaryKey: T[keyof T];
+  keyPaths?: string | string[];
+};
 
 export type UseObjectHook = {
+  <T>(options: ObjectHookOptions<T>): (T & Realm.Object<T>) | null;
+  <T extends AnyRealmObject>(options: ObjectHookClassBasedOptions<T>): T | null;
+
   <T>(type: string, primaryKey: T[keyof T], keyPaths?: string | string[]): (T & Realm.Object<T>) | null;
-  <T extends AnyRealmObject>(
-    type: { new (...args: any): T },
-    primaryKey: T[keyof T],
-    keyPaths?: string | string[],
-  ): T | null;
+  <T extends AnyRealmObject>(type: RealmClassType<T>, primaryKey: T[keyof T], keyPaths?: string | string[]): T | null;
 };
 
 /**
@@ -41,8 +58,8 @@ export type UseObjectHook = {
  * @returns useObject - Hook that is used to gain access to a single Realm object from a primary key
  */
 export function createUseObject(useRealm: UseRealmHook): UseObjectHook {
-  return function useObject<T extends AnyRealmObject>(
-    type: string | { new (...args: any): T },
+  function useObject<T extends AnyRealmObject>(
+    type: string | RealmClassType<T>,
     primaryKey: T[keyof T],
     keyPaths?: string | string[],
   ): T | null {
@@ -171,6 +188,24 @@ export function createUseObject(useRealm: UseRealmHook): UseObjectHook {
     }
     // This will never be undefined, but the type system doesn't know that
     return objectRef.current as T;
+  }
+
+  return function useObjectOverload<T extends AnyRealmObject>(
+    typeOrOptions: string | RealmClassType<T> | ObjectHookOptions<T> | ObjectHookClassBasedOptions<T>,
+    primaryKey?: T[keyof T],
+    keyPaths?: string | string[],
+  ): T | null {
+    if (typeof typeOrOptions === "string" || isClassModelConstructor(typeOrOptions)) {
+      if (typeof primaryKey === "undefined") {
+        throw new Error("Expected a primary key");
+      }
+      /* eslint-disable-next-line react-hooks/rules-of-hooks -- We're calling `useQuery` once in any of the brances */
+      return useObject<T>(typeOrOptions, primaryKey, keyPaths);
+    } else {
+      const { type, primaryKey, keyPaths } = typeOrOptions;
+      /* eslint-disable-next-line react-hooks/rules-of-hooks -- We're calling `useQuery` once in any of the brances */
+      return useObject<T>(type, primaryKey, keyPaths);
+    }
   };
 }
 
