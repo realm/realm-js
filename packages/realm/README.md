@@ -6,15 +6,15 @@
     <img src="https://raw.githubusercontent.com/realm/realm-js/main/media/logo.svg" alt="realm by MongoDB">
 </picture>
 
-# The Realm database
+# The Realm Database
 
 Realm is a mobile database that runs directly inside phones, tablets or wearables. This project hosts the JavaScript & TypeScript implementation of Realm. Currently, we support React Native (JSC & Hermes on iOS & Android), Node.js and Electron (on Windows, MacOS and Linux).
 
-## What is the Atlas Device SDKs?
+## What are the Atlas Device SDKs?
 
 <img align="right" style="min-width:150px;width:20%;" src="https://raw.githubusercontent.com/realm/realm-js/main/media/atlas-device-sync.svg" alt="Atlas Device Sync">
 
-The [Atlas Device SDKs](https://www.mongodb.com/docs/realm/sdk/) are a connection of language & platform specific SDKs, each with a suite of app development tools optimized for data access and persistence on mobile and edge devices. Use the SDKs to build data-driven mobile, edge, web, desktop, and IoT apps.
+The [Atlas Device SDKs](https://www.mongodb.com/docs/realm/sdk/) are a connection of language and platform specific SDKs, each with a suite of app development tools optimized for data access and persistence on mobile and edge devices. Use the SDKs to build data-driven mobile, edge, web, desktop, and IoT apps.
 
 It might help to think of the Realm database as the persistance layer of the Atlas Device SDKs.
 
@@ -57,7 +57,6 @@ Some packages are considered to be mature and stable, and we will support them a
 The third tier covers our experimental packages. We work on them occasionally, and they are likely to change radically when we do.
 
 * [`@realm/babel-plugin`](https://www.npmjs.com/package/@realm/babel-plugin)
-* [`realm-flipper-plugin`](https://www.npmjs.com/package/realm-flipper-plugin)
 
 ## Documentation
 
@@ -93,7 +92,7 @@ class Task extends Realm.Object<Task, "description"> {
 
 ### Integration with React Native
 
-Realm is a general SDK which provide you persistence of objects and the capability to perform advanced queries on the objects. You can have tighter integration with React Native by using [`@realm/react`](https://www.npmjs.com/package/@realm/react).
+The Atlas Device SDK for React Native provides persistence of objects and advanced queries for persisted objects. You can have easier integration with React Native by using [`@realm/react`](https://www.npmjs.com/package/@realm/react).
 
 ## Template apps
 
