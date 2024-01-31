@@ -75,7 +75,7 @@ type RealmContext = {
    * @example
    * ```tsx
    * // Return all collection items
-   * const collection = useQuery({ type: Query });
+   * const collection = useQuery({ type: Object });
    *
    * // Return all collection items sorted by name and filtered by category
    * const filteredAndSorted = useQuery({
@@ -199,7 +199,7 @@ export const useRealm = defaultContext.useRealm;
  * @example
  * ```tsx
  * // Return all collection items
- * const collection = useQuery({ type: Query });
+ * const collection = useQuery({ type: Object });
  *
  * // Return all collection items sorted by name and filtered by category
  * const filteredAndSorted = useQuery({

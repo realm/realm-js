@@ -37,7 +37,7 @@ export type QueryHookOptions<T> = {
 export type QueryHookClassBasedOptions<T> = {
   type: RealmClassType<T>;
   query?: QueryCallback<T>;
-  keyPaths?: string[];
+  keyPaths?: string | string[];
 };
 
 export type UseQueryHook = {

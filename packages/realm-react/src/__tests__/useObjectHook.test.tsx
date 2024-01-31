@@ -96,7 +96,7 @@ describe("useObject", () => {
       const { result, renders } = profileHook(() => useObject<IDog>("dog", vincent._id, ["name"]));
       expect(renders).toHaveLength(1);
       expect(result.current).toMatchObject(vincent);
-      // Update the name and except a re-render
+      // Update the name and expect a re-render
       write(() => {
         if (result.current) {
           result.current.name = "Vince!";
@@ -119,7 +119,7 @@ describe("useObject", () => {
       const { result, renders } = profileHook(() => useObject<IDog>("dog", vincent._id, "age"));
       expect(renders).toHaveLength(1);
       expect(result.current).toMatchObject(vincent);
-      // Update the name and except a re-render
+      // Update the name and expect a re-render
       write(() => {
         if (result.current) {
           result.current.age = 13;
