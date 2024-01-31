@@ -67,7 +67,7 @@
       }
     },
     "pod-install:ci": {
-      "command": "pod-install",
+      "command": "pod-install || (cd ios && bundle install && bundle exec pod install)",
       "files": [
         "ios/Podfile"
       ],
