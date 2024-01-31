@@ -196,7 +196,7 @@ jobs:
       # Due to a limitation in upload-artifact a redundant file is needed to force
       # preserving paths (https://github.com/actions/upload-artifact/issues/174)
       - name: Upload prebuild artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: realm-js-prebuilds
           path: |
@@ -271,8 +271,6 @@ jobs:
         with:
           path: '**/Pods'
           key: ${{ runner.os }}-${{matrix.variant.environment}}-${{ hashFiles('**/Podfile.lock', './packages/realm/binding/src/**', './packages/realm/bindgen/vendor/**', './packages/realm/RealmJS.podspec', './packages/realm/scripts/*') }}
-          restore-keys: |
-            ${{ runner.os }}-${{matrix.variant.environment}}-
 
       - name: MSVC Setup
         if: ${{ runner.os == 'Windows' }}
@@ -308,7 +306,7 @@ jobs:
           name: realm-js-shared
 
       - name: Download prebuilds
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: realm-js-prebuilds
 

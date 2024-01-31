@@ -68,6 +68,13 @@
     },
     "pod-install:ci": {
       "command": "pod-install",
+      "files": [
+        "ios/Podfile"
+      ],
+      "output": [
+        "ios/Pods",
+        "ios/Podfile.lock"
+      ],
       "env": {
         "USE_HERMES": {
           "external": true
