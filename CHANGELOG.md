@@ -7,8 +7,7 @@
 * None
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None
+* Fixed `User#callFunction` to correctly pass arguments to the server. Previously they would be sent as an array, so if your server-side function used to handle the unwrapping of arguments, it would need an update too. The "functions factory" pattern of calling `user.functions.sum(1, 2, 3)` wasn't affected by this bug. Thanks to @deckyfx for finding this and suggesting the fix! ([#6447](https://github.com/realm/realm-js/issues/6447), since v12.0.0)
 
 ### Compatibility
 * React Native >= v0.71.4
