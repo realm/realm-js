@@ -1,24 +1,34 @@
+> [!NOTE]
+> Realm is now Atlas Device SDK - [Learn More](https://www.mongodb.com/blog/post/realm-now-part-atlas-platform?utm_medium=github_atlas_CTA&utm_source=realm_js_github)
+
 <picture>
-    <source srcset="https://github.com/realm/realm-js/blob/HEAD/media/logo-dark.svg" media="(prefers-color-scheme: dark)" alt="realm by MongoDB">
-    <img src="https://github.com/realm/realm-js/blob/HEAD/media/logo.svg" alt="realm by MongoDB">
+    <source srcset="https://raw.githubusercontent.com/realm/realm-js/main/media/logo-dark.svg" media="(prefers-color-scheme: dark)" alt="realm by MongoDB">
+    <img src="https://raw.githubusercontent.com/realm/realm-js/main/media/logo.svg" alt="realm by MongoDB">
 </picture>
 
-# About Realm Database
+# The Realm Database
 
-Realm is a mobile database that runs directly inside phones, tablets or wearables.
-This project hosts the JavaScript versions of [Realm](https://www.mongodb.com/docs/realm/). Currently, we support React Native (JSC & Hermes on iOS & Android), Node.js and Electron (on Windows, MacOS and Linux).
+Realm is a mobile database that runs directly inside phones, tablets or wearables. This project hosts the JavaScript & TypeScript implementation of Realm. Currently, we support React Native (JSC & Hermes on iOS & Android), Node.js and Electron (on Windows, MacOS and Linux).
+
+## What are the Atlas Device SDKs?
+
+<img align="right" style="min-width:150px;width:20%;" src="https://raw.githubusercontent.com/realm/realm-js/main/media/atlas-device-sync.svg" alt="Atlas Device Sync">
+
+The [Atlas Device SDKs](https://www.mongodb.com/docs/realm/sdk/) are a connection of language and platform specific SDKs, each with a suite of app development tools optimized for data access and persistence on mobile and edge devices. Use the SDKs to build data-driven mobile, edge, web, desktop, and IoT apps.
+
+It might help to think of the Realm database as the persistance layer of the Atlas Device SDKs.
 
 ## Features
 
 * **Mobile-first:** Realm is the first database built from the ground up to run directly inside phones, tablets and wearables.
-* **Simple:** Data is directly [exposed as objects](https://docs.mongodb.com/realm/node/realms/) and [queryable by code](https://docs.mongodb.com/realm/node/query-engine/), removing the need for ORM's riddled with performance & maintenance issues.
-* **Modern:** Realm supports relationships, generics, and vectorization.
-* **Fast:** Realm is faster than even raw SQLite on common operations, while maintaining an extremely rich feature set.
+* **Simple:** Data is directly [exposed as objects](https://www.mongodb.com/docs/realm/sdk/node/realm-files/) and [queryable by code](https://www.mongodb.com/docs/realm/sdk/node/crud/query-data/), removing the need for ORM's riddled with performance & maintenance issues.
+* **Modern:** The database supports relationships, generics, and vectorization.
+* **Fast:** It is faster than even raw SQLite on common operations, while maintaining an extremely rich feature set.
 * **[MongoDB Atlas Device Sync](https://www.mongodb.com/atlas/app-services/device-sync)**: Makes it simple to keep data in sync across users, devices, and your backend in real time. Get started for free with [a template application](https://github.com/mongodb/template-app-react-native-todo) and [create the cloud backend](http://mongodb.com/realm/register?utm_medium=github_atlas_CTA&utm_source=realm_js_github).
 
 ## Getting Started
 
-Please see the detailed instructions in our docs to use [Realm JavaScript for Node.js](https://www.mongodb.com/docs/realm/sdk/node/) and [Realm JavaScript for React Native](https://www.mongodb.com/docs/realm/sdk/react-native/). Please notice that currently only Node.js version 13 or later is supported. For React Native users, we have a [compatibility matrix](https://github.com/realm/realm-js/blob/HEAD/COMPATIBILITY.md) showing which versions are supported.
+Please see the detailed instructions in our docs to use [Atlas Device SDK for Node.js](https://www.mongodb.com/docs/realm/sdk/node/) and [Atlas Device SDK for React Native](https://www.mongodb.com/docs/realm/sdk/react-native/). Please notice that currently only Node.js version 18 or later is supported. For React Native users, we have a [compatibility matrix](https://github.com/realm/realm-js/blob/HEAD/COMPATIBILITY.md) showing which versions are supported.
 
 ## Tiers
 
@@ -30,41 +40,40 @@ If you want to contribute to any of our packages, you are welcome to do so. We w
 
 In tier 1 we will respond to issues in a timely manner during workdays from CET timezone, and we will work on bug fixing and adding new features.
 
-* [Realm JavaScript](https://www.npmjs.com/package/realm) (NPM tag: `latest`) on node.js (LTS) and Electron on Windows, MacOS, and Linux
-* [Realm JavaScript](https://www.npmjs.com/package/realm) (NPM tag: `latest`) with the latest React Native version 0.71.0 on Android and iOS
-* [@realm/react](https://www.npmjs.com/package/@realm/react) (NPM tag: `latest`) in conjunction with the latest [Realm JavaScript](https://www.npmjs.com/package/realm) release
+* [`realm`](https://www.npmjs.com/package/realm) (NPM tag: `latest`) on node.js (active LTS) and Electron on Windows, MacOS, and Linux
+* [`realm`](https://www.npmjs.com/package/realm) (NPM tag: `latest`) with the latest React Native version 0.71.0 on Android and iOS
+* [`@realm/react`](https://www.npmjs.com/package/@realm/react) (NPM tag: `latest`) in conjunction with the latest [`realm`](https://www.npmjs.com/package/realm) release
 
 ### Tier 2 - best effort
 
 Some packages are considered to be mature and stable, and we will support them as good as we can when time permits.
 
-* [Realm Web](https://www.npmjs.com/package/realm-web) (NPM tag: `latest`)
+* [`realm-web`](https://www.npmjs.com/package/realm-web) (NPM tag: `latest`)
 * [Realm Studio](https://github.com/realm/realm-studio) ([latest](https://github.com/realm/realm-studio/releases/latest) release) on Windows, MacOS, and Linux
-* Any other release of [Realm JavaScript](https://www.npmjs.com/package/realm) not covered by tier 1
+* Any other release of [`realm`](https://www.npmjs.com/package/realm) not covered by tier 1
 
 ### Tier 3 - experimental
 
 The third tier covers our experimental packages. We work on them occasionally, and they are likely to change radically when we do.
 
-* [Realm Babel plugin](https://www.npmjs.com/package/@realm/babel-plugin)
-* [Realm Flipper plugins](https://www.npmjs.com/package/realm-flipper-plugin)
+* [`@realm/babel-plugin`](https://www.npmjs.com/package/@realm/babel-plugin)
 
 ## Documentation
 
-### Realm React Native and Node.js
+### Atlas Device SDKs for React Native and Node.js
 
-The documentation for the Realm React Native SDK can be found at [mongodb.com/docs/realm/sdk/react-native/](https://www.mongodb.com/docs/realm/sdk/react-native/). The documentation for Realm Node.js SDK can be found at [mongodb.com/docs/realm/sdk/node](https://www.mongodb.com/docs/realm/sdk/node/).
+The documentation for the Atlas Device SDK for React Native can be found at [mongodb.com/docs/realm/sdk/react-native/](https://www.mongodb.com/docs/realm/sdk/react-native/). The documentation for the Atlas Device SDK for Node.js can be found at [mongodb.com/docs/realm/sdk/node](https://www.mongodb.com/docs/realm/sdk/node/).
 
 The API reference is located at [docs.mongodb.com/realm-sdks/js/latest/](https://docs.mongodb.com/realm-sdks/js/latest/).
 
-If you are using React Native, please also take a look the README for [@realm/react](https://github.com/realm/realm-js/tree/main/packages/realm-react#readme), which provides React hooks to make working with Realm easier.
+If you are using React Native, please also take a look the README for [`@realm/react`](https://github.com/realm/realm-js/tree/main/packages/realm-react#readme), which provides React hooks to make working with Realm easier.
 
 ### TypeScript models
 
 [TypeScript](https://www.typescriptlang.org/) is a popular alternative to pure JavaScript as it provide static typing. Our TypeScript support consists of two parts
 
 * Accurate TypeScript definitions
-  [@realm/babel-plugin](https://www.npmjs.com/package/@realm/babel-plugin) to transform TypeScript classes to Realm schemas. An example of a model class is:
+  [`@realm/babel-plugin`](https://www.npmjs.com/package/@realm/babel-plugin) to transform TypeScript classes to Realm schemas. An example of a model class is:
 
 ```typescript
 class Task extends Realm.Object<Task, "description"> {
@@ -83,9 +92,7 @@ class Task extends Realm.Object<Task, "description"> {
 
 ### Integration with React Native
 
-Realm is a general SDK which provide you persistence of objects and the capability to perform advanced queries on the objects. You can have tighter integration with React Native by using [@realm/react](https://www.npmjs.com/package/@realm/react).
-
-Moreover, we have a [Flipper plugin](https://www.npmjs.com/package/realm-flipper-plugin) to help you inspect, query and modify your Realm files while debugging your app on a simulator or a physical device. The plugin is still in an early stage so expect rough edges.
+The Atlas Device SDK for React Native provides persistence of objects and advanced queries for persisted objects. You can have easier integration with React Native by using [`@realm/react`](https://www.npmjs.com/package/@realm/react).
 
 ## Template apps
 
@@ -106,18 +113,13 @@ See [CONTRIBUTING.md](https://github.com/realm/realm-js/blob/HEAD/CONTRIBUTING.m
 ## Known issues
 
 * Realm is not compatible with the legacy Chrome Debugger. The following debugging methods are supported:
-   * [Flipper](https://fbflipper.com/) has many similar features in relation to the Chrome Debugger.
+   * [Hermes Debugger](https://reactnative.dev/docs/debugging#opening-the-debugger) is the recommended way for debugging modern React Native apps.
    * [Safari](https://reactnative.dev/docs/debugging#safari-developer-tools) also has a similar feature set, but requires [some setup](https://blog.nparashuram.com/2019/10/debugging-react-native-ios-apps-with.html) and only supports debugging in iOS.
    * **NOTE:** For the above methods, it is not necessary to enable `Debug with Chrome` in the Debug Menu.
 
-## Building Realm JS
+## Building the SDK
 
-For instructions on building Realm JS yourself from the source, see the [building.md](https://github.com/realm/realm-js/blob/HEAD/contrib/building.md) file.
-
-## Issues with debugging
-Some users have reported the Chrome debugging being too slow to use after integrating Realm into their react-native project. This is due to the blocking nature of the RPC calls made through the Realm library. See https://github.com/realm/realm-js/issues/491 for more information. The best workaround is to use Safari instead, as a user has described [here](https://github.com/realm/realm-js/issues/491#issuecomment-404670910).
-
-Moreover, we have a switch to [Flipper](https://fbflipper.com/) in the works as part of our effort to [support Hermes](https://github.com/realm/realm-js/pull/3792). It implies that we envision a near future where the Chrome debugging will be removed, and we currently don't invest much in its maintenance.
+For instructions on building the SDK from the source, see the [building.md](https://github.com/realm/realm-js/blob/HEAD/contrib/building.md) file.
 
 ## Troubleshooting missing binary
 It's possible after installing and running Realm that one encounters the error `Could not find the Realm binary`.  Here are are some tips to help with this.
