@@ -289,7 +289,7 @@ export class User<
    * await doThing(a2);
    */
   callFunction(name: string, ...args: unknown[]): Promise<unknown> {
-    return this.callFunctionOnService(name, undefined, args);
+    return this.callFunctionOnService(name, undefined, ...args);
   }
 
   /** @internal */
