@@ -196,7 +196,7 @@ jobs:
       # Due to a limitation in upload-artifact a redundant file is needed to force
       # preserving paths (https://github.com/actions/upload-artifact/issues/174)
       - name: Upload prebuild artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
           name: realm-js-prebuilds
           path: |
@@ -266,7 +266,7 @@ jobs:
         uses: takameyer/wireit@wireit-caching-gha
 
       - name: Restore React Native cache
-        if: ${{ matrix.variant.environment == 'react-native' }}
+        if: ${{ matrix.variant.os == 'ios' }}
         uses: actions/cache@v3
         with:
           path: '**/Pods'
@@ -306,7 +306,7 @@ jobs:
           name: realm-js-shared
 
       - name: Download prebuilds
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v3
         with:
           name: realm-js-prebuilds
 
