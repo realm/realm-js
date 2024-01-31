@@ -20,11 +20,8 @@ import { useCallback, useEffect, useMemo, useReducer, useRef } from "react";
 import Realm from "realm";
 
 import { createCachedCollection } from "./cachedCollection";
-import { getObjects } from "./helpers";
+import { AnyRealmObject, RealmClassType, getObjects, isClassModelConstructor } from "./helpers";
 
-/* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-type AnyRealmObject = Realm.Object<any>;
-type RealmClassType<T = any> = { new (...args: any): T };
 type QueryCallback<T> = (collection: Realm.Results<T>) => Realm.Results<T>;
 type DependencyList = ReadonlyArray<unknown>;
 
@@ -55,10 +52,6 @@ export type UseQueryHook = {
     deps?: DependencyList,
   ): Realm.Results<T>;
 };
-
-function isClassModelConstructor(value: unknown): value is RealmClassType<unknown> {
-  return Object.getPrototypeOf(value) === Realm.Object;
-}
 
 /**
  * Maps a value to itself
