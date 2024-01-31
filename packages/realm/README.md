@@ -60,9 +60,9 @@ The third tier covers our experimental packages. We work on them occasionally, a
 
 ## Documentation
 
-### Realm React Native and Node.js
+### Atlas Device SDKs for React Native and Node.js
 
-The documentation for the Realm React Native SDK can be found at [mongodb.com/docs/realm/sdk/react-native/](https://www.mongodb.com/docs/realm/sdk/react-native/). The documentation for Realm Node.js SDK can be found at [mongodb.com/docs/realm/sdk/node](https://www.mongodb.com/docs/realm/sdk/node/).
+The documentation for the Atlas Device SDK for React Native can be found at [mongodb.com/docs/realm/sdk/react-native/](https://www.mongodb.com/docs/realm/sdk/react-native/). The documentation for the Atlas Device SDK for Node.js can be found at [mongodb.com/docs/realm/sdk/node](https://www.mongodb.com/docs/realm/sdk/node/).
 
 The API reference is located at [docs.mongodb.com/realm-sdks/js/latest/](https://docs.mongodb.com/realm-sdks/js/latest/).
 
