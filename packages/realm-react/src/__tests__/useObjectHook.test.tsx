@@ -18,6 +18,7 @@
 
 import Realm from "realm";
 import { renderHook } from "@testing-library/react-native";
+import assert from "node:assert";
 
 import { createUseObject } from "../useObject";
 import { createRealmTestContext } from "./createRealmTestContext";
@@ -98,17 +99,15 @@ describe("useObject", () => {
       expect(result.current).toMatchObject(vincent);
       // Update the name and expect a re-render
       write(() => {
-        if (result.current) {
-          result.current.name = "Vince!";
-        }
+        assert(result.current);
+        result.current.name = "Vince!";
       });
       expect(renders).toHaveLength(2);
       expect(result.current?.name).toEqual("Vince!");
       // Update the age and don't expect a re-render
       write(() => {
-        if (result.current) {
-          result.current.age = 5;
-        }
+        assert(result.current);
+        result.current.age = 5;
       });
       expect(renders).toHaveLength(2);
     });
@@ -121,17 +120,19 @@ describe("useObject", () => {
       expect(result.current).toMatchObject(vincent);
       // Update the name and expect a re-render
       write(() => {
-        if (result.current) {
-          result.current.age = 13;
-        }
+        assert(result.current);
+        result.current.age = 13;
       });
       expect(renders).toHaveLength(2);
       expect(result.current?.age).toEqual(13);
       // Update the age and don't expect a re-render
       write(() => {
-        if (result.current) {
-          result.current.name = "Vince!";
-        }
+        assert(result.current);
+        result.current.name = "Vince!";
+      });
+      expect(renders).toHaveLength(2);
+    });
+  });
       });
       expect(renders).toHaveLength(2);
     });

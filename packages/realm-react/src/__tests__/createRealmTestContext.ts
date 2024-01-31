@@ -62,7 +62,7 @@ export function createRealmTestContext(rootConfig: Configuration = {}): RealmTes
     },
     cleanup() {
       Realm.clearTestState();
-    }
+    },
   };
   return context;
 }
