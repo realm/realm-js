@@ -14,7 +14,7 @@ Realm is a mobile database that runs directly inside phones, tablets or wearable
 
 <img align="right" style="min-width:150px;width:20%;" src="https://raw.githubusercontent.com/realm/realm-js/main/media/atlas-device-sync.svg" alt="Atlas Device Sync">
 
-The [Atlas Device SDKs](https://www.mongodb.com/docs/realm/sdk/) are a connection of language and platform specific SDKs, each with a suite of app development tools optimized for data access and persistence on mobile and edge devices. Use the SDKs to build data-driven mobile, edge, web, desktop, and IoT apps.
+The [Atlas Device SDKs](https://www.mongodb.com/docs/realm/sdk/) are a collection of language and platform specific SDKs, each with a suite of app development tools optimized for data access and persistence on mobile and edge devices. Use the SDKs to build data-driven mobile, edge, web, desktop, and IoT apps.
 
 It might help to think of the Realm database as the persistance layer of the Atlas Device SDKs.
 
