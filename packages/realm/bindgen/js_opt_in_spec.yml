@@ -246,6 +246,7 @@ classes:
       - make_ssl_verify_callback
       - get_mixed_type
       - get_mixed_element_type
+      - get_mixed_element_type_from_dict
 
   LogCategoryRef:
     methods:
@@ -317,6 +318,7 @@ classes:
       - get_obj
       - get_any
       - get_list
+      - get_dictionary
       - sort_by_names
       - snapshot
       - max

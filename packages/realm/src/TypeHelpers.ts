@@ -21,6 +21,7 @@ import {
   ClassHelpers,
   Collection,
   Dictionary,
+  DictionaryHelpers,
   INTERNAL,
   List,
   ObjCreator,
@@ -168,19 +169,15 @@ function mixedFromBinding(options: TypeOptions, value: binding.MixedArg): unknow
     const { wrapObject } = getClassHelpers(value.tableKey);
     return wrapObject(linkedObj);
   } else if (value instanceof binding.List) {
-    return new List(realm, value, getCollectionHelpersForMixed(realm, options));
+    return new List(realm, value, getListHelpersForMixed(realm, options));
   } else if (value instanceof binding.Dictionary) {
-    const typeHelpers: TypeHelpers<Realm.Mixed> = {
-      toBinding: mixedToBinding.bind(null, realm.internal),
-      fromBinding: mixedFromBinding.bind(null, options),
-    };
-    return new Dictionary(realm, value, typeHelpers);
+    return new Dictionary(realm, value, getDictionaryHelpersForMixed(realm, options));
   } else {
     return value;
   }
 }
 
-function getCollectionHelpersForMixed(realm: Realm, options: TypeOptions) {
+function getListHelpersForMixed(realm: Realm, options: TypeOptions) {
   const helpers: OrderedCollectionHelpers = {
     toBinding: mixedToBinding.bind(null, realm.internal),
     fromBinding: mixedFromBinding.bind(null, options),
@@ -190,9 +187,27 @@ function getCollectionHelpersForMixed(realm: Realm, options: TypeOptions) {
         return new List(realm, results.getList(index), helpers);
       }
       if (elementType === binding.MixedDataType.Dictionary) {
-        // TODO
+        return new Dictionary(realm, results.getDictionary(index), getDictionaryHelpersForMixed(realm, options));
       }
       return results.getAny(index);
+    },
+  };
+  return helpers;
+}
+
+function getDictionaryHelpersForMixed(realm: Realm, options: TypeOptions) {
+  const helpers: DictionaryHelpers = {
+    toBinding: mixedToBinding.bind(null, realm.internal),
+    fromBinding: mixedFromBinding.bind(null, options),
+    get(dictionary: binding.Dictionary, key: string) {
+      const elementType = binding.Helpers.getMixedElementTypeFromDict(dictionary, key);
+      if (elementType === binding.MixedDataType.List) {
+        return new List(realm, dictionary.getList(key), getListHelpersForMixed(realm, options));
+      }
+      if (elementType === binding.MixedDataType.Dictionary) {
+        return new Dictionary(realm, dictionary.getDictionary(key), helpers);
+      }
+      return dictionary.tryGetAny(key);
     },
   };
   return helpers;

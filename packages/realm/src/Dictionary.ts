@@ -15,6 +15,7 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
+
 import {
   AssertionError,
   Collection,
@@ -41,14 +42,23 @@ export type DictionaryChangeSet = {
 };
 export type DictionaryChangeCallback = (dictionary: Dictionary, changes: DictionaryChangeSet) => void;
 
+/**
+ * Helpers for getting and setting dictionary entries, as well as
+ * converting the values to and from their binding representations.
+ * @internal
+ */
+export type DictionaryHelpers = TypeHelpers & {
+  get?(dictionary: binding.Dictionary, key: string): unknown;
+};
+
 const DEFAULT_PROPERTY_DESCRIPTOR: PropertyDescriptor = { configurable: true, enumerable: true };
 const PROXY_HANDLER: ProxyHandler<Dictionary> = {
   get(target, prop, receiver) {
     const value = Reflect.get(target, prop, receiver);
     if (typeof value === "undefined" && typeof prop === "string") {
       const internal = target[INTERNAL];
-      const fromBinding = target[HELPERS].fromBinding;
-      return fromBinding(internal.tryGetAny(prop));
+      const { get: customGet, fromBinding } = target[HELPERS];
+      return fromBinding(customGet ? customGet(internal, prop) : internal.tryGetAny(prop));
     } else {
       return value;
     }
@@ -111,7 +121,7 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
    * Create a `Results` wrapping a set of query `Results` from the binding.
    * @internal
    */
-  constructor(realm: Realm, internal: binding.Dictionary, helpers: TypeHelpers) {
+  constructor(realm: Realm, internal: binding.Dictionary, helpers: DictionaryHelpers) {
     if (arguments.length === 0 || !(internal instanceof binding.Dictionary)) {
       throw new IllegalConstructorError("Dictionary");
     }
@@ -182,7 +192,7 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
   private declare [INTERNAL]: binding.Dictionary;
 
   /** @internal */
-  private declare [HELPERS]: TypeHelpers;
+  private declare [HELPERS]: DictionaryHelpers;
 
   /** @ts-expect-error We're exposing methods in the end-users namespace of keys */
   [key: string]: T;

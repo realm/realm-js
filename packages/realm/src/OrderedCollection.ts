@@ -56,7 +56,11 @@ export type CollectionChangeCallback<T = unknown, EntryType extends [unknown, un
   changes: CollectionChangeSet,
 ) => void;
 
-/** @internal */
+/**
+ * Helpers for getting and setting ordered collection items, as well
+ * as converting the values to and from their binding representations.
+ * @internal
+ */
 export type OrderedCollectionHelpers = TypeHelpers & {
   get(results: binding.Results, index: number): unknown;
 };
