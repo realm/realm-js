@@ -349,6 +349,14 @@ export class AdminApiClient {
     });
   }
 
+  public async applyRefreshTokenExpiration(appId: string, expirationTimeSeconds: number) {
+    await this.fetch({
+      route: ["groups", await this.groupId, "apps", appId, "security", "refresh_token_expiration"],
+      method: "PUT",
+      body: { expiration_time_seconds: expirationTimeSeconds },
+    });
+  }
+
   private async refreshSession() {
     if (!this.refreshToken) {
       throw new Error("Need a refresh token before calling this method");

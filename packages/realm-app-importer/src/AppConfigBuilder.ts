@@ -34,6 +34,7 @@ export type SyncConfig = {
 
 export type SecurityConfig = {
   allowed_request_origins?: string[];
+  refresh_token_expiration?: number;
 };
 
 export type ServiceConfig = {

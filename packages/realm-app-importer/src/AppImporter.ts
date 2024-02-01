@@ -174,6 +174,9 @@ export class AppImporter {
     if (security?.allowed_request_origins) {
       this.client.applyAllowedRequestOrigins(appId, security.allowed_request_origins);
     }
+    if (security?.refresh_token_expiration) {
+      this.client.applyRefreshTokenExpiration(appId, security.refresh_token_expiration);
+    }
   }
 
   private async configureSecrets(appId: string, secrets: Record<string, string>) {
