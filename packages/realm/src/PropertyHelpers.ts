@@ -19,6 +19,7 @@
 import {
   ClassHelpers,
   Dictionary,
+  List,
   OrderedCollectionHelpers,
   Realm,
   RealmSet,
@@ -317,6 +318,61 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
       },
     };
   },
+  [binding.PropertyType.Mixed](options) {
+    const {
+      realm,
+      columnKey,
+      typeHelpers: { fromBinding, toBinding },
+    } = options;
+
+    return {
+      get: (obj) => {
+        try {
+          // We currently rely on the Core helper `get_mixed_type()` for calling `obj.get_any()`
+          // since doing it here in the SDK layer will cause the binding layer to throw for
+          // collections. It's non-trivial to do in the bindgen templates as a `binding.List`
+          // would have to be constructed using the `realm` and `obj`. Going via the helpers
+          // bypasses that as we will return a primitive (the data type). If possible, revisiting
+          // this for a more performant solution would be ideal as we now make an extra call into
+          // Core for each Mixed access, not only for collections.
+          const mixedType = binding.Helpers.getMixedType(obj, columnKey);
+          if (mixedType === binding.MixedDataType.List) {
+            return fromBinding(binding.List.make(realm.internal, obj, columnKey));
+          }
+          if (mixedType === binding.MixedDataType.Dictionary) {
+            return fromBinding(binding.Dictionary.make(realm.internal, obj, columnKey));
+          }
+          return defaultGet(options)(obj);
+        } catch (err) {
+          assert.isValid(obj);
+          throw err;
+        }
+      },
+      set: (obj: binding.Obj, value: unknown) => {
+        assert.inTransaction(realm);
+
+        if (value instanceof List || Array.isArray(value)) {
+          obj.setCollection(columnKey, binding.CollectionType.List);
+          const internal = binding.List.make(realm.internal, obj, columnKey);
+          let index = 0;
+          for (const item of value) {
+            internal.insertAny(index++, toBinding(item));
+          }
+        } else if (value instanceof Dictionary || isPOJO(value)) {
+          obj.setCollection(columnKey, binding.CollectionType.Dictionary);
+          const internal = binding.Dictionary.make(realm.internal, obj, columnKey);
+          internal.removeAll();
+          for (const key in value) {
+            internal.insertAny(key, toBinding(value[key]));
+          }
+        } else if (value instanceof RealmSet || value instanceof Set) {
+          throw new Error(`Using a ${value.constructor.name} as a Mixed value is not supported.`);
+        } else {
+          defaultSet(options)(obj, value);
+        }
+      },
+    };
+  },
 };
 
 function getPropertyHelpers(type: binding.PropertyType, options: PropertyOptions): PropertyHelpers {
@@ -365,4 +421,15 @@ export function createPropertyHelpers(property: PropertyContext, options: Helper
       typeHelpers: getTypeHelpers(baseType, typeOptions),
     });
   }
+}
+
+/** @internal */
+export function isPOJO(value: unknown): value is Record<string, unknown> {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    // Lastly check for the absence of a prototype as POJOs
+    // can still be created using `Object.create(null)`.
+    (value.constructor === Object || !Object.getPrototypeOf(value))
+  );
 }
