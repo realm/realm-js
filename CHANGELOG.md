@@ -18,7 +18,7 @@
 <!-- * Either mention core version or upgrade -->
 <!-- * Using Realm Core vX.Y.Z -->
 <!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
-* Migrated bingen from `util::Optional` to `std::optional`
+* Migrated bindgen from `util::Optional` to `std::optional`
 
 ## 12.6.0 (2024-01-29)
 
