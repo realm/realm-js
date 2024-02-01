@@ -240,15 +240,15 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
 
-      - name: Restore Wireit cache
-        uses: takameyer/wireit@wireit-caching-gha
+      # - name: Restore Wireit cache
+      #   uses: takameyer/wireit@wireit-caching-gha
 
-      - name: Restore React Native cache
-        if: ${{ matrix.variant.os == 'ios' }}
-        uses: actions/cache@v3
-        with:
-          path: '**/Pods'
-          key: ${{ runner.os }}-${{matrix.variant.environment}}-${{ hashFiles('**/Podfile.lock', './packages/realm/binding/src/**', './packages/realm/bindgen/vendor/**', './packages/realm/RealmJS.podspec', './packages/realm/scripts/*') }}
+      # - name: Restore React Native cache
+      #   if: ${{ matrix.variant.os == 'ios' }}
+      #   uses: actions/cache@v3
+      #   with:
+      #     path: '**/Pods'
+      #     key: ${{ runner.os }}-${{matrix.variant.environment}}-${{ hashFiles('**/Podfile.lock', './packages/realm/binding/src/**', './packages/realm/bindgen/vendor/**', './packages/realm/RealmJS.podspec', './packages/realm/scripts/*') }}
 
       - name: Setup Java
         if: ${{ matrix.variant.os == 'android' }}
