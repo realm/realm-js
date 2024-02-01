@@ -22,30 +22,47 @@ export type LogLevel = "all" | "trace" | "debug" | "detail" | "info" | "warn" | 
 
 /**
  * Log levels used by Realm
- *
- * Off      Be silent.
- * Fatal    Be silent unless when an error is fatal.
- * error    Be silent unless when there is an error.
- * warn     Be silent unless when there is an error or a warning.
- * Info     Reveal information about what is going on, but in a
- *          minimalistic fashion to avoid general overhead from logging
- *          and to keep volume down.
- * Detail   Same as 'Info', but prioritize completeness over minimalism.
- * Debug    Reveal information that can aid debugging, no longer paying
- *          attention to efficiency.
- * Trace    A version of 'Debug' that allows for very high volume
- *          output.
- * All      Same as 'Trace' but with even more output.
  */
 export enum NumericLogLevel {
+  /**
+   * Same as 'Trace' but with even more output.
+   */
   All = 0,
+  /**
+   * A version of 'Debug' that allows for very high volume
+   * output.
+   */
   Trace = 1,
+  /**
+   * Reveal information that can aid debugging, no longer paying
+   * attention to efficiency.
+   */
   Debug = 2,
+  /**
+   * Same as 'Info', but prioritize completeness over minimalism.
+   */
   Detail = 3,
+  /**
+   * Reveal information about what is going on, but in a
+   * minimalistic fashion to avoid general overhead from logging
+   * and to keep volume down.
+   */
   Info = 4,
+  /**
+   * Be silent unless when there is an error or a warning.
+   */
   Warn = 5,
+  /**
+   * Be silent unless when there is an error.
+   */
   Error = 6,
+  /**
+   * Be silent unless when an error is fatal.
+   */
   Fatal = 7,
+  /**
+   * Be silent.
+   */
   Off = 8,
 }
 
