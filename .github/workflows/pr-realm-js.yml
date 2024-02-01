@@ -56,6 +56,7 @@ jobs:
   build:
     name: Build for ${{ matrix.variant.os }} ${{ matrix.variant.arch }}
     runs-on: ${{ matrix.variant.runner }}
+    needs: [generate-shared-artifacts]
     env:
       REALM_DISABLE_ANALYTICS: 1
     strategy:
@@ -240,8 +241,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
 
-      # - name: Restore Wireit cache
-      #   uses: takameyer/wireit@wireit-caching-gha
+      - name: Restore Wireit cache
+        uses: takameyer/wireit@wireit-caching-gha
 
       # - name: Restore React Native cache
       #   if: ${{ matrix.variant.os == 'ios' }}
