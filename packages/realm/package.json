@@ -54,6 +54,7 @@
     "index.react-native.js",
     "types.d.cts",
     "react-native/android",
+    "!react-native/android/.cxx",
     "react-native/ios/RealmReact",
     "react-native/ios/output-files.xcfilelist",
     "react-native/shared",

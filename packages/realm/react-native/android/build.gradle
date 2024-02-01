@@ -1,4 +1,5 @@
 import org.apache.tools.ant.taskdefs.condition.Os
+import java.nio.file.Paths
 
 buildscript {
     repositories {
@@ -12,15 +13,19 @@ buildscript {
 }
 apply plugin: 'com.android.library'
 
-def getReactNativeDirectory() {
-    def reactNativeDirectory = file("${rootProject.projectDir}/../../../../node_modules/react-native")
-    if (reactNativeDirectory.exists()) {
-        return reactNativeDirectory
+static def findReactNative(startDir) {
+  def curPath = startDir.toPath().normalize()
+  while (curPath) {
+    def nodeModules = Paths.get(curPath.toString(), "node_modules")
+    def reactNative = Paths.get(nodeModules.toString(), "react-native")
+    if (nodeModules.toFile().exists() && reactNative.toFile().exists()) {
+      return reactNative.toFile()
     }
-    throw new GradleException(
-        "Unable to find the React Native directory"
-    )
+    curPath = curPath.getParent()
+  }
+  throw new GradleException("Unable to find the React Native directory")
 }
+
 
 def sanitizeFilePath(String filePath) {
     if (Os.isFamily(Os.FAMILY_WINDOWS)) {
@@ -29,7 +34,7 @@ def sanitizeFilePath(String filePath) {
     return filePath
 }
 
-def REACT_NATIVE_ROOT_DIR = sanitizeFilePath(getReactNativeDirectory().path);
+def REACT_NATIVE_ROOT_DIR = sanitizeFilePath(findReactNative(rootProject.projectDir).path);
 
 def reactNativeArchitectures() {
     def value = project.getProperties().get("reactNativeArchitectures")

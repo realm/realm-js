@@ -119,7 +119,7 @@ endif()
 
 target_include_directories(realm-js PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
-set(SDK_DIR ${PACKAGE_ROOT_DIR}/packages/realm)
+set(SDK_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../)
 set(BINDING_DIR ${SDK_DIR}/binding)
 
 target_include_directories(realm-js PRIVATE "${BINDING_DIR}")

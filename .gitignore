@@ -51,7 +51,6 @@ yarn.lock
 /android
 /packages/realm/react-native/android/src/main/jni/core
 /packages/realm/react-native/android/.cxx/
-/packages/realm/build-android/
 .idea
 .gradle
 local.properties
@@ -117,7 +116,6 @@ coverage/
 /packages/realm/react-native/android/src/main/jniLibs/
 /packages/realm/react-native/ios/lib/
 /packages/realm/react-native/ios/input-files.xcfilelist
-/packages/realm/react-native/shared/
 
 # Wireit repo caches
 .wireit
