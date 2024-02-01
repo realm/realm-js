@@ -244,6 +244,7 @@ classes:
       - get_results_description
       - feed_buffer
       - make_ssl_verify_callback
+      - get_mixed_type
 
   LogCategoryRef:
     methods:
@@ -279,6 +280,7 @@ classes:
       - get_key
       - get_any
       - set_any
+      - set_collection
       - get_linked_object
       - get_backlink_count
       - get_backlink_view

@@ -192,7 +192,8 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
 
   /** @internal */
   protected declare classHelpers: ClassHelpers | null;
-  private declare mixedToBinding: (value: unknown) => binding.MixedArg;
+  /** @internal */
+  private declare mixedToBinding: (value: unknown, options: { isQueryArg: boolean }) => binding.MixedArg;
 
   /**
    * Get an element of the ordered collection by index.
@@ -777,12 +778,17 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
   filtered(queryString: string, ...args: unknown[]): Results<T> {
     const { results: parent, realm, helpers } = this;
     const kpMapping = binding.Helpers.getKeypathMapping(realm.internal);
-    const bindingArgs = args.map((arg) =>
-      Array.isArray(arg) ? arg.map((sub) => this.mixedToBinding(sub)) : this.mixedToBinding(arg),
-    );
+    const bindingArgs = args.map((arg) => this.queryArgToBinding(arg));
     const newQuery = parent.query.table.query(queryString, bindingArgs, kpMapping);
     const results = binding.Helpers.resultsAppendQuery(parent, newQuery);
     return new Results(realm, results, helpers);
+  }
+
+  /** @internal */
+  private queryArgToBinding(arg: unknown): binding.MixedArg | binding.MixedArg[] {
+    return Array.isArray(arg)
+      ? arg.map((innerArg) => this.mixedToBinding(innerArg, { isQueryArg: true }))
+      : this.mixedToBinding(arg, { isQueryArg: true });
   }
 
   /**
