@@ -20,15 +20,18 @@ import {
   BSON,
   ClassHelpers,
   Collection,
+  Dictionary,
   GeoBox,
   GeoCircle,
   GeoPolygon,
   INTERNAL,
   List,
   ObjCreator,
+  OrderedCollectionHelpers,
   REALM,
   Realm,
   RealmObject,
+  RealmSet,
   TypeAssertionError,
   UpdateMode,
   assert,
@@ -72,7 +75,10 @@ export function toArrayBuffer(value: unknown, stringToBase64 = true) {
 
 /** @internal */
 export type TypeHelpers<T = unknown> = {
-  toBinding(value: T, options?: { createObj?: ObjCreator; updateMode?: UpdateMode }): binding.MixedArg;
+  toBinding(
+    value: T,
+    options?: { createObj?: ObjCreator; updateMode?: UpdateMode; isQueryArg?: boolean },
+  ): binding.MixedArg;
   fromBinding(value: unknown): T;
 };
 
@@ -89,8 +95,21 @@ export type TypeOptions = {
 // TODO: Consider testing for expected object instance types and throw something similar to the legacy SDK:
 // "Only Realm instances are supported." (which should probably have been "RealmObject")
 // instead of relying on the binding to throw.
-/** @internal */
-export function mixedToBinding(realm: binding.Realm, value: unknown): binding.MixedArg {
+/**
+ * Convert an SDK value to a Binding value representation.
+ * @param realm The Realm used.
+ * @param value The value to convert.
+ * @param options Options needed.
+ * @param options.isQueryArg Whether the value to convert is a query argument used
+ *  for `OrderedCollection.filtered()`. If so, this will be validated differently.
+ * @returns The `MixedArg` binding representation.
+ * @internal
+ */
+export function mixedToBinding(
+  realm: binding.Realm,
+  value: unknown,
+  { isQueryArg } = { isQueryArg: false },
+): binding.MixedArg {
   if (typeof value === "string" || typeof value === "number" || typeof value === "boolean" || value === null) {
     // Fast track pass through for the most commonly used types
     return value;
@@ -99,21 +118,29 @@ export function mixedToBinding(realm: binding.Realm, value: unknown): binding.Mi
   } else if (value instanceof Date) {
     return binding.Timestamp.fromDate(value);
   } else if (value instanceof RealmObject) {
+    if (value.objectSchema().embedded) {
+      throw new Error(`Using an embedded object (${value.constructor.name}) as a Mixed value is not supported.`);
+    }
     const otherRealm = value[REALM].internal;
     assert.isSameRealm(realm, otherRealm, "Realm object is from another Realm");
     return value[INTERNAL];
-  } else if (value instanceof Collection) {
-    throw new Error(`Using a ${value.constructor.name} as Mixed value, is not yet supported`);
-  } else if (Array.isArray(value)) {
-    throw new TypeError("A mixed property cannot contain an array of values.");
+  } else if (value instanceof RealmSet || value instanceof Set) {
+    throw new Error(`Using a ${value.constructor.name} as a Mixed value is not supported.`);
   } else {
-    if (typeof value === "object" && value !== null) {
-      if (isGeoCircle(value)) {
-        return circleToBindingGeospatial(value);
-      } else if (isGeoBox(value)) {
-        return boxToBindingGeospatial(value);
-      } else if (isGeoPolygon(value)) {
-        return polygonToBindingGeospatial(value);
+    if (isQueryArg) {
+      if (value instanceof Collection || Array.isArray(value)) {
+        throw new Error(`Using a ${value.constructor.name} as a query argument is not supported.`);
+      }
+      // Geospatial types can currently only be used when querying and
+      // are not yet supported as standalone data types in the schema.
+      if (typeof value === "object") {
+        if (isGeoCircle(value)) {
+          return circleToBindingGeospatial(value);
+        } else if (isGeoBox(value)) {
+          return boxToBindingGeospatial(value);
+        } else if (isGeoPolygon(value)) {
+          return polygonToBindingGeospatial(value);
+        }
       }
     }
     // Convert typed arrays to an `ArrayBuffer`
@@ -126,6 +153,40 @@ export function mixedToBinding(realm: binding.Realm, value: unknown): binding.Mi
     return value as binding.MixedArg;
   }
 }
+
+function mixedFromBinding(options: TypeOptions, value: binding.MixedArg): unknown {
+  const { realm, getClassHelpers } = options;
+  if (binding.Int64.isInt(value)) {
+    return binding.Int64.intToNum(value);
+  } else if (value instanceof binding.Timestamp) {
+    return value.toDate();
+  } else if (value instanceof binding.Float) {
+    return value.value;
+  } else if (value instanceof binding.ObjLink) {
+    const table = binding.Helpers.getTable(realm.internal, value.tableKey);
+    const linkedObj = table.getObject(value.objKey);
+    const { wrapObject } = getClassHelpers(value.tableKey);
+    return wrapObject(linkedObj);
+  } else if (value instanceof binding.List) {
+    const collectionHelpers: OrderedCollectionHelpers = {
+      toBinding: mixedToBinding.bind(null, realm.internal),
+      fromBinding: mixedFromBinding.bind(null, options),
+      get(_: binding.Results, index: number) {
+        return value.getAny(index);
+      },
+    };
+    return new List(realm, value, collectionHelpers);
+  } else if (value instanceof binding.Dictionary) {
+    const typeHelpers: TypeHelpers<Realm.Mixed> = {
+      toBinding: mixedToBinding.bind(null, realm.internal),
+      fromBinding: mixedFromBinding.bind(null, options),
+    };
+    return new Dictionary(realm, value, typeHelpers);
+  } else {
+    return value;
+  }
+}
+
 function isGeoCircle(value: object): value is GeoCircle {
   return "distance" in value && "center" in value && typeof value["distance"] === "number";
 }
@@ -294,25 +355,11 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => Type
       },
     };
   },
-  [binding.PropertyType.Mixed]({ realm, getClassHelpers }) {
+  [binding.PropertyType.Mixed](options) {
+    const { realm } = options;
     return {
       toBinding: mixedToBinding.bind(null, realm.internal),
-      fromBinding(value) {
-        if (binding.Int64.isInt(value)) {
-          return binding.Int64.intToNum(value);
-        } else if (value instanceof binding.Timestamp) {
-          return value.toDate();
-        } else if (value instanceof binding.Float) {
-          return value.value;
-        } else if (value instanceof binding.ObjLink) {
-          const table = binding.Helpers.getTable(realm.internal, value.tableKey);
-          const linkedObj = table.getObject(value.objKey);
-          const { wrapObject } = getClassHelpers(value.tableKey);
-          return wrapObject(linkedObj);
-        } else {
-          return value;
-        }
-      },
+      fromBinding: mixedFromBinding.bind(null, options),
     };
   },
   [binding.PropertyType.ObjectId]({ optional }) {

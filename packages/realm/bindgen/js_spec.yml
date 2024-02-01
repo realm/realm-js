@@ -25,4 +25,3 @@ classes:
       raw_dereference:
         sig: '() const -> Nullable<SharedSyncSession>'
         cppName: lock
-
