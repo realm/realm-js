@@ -29,51 +29,18 @@
     "test": {
       "command": "npm run test:android && npm run test:ios"
     },
-    "pod-install:simulator": {
+    "pod-install": {
       "command": "pod-install || (cd ios && bundle install && bundle exec pod install)",
-      "clean": "if-file-deleted",
       "files": [
-        "ios/Podfile"
+        "ios/Podfile",
+        "../../../packages/realm/RealmJS.podspec",
+        "../../../packages/realm/scripts/*"
       ],
       "output": [
         "ios/Pods",
-        "ios/Podfile.lock"
-      ],
-      "env": {
-        "USE_HERMES": {
-          "external": true
-        },
-        "RCT_NEW_ARCH_ENABLED": {
-          "external": true
-        }
-      }
-    },
-    "pod-install:catalyst": {
-      "command": "pod-install || (cd ios && bundle install && bundle exec pod install)",
-      "files": [
-        "ios/Podfile"
-      ],
-      "output": [
-        "ios/Pods",
-        "ios/Podfile.lock"
-      ],
-      "env": {
-        "USE_HERMES": {
-          "external": true
-        },
-        "RCT_NEW_ARCH_ENABLED": {
-          "external": true
-        }
-      }
-    },
-    "pod-install:ci": {
-      "command": "pod-install || (cd ios && bundle install && bundle exec pod install)",
-      "files": [
-        "ios/Podfile"
-      ],
-      "output": [
-        "ios/Pods",
-        "ios/Podfile.lock"
+        "ios/Podfile.lock",
+        "../../../packages/realm/react-native/ios/input-files.xcfilelist",
+        "../../../packages/realm/react-native/ios/lib/*.a"
       ],
       "env": {
         "USE_HERMES": {
@@ -109,7 +76,7 @@
       "command": "npm run common",
       "dependencies": [
         "../../../packages/realm:bindgen:generate:jsi",
-        "pod-install:simulator",
+        "pod-install",
         "../../../packages/realm:bundle",
         "../../../packages/mocha-reporter:bundle",
         "../../../packages/realm-network-transport:bundle"
@@ -123,7 +90,7 @@
       "command": "npm run common",
       "dependencies": [
         "../../../packages/realm:bindgen:generate:jsi",
-        "pod-install:catalyst",
+        "pod-install",
         "../../../packages/realm:bundle",
         "../../../packages/mocha-reporter:bundle",
         "../../../packages/realm-network-transport:bundle"
@@ -142,7 +109,7 @@
     "test:ci:ios": {
       "command": "npm run common:ci",
       "dependencies": [
-        "pod-install:ci"
+        "pod-install"
       ],
       "env": {
         "PLATFORM": "ios"
