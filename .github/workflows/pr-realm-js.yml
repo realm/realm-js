@@ -21,8 +21,37 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  generate-shared-artifacts:
-    name: Generate Shared Artifacts
+  generate-jsi:
+    name: Generate JSI
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: "recursive"
+      - name: Setup node version
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Install dependencies
+        # Ignoring scripts to prevent a prebuilt from getting fetched / built
+        run: npm ci --ignore-scripts
+      - name: Generate JSI
+        run: |
+          npm run bindgen:generate:jsi --workspace realm
+      # Due to a limitation in upload-artifact a redundant file is needed to force
+      # preserving paths (https://github.com/actions/upload-artifact/issues/174)
+      - name: Upload dist artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: realm-js-jsi
+          path: |
+            README.md
+            packages/realm/binding/jsi/jsi_init.cpp
+
+  generate-ts:
+    name: Generate TS Bundle
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -39,24 +68,20 @@ jobs:
         run: npm ci --ignore-scripts
       - name: Bundle all packages
         run: npm run bundle
-      - name: Generate JSI
-        run: |
-          npm run bindgen:generate:jsi --workspace realm
       # Due to a limitation in upload-artifact a redundant file is needed to force
       # preserving paths (https://github.com/actions/upload-artifact/issues/174)
       - name: Upload dist artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: realm-js-shared
+          name: realm-js-ts
           path: |
             README.md
             packages/*/dist
-            packages/realm/binding/jsi/jsi_init.cpp
 
   build:
     name: Build for ${{ matrix.variant.os }} ${{ matrix.variant.arch }}
     runs-on: ${{ matrix.variant.runner }}
-    needs: [generate-shared-artifacts]
+    needs: [generate-ts]
     env:
       REALM_DISABLE_ANALYTICS: 1
     strategy:
@@ -96,8 +121,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
 
-      # - name: Setup Wireit cache
-      #   uses: takameyer/wireit@wireit-caching-gha
+      - name: Download TS Bundle
+        uses: actions/download-artifact@v4
+        with:
+          name: realm-js-ts
+
+      - name: Setup Wireit cache
+        uses: takameyer/wireit@wireit-caching-gha
 
       - name: MSVC Setup
         if: ${{ runner.os == 'Windows' }}
@@ -182,7 +212,7 @@ jobs:
 
   integration-tests:
     name: Test ${{ matrix.variant.environment }} on ${{ matrix.variant.os }} (${{matrix.variant.target}})
-    needs: [generate-shared-artifacts, build]
+    needs: [generate-jsi, generate-ts, build]
     if: ${{ success() || failure() }}
     env:
       REALM_DISABLE_ANALYTICS: 1
@@ -241,15 +271,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
 
-      # - name: Restore Wireit cache
-      #   uses: takameyer/wireit@wireit-caching-gha
-
-      # - name: Restore React Native cache
-      #   if: ${{ matrix.variant.os == 'ios' }}
-      #   uses: actions/cache@v3
-      #   with:
-      #     path: '**/Pods'
-      #     key: ${{ runner.os }}-${{matrix.variant.environment}}-${{ hashFiles('**/Podfile.lock', './packages/realm/binding/src/**', './packages/realm/bindgen/vendor/**', './packages/realm/RealmJS.podspec', './packages/realm/scripts/*') }}
+      - name: Restore Wireit cache
+        uses: takameyer/wireit@wireit-caching-gha
 
       - name: Setup Java
         if: ${{ matrix.variant.os == 'android' }}
@@ -294,10 +317,16 @@ jobs:
           sudo apt-get install xvfb
           echo "wrapper=xvfb-run" >> $GITHUB_ENV
 
-      - name: Download shared artifacts
+      - name: Download JSI
+        uses: actions/download-artifact@v4
+        if: ${{ matrix.variant.environment == 'react-native' }}
+        with:
+          name: realm-js-jsi
+
+      - name: Download TS Bundle
         uses: actions/download-artifact@v4
         with:
-          name: realm-js-shared
+          name: realm-js-ts
 
       - name: Download prebuilds
         uses: actions/download-artifact@v3
