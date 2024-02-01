@@ -50,39 +50,77 @@ export enum NumericLogLevel {
 }
 
 /**
- * When debugging, you might not need log messages from everything. To help focusing, Realm groups log events
- * in categories.
- *
- * Realm         Top level category.
- * Storage       Everything about mutating and querying the database.
- * Query         Query operations.
- * Object        Mutations of the database.
- * Notification  Reporting changes to the database.
- * Sync          Everything about Atlas Device Sync.
- * Client        Catch-all category for Device Sync client operations.
- * Session       Connection level activity.
- * Changeset     Reception, upload and integration of changesets.
- * Network       Low level network activity.
- * Reset         Client reset operations.
- * Server        All server activity (only relevant for test runs).
- * App           Activity at the app level.
- * SDK           Tracing of SDK activity.
+ * The category to receive log messages for. The {@link LogLevel} will
+ * always be set for a specific category.
+ * @note
+ * When debugging, you might not need log messages from everything. To narrow
+ * this scope, log events can be grouped by category.
  */
 export enum LogCategory {
+  /**
+   * Include logs from all categories.
+   */
   Realm = "Realm",
+  /**
+   * Log database mutations and query operations.
+   * This includes {@link LogCategory.Transaction}, {@link LogCategory.Object},
+   * {@link LogCategory.Query}, and {@link LogCategory.Notification}.
+   */
   Storage = "Storage",
+  /**
+   * Log when creating, advancing, and committing transactions.
+   */
   Transaction = "Transaction",
+  /**
+   * Log query operations.
+   */
   Query = "Query",
+  /**
+   * Log database mutations.
+   */
   Object = "Object",
+  /**
+   * Log notifications of changes to the database.
+   */
   Notification = "Notification",
+  /**
+   * Log activity related to Atlas Device Sync.
+   * This includes {@link LogCategory.Client} and {@link LogCategory.Server}.
+   */
   Sync = "Sync",
+  /**
+   * Log activity related to Atlas Device Sync client operations.
+   * This includes {@link LogCategory.Session}, {@link LogCategory.Changeset},
+   * {@link LogCategory.Network}, and {@link LogCategory.Reset}.
+   */
   Client = "Client",
+  /**
+   * Log connection level activity.
+   */
   Session = "Session",
+  /**
+   * Log when receiving, uploading, and integrating changesets.
+   */
   Changeset = "Changeset",
+  /**
+   * Log low level network activity.
+   */
   Network = "Network",
+  /**
+   * Log client reset operations.
+   */
   Reset = "Reset",
+  /**
+   * Log activity related to Atlas Device Sync server operations.
+   */
   Server = "Server",
+  /**
+   * Log activity at the Atlas App level.
+   */
   App = "App",
+  /**
+   * Log activity at the SDK level.
+   */
   SDK = "SDK",
 }
 
