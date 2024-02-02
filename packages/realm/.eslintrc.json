@@ -6,6 +6,7 @@
   ],
   "rules": {
     "@typescript-eslint/explicit-function-return-type": "off",
+    "@typescript-eslint/no-duplicate-enum-values": "off",
     "no-console": "error",
     "sort-imports": ["warn", { "ignoreDeclarationSort": true }],
     "jsdoc/check-tag-names": "off",
