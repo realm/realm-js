@@ -354,43 +354,8 @@ describe("Mixed", () => {
       expect(value).instanceOf(Realm.Dictionary);
     }
 
-    function expectMatchingFlatList(list: unknown) {
-      expectRealmList(list);
-      expect(list.length).to.be.greaterThanOrEqual(flatListAllTypes.length);
-
-      let index = 0;
-      for (const item of list) {
-        if (item instanceof Realm.Object) {
-          // @ts-expect-error Expecting `value` to exist.
-          expect(item.value).equals(unmanagedRealmObject.value);
-        } else if (item instanceof ArrayBuffer) {
-          expectMatchingUint8Buffer(item);
-        } else {
-          expect(String(item)).equals(String(flatListAllTypes[index]));
-        }
-        index++;
-      }
-    }
-
-    function expectMatchingFlatDictionary(dictionary: unknown) {
-      expectRealmDictionary(dictionary);
-      expect(Object.keys(dictionary).length).to.be.greaterThanOrEqual(Object.keys(flatDictionaryAllTypes).length);
-
-      for (const key in dictionary) {
-        const value = dictionary[key];
-        if (key === "realmObject") {
-          expect(value).instanceOf(Realm.Object);
-          expect(value.value).equals(unmanagedRealmObject.value);
-        } else if (key === "uint8Buffer") {
-          expectMatchingUint8Buffer(value);
-        } else {
-          expect(String(value)).equals(String(flatDictionaryAllTypes[key]));
-        }
-      }
-    }
-
     /**
-     * Expects the provided value to be a Realm List containing:
+     * Expects the provided value to be a {@link Realm.List} containing:
      * - All values in {@link flatListAllTypes}.
      * - The managed object of {@link unmanagedRealmObject}.
      * - If the provided value is not a leaf list, additionally:
@@ -420,7 +385,7 @@ describe("Mixed", () => {
     }
 
     /**
-     * Expects the provided value to be a Realm Dictionary containing:
+     * Expects the provided value to be a {@link Realm.Dictionary} containing:
      * - All entries in {@link flatDictionaryAllTypes}.
      * - Key `realmObject`: The managed object of {@link unmanagedRealmObject}.
      * - If the provided value is not a leaf dictionary, additionally:
@@ -499,7 +464,7 @@ describe("Mixed", () => {
             });
 
             expect(this.realm.objects(MixedSchema.name).length).equals(2);
-            expectMatchingFlatList(list);
+            expectMatchingListAllTypes(list);
           });
 
           it("a list with different types (input: Realm List)", function (this: RealmContext) {
@@ -515,7 +480,7 @@ describe("Mixed", () => {
             });
 
             expect(this.realm.objects(MixedSchema.name).length).equals(2);
-            expectMatchingFlatList(list);
+            expectMatchingListAllTypes(list);
           });
 
           it("a list with different types (input: Default value)", function (this: RealmContext) {
@@ -525,7 +490,7 @@ describe("Mixed", () => {
             });
 
             expect(this.realm.objects(MixedWithDefaultCollectionsSchema.name).length).equals(1);
-            expectMatchingFlatList(mixedWithDefaultList);
+            expectMatchingListAllTypes(mixedWithDefaultList);
           });
 
           it("a dictionary with different types (input: JS Object)", function (this: RealmContext) {
@@ -544,8 +509,8 @@ describe("Mixed", () => {
             });
 
             expect(this.realm.objects(MixedSchema.name).length).equals(3);
-            expectMatchingFlatDictionary(createdWithProto.value);
-            expectMatchingFlatDictionary(createdWithoutProto.value);
+            expectMatchingDictionaryAllTypes(createdWithProto.value);
+            expectMatchingDictionaryAllTypes(createdWithoutProto.value);
           });
 
           it("a dictionary with different types (input: Realm Dictionary)", function (this: RealmContext) {
@@ -561,7 +526,7 @@ describe("Mixed", () => {
             });
 
             expect(this.realm.objects(MixedSchema.name).length).equals(2);
-            expectMatchingFlatDictionary(dictionary);
+            expectMatchingDictionaryAllTypes(dictionary);
           });
 
           it("a dictionary with different types (input: Default value)", function (this: RealmContext) {
@@ -571,7 +536,7 @@ describe("Mixed", () => {
             });
 
             expect(this.realm.objects(MixedWithDefaultCollectionsSchema.name).length).equals(1);
-            expectMatchingFlatDictionary(mixedWithDefaultDictionary);
+            expectMatchingDictionaryAllTypes(mixedWithDefaultDictionary);
           });
 
           it("a dictionary (input: Spread embedded Realm object)", function (this: RealmContext) {
@@ -619,7 +584,7 @@ describe("Mixed", () => {
               list.push(...flatListAllTypes);
               list.push(this.realm.create(MixedSchema.name, unmanagedRealmObject));
             });
-            expectMatchingFlatList(list);
+            expectMatchingListAllTypes(list);
           });
 
           it("inserts dictionary entries", function (this: RealmContext) {
@@ -635,7 +600,7 @@ describe("Mixed", () => {
               }
               dictionary.realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
             });
-            expectMatchingFlatDictionary(dictionary);
+            expectMatchingDictionaryAllTypes(dictionary);
           });
         });
 
