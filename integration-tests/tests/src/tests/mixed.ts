@@ -361,7 +361,7 @@ describe("Mixed", () => {
       let index = 0;
       for (const item of list) {
         if (item instanceof Realm.Object) {
-          // @ts-expect-error Property `value` does exist.
+          // @ts-expect-error Expecting `value` to exist.
           expect(item.value).equals(unmanagedRealmObject.value);
         } else if (item instanceof ArrayBuffer) {
           expectMatchingUint8Buffer(item);
@@ -389,9 +389,102 @@ describe("Mixed", () => {
       }
     }
 
+    /**
+     * Expects the provided value to be a Realm List containing:
+     * - All values in {@link flatListAllTypes}.
+     * - The managed object of {@link unmanagedRealmObject}.
+     * - If the provided value is not a leaf list, additionally:
+     *   - A nested list with the same criteria.
+     *   - A nested dictionary with the same criteria.
+     */
+    function expectMatchingListAllTypes(list: unknown) {
+      expectRealmList(list);
+      expect(list.length).to.be.greaterThanOrEqual(flatListAllTypes.length);
+
+      let index = 0;
+      for (const item of list) {
+        if (item instanceof Realm.Object) {
+          // @ts-expect-error Expecting `value` to exist.
+          expect(item.value).equals(unmanagedRealmObject.value);
+        } else if (item instanceof ArrayBuffer) {
+          expectMatchingUint8Buffer(item);
+        } else if (item instanceof Realm.List) {
+          expectMatchingListAllTypes(item);
+        } else if (item instanceof Realm.Dictionary) {
+          expectMatchingDictionaryAllTypes(item);
+        } else {
+          expect(String(item)).equals(String(flatListAllTypes[index]));
+        }
+        index++;
+      }
+    }
+
+    /**
+     * Expects the provided value to be a Realm Dictionary containing:
+     * - All entries in {@link flatDictionaryAllTypes}.
+     * - Key `realmObject`: The managed object of {@link unmanagedRealmObject}.
+     * - If the provided value is not a leaf dictionary, additionally:
+     *   - Key `list`: A nested list with the same criteria.
+     *   - Key `dictionary`: A nested dictionary with the same criteria.
+     */
+    function expectMatchingDictionaryAllTypes(dictionary: unknown) {
+      expectRealmDictionary(dictionary);
+      expect(Object.keys(dictionary).length).to.be.greaterThanOrEqual(Object.keys(flatDictionaryAllTypes).length);
+
+      for (const key in dictionary) {
+        const value = dictionary[key];
+        if (key === "realmObject") {
+          expect(value).instanceOf(Realm.Object);
+          expect(value.value).equals(unmanagedRealmObject.value);
+        } else if (key === "uint8Buffer") {
+          expectMatchingUint8Buffer(value);
+        } else if (key === "list") {
+          expectMatchingListAllTypes(value);
+        } else if (key === "dictionary") {
+          expectMatchingDictionaryAllTypes(value);
+        } else {
+          expect(String(value)).equals(String(flatDictionaryAllTypes[key]));
+        }
+      }
+    }
+
     function expectMatchingUint8Buffer(value: unknown) {
       expect(value).instanceOf(ArrayBuffer);
       expect([...new Uint8Array(value as ArrayBuffer)]).eql(uint8Values);
+    }
+
+    /**
+     * @param realmObject A managed Realm object to include in each list and dictionary.
+     */
+    function generateListWithNestedCollections(realmObject: Realm.Object<any>) {
+      const flatList = [...flatListAllTypes, realmObject];
+      const flatDictionary = { ...flatDictionaryAllTypes, realmObject };
+      return [
+        ...flatList,
+        [...flatList, flatList, flatDictionary],
+        {
+          ...flatDictionary,
+          list: flatList,
+          dictionary: flatDictionary,
+        },
+      ];
+    }
+
+    /**
+     * @param realmObject A managed Realm object to include in each list and dictionary.
+     */
+    function generateDictionaryWithNestedCollections(realmObject: Realm.Object<any>) {
+      const flatList = [...flatListAllTypes, realmObject];
+      const flatDictionary = { ...flatDictionaryAllTypes, realmObject };
+      return {
+        ...flatDictionary,
+        list: [...flatList, flatList, flatDictionary],
+        dictionary: {
+          ...flatDictionary,
+          list: flatList,
+          dictionary: flatDictionary,
+        },
+      };
     }
 
     describe("Flat collections", () => {
@@ -745,6 +838,78 @@ describe("Mixed", () => {
             filtered = objects.filtered(`value.${key} IN $0`, [nonExistentValue]);
             expect(filtered.length).equals(0);
           }
+        });
+      });
+    });
+
+    describe("Nested collections", () => {
+      describe("CRUD operations", () => {
+        describe("Create and access", () => {
+          it("a list with nested lists with different leaf types", function (this: RealmContext) {
+            const { value: list } = this.realm.write(() => {
+              const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
+              return this.realm.create<IMixedSchema>(MixedSchema.name, {
+                value: [[[[...flatListAllTypes, realmObject]]]],
+              });
+            });
+
+            expect(this.realm.objects(MixedSchema.name).length).equals(2);
+            expectRealmList(list);
+            const [depth1] = list;
+            expectRealmList(depth1);
+            const [depth2] = depth1;
+            expectRealmList(depth2);
+            const [depth3] = depth2;
+            expectMatchingListAllTypes(depth3);
+          });
+
+          it("a dictionary with nested dictionaries with different leaf types", function (this: RealmContext) {
+            const { value: dictionary } = this.realm.write(() => {
+              const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
+              return this.realm.create<IMixedSchema>(MixedSchema.name, {
+                value: {
+                  depth1: {
+                    depth2: {
+                      depth3: { ...flatDictionaryAllTypes, realmObject },
+                    },
+                  },
+                },
+              });
+            });
+
+            expect(this.realm.objects(MixedSchema.name).length).equals(2);
+            expectRealmDictionary(dictionary);
+            const { depth1 } = dictionary;
+            expectRealmDictionary(depth1);
+            const { depth2 } = depth1;
+            expectRealmDictionary(depth2);
+            const { depth3 } = depth2;
+            expectMatchingDictionaryAllTypes(depth3);
+          });
+
+          it("a list with nested collections and different types", function (this: RealmContext) {
+            const { value: list } = this.realm.write(() => {
+              const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
+              return this.realm.create<IMixedSchema>(MixedSchema.name, {
+                value: generateListWithNestedCollections(realmObject),
+              });
+            });
+
+            expect(this.realm.objects(MixedSchema.name).length).equals(2);
+            expectMatchingListAllTypes(list);
+          });
+
+          it("a dictionary with nested collections and different types", function (this: RealmContext) {
+            const { value: dictionary } = this.realm.write(() => {
+              const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
+              return this.realm.create<IMixedSchema>(MixedSchema.name, {
+                value: generateDictionaryWithNestedCollections(realmObject),
+              });
+            });
+
+            expect(this.realm.objects(MixedSchema.name).length).equals(2);
+            expectMatchingDictionaryAllTypes(dictionary);
+          });
         });
       });
     });
