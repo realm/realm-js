@@ -1,8 +1,0 @@
-react-native/android/src/main/jni/core
-react-native/android/.cxx/
-build-android/
-react-native/android/src/main/java/io/realm/react/Version.java
-react-native/android/src/main/jniLibs/
-react-native/ios/lib/
-react-native/ios/input-files.xcfilelist
-react-native/shared/
