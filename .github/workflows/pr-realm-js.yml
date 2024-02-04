@@ -127,7 +127,7 @@ jobs:
           name: realm-js-ts
 
       - name: Setup Wireit cache
-        uses: takameyer/wireit@wireit-caching-gha
+        uses: google/wireit@setup-github-actions-caching/v1
 
       - name: MSVC Setup
         if: ${{ runner.os == 'Windows' }}
@@ -272,7 +272,7 @@ jobs:
             ${{ runner.os }}-node-
 
       - name: Restore Wireit cache
-        uses: takameyer/wireit@wireit-caching-gha
+        uses: google/wireit@setup-github-actions-caching/v1
 
       - name: Setup Java
         if: ${{ matrix.variant.os == 'android' }}
