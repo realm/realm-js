@@ -85,7 +85,7 @@
     "build:node:prebuild:arm64": "wireit",
     "build:node:prebuild:x64": "wireit",
     "build:node:prebuild:ia32": "wireit",
-    "build:android": "wireit",
+    "prepare:ios": "wireit",
     "install": "prebuild-install --runtime napi || echo 'Failed to download prebuild for Realm'",
     "docs": "wireit",
     "postinstall": "node ./scripts/submit-analytics.mjs"
@@ -237,14 +237,15 @@
         "PREBUILD_ARCH": "ia32"
       }
     },
-    "build:android": {
-      "command": "tsx ./scripts/build-android.ts",
+    "prepare:ios": {
+      "command": "source ./scripts/generate-dummy-libs.sh && source ./scripts/generate-input-list.sh",
       "files": [
-        "bindgen/android/**",
-        "bindgen/src/**/*.ts",
-        "bindgen/vendor/realm-core/bindgen/src/**/*.ts",
-        "bindgen/vendor/realm-core/bindgen/src/**/*.h",
-        "bindgen/src/**/*.h"
+        "scripts/generate-dummy-libs.sh",
+        "scripts/generate-input-list.sh"
+      ],
+      "output": [
+        "react-native/ios/input-files.xcfilelist",
+        "react-native/ios/lib"
       ]
     },
     "docs": {
