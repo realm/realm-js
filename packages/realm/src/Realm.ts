@@ -124,7 +124,8 @@ export class Realm {
    * @example
    * Realm.setLogLevel({ category: LogCategory.Realm, level: "all" });
    */
-  static setLogLevel(_arg: LogLevel | LogArgs) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  static setLogLevel(_: LogLevel | LogArgs) {
     // It is not possible to overload a static function: https://github.com/microsoft/TypeScript/issues/18945
     // FIXME: don't use `arguments` but find a proper type
     if (arguments.length === 1) {
