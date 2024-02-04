@@ -32,7 +32,8 @@
     "pod-install": {
       "command": "pod-install || (cd ios && bundle install && bundle exec pod install)",
       "dependencies": [
-        "../../../packages/realm:prepare:ios"
+        "../../../packages/realm:prepare:ios",
+        "../../../packages/realm:bindgen:generate:jsi"
       ],
       "files": [
         "ios/Podfile",
@@ -58,6 +59,7 @@
     "test:android": {
       "command": "npm run common",
       "dependencies": [
+        "../../../packages/realm:bindgen:generate:jsi",
         "../../../packages/realm:bundle",
         "../../../packages/mocha-reporter:bundle",
         "../../../packages/realm-network-transport:bundle"
@@ -76,7 +78,6 @@
     "test:ios": {
       "command": "npm run common",
       "dependencies": [
-        "../../../packages/realm:bindgen:generate:jsi",
         "pod-install",
         "../../../packages/realm:bundle",
         "../../../packages/mocha-reporter:bundle",
@@ -90,7 +91,6 @@
     "test:catalyst": {
       "command": "npm run common",
       "dependencies": [
-        "../../../packages/realm:bindgen:generate:jsi",
         "pod-install",
         "../../../packages/realm:bundle",
         "../../../packages/mocha-reporter:bundle",
@@ -132,7 +132,6 @@
     "watch:ios": {
       "command": "npm run common",
       "dependencies": [
-        "../../../packages/realm:bindgen:generate:jsi",
         "pod-install:simulator",
         "../../../packages/realm:bundle",
         "../../../packages/mocha-reporter:bundle",
@@ -146,7 +145,6 @@
     "watch:catalyst": {
       "command": "npm run common",
       "dependencies": [
-        "../../../packages/realm:bindgen:generate:jsi",
         "pod-install:catalyst",
         "../../../packages/realm:bundle",
         "../../../packages/mocha-reporter:bundle",
