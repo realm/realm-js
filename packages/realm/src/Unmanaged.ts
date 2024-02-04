@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Collection, Dictionary, List, RealmObject } from "./internal";
 import { AnyRealmObject } from "./Object";
 
