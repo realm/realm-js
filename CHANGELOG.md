@@ -4,7 +4,10 @@
 * None
 
 ### Enhancements
-* None
+* Building for iOS and Android has been optimized for compatibility with future React Native versions.
+  * Android builds now compile on the consumers machine rather than through prebuilds.
+  * iOS builds also compile on the consumers machine and can opt-in to compile Realm Core from source with the `REALM_BUILD_CORE` flag when running `pod install`.
+  * Package size has decreased since prebuilds have been removed.
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
