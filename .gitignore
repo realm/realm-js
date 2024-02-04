@@ -95,7 +95,6 @@ coverage/
 **/imported-apps/
 **/realm-config
 
-#Ignore symlinked directories (otherwise on Windows they are shown as untracked files)
 /build-tmp*/
 /cmakebuild/
 /realm*.tgz

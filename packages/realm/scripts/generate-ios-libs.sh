@@ -6,7 +6,7 @@ set -o pipefail
 # Start in the root directory of the project.
 cd "$(dirname "$0")/.."
 
-
+REALM_BUILD_CORE="false"
 PROJECT_ROOT=$PODS_TARGET_SRCROOT
 BINDGEN_PATH=$PROJECT_ROOT/bindgen
 BINDING_PATH=$PROJECT_ROOT/binding
@@ -36,7 +36,7 @@ if [ "$REALM_BUILD_CORE" == "true" ]; then
     export PATH="$CMAKE_DIRECTORY:$PATH"
 
     echo "Building realm-core..."
-    pushd $PROJECT_ROOT/bindgen/vendor/realm-core
+    pushd "$PROJECT_ROOT/bindgen/vendor/realm-core"
 
     # The `env` call here ensures the environment variables are correctly derived.  Without this, the c/c++ compilers will not be found by cmake, when invoked from xcode
     env -i PATH=$PATH DEVELOPER_DIR=$DEVELOPER_DIR ./tools/build-apple-device.sh -p $PLATFORM_NAME -c $CONFIGURATION -v $CORE_VERSION -f -DREALM_BUILD_LIB_ONLY=1
@@ -52,7 +52,7 @@ else
 
         rm "$TAR_FILE_NAME"
     else
-        echo "Failed to find required core libraries."
+        echo "Failed to find required Realm Core libraries."
     fi
 fi
 

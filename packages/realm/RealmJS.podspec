@@ -85,8 +85,7 @@ Pod::Spec.new do |s|
 
   s.dependency 'React'
 
-
-  #Post install script
+  # Post install script
   s.script_phase = {
     :name => 'Retrieve libraries and headers',
     :execution_position => :before_compile,

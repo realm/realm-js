@@ -138,7 +138,7 @@ rm -rf ios/Pods
 rm ios/Podfile.lock
 rm -rf ~/Library/Developer/Xcode/DerivedData
 ```
-Afterwards, reinstall pods and try again.  If this still doesn't work, ensure that `node_modules/realm/react-native/ios/lib` directory exists and contains a libraries (`.a` files).  If this is missing, try reinstalling the `realm` npm package and as well as cocoapods.
+Afterwards, reinstall pods and try again.  If this still doesn't work, ensure that `node_modules/realm/react-native/ios/lib` directory exists and contains libraries (`.a` files).  If this is missing, try reinstalling the `realm` npm package and as well as cocoapods.
 
 #### Android
 This can occur when installing `realm` and not performing a clean build.  The following commands can be used to clear your cache:
