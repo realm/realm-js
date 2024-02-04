@@ -21,8 +21,37 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  generate-shared-artifacts:
-    name: Generate Shared Artifacts
+  generate-jsi:
+    name: Generate JSI
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: "recursive"
+      - name: Setup node version
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Install dependencies
+        # Ignoring scripts to prevent a prebuilt from getting fetched / built
+        run: npm ci --ignore-scripts
+      - name: Generate JSI
+        run: |
+          npm run bindgen:generate:jsi --workspace realm
+      # Due to a limitation in upload-artifact a redundant file is needed to force
+      # preserving paths (https://github.com/actions/upload-artifact/issues/174)
+      - name: Upload dist artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: realm-js-jsi
+          path: |
+            README.md
+            packages/realm/binding/jsi/jsi_init.cpp
+
+  generate-ts:
+    name: Generate TS Bundle
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -39,26 +68,22 @@ jobs:
         run: npm ci --ignore-scripts
       - name: Bundle all packages
         run: npm run bundle
-      - name: Generate JSI
-        run: |
-          npm run bindgen:generate:jsi --workspace realm
       # Due to a limitation in upload-artifact a redundant file is needed to force
       # preserving paths (https://github.com/actions/upload-artifact/issues/174)
       - name: Upload dist artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: realm-js-shared
+          name: realm-js-ts
           path: |
             README.md
             packages/*/dist
-            packages/realm/binding/jsi/jsi_init.cpp
 
   build:
     name: Build for ${{ matrix.variant.os }} ${{ matrix.variant.arch }}
     runs-on: ${{ matrix.variant.runner }}
+    needs: [generate-ts]
     env:
       REALM_DISABLE_ANALYTICS: 1
-      NDK_VERSION: 25.1.8937393
     strategy:
       fail-fast: false
       matrix:
@@ -68,10 +93,6 @@ jobs:
           - { os: linux, runner: ubuntu-latest, arch: arm64, artifact-path: packages/realm/prebuilds }
           - { os: windows, runner: windows-latest, arch: x64, artifact-path: packages/realm/prebuilds, test-node: true, test-electron: true }
           - { os: windows, runner: windows-2019, arch: ia32, artifact-path: packages/realm/prebuilds }
-          - { os: android, runner: ubuntu-latest, arch: x86_64, artifact-path: packages/realm/react-native/android/src/main/jniLibs }
-          - { os: android, runner: ubuntu-latest, arch: armeabi-v7a, artifact-path: packages/realm/react-native/android/src/main/jniLibs }
-          - { os: android, runner: ubuntu-latest, arch: arm64-v8a, artifact-path: packages/realm/react-native/android/src/main/jniLibs }
-          - { os: android, runner: ubuntu-latest, arch: x86, artifact-path: packages/realm/react-native/android/src/main/jniLibs }
           - { os: darwin, runner: macos-latest, arch: x64, artifact-path: packages/realm/prebuilds, test-node: true, test-electron: true }
           - { os: darwin, runner: macos-latest, arch: arm64, artifact-path: packages/realm/prebuilds, test-node: true, test-electron: true }
     steps:
@@ -100,6 +121,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
 
+      - name: Download TS Bundle
+        uses: actions/download-artifact@v4
+        with:
+          name: realm-js-ts
+
       - name: Setup Wireit cache
         uses: takameyer/wireit@wireit-caching-gha
 
@@ -114,20 +140,6 @@ jobs:
         if: ${{ (matrix.variant.runner == 'ubuntu-latest') }}
         run: sudo apt-get install ccache ninja-build
 
-      - name: Setup Java
-        if: ${{ matrix.variant.os == 'android' }}
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'zulu' # See 'Supported distributions' for available options
-          java-version: '11'
-
-      - name: Setup Android SDK
-        if: ${{ matrix.variant.os == 'android' }}
-        uses: android-actions/setup-android@v2
-
-      - name: Install NDK
-        if: ${{ matrix.variant.os == 'android' }}
-        run: sdkmanager --install "ndk;${{ env.NDK_VERSION }}"
 
       # The ccache installed by github doesn't want to be moved around. Let the ccache action download a new one.
       - name: Remove pre-installed ccache
@@ -188,11 +200,6 @@ jobs:
         if: ${{ (matrix.variant.os != 'ios') && (matrix.variant.os != 'android') }}
         run: npm run build:node:prebuild:${{matrix.variant.arch}} --workspace realm
 
-      # build the c++ library for Android
-      - name: Build Android
-        if: ${{ (matrix.variant.os == 'android') }}
-        run: npm run build:android --workspace realm -- --arch=${{matrix.variant.arch}}
-
       # Due to a limitation in upload-artifact a redundant file is needed to force
       # preserving paths (https://github.com/actions/upload-artifact/issues/174)
       - name: Upload prebuild artifact
@@ -205,10 +212,12 @@ jobs:
 
   integration-tests:
     name: Test ${{ matrix.variant.environment }} on ${{ matrix.variant.os }} (${{matrix.variant.target}})
-    needs: [generate-shared-artifacts, build]
+    needs: [generate-jsi, generate-ts, build]
     if: ${{ success() || failure() }}
     env:
       REALM_DISABLE_ANALYTICS: 1
+      NDK_VERSION: 25.1.8937393
+      JAVA_VERSION: 17
       MOCHA_REMOTE_TIMEOUT: 60000
       LONG_TIMEOUT: 300000 # 5 minutes
       MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
@@ -265,12 +274,20 @@ jobs:
       - name: Restore Wireit cache
         uses: takameyer/wireit@wireit-caching-gha
 
-      - name: Restore React Native cache
-        if: ${{ matrix.variant.os == 'ios' }}
-        uses: actions/cache@v3
+      - name: Setup Java
+        if: ${{ matrix.variant.os == 'android' }}
+        uses: actions/setup-java@v3
         with:
-          path: '**/Pods'
-          key: ${{ runner.os }}-${{matrix.variant.environment}}-${{ hashFiles('**/Podfile.lock', './packages/realm/binding/src/**', './packages/realm/bindgen/vendor/**', './packages/realm/RealmJS.podspec', './packages/realm/scripts/*') }}
+          distribution: 'zulu' # See 'Supported distributions' for available options
+          java-version: '${{env.JAVA_VERSION }}'
+
+      - name: Setup Android SDK
+        if: ${{ matrix.variant.os == 'android' }}
+        uses: android-actions/setup-android@v2
+
+      - name: Install NDK
+        if: ${{ matrix.variant.os == 'android' }}
+        run: sdkmanager --install "ndk;${{ env.NDK_VERSION }}"
 
       - name: MSVC Setup
         if: ${{ runner.os == 'Windows' }}
@@ -300,10 +317,16 @@ jobs:
           sudo apt-get install xvfb
           echo "wrapper=xvfb-run" >> $GITHUB_ENV
 
-      - name: Download shared artifacts
+      - name: Download JSI
+        uses: actions/download-artifact@v4
+        if: ${{ matrix.variant.environment == 'react-native' }}
+        with:
+          name: realm-js-jsi
+
+      - name: Download TS Bundle
         uses: actions/download-artifact@v4
         with:
-          name: realm-js-shared
+          name: realm-js-ts
 
       - name: Download prebuilds
         uses: actions/download-artifact@v3
@@ -372,12 +395,6 @@ jobs:
             ~/.android/avd/*
             ~/.android/adb*
           key: avd-29
-
-      - uses: actions/setup-java@v3
-        if: ${{ (matrix.variant.os == 'android') }}
-        with:
-          distribution: 'zulu' # See 'Supported distributions' for available options
-          java-version: '17'
 
       - name: Run ${{matrix.variant.target}} (${{ matrix.variant.os}} / ${{ matrix.variant.environment }})
         if: ${{ (matrix.variant.os == 'android') }}
