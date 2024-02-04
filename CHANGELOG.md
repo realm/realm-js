@@ -1,7 +1,4 @@
-## vNext (TBD)
-
-### Deprecations
-* None
+## 12.6.0-alpha.0 (2024-02-04)
 
 ### Enhancements
 * Building for iOS and Android has been optimized for compatibility with future React Native versions.
