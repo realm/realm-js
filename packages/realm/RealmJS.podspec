@@ -5,8 +5,6 @@ package = JSON.parse(File.read(File.expand_path('package.json', __dir__)))
 
 app_path = File.expand_path('../..', __dir__)
 
-build_realm_core = ENV["REALM_BUILD_CORE"] == "1"
-
 cmake_path = Pod::Executable::which('cmake')
 
 # There is no API to detect the use of "use_frameworks!" in the Podfile which depends on this Podspec.
@@ -61,7 +59,7 @@ Pod::Spec.new do |s|
                                 'CLANG_CXX_LIBRARY' => 'libc++',
                                 # Setting the current project version and versioning system to get a symbol for analytics
                                 'CURRENT_PROJECT_VERSION' => s.version,
-                                'REALM_BUILD_CORE' => build_realm_core,
+                                'REALM_BUILD_CORE' => ENV["REALM_BUILD_CORE"] == "1",
                                 'CMAKE_PATH' => cmake_path,
                                 'VERSIONING_SYSTEM' => 'apple-generic',
                                 'GCC_PREPROCESSOR_DEFINITIONS' => '$(inherited) REALM_ENABLE_SYNC=1',
@@ -92,7 +90,7 @@ Pod::Spec.new do |s|
     :input_file_lists => ["$(PODS_TARGET_SRCROOT)/react-native/ios/input-files.xcfilelist"],
     :output_file_lists => ["$(PODS_TARGET_SRCROOT)/react-native/ios/output-files.xcfilelist"],
     :script => <<-EOS
-    source "$PODS_TARGET_SRCROOT/scripts/generate-ios-libs.sh"
+    source "$PODS_TARGET_SRCROOT/scripts/download-or-build-ios.sh"
     EOS
   }
 end

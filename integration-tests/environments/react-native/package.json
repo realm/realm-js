@@ -31,6 +31,9 @@
     },
     "pod-install": {
       "command": "pod-install || (cd ios && bundle install && bundle exec pod install)",
+      "dependencies": [
+        "../../../packages/realm:prepare:ios"
+      ],
       "files": [
         "ios/Podfile",
         "../../../packages/realm/RealmJS.podspec",
@@ -38,9 +41,7 @@
       ],
       "output": [
         "ios/Pods",
-        "ios/Podfile.lock",
-        "../../../packages/realm/react-native/ios/input-files.xcfilelist",
-        "../../../packages/realm/react-native/ios/lib/*.a"
+        "ios/Podfile.lock"
       ],
       "env": {
         "USE_HERMES": {

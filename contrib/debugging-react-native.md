@@ -11,14 +11,14 @@ It is assumed the developer has their machine prepared to build realm and react-
 The instructions below also assume that the developer is working on a MacOS system and have Xcode installed.
 
 In your realm-js project, run the following commands to prepare for debug mode:
-```
+```sh
 # install js dependencies, but skip building the node binaries
-$ npm install --ignore-scripts
+npm install --ignore-scripts
 ```
 
 When running `pod install` for iOS, be sure to set the environment variable `REALM_BUILD_CORE=1`.  This will flag core to be built from source with the Debug configuration.
 
-```
+```sh
 REALM_BUILD_CORE=1 npx pod-install
 ```
 
@@ -28,19 +28,19 @@ You are now prepared to either use the [ReactTestApp](#setup-reacttestapp) or [p
 
 There is a test application in `tests/ReactTestApp` which will run all the unit tests living in `tests/js`.  This is a good place to start.  It is already setup to debug the JS code and the C++ source is included by reference in the Xcode project.  However this will require some steps before it is ready to run.
 
-```
+```sh
 # install the js test dependencies
-$ cd tests
-$ npm install
+cd tests
+npm install
 
 # install the test app dependencies and copy realm and realm tests into node_modules using `install-local`
-$ cd ReactTestApp
-$ npm install
-$ npx install-local
-$ npx pod-install
+cd ReactTestApp
+npm install
+npx install-local
+npx pod-install
 
 # open the project in xcode
-$ open ios/ReactTestApp.xcworkspace
+open ios/ReactTestApp.xcworkspace
 ```
 
 You should now be able to move onto
