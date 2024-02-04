@@ -22,6 +22,7 @@ import { TemplateContext } from "@realm/bindgen/context";
 import { doJsPasses } from "../js-passes";
 import { eslint } from "../eslint-formatter";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function generate({ rawSpec, spec: boundSpec, file }: TemplateContext): void {
   const spec = doJsPasses(boundSpec);
   const reactLines = [];

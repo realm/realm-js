@@ -51,7 +51,11 @@ function tryWrap(body: string) {
 }
 
 class CppNodeFunc extends CppFunc {
-  constructor(private addon: NodeAddon, name: string, props?: CppFuncProps) {
+  constructor(
+    private addon: NodeAddon,
+    name: string,
+    props?: CppFuncProps,
+  ) {
     super(name, "Napi::Value", [node_callback_info], props);
   }
 
