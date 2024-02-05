@@ -60,8 +60,7 @@
     "binding",
     "bindgen",
     "!bindgen/vendor/realm-core/build-xcode-platforms",
-    "scripts/submit-analytics.mjs",
-    "scripts/generate-*.sh",
+    "scripts",
     "react-native.config.js",
     "RealmJS.podspec",
     "binding.gyp"
