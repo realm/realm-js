@@ -83,62 +83,62 @@ export enum LogCategory {
    * This includes {@link LogCategory.Transaction}, {@link LogCategory.Object},
    * {@link LogCategory.Query}, and {@link LogCategory.Notification}.
    */
-  Storage = "Storage",
+  Storage = "Realm.Storage",
   /**
    * Log when creating, advancing, and committing transactions.
    */
-  Transaction = "Transaction",
+  Transaction = "Realm.Storage.Transaction",
   /**
    * Log query operations.
    */
-  Query = "Query",
+  Query = "Realm.Storage.Query",
   /**
    * Log database mutations.
    */
-  Object = "Object",
+  Object = "Realm.Storage.Object",
   /**
    * Log notifications of changes to the database.
    */
-  Notification = "Notification",
+  Notification = "Realm.Storage.Notification",
   /**
    * Log activity related to Atlas Device Sync.
    * This includes {@link LogCategory.Client} and {@link LogCategory.Server}.
    */
-  Sync = "Sync",
+  Sync = "Realm.Sync",
   /**
    * Log activity related to Atlas Device Sync client operations.
    * This includes {@link LogCategory.Session}, {@link LogCategory.Changeset},
    * {@link LogCategory.Network}, and {@link LogCategory.Reset}.
    */
-  Client = "Client",
+  Client = "Realm.Sync.Client",
   /**
    * Log connection level activity.
    */
-  Session = "Session",
+  Session = "Realm.Sync.Client.Session",
   /**
    * Log when receiving, uploading, and integrating changesets.
    */
-  Changeset = "Changeset",
+  Changeset = "Realm.Sync.Client.Changeset",
   /**
    * Log low level network activity.
    */
-  Network = "Network",
+  Network = "Realm.Sync.Client.Network",
   /**
    * Log client reset operations.
    */
-  Reset = "Reset",
+  Reset = "Realm.Sync.Client.Reset",
   /**
    * Log activity related to Atlas Device Sync server operations.
    */
-  Server = "Server",
+  Server = "Realm.Sync.Server",
   /**
    * Log activity at the Atlas App level.
    */
-  App = "App",
+  App = "Realm.App",
   /**
    * Log activity at the SDK level.
    */
-  SDK = "SDK",
+  SDK = "Realm.SDK",
 }
 
 /**
