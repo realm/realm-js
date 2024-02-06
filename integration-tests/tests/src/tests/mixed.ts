@@ -422,15 +422,15 @@ describe("Mixed", () => {
      * @param realmObject A managed Realm object to include in each list and dictionary.
      */
     function generateListWithNestedCollections(realmObject: Realm.Object<any>) {
-      const flatList = [...flatListAllTypes, realmObject];
-      const flatDictionary = { ...flatDictionaryAllTypes, realmObject };
+      const leafList = [...flatListAllTypes, realmObject];
+      const leafDictionary = { ...flatDictionaryAllTypes, realmObject };
       return [
-        ...flatList,
-        [...flatList, flatList, flatDictionary],
+        ...leafList,
+        [...leafList, leafList, leafDictionary],
         {
-          ...flatDictionary,
-          list: flatList,
-          dictionary: flatDictionary,
+          ...leafDictionary,
+          list: leafList,
+          dictionary: leafDictionary,
         },
       ];
     }
@@ -439,17 +439,17 @@ describe("Mixed", () => {
      * @param realmObject A managed Realm object to include in each list and dictionary.
      */
     function generateDictionaryWithNestedCollections(realmObject: Realm.Object<any>) {
-      const flatList = [...flatListAllTypes, realmObject];
-      const flatDictionary = { ...flatDictionaryAllTypes, realmObject };
+      const leafList = [...flatListAllTypes, realmObject];
+      const leafDictionary = { ...flatDictionaryAllTypes, realmObject };
       return {
-        ...flatDictionary,
-        list: [...flatList, flatList, flatDictionary],
+        ...leafDictionary,
+        list: [...leafList, leafList, leafDictionary],
         dictionary: {
-          ...flatDictionary,
-          list: flatList,
-          dictionary: flatDictionary,
+          ...leafDictionary,
+          list: leafList,
+          dictionary: leafDictionary,
         },
-      };
+      } as Record<string, unknown>;
     }
 
     describe("Flat collections", () => {
@@ -832,13 +832,7 @@ describe("Mixed", () => {
             const { value: dictionary } = this.realm.write(() => {
               const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
               return this.realm.create<IMixedSchema>(MixedSchema.name, {
-                value: {
-                  depth1: {
-                    depth2: {
-                      depth3: { ...flatDictionaryAllTypes, realmObject },
-                    },
-                  },
-                },
+                value: { depth1: { depth2: { depth3: { ...flatDictionaryAllTypes, realmObject } } } },
               });
             });
 
@@ -873,6 +867,45 @@ describe("Mixed", () => {
             });
 
             expect(this.realm.objects(MixedSchema.name).length).equals(2);
+            expectMatchingDictionaryAllTypes(dictionary);
+          });
+
+          it("inserts dictionary entries with nested dictionaries with different types", function (this: RealmContext) {
+            const { dictionary, realmObject } = this.realm.write(() => {
+              const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
+              const { value: dictionary } = this.realm.create<IMixedSchema>(MixedSchema.name, { value: {} });
+              return { dictionary, realmObject };
+            });
+            expectRealmDictionary(dictionary);
+            expect(Object.keys(dictionary).length).equals(0);
+
+            this.realm.write(() => {
+              dictionary.depth1 = { depth2: { depth3: { ...flatDictionaryAllTypes, realmObject } } };
+            });
+
+            const { depth1 } = dictionary;
+            expectRealmDictionary(depth1);
+            const { depth2 } = depth1;
+            expectRealmDictionary(depth2);
+            const { depth3 } = depth2;
+            expectMatchingDictionaryAllTypes(depth3);
+          });
+
+          it("inserts dictionary entries with nested collections with different types", function (this: RealmContext) {
+            const { dictionary, realmObject } = this.realm.write(() => {
+              const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
+              const { value: dictionary } = this.realm.create<IMixedSchema>(MixedSchema.name, { value: {} });
+              return { dictionary, realmObject };
+            });
+            expectRealmDictionary(dictionary);
+            expect(Object.keys(dictionary).length).equals(0);
+
+            const unmanagedDictionary = generateDictionaryWithNestedCollections(realmObject);
+            this.realm.write(() => {
+              for (const key in unmanagedDictionary) {
+                dictionary[key] = unmanagedDictionary[key];
+              }
+            });
             expectMatchingDictionaryAllTypes(dictionary);
           });
         });
