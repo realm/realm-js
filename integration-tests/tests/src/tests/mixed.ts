@@ -455,7 +455,7 @@ describe("Mixed", () => {
     describe("Flat collections", () => {
       describe("CRUD operations", () => {
         describe("Create and access", () => {
-          it("a list with different types (input: JS Array)", function (this: RealmContext) {
+          it("a list with all types (input: JS Array)", function (this: RealmContext) {
             const { value: list } = this.realm.write(() => {
               const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
               return this.realm.create<IMixedSchema>(MixedSchema.name, {
@@ -467,7 +467,7 @@ describe("Mixed", () => {
             expectMatchingListAllTypes(list);
           });
 
-          it("a list with different types (input: Realm List)", function (this: RealmContext) {
+          it("a list with all types (input: Realm List)", function (this: RealmContext) {
             const { value: list } = this.realm.write(() => {
               const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
               // Create an object with a Realm List property type (i.e. not a Mixed type).
@@ -483,7 +483,7 @@ describe("Mixed", () => {
             expectMatchingListAllTypes(list);
           });
 
-          it("a list with different types (input: Default value)", function (this: RealmContext) {
+          it("a list with all types (input: Default value)", function (this: RealmContext) {
             const { mixedWithDefaultList } = this.realm.write(() => {
               // Pass an empty object in order to use the default value from the schema.
               return this.realm.create<IMixedWithDefaultCollections>(MixedWithDefaultCollectionsSchema.name, {});
@@ -493,7 +493,7 @@ describe("Mixed", () => {
             expectMatchingListAllTypes(mixedWithDefaultList);
           });
 
-          it("a dictionary with different types (input: JS Object)", function (this: RealmContext) {
+          it("a dictionary with all types (input: JS Object)", function (this: RealmContext) {
             const { createdWithProto, createdWithoutProto } = this.realm.write(() => {
               const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
               const createdWithProto = this.realm.create<IMixedSchema>(MixedSchema.name, {
@@ -513,7 +513,7 @@ describe("Mixed", () => {
             expectMatchingDictionaryAllTypes(createdWithoutProto.value);
           });
 
-          it("a dictionary with different types (input: Realm Dictionary)", function (this: RealmContext) {
+          it("a dictionary with all types (input: Realm Dictionary)", function (this: RealmContext) {
             const { value: dictionary } = this.realm.write(() => {
               const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
               // Create an object with a Realm Dictionary property type (i.e. not a Mixed type).
@@ -529,7 +529,7 @@ describe("Mixed", () => {
             expectMatchingDictionaryAllTypes(dictionary);
           });
 
-          it("a dictionary with different types (input: Default value)", function (this: RealmContext) {
+          it("a dictionary with all types (input: Default value)", function (this: RealmContext) {
             const { mixedWithDefaultDictionary } = this.realm.write(() => {
               // Pass an empty object in order to use the default value from the schema.
               return this.realm.create<IMixedWithDefaultCollections>(MixedWithDefaultCollectionsSchema.name, {});
@@ -573,7 +573,7 @@ describe("Mixed", () => {
             expect(dictionary).deep.equals({ value: 1 });
           });
 
-          it("inserts list items via `push()`", function (this: RealmContext) {
+          it("inserts list items of all types via `push()`", function (this: RealmContext) {
             const { value: list } = this.realm.write(() => {
               return this.realm.create<IMixedSchema>(MixedSchema.name, { value: [] });
             });
@@ -587,7 +587,7 @@ describe("Mixed", () => {
             expectMatchingListAllTypes(list);
           });
 
-          it("inserts dictionary entries", function (this: RealmContext) {
+          it("inserts dictionary entries of all types", function (this: RealmContext) {
             const { value: dictionary } = this.realm.write(() => {
               return this.realm.create<IMixedSchema>(MixedSchema.name, { value: {} });
             });
@@ -701,7 +701,7 @@ describe("Mixed", () => {
       });
 
       describe("Filtering", () => {
-        it("filters by query path on list with different types", function (this: RealmContext) {
+        it("filters by query path on list with all types", function (this: RealmContext) {
           const expectedFilteredCount = 5;
           const mixedList = [...flatListAllTypes];
           const nonExistentValue = "nonExistentValue";
@@ -739,7 +739,7 @@ describe("Mixed", () => {
           }
         });
 
-        it("filters by query path on dictionary with different types", function (this: RealmContext) {
+        it("filters by query path on dictionary with all types", function (this: RealmContext) {
           const expectedFilteredCount = 5;
           const mixedDictionary = { ...flatDictionaryAllTypes };
           const nonExistentValue = "nonExistentValue";
@@ -810,7 +810,7 @@ describe("Mixed", () => {
     describe("Nested collections", () => {
       describe("CRUD operations", () => {
         describe("Create and access", () => {
-          it("a list with nested lists with different leaf types", function (this: RealmContext) {
+          it("a list with nested lists with all types", function (this: RealmContext) {
             const { value: list } = this.realm.write(() => {
               const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
               return this.realm.create<IMixedSchema>(MixedSchema.name, {
@@ -828,7 +828,19 @@ describe("Mixed", () => {
             expectMatchingListAllTypes(depth3);
           });
 
-          it("a dictionary with nested dictionaries with different leaf types", function (this: RealmContext) {
+          it("a list with nested collections with all types", function (this: RealmContext) {
+            const { value: list } = this.realm.write(() => {
+              const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
+              return this.realm.create<IMixedSchema>(MixedSchema.name, {
+                value: generateListWithNestedCollections(realmObject),
+              });
+            });
+
+            expect(this.realm.objects(MixedSchema.name).length).equals(2);
+            expectMatchingListAllTypes(list);
+          });
+
+          it("a dictionary with nested dictionaries with all types", function (this: RealmContext) {
             const { value: dictionary } = this.realm.write(() => {
               const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
               return this.realm.create<IMixedSchema>(MixedSchema.name, {
@@ -846,19 +858,7 @@ describe("Mixed", () => {
             expectMatchingDictionaryAllTypes(depth3);
           });
 
-          it("a list with nested collections and different types", function (this: RealmContext) {
-            const { value: list } = this.realm.write(() => {
-              const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
-              return this.realm.create<IMixedSchema>(MixedSchema.name, {
-                value: generateListWithNestedCollections(realmObject),
-              });
-            });
-
-            expect(this.realm.objects(MixedSchema.name).length).equals(2);
-            expectMatchingListAllTypes(list);
-          });
-
-          it("a dictionary with nested collections and different types", function (this: RealmContext) {
+          it("a dictionary with nested collections with all types", function (this: RealmContext) {
             const { value: dictionary } = this.realm.write(() => {
               const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
               return this.realm.create<IMixedSchema>(MixedSchema.name, {
@@ -870,7 +870,7 @@ describe("Mixed", () => {
             expectMatchingDictionaryAllTypes(dictionary);
           });
 
-          it("inserts dictionary entries with nested dictionaries with different types", function (this: RealmContext) {
+          it("inserts dictionary entries with nested dictionaries with all types", function (this: RealmContext) {
             const { dictionary, realmObject } = this.realm.write(() => {
               const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
               const { value: dictionary } = this.realm.create<IMixedSchema>(MixedSchema.name, { value: {} });
@@ -891,7 +891,7 @@ describe("Mixed", () => {
             expectMatchingDictionaryAllTypes(depth3);
           });
 
-          it("inserts dictionary entries with nested collections with different types", function (this: RealmContext) {
+          it("inserts dictionary entries with nested collections with all types", function (this: RealmContext) {
             const { dictionary, realmObject } = this.realm.write(() => {
               const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
               const { value: dictionary } = this.realm.create<IMixedSchema>(MixedSchema.name, { value: {} });
