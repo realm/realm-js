@@ -366,15 +366,19 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
   },
 };
 
-function isList(value: unknown): value is List | unknown[] {
+export function isList(value: unknown): value is List | unknown[] {
   return value instanceof List || Array.isArray(value);
 }
 
-function isDictionary(value: unknown): value is Dictionary | Record<string, unknown> {
+export function isDictionary(value: unknown): value is Dictionary | Record<string, unknown> {
   return value instanceof Dictionary || isPOJO(value);
 }
 
-function insertIntoListInMixed(list: List | unknown[], internal: binding.List, toBinding: TypeHelpers["toBinding"]) {
+export function insertIntoListInMixed(
+  list: List | unknown[],
+  internal: binding.List,
+  toBinding: TypeHelpers["toBinding"],
+) {
   let index = 0;
   for (const item of list) {
     if (isList(item)) {
@@ -390,7 +394,7 @@ function insertIntoListInMixed(list: List | unknown[], internal: binding.List, t
   }
 }
 
-function insertIntoDictionaryInMixed(
+export function insertIntoDictionaryInMixed(
   dictionary: Dictionary | Record<string, unknown>,
   internal: binding.Dictionary,
   toBinding: TypeHelpers["toBinding"],

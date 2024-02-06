@@ -49,6 +49,7 @@ export type DictionaryChangeCallback = (dictionary: Dictionary, changes: Diction
  */
 export type DictionaryHelpers = TypeHelpers & {
   get?(dictionary: binding.Dictionary, key: string): unknown;
+  set?(dictionary: binding.Dictionary, key: string, value: unknown): void;
 };
 
 const DEFAULT_PROPERTY_DESCRIPTOR: PropertyDescriptor = { configurable: true, enumerable: true };
@@ -66,8 +67,12 @@ const PROXY_HANDLER: ProxyHandler<Dictionary> = {
   set(target, prop, value) {
     if (typeof prop === "string") {
       const internal = target[INTERNAL];
-      const toBinding = target[HELPERS].toBinding;
-      internal.insertAny(prop, toBinding(value));
+      const { set: customSet, toBinding } = target[HELPERS];
+      if (customSet) {
+        customSet(internal, prop, value);
+      } else {
+        internal.insertAny(prop, toBinding(value));
+      }
       return true;
     } else {
       assert(typeof prop !== "symbol", "Symbols cannot be used as keys of a dictionary");

@@ -36,9 +36,13 @@ import {
   binding,
   boxToBindingGeospatial,
   circleToBindingGeospatial,
+  insertIntoDictionaryInMixed,
+  insertIntoListInMixed,
+  isDictionary,
   isGeoBox,
   isGeoCircle,
   isGeoPolygon,
+  isList,
   polygonToBindingGeospatial,
   safeGlobalThis,
 } from "./internal";
@@ -181,7 +185,7 @@ function getListHelpersForMixed(realm: Realm, options: TypeOptions) {
   const helpers: OrderedCollectionHelpers = {
     toBinding: mixedToBinding.bind(null, realm.internal),
     fromBinding: mixedFromBinding.bind(null, options),
-    get(results: binding.Results, index: number) {
+    get(results, index) {
       const elementType = binding.Helpers.getMixedElementType(results, index);
       if (elementType === binding.MixedDataType.List) {
         return new List(realm, results.getList(index), helpers);
@@ -199,7 +203,7 @@ function getDictionaryHelpersForMixed(realm: Realm, options: TypeOptions) {
   const helpers: DictionaryHelpers = {
     toBinding: mixedToBinding.bind(null, realm.internal),
     fromBinding: mixedFromBinding.bind(null, options),
-    get(dictionary: binding.Dictionary, key: string) {
+    get(dictionary, key) {
       const elementType = binding.Helpers.getMixedElementTypeFromDict(dictionary, key);
       if (elementType === binding.MixedDataType.List) {
         return new List(realm, dictionary.getList(key), getListHelpersForMixed(realm, options));
@@ -208,6 +212,17 @@ function getDictionaryHelpersForMixed(realm: Realm, options: TypeOptions) {
         return new Dictionary(realm, dictionary.getDictionary(key), helpers);
       }
       return dictionary.tryGetAny(key);
+    },
+    set(dictionary, key, value) {
+      if (isList(value)) {
+        dictionary.insertCollection(key, binding.CollectionType.List);
+        insertIntoListInMixed(value, dictionary.getList(key), helpers.toBinding);
+      } else if (isDictionary(value)) {
+        dictionary.insertCollection(key, binding.CollectionType.Dictionary);
+        insertIntoDictionaryInMixed(value, dictionary.getDictionary(key), helpers.toBinding);
+      } else {
+        dictionary.insertAny(key, helpers.toBinding(value));
+      }
     },
   };
   return helpers;
