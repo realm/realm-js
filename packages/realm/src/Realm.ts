@@ -127,25 +127,32 @@ export class Realm {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   static setLogLevel(_: LogLevel | LogArgs) {
     // It is not possible to overload a static function: https://github.com/microsoft/TypeScript/issues/18945
+
+    const setLevel = (category: LogCategory, level: LogLevel) => {
+      assert(Object.values(LogCategory).includes(category));
+      const ref = binding.LogCategoryRef;
+      const c = ref.getCategory(category);
+      c.setDefaultLevelThreshold(toBindingLoggerLevel(level));
+    };
+
     // FIXME: don't use `arguments` but find a proper type
     if (arguments.length === 1) {
       // eslint-disable-next-line prefer-rest-params
       const arg = arguments[0];
       if (arg.level) {
-        const level = arg.level;
+        const level = arg.level as LogLevel;
         if (arg.category) {
-          const category = arg.category;
-          assert(Object.values(LogCategory).includes(category));
-          binding.LogCategoryRef.getCategory(category).setDefaultLevelThreshold(toBindingLoggerLevel(level));
+          const category = arg.category as LogCategory;
+          setLevel(category, level);
         } else {
           Object.values(LogCategory).forEach((category) => {
-            Realm.setLogLevel({ level, category });
+            setLevel(category, level);
           });
         }
       } else {
-        const level = arg;
+        const level = arg as LogLevel;
         Object.values(LogCategory).forEach((category) => {
-          Realm.setLogLevel({ level, category });
+          setLevel(category, level);
         });
       }
     } else {
@@ -1847,7 +1854,7 @@ declare global {
 
 // Set default logger and log level.
 Realm.setLogger(defaultLogger);
-Realm.setLogLevel({ category: LogCategory.Realm, level: defaultLoggerLevel });
+Realm.setLogLevel({ level: defaultLoggerLevel });
 
 // Patch the global at runtime
 let warnedAboutGlobalRealmUse = false;
