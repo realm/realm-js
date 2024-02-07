@@ -422,6 +422,26 @@ describe("Mixed", () => {
       }
     }
 
+    function expectListOfListOfAllTypes(list: unknown) {
+      expectRealmList(list);
+      expect(list.length).equals(1);
+      const [depth1] = list;
+      expectRealmList(depth1);
+      expect(depth1.length).equals(1);
+      const [depth2] = depth1;
+      expectMatchingListAllTypes(depth2);
+    }
+
+    function expectListOfDictionaryOfAllTypes(list: unknown) {
+      expectRealmList(list);
+      expect(list.length).equals(1);
+      const [depth1] = list;
+      expectRealmDictionary(depth1);
+      expect(Object.keys(depth1).length).equals(1);
+      const { depth2 } = depth1;
+      expectMatchingDictionaryAllTypes(depth2);
+    }
+
     function expectMatchingUint8Buffer(value: unknown) {
       expect(value).instanceOf(ArrayBuffer);
       expect([...new Uint8Array(value as ArrayBuffer)]).eql(uint8Values);
@@ -696,7 +716,7 @@ describe("Mixed", () => {
             expectMatchingDictionaryAllTypes(dictionary);
           });
 
-          it("inserts all types", function (this: RealmContext) {
+          it("inserts all types via setter", function (this: RealmContext) {
             const { value: dictionary } = this.realm.write(() => {
               return this.realm.create<IMixedSchema>(MixedSchema.name, { value: {} });
             });
@@ -712,7 +732,7 @@ describe("Mixed", () => {
             expectMatchingDictionaryAllTypes(dictionary);
           });
 
-          it("inserts nested lists with all types", function (this: RealmContext) {
+          it("inserts nested lists with all types via setter", function (this: RealmContext) {
             const { dictionary, realmObject } = this.realm.write(() => {
               const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
               const { value: dictionary } = this.realm.create<IMixedSchema>(MixedSchema.name, { value: {} });
@@ -733,7 +753,7 @@ describe("Mixed", () => {
             expectMatchingListAllTypes(depth3);
           });
 
-          it("inserts nested dictionaries with all types", function (this: RealmContext) {
+          it("inserts nested dictionaries with all types via setter", function (this: RealmContext) {
             const { dictionary, realmObject } = this.realm.write(() => {
               const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
               const { value: dictionary } = this.realm.create<IMixedSchema>(MixedSchema.name, { value: {} });
@@ -754,7 +774,7 @@ describe("Mixed", () => {
             expectMatchingDictionaryAllTypes(depth3);
           });
 
-          it("inserts mix of nested collections with all types at each depth", function (this: RealmContext) {
+          it("inserts mix of nested collections with all types via setter", function (this: RealmContext) {
             const { dictionary, realmObject } = this.realm.write(() => {
               const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
               const { value: dictionary } = this.realm.create<IMixedSchema>(MixedSchema.name, { value: {} });
@@ -775,60 +795,85 @@ describe("Mixed", () => {
       });
 
       describe("Update", () => {
-        it("updates list items via property setters", function (this: RealmContext) {
-          const { value: list } = this.realm.write(() => {
-            const realmObject = this.realm.create(MixedSchema.name, { value: "original" });
-            return this.realm.create<IMixedSchema>(MixedSchema.name, {
-              value: ["original", realmObject],
+        describe("List", () => {
+          it("updates top-level item to primitive via setter", function (this: RealmContext) {
+            const { value: list } = this.realm.write(() => {
+              const realmObject = this.realm.create(MixedSchema.name, { value: "original" });
+              return this.realm.create<IMixedSchema>(MixedSchema.name, {
+                value: ["original", realmObject],
+              });
             });
-          });
-          expectRealmList(list);
-          expect(list.length).equals(2);
-          expect(list[0]).equals("original");
-          expect(list[1].value).equals("original");
+            expectRealmList(list);
+            expect(list.length).equals(2);
+            expect(list[0]).equals("original");
+            expect(list[1].value).equals("original");
 
-          this.realm.write(() => {
-            list[0] = "updated";
-            list[1].value = "updated";
-          });
-          expect(list[0]).equals("updated");
-          expect(list[1].value).equals("updated");
+            this.realm.write(() => {
+              list[0] = "updated";
+              list[1].value = "updated";
+            });
+            expect(list[0]).equals("updated");
+            expect(list[1].value).equals("updated");
 
-          this.realm.write(() => {
-            list[0] = null;
-            list[1] = null;
+            this.realm.write(() => {
+              list[0] = null;
+              list[1] = null;
+            });
+            expect(list.length).equals(2);
+            expect(list[0]).to.be.null;
+            expect(list[1]).to.be.null;
           });
-          expect(list.length).equals(2);
-          expect(list[0]).to.be.null;
-          expect(list[1]).to.be.null;
+
+          it("updates top-level item to nested collections with all types via setter", function (this: RealmContext) {
+            const { list, realmObject } = this.realm.write(() => {
+              const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
+              const { value: list } = this.realm.create<IMixedSchema>(MixedSchema.name, { value: ["original"] });
+              return { list, realmObject };
+            });
+            expectRealmList(list);
+            expect(list.length).equals(1);
+            expect(list[0]).equals("original");
+
+            this.realm.write(() => {
+              list[0] = [[...primitiveTypesList, realmObject]];
+            });
+            expectListOfListOfAllTypes(list);
+
+            this.realm.write(() => {
+              list[0] = { depth2: { ...primitiveTypesDictionary, realmObject } };
+            });
+            expectListOfDictionaryOfAllTypes(list);
+          });
         });
 
-        it("updates dictionary entries via property setters", function (this: RealmContext) {
-          const { value: dictionary } = this.realm.write(() => {
-            const realmObject = this.realm.create(MixedSchema.name, { value: "original" });
-            return this.realm.create<IMixedSchema>(MixedSchema.name, {
-              value: { string: "original", realmObject },
+        describe("Dictionary", () => {
+          it("updates top-level entry to primitive via setter", function (this: RealmContext) {
+            const { value: dictionary } = this.realm.write(() => {
+              const realmObject = this.realm.create(MixedSchema.name, { value: "original" });
+              return this.realm.create<IMixedSchema>(MixedSchema.name, {
+                value: { string: "original", realmObject },
+              });
             });
-          });
-          expectRealmDictionary(dictionary);
-          expect(Object.keys(dictionary).length).equals(2);
-          expect(dictionary.string).equals("original");
-          expect(dictionary.realmObject.value).equals("original");
+            expectRealmDictionary(dictionary);
+            expect(Object.keys(dictionary).length).equals(2);
+            expect(dictionary.string).equals("original");
+            expect(dictionary.realmObject.value).equals("original");
 
-          this.realm.write(() => {
-            dictionary.string = "updated";
-            dictionary.realmObject.value = "updated";
-          });
-          expect(dictionary.string).equals("updated");
-          expect(dictionary.realmObject.value).equals("updated");
+            this.realm.write(() => {
+              dictionary.string = "updated";
+              dictionary.realmObject.value = "updated";
+            });
+            expect(dictionary.string).equals("updated");
+            expect(dictionary.realmObject.value).equals("updated");
 
-          this.realm.write(() => {
-            dictionary.string = null;
-            dictionary.realmObject = null;
+            this.realm.write(() => {
+              dictionary.string = null;
+              dictionary.realmObject = null;
+            });
+            expect(Object.keys(dictionary).length).equals(2);
+            expect(dictionary.string).to.be.null;
+            expect(dictionary.realmObject).to.be.null;
           });
-          expect(Object.keys(dictionary).length).equals(2);
-          expect(dictionary.string).to.be.null;
-          expect(dictionary.realmObject).to.be.null;
         });
       });
 
@@ -1109,6 +1154,33 @@ describe("Mixed", () => {
           "Cannot modify managed objects outside of a write transaction",
         );
         expect(created.value).equals("original");
+      });
+
+      it("throws when setting a list item out of bounds", function (this: RealmContext) {
+        const { value: list } = this.realm.write(() => {
+          // Create an empty list as the Mixed value.
+          return this.realm.create<IMixedSchema>(MixedSchema.name, { value: [] });
+        });
+        expectRealmList(list);
+        expect(list.length).equals(0);
+
+        expect(() => {
+          this.realm.write(() => {
+            list[0] = "primitive";
+          });
+        }).to.throw("Requested index 0 calling set() on list 'MixedClass.value' when empty");
+
+        expect(() => {
+          this.realm.write(() => {
+            list[0] = [];
+          });
+        }).to.throw("Requested index 0 calling set_collection() on list 'MixedClass.value' when empty");
+
+        expect(() => {
+          this.realm.write(() => {
+            list[0] = {};
+          });
+        }).to.throw("Requested index 0 calling set_collection() on list 'MixedClass.value' when empty");
       });
 
       it("invalidates the list when removed", function (this: RealmContext) {
