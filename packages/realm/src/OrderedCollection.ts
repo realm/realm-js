@@ -57,8 +57,8 @@ export type CollectionChangeCallback<T = unknown, EntryType extends [unknown, un
 ) => void;
 
 /**
- * Helpers for getting and setting ordered collection items, as well
- * as converting the values to and from their binding representations.
+ * Helpers for getting ordered collection items, as well as
+ * converting the values to and from their binding representations.
  * @internal
  */
 export type OrderedCollectionHelpers = TypeHelpers & {
@@ -116,15 +116,19 @@ const PROXY_HANDLER: ProxyHandler<OrderedCollection> = {
  * subscripting, enumerating with `for-of` and so on.
  * @see {@link https://mdn.io/Array | Array}
  */
-export abstract class OrderedCollection<T = unknown, EntryType extends [unknown, unknown] = [number, T]>
+export abstract class OrderedCollection<
+    T = unknown,
+    EntryType extends [unknown, unknown] = [number, T],
+    Helpers extends OrderedCollectionHelpers = OrderedCollectionHelpers,
+  >
   extends Collection<number, T, EntryType, T, CollectionChangeCallback<T, EntryType>>
   implements Omit<ReadonlyArray<T>, "entries">
 {
   /** @internal */ protected declare realm: Realm;
   /** @internal */ protected declare results: binding.Results;
-  /** @internal */ protected declare helpers: OrderedCollectionHelpers;
+  /** @internal */ protected declare helpers: Helpers;
   /** @internal */
-  constructor(realm: Realm, results: binding.Results, helpers: OrderedCollectionHelpers) {
+  constructor(realm: Realm, results: binding.Results, helpers: Helpers) {
     if (arguments.length === 0) {
       throw new IllegalConstructorError("OrderedCollection");
     }

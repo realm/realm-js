@@ -24,8 +24,8 @@ import {
   DictionaryHelpers,
   INTERNAL,
   List,
+  ListHelpers,
   ObjCreator,
-  OrderedCollectionHelpers,
   REALM,
   Realm,
   RealmObject,
@@ -182,7 +182,7 @@ function mixedFromBinding(options: TypeOptions, value: binding.MixedArg): unknow
 }
 
 function getListHelpersForMixed(realm: Realm, options: TypeOptions) {
-  const helpers: OrderedCollectionHelpers = {
+  const helpers: ListHelpers = {
     toBinding: mixedToBinding.bind(null, realm.internal),
     fromBinding: mixedFromBinding.bind(null, options),
     get(results, index) {
@@ -194,6 +194,17 @@ function getListHelpersForMixed(realm: Realm, options: TypeOptions) {
         return new Dictionary(realm, results.getDictionary(index), getDictionaryHelpersForMixed(realm, options));
       }
       return results.getAny(index);
+    },
+    set(list, index, value) {
+      if (isList(value)) {
+        list.setCollection(index, binding.CollectionType.List);
+        insertIntoListInMixed(value, list.getList(index), helpers.toBinding);
+      } else if (isDictionary(value)) {
+        list.setCollection(index, binding.CollectionType.Dictionary);
+        insertIntoDictionaryInMixed(value, list.getDictionary(index), helpers.toBinding);
+      } else {
+        list.setAny(index, helpers.toBinding(value));
+      }
     },
   };
   return helpers;

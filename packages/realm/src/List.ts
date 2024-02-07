@@ -30,13 +30,25 @@ import {
 type PartiallyWriteableArray<T> = Pick<Array<T>, "pop" | "push" | "shift" | "unshift" | "splice">;
 
 /**
+ * Helpers for getting and setting list items, as well as
+ * converting the values to and from their binding representations.
+ * @internal
+ */
+export type ListHelpers = OrderedCollectionHelpers & {
+  set?(list: binding.List, index: number, value: unknown): void;
+};
+
+/**
  * Instances of this class will be returned when accessing object properties whose type is `"list"`.
  *
  * Lists mostly behave like normal Javascript Arrays, except for that they can
  * only store values of a single type (indicated by the `type` and `optional`
  * properties of the List), and can only be modified inside a {@link Realm.write | write} transaction.
  */
-export class List<T = unknown> extends OrderedCollection<T> implements PartiallyWriteableArray<T> {
+export class List<T = unknown>
+  extends OrderedCollection<T, [number, T], ListHelpers>
+  implements PartiallyWriteableArray<T>
+{
   /**
    * The representation in the binding.
    * @internal
@@ -47,7 +59,7 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
   private declare isEmbedded: boolean;
 
   /** @internal */
-  constructor(realm: Realm, internal: binding.List, helpers: OrderedCollectionHelpers) {
+  constructor(realm: Realm, internal: binding.List, helpers: ListHelpers) {
     if (arguments.length === 0 || !(internal instanceof binding.List)) {
       throw new IllegalConstructorError("List");
     }
@@ -91,14 +103,18 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
       realm,
       internal,
       isEmbedded,
-      helpers: { toBinding },
+      helpers: { set: customSet, toBinding },
     } = this;
     assert.inTransaction(realm);
-    // TODO: Consider a more performant way to determine if the list is embedded
-    internal.setAny(
-      index,
-      toBinding(value, isEmbedded ? { createObj: () => [internal.setEmbedded(index), true] } : undefined),
-    );
+    if (customSet) {
+      customSet(internal, index, value);
+    } else {
+      // TODO: Consider a more performant way to determine if the list is embedded
+      internal.setAny(
+        index,
+        toBinding(value, isEmbedded ? { createObj: () => [internal.setEmbedded(index), true] } : undefined),
+      );
+    }
   }
 
   /**
