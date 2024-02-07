@@ -70,7 +70,6 @@ export enum NumericLogLevel {
  * The category to receive log messages for. The {@link LogLevel} will
  * always be set for a specific category. Setting the log level on one
  * category, will automatically set the log level for any subcategory.
- * 
  * @note
  * When debugging, you might not need log messages from everything. To narrow
  * this scope, log events can be grouped by category.
