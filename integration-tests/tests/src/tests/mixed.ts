@@ -1082,18 +1082,18 @@ describe("Mixed", () => {
         const { set, dictionary } = this.realm.write(() => {
           const realmObjectWithSet = this.realm.create(CollectionsOfMixedSchema.name, { set: [int] });
           const realmObjectWithMixed = this.realm.create<IMixedSchema>(MixedSchema.name, {
-            value: { string: "original" },
+            value: { key: "original" },
           });
           return { set: realmObjectWithSet.set, dictionary: realmObjectWithMixed.value };
         });
         expectRealmDictionary(dictionary);
-        expect(dictionary.string).equals("original");
+        expect(dictionary.key).equals("original");
 
         this.realm.write(() => {
-          expect(() => (dictionary.string = new Set())).to.throw("Using a Set as a Mixed value is not supported");
-          expect(() => (dictionary.string = set)).to.throw("Using a RealmSet as a Mixed value is not supported");
+          expect(() => (dictionary.key = new Set())).to.throw("Using a Set as a Mixed value is not supported");
+          expect(() => (dictionary.key = set)).to.throw("Using a RealmSet as a Mixed value is not supported");
         });
-        expect(dictionary.string).equals("original");
+        expect(dictionary.key).equals("original");
       });
 
       it("throws when creating a list or dictionary with an embedded object", function (this: RealmContext) {
@@ -1127,31 +1127,36 @@ describe("Mixed", () => {
           });
           expect(embeddedObject).instanceOf(Realm.Object);
 
-          // Create two objects with the Mixed property (`value`)
-          // being an empty list and dictionary (respectively).
+          // Create two objects with the Mixed property being a list and dictionary respectively.
           const { mixedValue: list } = this.realm.create<IMixedAndEmbedded>(MixedAndEmbeddedSchema.name, {
-            mixedValue: [],
+            mixedValue: ["original"],
           });
           expectRealmList(list);
 
           const { mixedValue: dictionary } = this.realm.create<IMixedAndEmbedded>(MixedAndEmbeddedSchema.name, {
-            mixedValue: {},
+            mixedValue: { key: "original" },
           });
           expectRealmDictionary(dictionary);
 
+          // Assign the embedded object to the collections.
           expect(() => (list[0] = embeddedObject)).to.throw(
             "Using an embedded object (EmbeddedObject) as a Mixed value is not supported",
           );
-          expect(
-            () => (dictionary.prop = embeddedObject),
+          expect(() => (dictionary.key = embeddedObject)).to.throw(
             "Using an embedded object (EmbeddedObject) as a Mixed value is not supported",
           );
         });
         const objects = this.realm.objects<IMixedAndEmbedded>(MixedAndEmbeddedSchema.name);
         expect(objects.length).equals(3);
-        // Check that the list and dictionary are still empty.
-        expect((objects[1].mixedValue as Realm.List<any>).length).equals(0);
-        expect(Object.keys(objects[2].mixedValue as Realm.Dictionary<any>).length).equals(0);
+
+        // Check that the list and dictionary are unchanged.
+        const list = objects[1].mixedValue;
+        expectRealmList(list);
+        expect(list[0]).equals("original");
+
+        const dictionary = objects[2].mixedValue;
+        expectRealmDictionary(dictionary);
+        expect(dictionary.key).equals("original");
       });
 
       it("throws when setting a list or dictionary outside a transaction", function (this: RealmContext) {
@@ -1180,19 +1185,19 @@ describe("Mixed", () => {
           this.realm.write(() => {
             list[0] = "primitive";
           });
-        }).to.throw("Requested index 0 calling set() on list 'MixedClass.value' when empty");
+        }).to.throw("Cannot set element at index 0 out of bounds (length 0)");
 
         expect(() => {
           this.realm.write(() => {
             list[0] = [];
           });
-        }).to.throw("Requested index 0 calling set_collection() on list 'MixedClass.value' when empty");
+        }).to.throw("Cannot set element at index 0 out of bounds (length 0)");
 
         expect(() => {
           this.realm.write(() => {
             list[0] = {};
           });
-        }).to.throw("Requested index 0 calling set_collection() on list 'MixedClass.value' when empty");
+        }).to.throw("Cannot set element at index 0 out of bounds (length 0)");
       });
 
       it("invalidates the list when removed", function (this: RealmContext) {

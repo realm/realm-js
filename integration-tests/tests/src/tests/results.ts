@@ -186,7 +186,7 @@ describe("Results", () => {
       expect(() => {
         //@ts-expect-error Should be an invalid write to read-only object.
         objects[-1] = { doubleCol: 0 };
-      }).throws("Index -1 cannot be less than zero.");
+      }).throws("Assigning into a Results is not supported");
       expect(() => {
         //@ts-expect-error Should be an invalid write to read-only object.
         objects[0] = { doubleCol: 0 };

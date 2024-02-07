@@ -709,9 +709,12 @@ describe("Lists", () => {
         expect(() => (array[0] = array)).throws(Error, "Missing value for property 'doubleCol'");
         expect(() => (array[2] = { doubleCol: 1 })).throws(
           Error,
-          "Requested index 2 calling set() on list 'LinkTypesObject.arrayCol' when max is 1",
+          "Cannot set element at index 2 out of bounds (length 2)",
         );
-        expect(() => (array[-1] = { doubleCol: 1 })).throws(Error, "Index -1 cannot be less than zero.");
+        expect(() => (array[-1] = { doubleCol: 1 })).throws(
+          Error,
+          "Cannot set element at index -1 out of bounds (length 2)",
+        );
 
         //@ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
         array["foo"] = "bar";

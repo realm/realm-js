@@ -82,13 +82,19 @@ const PROXY_HANDLER: ProxyHandler<OrderedCollection> = {
   set(target, prop, value, receiver) {
     if (typeof prop === "string") {
       const index = Number.parseInt(prop, 10);
-      // TODO: Consider catching an error from access out of bounds, instead of checking the length, to optimize for the hot path
-      // TODO: Do we expect an upper bound check on the index when setting?
       if (Number.isInteger(index)) {
-        if (index < 0) {
-          throw new Error(`Index ${index} cannot be less than zero.`);
+        // Optimize for the hot-path by catching a potential out of bounds access from Core, rather
+        // than checking the length upfront. Thus, our List differs from the behavior of a JS array.
+        try {
+          target.set(index, value);
+        } catch (err) {
+          const length = target.length;
+          if ((index < 0 || index >= length) && !(target instanceof Results)) {
+            throw new Error(`Cannot set element at index ${index} out of bounds (length ${length}).`);
+          }
+          // For `Results`, use its custom error.
+          throw err;
         }
-        target.set(index, value);
         return true;
       }
     }
