@@ -68,19 +68,22 @@ export enum NumericLogLevel {
 
 /**
  * The category to receive log messages for. The {@link LogLevel} will
- * always be set for a specific category.
+ * always be set for a specific category. Setting the log level on one
+ * category, will automatically set the log level for any subcategory.
+ * 
  * @note
  * When debugging, you might not need log messages from everything. To narrow
  * this scope, log events can be grouped by category.
  */
 export enum LogCategory {
   /**
-   * Include logs from all categories.
+   * Include logs from all categories. Subcategories are {@link LogCategory.Storage},
+   * {@link LogCategory.Sync}, {@link LogCategory.App}, and {@link LogCategory.SDK}.
    */
   Realm = "Realm",
   /**
    * Log database mutations and query operations.
-   * This includes {@link LogCategory.Transaction}, {@link LogCategory.Object},
+   * Subcategories are {@link LogCategory.Transaction}, {@link LogCategory.Object},
    * {@link LogCategory.Query}, and {@link LogCategory.Notification}.
    */
   Storage = "Realm.Storage",
@@ -102,12 +105,12 @@ export enum LogCategory {
   Notification = "Realm.Storage.Notification",
   /**
    * Log activity related to Atlas Device Sync.
-   * This includes {@link LogCategory.Client} and {@link LogCategory.Server}.
+   * Subcategories are {@link LogCategory.Client} and {@link LogCategory.Server}.
    */
   Sync = "Realm.Sync",
   /**
    * Log activity related to Atlas Device Sync client operations.
-   * This includes {@link LogCategory.Session}, {@link LogCategory.Changeset},
+   * Subcategories are {@link LogCategory.Session}, {@link LogCategory.Changeset},
    * {@link LogCategory.Network}, and {@link LogCategory.Reset}.
    */
   Client = "Realm.Sync.Client",
