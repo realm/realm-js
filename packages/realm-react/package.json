@@ -50,10 +50,10 @@
     "lodash": "^4.17.21"
   },
   "devDependencies": {
-    "@babel/core": "^7.15.5",
-    "@babel/preset-env": "^7.20.2",
+    "@babel/core": "^7.23.9",
+    "@babel/preset-env": "^7.23.9",
     "@babel/preset-typescript": "^7.15.0",
-    "@babel/runtime": "^7.15.4",
+    "@babel/runtime": "^7.23.9",
     "@react-native/babel-preset": "0.73.19",
     "@realm/app-importer": "*",
     "@testing-library/react-native": "^12.4.3",
