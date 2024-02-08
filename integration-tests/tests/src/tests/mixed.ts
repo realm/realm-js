@@ -451,7 +451,7 @@ describe("Mixed", () => {
       expect(list.length).equals(1);
       const [depth1] = list;
       expectRealmDictionary(depth1);
-      expect(Object.keys(depth1).length).equals(1);
+      expectKeys(depth1, ["depth2"]);
       const { depth2 } = depth1;
       expectDictionaryOfAllTypes(depth2);
     }
@@ -465,7 +465,7 @@ describe("Mixed", () => {
      */
     function expectDictionaryOfListsOfAllTypes(dictionary: unknown) {
       expectRealmDictionary(dictionary);
-      expect(Object.keys(dictionary).length).equals(1);
+      expectKeys(dictionary, ["depth1"]);
       const { depth1 } = dictionary;
       expectRealmList(depth1);
       expect(depth1.length).equals(1);
@@ -482,10 +482,10 @@ describe("Mixed", () => {
      */
     function expectDictionaryOfDictionariesOfAllTypes(dictionary: unknown) {
       expectRealmDictionary(dictionary);
-      expect(Object.keys(dictionary).length).equals(1);
+      expectKeys(dictionary, ["depth1"]);
       const { depth1 } = dictionary;
       expectRealmDictionary(depth1);
-      expect(Object.keys(depth1).length).equals(1);
+      expectKeys(depth1, ["depth2"]);
       const { depth2 } = depth1;
       expectDictionaryOfAllTypes(depth2);
     }
@@ -539,6 +539,10 @@ describe("Mixed", () => {
       }
 
       return dictionary;
+    }
+
+    function expectKeys(dictionary: Realm.Dictionary, keys: string[]) {
+      expect(Object.keys(dictionary)).members(keys);
     }
 
     describe("CRUD operations", () => {
@@ -898,7 +902,7 @@ describe("Mixed", () => {
               return { list, realmObject };
             });
             expectRealmList(list);
-            const nestedList = list[0];
+            const [nestedList] = list;
             expectRealmList(nestedList);
             expect(nestedList.length).equals(1);
             expect(nestedList[0]).equals("original");
@@ -937,19 +941,19 @@ describe("Mixed", () => {
               return { dictionary, realmObject };
             });
             expectRealmDictionary(dictionary);
-            expect(Object.keys(dictionary).length).equals(1);
+            expectKeys(dictionary, ["depth1"]);
             expect(dictionary.depth1).equals("original");
 
             this.realm.write(() => {
               dictionary.depth1 = "updated";
             });
-            expect(Object.keys(dictionary).length).equals(1);
+            expectKeys(dictionary, ["depth1"]);
             expect(dictionary.depth1).equals("updated");
 
             this.realm.write(() => {
               dictionary.depth1 = null;
             });
-            expect(Object.keys(dictionary).length).equals(1);
+            expectKeys(dictionary, ["depth1"]);
             expect(dictionary.depth1).to.be.null;
 
             this.realm.write(() => {
@@ -972,31 +976,34 @@ describe("Mixed", () => {
               return { dictionary, realmObject };
             });
             expectRealmDictionary(dictionary);
-            const nestedDictionary = dictionary.depth1;
+            const { depth1: nestedDictionary } = dictionary;
+            expectRealmDictionary(nestedDictionary);
+            expectKeys(nestedDictionary, ["depth2"]);
             expect(nestedDictionary.depth2).equals("original");
-            expect(Object.keys(nestedDictionary).length).equals(1);
 
             this.realm.write(() => {
               nestedDictionary.depth2 = "updated";
             });
-            expect(Object.keys(nestedDictionary).length).equals(1);
+            expectKeys(nestedDictionary, ["depth2"]);
             expect(nestedDictionary.depth2).equals("updated");
 
             this.realm.write(() => {
               nestedDictionary.depth2 = null;
             });
-            expect(Object.keys(nestedDictionary).length).equals(1);
+            expectKeys(nestedDictionary, ["depth2"]);
             expect(nestedDictionary.depth2).to.be.null;
 
             this.realm.write(() => {
               nestedDictionary.depth2 = [[...primitiveTypesList, realmObject]];
             });
+            expectKeys(nestedDictionary, ["depth2"]);
             expectRealmList(nestedDictionary.depth2);
             expectListOfAllTypes(nestedDictionary.depth2[0]);
 
             this.realm.write(() => {
               nestedDictionary.depth2 = { depth3: { ...primitiveTypesDictionary, realmObject } };
             });
+            expectKeys(nestedDictionary, ["depth2"]);
             expectRealmDictionary(nestedDictionary.depth2);
             expectDictionaryOfAllTypes(nestedDictionary.depth2.depth3);
           });
@@ -1004,39 +1011,164 @@ describe("Mixed", () => {
       });
 
       describe("Remove", () => {
-        it("removes list items via `remove()`", function (this: RealmContext) {
+        it("removes top-level list item via `remove()`", function (this: RealmContext) {
           const { value: list } = this.realm.write(() => {
             const realmObject = this.realm.create(MixedSchema.name, { value: "original" });
             return this.realm.create<IMixedSchema>(MixedSchema.name, {
-              value: ["original", realmObject],
+              value: ["original", [], {}, realmObject],
             });
           });
           expectRealmList(list);
+          expect(list.length).equals(4);
+
+          // Remove each item one-by-one starting from the last.
+
+          this.realm.write(() => {
+            list.remove(3);
+          });
+          expect(list.length).equals(3);
+          expect(list[0]).equals("original");
+          expectRealmList(list[1]);
+          expectRealmDictionary(list[2]);
+
+          this.realm.write(() => {
+            list.remove(2);
+          });
           expect(list.length).equals(2);
+          expect(list[0]).equals("original");
+          expectRealmList(list[1]);
 
           this.realm.write(() => {
             list.remove(1);
           });
           expect(list.length).equals(1);
           expect(list[0]).equals("original");
+
+          this.realm.write(() => {
+            list.remove(0);
+          });
+          expect(list.length).equals(0);
         });
 
-        it("removes dictionary entries via `remove()`", function (this: RealmContext) {
+        it("removes nested list item via `remove()`", function (this: RealmContext) {
+          const { value: list } = this.realm.write(() => {
+            const realmObject = this.realm.create(MixedSchema.name, { value: "original" });
+            return this.realm.create<IMixedSchema>(MixedSchema.name, {
+              value: [["original", [], {}, realmObject]],
+            });
+          });
+          expectRealmList(list);
+          const [nestedList] = list;
+          expectRealmList(nestedList);
+          expect(nestedList.length).equals(4);
+
+          // Remove each item one-by-one starting from the last.
+
+          this.realm.write(() => {
+            nestedList.remove(3);
+          });
+          expect(nestedList.length).equals(3);
+          expect(nestedList[0]).equals("original");
+          expectRealmList(nestedList[1]);
+          expectRealmDictionary(nestedList[2]);
+
+          this.realm.write(() => {
+            nestedList.remove(2);
+          });
+          expect(nestedList.length).equals(2);
+          expect(nestedList[0]).equals("original");
+          expectRealmList(nestedList[1]);
+
+          this.realm.write(() => {
+            nestedList.remove(1);
+          });
+          expect(nestedList.length).equals(1);
+          expect(nestedList[0]).equals("original");
+
+          this.realm.write(() => {
+            nestedList.remove(0);
+          });
+          expect(nestedList.length).equals(0);
+        });
+
+        it("removes top-level dictionary entries via `remove()`", function (this: RealmContext) {
           const { value: dictionary } = this.realm.write(() => {
             const realmObject = this.realm.create(MixedSchema.name, { value: "original" });
             return this.realm.create<IMixedSchema>(MixedSchema.name, {
-              value: { string: "original", realmObject },
+              value: { string: "original", list: [], dictionary: {}, realmObject },
             });
           });
           expectRealmDictionary(dictionary);
-          expect(Object.keys(dictionary).length).equals(2);
+          expectKeys(dictionary, ["string", "list", "dictionary", "realmObject"]);
+
+          // Remove each entry one-by-one.
 
           this.realm.write(() => {
             dictionary.remove("realmObject");
           });
-          expect(Object.keys(dictionary).length).equals(1);
+          expectKeys(dictionary, ["string", "list", "dictionary"]);
           expect(dictionary.string).equals("original");
-          expect(dictionary.realmObject).to.be.undefined;
+          expectRealmList(dictionary.list);
+          expectRealmDictionary(dictionary.dictionary);
+
+          this.realm.write(() => {
+            dictionary.remove("dictionary");
+          });
+          expectKeys(dictionary, ["string", "list"]);
+          expect(dictionary.string).equals("original");
+          expectRealmList(dictionary.list);
+
+          this.realm.write(() => {
+            dictionary.remove("list");
+          });
+          expectKeys(dictionary, ["string"]);
+          expect(dictionary.string).equals("original");
+
+          this.realm.write(() => {
+            dictionary.remove("string");
+          });
+          expect(Object.keys(dictionary).length).equals(0);
+        });
+
+        it("removes nested dictionary entries via `remove()`", function (this: RealmContext) {
+          const { value: dictionary } = this.realm.write(() => {
+            const realmObject = this.realm.create(MixedSchema.name, { value: "original" });
+            return this.realm.create<IMixedSchema>(MixedSchema.name, {
+              value: { depth1: { string: "original", list: [], dictionary: {}, realmObject } },
+            });
+          });
+          expectRealmDictionary(dictionary);
+          const { depth1: nestedDictionary } = dictionary;
+          expectRealmDictionary(nestedDictionary);
+          expectKeys(nestedDictionary, ["string", "list", "dictionary", "realmObject"]);
+
+          // Remove each entry one-by-one.
+
+          this.realm.write(() => {
+            nestedDictionary.remove("realmObject");
+          });
+          expectKeys(nestedDictionary, ["string", "list", "dictionary"]);
+          expect(nestedDictionary.string).equals("original");
+          expectRealmList(nestedDictionary.list);
+          expectRealmDictionary(nestedDictionary.dictionary);
+
+          this.realm.write(() => {
+            nestedDictionary.remove("dictionary");
+          });
+          expectKeys(nestedDictionary, ["string", "list"]);
+          expect(nestedDictionary.string).equals("original");
+          expectRealmList(nestedDictionary.list);
+
+          this.realm.write(() => {
+            nestedDictionary.remove("list");
+          });
+          expectKeys(nestedDictionary, ["string"]);
+          expect(nestedDictionary.string).equals("original");
+
+          this.realm.write(() => {
+            nestedDictionary.remove("string");
+          });
+          expect(Object.keys(nestedDictionary).length).equals(0);
         });
       });
     });
