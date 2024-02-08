@@ -30,12 +30,13 @@ import {
 type PartiallyWriteableArray<T> = Pick<Array<T>, "pop" | "push" | "shift" | "unshift" | "splice">;
 
 /**
- * Helpers for getting and setting list items, as well as
+ * Helpers for getting, setting, and inserting list items, as well as
  * converting the values to and from their binding representations.
  * @internal
  */
 export type ListHelpers = OrderedCollectionHelpers & {
   set?(list: binding.List, index: number, value: unknown): void;
+  insert?(list: binding.List, index: number, value: unknown): void;
 };
 
 /**
@@ -163,16 +164,20 @@ export class List<T = unknown>
     const {
       isEmbedded,
       internal,
-      helpers: { toBinding },
+      helpers: { insert: customInsert, toBinding },
     } = this;
     const start = internal.size;
     for (const [offset, item] of items.entries()) {
       const index = start + offset;
-      if (isEmbedded) {
-        // Simply transforming to binding will insert the embedded object
-        toBinding(item, { createObj: () => [internal.insertEmbedded(index), true] });
+      if (customInsert) {
+        customInsert(internal, index, item);
       } else {
-        internal.insertAny(index, toBinding(item));
+        if (isEmbedded) {
+          // Simply transforming to binding will insert the embedded object
+          toBinding(item, { createObj: () => [internal.insertEmbedded(index), true] });
+        } else {
+          internal.insertAny(index, toBinding(item));
+        }
       }
     }
     return internal.size;

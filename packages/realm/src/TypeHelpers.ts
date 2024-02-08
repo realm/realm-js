@@ -206,6 +206,17 @@ function getListHelpersForMixed(realm: Realm, options: TypeOptions) {
         list.setAny(index, helpers.toBinding(value));
       }
     },
+    insert(list, index, value) {
+      if (isList(value)) {
+        list.insertCollection(index, binding.CollectionType.List);
+        insertIntoListInMixed(value, list.getList(index), helpers.toBinding);
+      } else if (isDictionary(value)) {
+        list.insertCollection(index, binding.CollectionType.Dictionary);
+        insertIntoDictionaryInMixed(value, list.getDictionary(index), helpers.toBinding);
+      } else {
+        list.insertAny(index, helpers.toBinding(value));
+      }
+    },
   };
   return helpers;
 }
