@@ -1653,6 +1653,40 @@ describe("Observable", () => {
         ]);
       });
 
+      it("fires when inserting, updating, and deleting in nested list", async function (this: CollectionsInMixedContext) {
+        await expectObjectNotifications(this.objectWithList, undefined, [
+          EMPTY_OBJECT_CHANGESET,
+          // Insert nested list.
+          () => {
+            this.realm.write(() => {
+              this.list.push([]);
+            });
+          },
+          { deleted: false, changedProperties: ["mixedValue"] },
+          // Insert item into nested list.
+          () => {
+            this.realm.write(() => {
+              this.list[0].push("Amy");
+            });
+          },
+          { deleted: false, changedProperties: ["mixedValue"] },
+          // Update item in nested list.
+          () => {
+            this.realm.write(() => {
+              this.list[0][0] = "Updated Amy";
+            });
+          },
+          { deleted: false, changedProperties: ["mixedValue"] },
+          // Delete item from nested list.
+          () => {
+            this.realm.write(() => {
+              this.list[0].remove(0);
+            });
+          },
+          { deleted: false, changedProperties: ["mixedValue"] },
+        ]);
+      });
+
       it("fires when inserting, updating, and deleting in top-level dictionary", async function (this: CollectionsInMixedContext) {
         await expectObjectNotifications(this.objectWithDictionary, undefined, [
           EMPTY_OBJECT_CHANGESET,
@@ -1674,6 +1708,40 @@ describe("Observable", () => {
           () => {
             this.realm.write(() => {
               this.dictionary.remove("amy");
+            });
+          },
+          { deleted: false, changedProperties: ["mixedValue"] },
+        ]);
+      });
+
+      it("fires when inserting, updating, and deleting in nested dictionary", async function (this: CollectionsInMixedContext) {
+        await expectObjectNotifications(this.objectWithDictionary, undefined, [
+          EMPTY_OBJECT_CHANGESET,
+          // Insert nested dictionary.
+          () => {
+            this.realm.write(() => {
+              this.dictionary.nested = {};
+            });
+          },
+          { deleted: false, changedProperties: ["mixedValue"] },
+          // Insert item into nested dictionary.
+          () => {
+            this.realm.write(() => {
+              this.dictionary.nested.amy = "Amy";
+            });
+          },
+          { deleted: false, changedProperties: ["mixedValue"] },
+          // Update item in nested dictionary.
+          () => {
+            this.realm.write(() => {
+              this.dictionary.nested.amy = "Updated Amy";
+            });
+          },
+          { deleted: false, changedProperties: ["mixedValue"] },
+          // Delete item from nested dictionary.
+          () => {
+            this.realm.write(() => {
+              this.dictionary.nested.remove("amy");
             });
           },
           { deleted: false, changedProperties: ["mixedValue"] },
