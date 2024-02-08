@@ -366,14 +366,14 @@ describe("Mixed", () => {
     /**
      * Expects the provided value to be a {@link Realm.List} containing:
      * - All values in {@link primitiveTypesList}.
-     * - The managed object of {@link unmanagedRealmObject}.
+     * - Optionally the managed object of {@link unmanagedRealmObject}.
      * - If the provided value is not a leaf list, additionally:
      *   - A nested list with the same criteria.
      *   - A nested dictionary with the same criteria.
      */
     function expectListOfAllTypes(list: unknown) {
       expectRealmList(list);
-      expect(list.length).to.be.greaterThanOrEqual(primitiveTypesList.length);
+      expect(list.length).greaterThanOrEqual(primitiveTypesList.length);
 
       let index = 0;
       for (const item of list) {
@@ -396,7 +396,7 @@ describe("Mixed", () => {
     /**
      * Expects the provided value to be a {@link Realm.Dictionary} containing:
      * - All entries in {@link primitiveTypesDictionary}.
-     * - Key `realmObject`: The managed object of {@link unmanagedRealmObject}.
+     * - Optional key `realmObject`: The managed object of {@link unmanagedRealmObject}.
      * - If the provided value is not a leaf dictionary, additionally:
      *   - Key `list`: A nested list with the same criteria.
      *   - Key `dictionary`: A nested dictionary with the same criteria.
@@ -496,39 +496,49 @@ describe("Mixed", () => {
     }
 
     /**
-     * @param realmObject A managed Realm object to include in each list and dictionary.
+     * Builds an unmanaged list containing:
+     * - All values in {@link primitiveTypesList}.
+     * - For each depth except the last, additionally:
+     *   - A nested list with the same criteria.
+     *   - A nested dictionary with the same criteria.
      */
-    function getListOfCollectionsOfAllTypes(realmObject: Realm.Object<IMixedSchema>) {
-      const leafList = [...primitiveTypesList, realmObject];
-      const leafDictionary = { ...primitiveTypesDictionary, realmObject };
+    function buildListOfCollectionsOfAllTypes({ depth, list = [] }: { depth: number; list?: unknown[] }) {
+      expect(depth).greaterThan(0);
+      expect(list.length).equals(0);
 
-      return [
-        ...leafList,
-        [...leafList, [...leafList], { ...leafDictionary }],
-        {
-          ...leafDictionary,
-          list: [...leafList],
-          dictionary: { ...leafDictionary },
-        },
-      ];
+      list.push(...primitiveTypesList);
+      if (depth > 1) {
+        list.push(buildListOfCollectionsOfAllTypes({ depth: depth - 1 }));
+        list.push(buildDictionaryOfCollectionsOfAllTypes({ depth: depth - 1 }));
+      }
+
+      return list;
     }
 
     /**
-     * @param realmObject A managed Realm object to include in each list and dictionary.
+     * Builds an unmanaged dictionary containing:
+     * - All entries in {@link primitiveTypesDictionary}.
+     * - For each depth except the last, additionally:
+     *   - Key `list`: A nested list with the same criteria.
+     *   - Key `dictionary`: A nested dictionary with the same criteria.
      */
-    function getDictionaryOfCollectionsOfAllTypes(realmObject: Realm.Object<IMixedSchema>) {
-      const leafList = [...primitiveTypesList, realmObject];
-      const leafDictionary = { ...primitiveTypesDictionary, realmObject };
+    function buildDictionaryOfCollectionsOfAllTypes({
+      depth,
+      dictionary = {},
+    }: {
+      depth: number;
+      dictionary?: Record<string, unknown>;
+    }) {
+      expect(depth).greaterThan(0);
+      expect(Object.keys(dictionary).length).equals(0);
 
-      return {
-        ...leafDictionary,
-        list: [...leafList, [...leafList], { ...leafDictionary }],
-        dictionary: {
-          ...leafDictionary,
-          list: [...leafList],
-          dictionary: { ...leafDictionary },
-        },
-      } as Record<string, unknown>;
+      Object.assign(dictionary, primitiveTypesDictionary);
+      if (depth > 1) {
+        dictionary.list = buildListOfCollectionsOfAllTypes({ depth: depth - 1 });
+        dictionary.dictionary = buildDictionaryOfCollectionsOfAllTypes({ depth: depth - 1 });
+      }
+
+      return dictionary;
     }
 
     describe("CRUD operations", () => {
@@ -598,13 +608,12 @@ describe("Mixed", () => {
 
           it("has mix of nested collections of all types", function (this: RealmContext) {
             const { value: list } = this.realm.write(() => {
-              const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
               return this.realm.create<IMixedSchema>(MixedSchema.name, {
-                value: getListOfCollectionsOfAllTypes(realmObject),
+                value: buildListOfCollectionsOfAllTypes({ depth: 4 }),
               });
             });
 
-            expect(this.realm.objects(MixedSchema.name).length).equals(2);
+            expect(this.realm.objects(MixedSchema.name).length).equals(1);
             expectListOfAllTypes(list);
           });
 
@@ -676,7 +685,6 @@ describe("Mixed", () => {
                 embeddedObject: { value: 1 },
               });
               expect(embeddedObject).instanceOf(Realm.Object);
-
               // Spread the embedded object in order to use its entries as a dictionary in Mixed.
               return this.realm.create<IMixedSchema>(MixedSchema.name, {
                 value: { ...embeddedObject },
@@ -693,8 +701,7 @@ describe("Mixed", () => {
                 constructor(public value: number) {}
               }
               const customObject = new CustomClass(1);
-
-              // Spread the embedded object in order to use its entries as a dictionary in Mixed.
+              // Spread the custom object in order to use its entries as a dictionary in Mixed.
               return this.realm.create<IMixedSchema>(MixedSchema.name, {
                 value: { ...customObject },
               });
@@ -730,13 +737,12 @@ describe("Mixed", () => {
 
           it("has mix of nested collections of all types", function (this: RealmContext) {
             const { value: dictionary } = this.realm.write(() => {
-              const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
               return this.realm.create<IMixedSchema>(MixedSchema.name, {
-                value: getDictionaryOfCollectionsOfAllTypes(realmObject),
+                value: buildDictionaryOfCollectionsOfAllTypes({ depth: 4 }),
               });
             });
 
-            expect(this.realm.objects(MixedSchema.name).length).equals(2);
+            expect(this.realm.objects(MixedSchema.name).length).equals(1);
             expectDictionaryOfAllTypes(dictionary);
           });
 
@@ -787,15 +793,13 @@ describe("Mixed", () => {
           });
 
           it("inserts mix of nested collections of all types via setter", function (this: RealmContext) {
-            const { dictionary, realmObject } = this.realm.write(() => {
-              const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
-              const { value: dictionary } = this.realm.create<IMixedSchema>(MixedSchema.name, { value: {} });
-              return { dictionary, realmObject };
+            const { value: dictionary } = this.realm.write(() => {
+              return this.realm.create<IMixedSchema>(MixedSchema.name, { value: {} });
             });
             expectRealmDictionary(dictionary);
             expect(Object.keys(dictionary).length).equals(0);
 
-            const unmanagedDictionary = getDictionaryOfCollectionsOfAllTypes(realmObject);
+            const unmanagedDictionary = buildDictionaryOfCollectionsOfAllTypes({ depth: 4 });
             this.realm.write(() => {
               for (const key in unmanagedDictionary) {
                 dictionary[key] = unmanagedDictionary[key];
@@ -808,35 +812,7 @@ describe("Mixed", () => {
 
       describe("Update", () => {
         describe("List", () => {
-          it("updates top-level item to primitive via setter", function (this: RealmContext) {
-            const { value: list } = this.realm.write(() => {
-              const realmObject = this.realm.create(MixedSchema.name, { value: "original" });
-              return this.realm.create<IMixedSchema>(MixedSchema.name, {
-                value: ["original", realmObject],
-              });
-            });
-            expectRealmList(list);
-            expect(list.length).equals(2);
-            expect(list[0]).equals("original");
-            expect(list[1].value).equals("original");
-
-            this.realm.write(() => {
-              list[0] = "updated";
-              list[1].value = "updated";
-            });
-            expect(list[0]).equals("updated");
-            expect(list[1].value).equals("updated");
-
-            this.realm.write(() => {
-              list[0] = null;
-              list[1] = null;
-            });
-            expect(list.length).equals(2);
-            expect(list[0]).to.be.null;
-            expect(list[1]).to.be.null;
-          });
-
-          it("updates top-level item to nested collections of all types via setter", function (this: RealmContext) {
+          it("updates top-level item via setter", function (this: RealmContext) {
             const { list, realmObject } = this.realm.write(() => {
               const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
               const { value: list } = this.realm.create<IMixedSchema>(MixedSchema.name, { value: ["original"] });
@@ -845,6 +821,18 @@ describe("Mixed", () => {
             expectRealmList(list);
             expect(list.length).equals(1);
             expect(list[0]).equals("original");
+
+            this.realm.write(() => {
+              list[0] = "updated";
+            });
+            expect(list.length).equals(1);
+            expect(list[0]).equals("updated");
+
+            this.realm.write(() => {
+              list[0] = null;
+            });
+            expect(list.length).equals(1);
+            expect(list[0]).to.be.null;
 
             this.realm.write(() => {
               list[0] = [[...primitiveTypesList, realmObject]];
@@ -859,7 +847,7 @@ describe("Mixed", () => {
         });
 
         describe("Dictionary", () => {
-          it("updates top-level entry to primitive via setter", function (this: RealmContext) {
+          it("updates top-level entry via setter", function (this: RealmContext) {
             const { value: dictionary } = this.realm.write(() => {
               const realmObject = this.realm.create(MixedSchema.name, { value: "original" });
               return this.realm.create<IMixedSchema>(MixedSchema.name, {
