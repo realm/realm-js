@@ -894,31 +894,38 @@ describe("Mixed", () => {
 
         describe("Dictionary", () => {
           it("updates top-level entry via setter", function (this: RealmContext) {
-            const { value: dictionary } = this.realm.write(() => {
-              const realmObject = this.realm.create(MixedSchema.name, { value: "original" });
-              return this.realm.create<IMixedSchema>(MixedSchema.name, {
-                value: { string: "original", realmObject },
+            const { dictionary, realmObject } = this.realm.write(() => {
+              const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
+              const { value: dictionary } = this.realm.create<IMixedSchema>(MixedSchema.name, {
+                value: { depth1: "original" },
               });
+              return { dictionary, realmObject };
             });
             expectRealmDictionary(dictionary);
-            expect(Object.keys(dictionary).length).equals(2);
-            expect(dictionary.string).equals("original");
-            expect(dictionary.realmObject.value).equals("original");
+            expect(Object.keys(dictionary).length).equals(1);
+            expect(dictionary.depth1).equals("original");
 
             this.realm.write(() => {
-              dictionary.string = "updated";
-              dictionary.realmObject.value = "updated";
+              dictionary.depth1 = "updated";
             });
-            expect(dictionary.string).equals("updated");
-            expect(dictionary.realmObject.value).equals("updated");
+            expect(Object.keys(dictionary).length).equals(1);
+            expect(dictionary.depth1).equals("updated");
 
             this.realm.write(() => {
-              dictionary.string = null;
-              dictionary.realmObject = null;
+              dictionary.depth1 = null;
             });
-            expect(Object.keys(dictionary).length).equals(2);
-            expect(dictionary.string).to.be.null;
-            expect(dictionary.realmObject).to.be.null;
+            expect(Object.keys(dictionary).length).equals(1);
+            expect(dictionary.depth1).to.be.null;
+
+            this.realm.write(() => {
+              dictionary.depth1 = [[...primitiveTypesList, realmObject]];
+            });
+            expectDictionaryOfListsOfAllTypes(dictionary);
+
+            this.realm.write(() => {
+              dictionary.depth1 = { depth2: { ...primitiveTypesDictionary, realmObject } };
+            });
+            expectDictionaryOfDictionariesOfAllTypes(dictionary);
           });
         });
       });
