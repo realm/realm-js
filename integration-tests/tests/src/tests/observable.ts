@@ -1413,9 +1413,10 @@ describe("Observable", () => {
     });
 
     describe("Collection notifications", () => {
-      it("fires when inserting to top-level list", async function (this: CollectionsInMixedContext) {
+      it("fires when inserting, updating, and deleting in top-level list", async function (this: CollectionsInMixedContext) {
         await expectCollectionNotifications(this.list, undefined, [
           EMPTY_COLLECTION_CHANGESET,
+          // Insert items.
           () => {
             this.realm.write(() => {
               this.list.push("Amy");
@@ -1429,43 +1430,7 @@ describe("Observable", () => {
             newModifications: [],
             oldModifications: [],
           },
-        ]);
-      });
-
-      it("fires when inserting to top-level dictionary", async function (this: CollectionsInMixedContext) {
-        await expectDictionaryNotifications(this.dictionary, undefined, [
-          EMPTY_DICTIONARY_CHANGESET,
-          () => {
-            this.realm.write(() => {
-              this.dictionary.amy = "Amy";
-              this.dictionary.mary = "Mary";
-              this.dictionary.john = "John";
-            });
-          },
-          {
-            deletions: [],
-            insertions: ["amy", "mary", "john"],
-            modifications: [],
-          },
-        ]);
-      });
-
-      it("fires when updating top-level list", async function (this: CollectionsInMixedContext) {
-        await expectCollectionNotifications(this.list, undefined, [
-          EMPTY_COLLECTION_CHANGESET,
-          () => {
-            this.realm.write(() => {
-              this.list.push("Amy");
-              this.list.push("Mary");
-              this.list.push("John");
-            });
-          },
-          {
-            deletions: [],
-            insertions: [0, 1, 2],
-            newModifications: [],
-            oldModifications: [],
-          },
+          // Update items.
           () => {
             this.realm.write(() => {
               this.list[0] = "Updated Amy";
@@ -1478,54 +1443,7 @@ describe("Observable", () => {
             newModifications: [0, 2],
             oldModifications: [0, 2],
           },
-        ]);
-      });
-
-      it("fires when updating top-level dictionary", async function (this: CollectionsInMixedContext) {
-        await expectDictionaryNotifications(this.dictionary, undefined, [
-          EMPTY_DICTIONARY_CHANGESET,
-          () => {
-            this.realm.write(() => {
-              this.dictionary.amy = "Amy";
-              this.dictionary.mary = "Mary";
-              this.dictionary.john = "John";
-            });
-          },
-          {
-            deletions: [],
-            insertions: ["amy", "mary", "john"],
-            modifications: [],
-          },
-          () => {
-            this.realm.write(() => {
-              this.dictionary.amy = "Updated Amy";
-              this.dictionary.john = "Updated John";
-            });
-          },
-          {
-            deletions: [],
-            insertions: [],
-            modifications: ["amy", "john"],
-          },
-        ]);
-      });
-
-      it("fires when deleting from top-level list", async function (this: CollectionsInMixedContext) {
-        await expectCollectionNotifications(this.list, undefined, [
-          EMPTY_COLLECTION_CHANGESET,
-          () => {
-            this.realm.write(() => {
-              this.list.push("Amy");
-              this.list.push("Mary");
-              this.list.push("John");
-            });
-          },
-          {
-            deletions: [],
-            insertions: [0, 1, 2],
-            newModifications: [],
-            oldModifications: [],
-          },
+          // Delete items.
           () => {
             this.realm.write(() => {
               this.list.remove(2);
@@ -1540,9 +1458,10 @@ describe("Observable", () => {
         ]);
       });
 
-      it("fires when deleting from top-level dictionary", async function (this: CollectionsInMixedContext) {
+      it("fires when inserting, updating, and deleting in top-level dictionary", async function (this: CollectionsInMixedContext) {
         await expectDictionaryNotifications(this.dictionary, undefined, [
           EMPTY_DICTIONARY_CHANGESET,
+          // Insert items.
           () => {
             this.realm.write(() => {
               this.dictionary.amy = "Amy";
@@ -1555,6 +1474,19 @@ describe("Observable", () => {
             insertions: ["amy", "mary", "john"],
             modifications: [],
           },
+          // Update items.
+          () => {
+            this.realm.write(() => {
+              this.dictionary.amy = "Updated Amy";
+              this.dictionary.john = "Updated John";
+            });
+          },
+          {
+            deletions: [],
+            insertions: [],
+            modifications: ["amy", "john"],
+          },
+          // Delete items.
           () => {
             this.realm.write(() => {
               this.dictionary.remove("mary");
