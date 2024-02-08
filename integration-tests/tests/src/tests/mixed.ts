@@ -890,6 +890,41 @@ describe("Mixed", () => {
             });
             expectListOfDictionariesOfAllTypes(list);
           });
+
+          it("updates nested item via setter", function (this: RealmContext) {
+            const { list, realmObject } = this.realm.write(() => {
+              const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
+              const { value: list } = this.realm.create<IMixedSchema>(MixedSchema.name, { value: [["original"]] });
+              return { list, realmObject };
+            });
+            expectRealmList(list);
+            const nestedList = list[0];
+            expectRealmList(nestedList);
+            expect(nestedList.length).equals(1);
+            expect(nestedList[0]).equals("original");
+
+            this.realm.write(() => {
+              nestedList[0] = "updated";
+            });
+            expect(nestedList.length).equals(1);
+            expect(nestedList[0]).equals("updated");
+
+            this.realm.write(() => {
+              nestedList[0] = null;
+            });
+            expect(nestedList.length).equals(1);
+            expect(nestedList[0]).to.be.null;
+
+            this.realm.write(() => {
+              nestedList[0] = [[...primitiveTypesList, realmObject]];
+            });
+            expectListOfListsOfAllTypes(nestedList);
+
+            this.realm.write(() => {
+              nestedList[0] = { depth2: { ...primitiveTypesDictionary, realmObject } };
+            });
+            expectListOfDictionariesOfAllTypes(nestedList);
+          });
         });
 
         describe("Dictionary", () => {
@@ -926,6 +961,44 @@ describe("Mixed", () => {
               dictionary.depth1 = { depth2: { ...primitiveTypesDictionary, realmObject } };
             });
             expectDictionaryOfDictionariesOfAllTypes(dictionary);
+          });
+
+          it("updates nested entry via setter", function (this: RealmContext) {
+            const { dictionary, realmObject } = this.realm.write(() => {
+              const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
+              const { value: dictionary } = this.realm.create<IMixedSchema>(MixedSchema.name, {
+                value: { depth1: { depth2: "original" } },
+              });
+              return { dictionary, realmObject };
+            });
+            expectRealmDictionary(dictionary);
+            const nestedDictionary = dictionary.depth1;
+            expect(nestedDictionary.depth2).equals("original");
+            expect(Object.keys(nestedDictionary).length).equals(1);
+
+            this.realm.write(() => {
+              nestedDictionary.depth2 = "updated";
+            });
+            expect(Object.keys(nestedDictionary).length).equals(1);
+            expect(nestedDictionary.depth2).equals("updated");
+
+            this.realm.write(() => {
+              nestedDictionary.depth2 = null;
+            });
+            expect(Object.keys(nestedDictionary).length).equals(1);
+            expect(nestedDictionary.depth2).to.be.null;
+
+            this.realm.write(() => {
+              nestedDictionary.depth2 = [[...primitiveTypesList, realmObject]];
+            });
+            expectRealmList(nestedDictionary.depth2);
+            expectListOfAllTypes(nestedDictionary.depth2[0]);
+
+            this.realm.write(() => {
+              nestedDictionary.depth2 = { depth3: { ...primitiveTypesDictionary, realmObject } };
+            });
+            expectRealmDictionary(nestedDictionary.depth2);
+            expectDictionaryOfAllTypes(nestedDictionary.depth2.depth3);
           });
         });
       });
