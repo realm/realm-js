@@ -630,6 +630,52 @@ describe("Mixed", () => {
             });
             expectListOfAllTypes(list);
           });
+
+          it("inserts nested lists of all primitive types via `push()`", function (this: RealmContext) {
+            const { list, realmObject } = this.realm.write(() => {
+              const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
+              const { value: list } = this.realm.create<IMixedSchema>(MixedSchema.name, { value: [] });
+              return { list, realmObject };
+            });
+            expectRealmList(list);
+            expect(list.length).equals(0);
+
+            this.realm.write(() => {
+              list.push([[...primitiveTypesList, realmObject]]);
+            });
+            expectListOfListsOfAllTypes(list);
+          });
+
+          it("inserts nested dictionaries of all primitive types via `push()`", function (this: RealmContext) {
+            const { list, realmObject } = this.realm.write(() => {
+              const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
+              const { value: list } = this.realm.create<IMixedSchema>(MixedSchema.name, { value: [] });
+              return { list, realmObject };
+            });
+            expectRealmList(list);
+            expect(list.length).equals(0);
+
+            this.realm.write(() => {
+              list.push({ depth2: { ...primitiveTypesDictionary, realmObject } });
+            });
+            expectListOfDictionariesOfAllTypes(list);
+          });
+
+          it("inserts mix of nested collections of all types via `push()`", function (this: RealmContext) {
+            const { value: list } = this.realm.write(() => {
+              return this.realm.create<IMixedSchema>(MixedSchema.name, { value: [] });
+            });
+            expectRealmList(list);
+            expect(list.length).equals(0);
+
+            const unmanagedList = buildListOfCollectionsOfAllTypes({ depth: 4 });
+            this.realm.write(() => {
+              for (const item of unmanagedList) {
+                list.push(item);
+              }
+            });
+            expectListOfAllTypes(list);
+          });
         });
 
         describe("Dictionary", () => {
