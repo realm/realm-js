@@ -329,6 +329,14 @@ jobs:
         if: ${{ matrix.variant.environment == 'react-native' }}
         run: ccache --set-config="compiler_check=content"
 
+      # Hermes doesn't work with Cocoapods 1.15.0
+      # https://forums.developer.apple.com/forums/thread/745518
+      - name: Install older Cocoapods version
+        if: ${{ matrix.variant.os == 'ios') }}
+        uses: maxim-lobanov/setup-cocoapods@v1
+        with:
+          version: 1.14.3
+
       - name: Install IOS tools
         if: ${{ (matrix.variant.os == 'ios') }}
         run: |
