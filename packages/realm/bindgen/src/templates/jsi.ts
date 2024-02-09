@@ -55,7 +55,11 @@ function tryWrap(body: string) {
 }
 
 class CppJsiFunc extends CppFunc {
-  constructor(private addon: JsiAddon, name: string, props?: CppFuncProps) {
+  constructor(
+    private addon: JsiAddon,
+    name: string,
+    props?: CppFuncProps,
+  ) {
     super(name, "jsi::Value", jsi_callback_args, props);
   }
 
@@ -430,7 +434,7 @@ function convertToJsi(addon: JsiAddon, type: Type, expr: string): string {
           return c(new Pointer(inner), expr);
         case "Nullable":
           return `[&] (auto&& val) { return !val ? jsi::Value::null() : ${c(inner, "FWD(val)")}; }(${expr})`;
-        case "util::Optional":
+        case "std::optional":
           return `[&] (auto&& opt) { return !opt ? jsi::Value::undefined() : ${c(inner, "*FWD(opt)")}; }(${expr})`;
         case "std::vector":
           // TODO try different ways to create the array to see what is fastest.
@@ -558,7 +562,7 @@ function convertFromJsi(addon: JsiAddon, type: Type, expr: string): string {
           return `[&] (auto&& val) {
               return val.isNull() ? ${inner.toCpp()}() : ${c(inner, "FWD(val)")};
           }(${expr})`;
-        case "util::Optional":
+        case "std::optional":
           return `[&] (auto&& val) {
               return val.isUndefined() ? ${type.toCpp()}() : ${c(inner, "FWD(val)")};
           }(${expr})`;
@@ -955,7 +959,7 @@ class JsiCppDecls extends CppDecls {
                   .getProperty(_env, "name").asString(_env).utf8(_env);
               throw jsi::JSError(_env, "Unable to convert an object with ctor '" + ctorName + "' to a Mixed");
           }
-          // NOTE: must not treat undefined as null here, because that makes Optional<Mixed> ambiguous.
+          // NOTE: must not treat undefined as null here, because that makes optional<Mixed> ambiguous.
           throw jsi::JSError(_env, "Can't convert " + val.toString(_env).utf8(_env) + " to Mixed");
         `,
       }),

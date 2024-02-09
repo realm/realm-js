@@ -49,6 +49,7 @@ describe("schema transform", () => {
         linkOriginPropertyName: "",
         isPrimary: false,
         isIndexed: false,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         columnKey: { value: 0n } as any,
         ...bindingSchema,
       });

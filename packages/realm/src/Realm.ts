@@ -906,6 +906,7 @@ export class Realm {
    * Deletes the provided Realm object, or each one inside the provided collection.
    * @param subject - The Realm object to delete, or a collection containing multiple Realm objects to delete.
    */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   delete(subject: AnyRealmObject | AnyRealmObject[] | AnyList | AnyResults | any): void {
     assert.inTransaction(this, "Can only delete objects within a transaction.");
     assert.object(subject, "subject");
@@ -1597,6 +1598,7 @@ export declare namespace Realm {
       export type CountOptions = CountOptionsType;
       export type DeleteEvent<T extends Document> = DeleteEventType<T>;
       export type DeleteResult = DeleteResultType;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       export type Document<IdType = any> = DocumentType<IdType>;
       export type DocumentKey<IdType> = DocumentKeyType<IdType>;
       export type DocumentNamespace = DocumentNamespaceType;
@@ -1639,6 +1641,7 @@ export declare namespace Realm {
     export type Set<T> = Realm.Set<T>;
     export type Dictionary<T> = Realm.Dictionary<T>;
     export type Mixed = unknown;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     export type LinkingObjects<ObjectTypeT, LinkingPropertyName> = Realm.Results<ObjectTypeT>;
   }
 }
@@ -1815,6 +1818,7 @@ declare global {
         export type CountOptions = CountOptionsType;
         export type DeleteEvent<T extends Document> = DeleteEventType<T>;
         export type DeleteResult = DeleteResultType;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         export type Document<IdType = any> = DocumentType<IdType>;
         export type DocumentKey<IdType> = DocumentKeyType<IdType>;
         export type DocumentNamespace = DocumentNamespaceType;
@@ -1857,6 +1861,7 @@ declare global {
       export type Set<T> = Realm.Set<T>;
       export type Dictionary<T> = Realm.Dictionary<T>;
       export type Mixed = unknown;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       export type LinkingObjects<ObjectTypeT, LinkingPropertyName> = Realm.Results<ObjectTypeT>;
     }
   }

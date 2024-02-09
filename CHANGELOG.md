@@ -19,6 +19,7 @@
 <!-- * Using Realm Core vX.Y.Z -->
 <!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
 * Fix Cocoapods to version 1.14.3 on Github Actions.
+* Migrated bingen from `util::Optional` to `std::optional`.
 
 ## 12.6.0 (2024-01-29)
 
