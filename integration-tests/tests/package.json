@@ -83,7 +83,7 @@
     "realm": "*"
   },
   "dependencies": {
-    "@thi.ng/bench": "^3.1.16",
+    "@thi.ng/bench": "^3.4.24",
     "chai": "4.3.6",
     "chai-as-promised": "^7.1.1",
     "jsrsasign": "^11.0.0",

@@ -57,7 +57,7 @@
     "@react-native/babel-preset": "0.73.19",
     "@realm/app-importer": "*",
     "@testing-library/react-native": "^12.4.3",
-    "@types/jest": "^29.5.11",
+    "@types/jest": "^29.5.12",
     "@types/lodash-es": "^4.17.6",
     "@types/react": "^18.2.6",
     "babel-jest": "^29.7.0",
