@@ -1459,6 +1459,128 @@ describe("Observable", () => {
           ]);
         });
 
+        // TODO: Enable when this issue is fixed: https://github.com/realm/realm-core/issues/7335
+        it.skip("fires when inserting, updating, and deleting in nested list", async function (this: CollectionsInMixedContext) {
+          await expectCollectionNotifications(this.list, undefined, [
+            EMPTY_COLLECTION_CHANGESET,
+            // Insert nested list.
+            () => {
+              this.realm.write(() => {
+                this.list.push([]);
+              });
+              expect(this.list[0]).instanceOf(Realm.List);
+            },
+            {
+              deletions: [],
+              insertions: [0],
+              newModifications: [],
+              oldModifications: [],
+            },
+            // Insert items into nested list.
+            () => {
+              this.realm.write(() => {
+                const [nestedList] = this.list;
+                nestedList.push("Amy");
+                nestedList.push("Mary");
+                nestedList.push("John");
+              });
+            },
+            {
+              deletions: [],
+              insertions: [],
+              newModifications: [0],
+              oldModifications: [0],
+            },
+            // Update items in nested list.
+            () => {
+              this.realm.write(() => {
+                const [nestedList] = this.list;
+                nestedList[0] = "Updated Amy";
+                nestedList[2] = "Updated John";
+              });
+            },
+            {
+              deletions: [],
+              insertions: [],
+              newModifications: [0],
+              oldModifications: [0],
+            },
+            // Delete items from nested list.
+            () => {
+              this.realm.write(() => {
+                this.list[0].remove(0);
+              });
+            },
+            {
+              deletions: [],
+              insertions: [],
+              newModifications: [0],
+              oldModifications: [0],
+            },
+          ]);
+        });
+
+        // TODO: Enable when this issue is fixed: https://github.com/realm/realm-core/issues/7335
+        it.skip("fires when inserting, updating, and deleting in nested dictionary", async function (this: CollectionsInMixedContext) {
+          await expectCollectionNotifications(this.list, undefined, [
+            EMPTY_COLLECTION_CHANGESET,
+            // Insert nested dictionary.
+            () => {
+              this.realm.write(() => {
+                this.list.push({});
+              });
+              expect(this.list[0]).instanceOf(Realm.Dictionary);
+            },
+            {
+              deletions: [],
+              insertions: [0],
+              newModifications: [],
+              oldModifications: [],
+            },
+            // Insert items into nested dictionary.
+            () => {
+              this.realm.write(() => {
+                const [nestedDictionary] = this.list;
+                nestedDictionary.amy = "Amy";
+                nestedDictionary.mary = "Mary";
+                nestedDictionary.john = "John";
+              });
+            },
+            {
+              deletions: [],
+              insertions: [],
+              newModifications: [0],
+              oldModifications: [0],
+            },
+            // Update items in nested dictionary.
+            () => {
+              this.realm.write(() => {
+                const [nestedDictionary] = this.list;
+                nestedDictionary.amy = "Updated Amy";
+                nestedDictionary.john = "Updated John";
+              });
+            },
+            {
+              deletions: [],
+              insertions: [],
+              newModifications: [0],
+              oldModifications: [0],
+            },
+            // Delete items from nested dictionary.
+            () => {
+              this.realm.write(() => {
+                this.list[0].remove("amy");
+              });
+            },
+            {
+              deletions: [],
+              insertions: [],
+              newModifications: [0],
+              oldModifications: [0],
+            },
+          ]);
+        });
+
         it("does not fire when updating object at top-level", async function (this: CollectionsInMixedContext) {
           const realmObjectInList = this.realm.write(() => {
             return this.realm.create(ObjectWithMixed, { mixedValue: "original" });
@@ -1528,6 +1650,117 @@ describe("Observable", () => {
               deletions: ["mary"],
               insertions: [],
               modifications: [],
+            },
+          ]);
+        });
+
+        it("fires when inserting, updating, and deleting in nested list", async function (this: CollectionsInMixedContext) {
+          await expectDictionaryNotifications(this.dictionary, undefined, [
+            EMPTY_DICTIONARY_CHANGESET,
+            // Insert nested list.
+            () => {
+              this.realm.write(() => {
+                this.dictionary.nestedList = [];
+              });
+              expect(this.dictionary.nestedList).instanceOf(Realm.List);
+            },
+            {
+              deletions: [],
+              insertions: ["nestedList"],
+              modifications: [],
+            },
+            // Insert items into nested list.
+            () => {
+              this.realm.write(() => {
+                const { nestedList } = this.dictionary;
+                nestedList.push("Amy");
+                nestedList.push("Mary");
+                nestedList.push("John");
+              });
+            },
+            {
+              deletions: [],
+              insertions: [],
+              modifications: ["nestedList"],
+            },
+            // Update items in nested list.
+            () => {
+              this.realm.write(() => {
+                const { nestedList } = this.dictionary;
+                nestedList[0] = "Updated Amy";
+                nestedList[2] = "Updated John";
+              });
+            },
+            {
+              deletions: [],
+              insertions: [],
+              modifications: ["nestedList"],
+            },
+            // Delete items from nested list.
+            () => {
+              this.realm.write(() => {
+                this.dictionary.nestedList.remove(1);
+              });
+            },
+            {
+              deletions: [],
+              insertions: [],
+              modifications: ["nestedList"],
+            },
+          ]);
+        });
+
+        it("fires when inserting, updating, and deleting in nested dictionary", async function (this: CollectionsInMixedContext) {
+          await expectDictionaryNotifications(this.dictionary, undefined, [
+            EMPTY_DICTIONARY_CHANGESET,
+            // Insert nested dictionary.
+            () => {
+              this.realm.write(() => {
+                this.dictionary.nestedDictionary = {};
+              });
+            },
+            {
+              deletions: [],
+              insertions: ["nestedDictionary"],
+              modifications: [],
+            },
+            // Insert items into nested dictionary.
+            () => {
+              this.realm.write(() => {
+                const { nestedDictionary } = this.dictionary;
+                nestedDictionary.amy = "Amy";
+                nestedDictionary.mary = "Mary";
+                nestedDictionary.john = "John";
+              });
+            },
+            {
+              deletions: [],
+              insertions: [],
+              modifications: ["nestedDictionary"],
+            },
+            // Update items in nested dictionary.
+            () => {
+              this.realm.write(() => {
+                const { nestedDictionary } = this.dictionary;
+                nestedDictionary.amy = "Updated Amy";
+                nestedDictionary.john = "Updated John";
+              });
+            },
+            {
+              deletions: [],
+              insertions: [],
+              modifications: ["nestedDictionary"],
+            },
+            // Delete items from nested dictionary.
+            () => {
+              this.realm.write(() => {
+                this.dictionary.nestedDictionary.remove("mary");
+              });
+            },
+            {
+              deletions: [],
+              insertions: [],
+              modifications: ["nestedDictionary"],
             },
           ]);
         });
