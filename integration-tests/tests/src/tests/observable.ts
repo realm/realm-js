@@ -1391,8 +1391,8 @@ describe("Observable", () => {
 
     type CollectionsInMixedContext = {
       objectWithList: Realm.Object<ObjectWithMixed> & ObjectWithMixed;
-      objectWithDictionary: Realm.Object<ObjectWithMixed> & ObjectWithMixed;
       list: Realm.List<any>;
+      objectWithDictionary: Realm.Object<ObjectWithMixed> & ObjectWithMixed;
       dictionary: Realm.Dictionary<any>;
     } & RealmContext;
 
@@ -1413,147 +1413,151 @@ describe("Observable", () => {
     });
 
     describe("Collection notifications", () => {
-      it("fires when inserting, updating, and deleting in top-level list", async function (this: CollectionsInMixedContext) {
-        await expectCollectionNotifications(this.list, undefined, [
-          EMPTY_COLLECTION_CHANGESET,
-          // Insert items.
-          () => {
-            this.realm.write(() => {
-              this.list.push("Amy");
-              this.list.push("Mary");
-              this.list.push("John");
-            });
-          },
-          {
-            deletions: [],
-            insertions: [0, 1, 2],
-            newModifications: [],
-            oldModifications: [],
-          },
-          // Update items.
-          () => {
-            this.realm.write(() => {
-              this.list[0] = "Updated Amy";
-              this.list[2] = "Updated John";
-            });
-          },
-          {
-            deletions: [],
-            insertions: [],
-            newModifications: [0, 2],
-            oldModifications: [0, 2],
-          },
-          // Delete items.
-          () => {
-            this.realm.write(() => {
-              this.list.remove(2);
-            });
-          },
-          {
-            deletions: [2],
-            insertions: [],
-            newModifications: [],
-            oldModifications: [],
-          },
-        ]);
-      });
-
-      it("fires when inserting, updating, and deleting in top-level dictionary", async function (this: CollectionsInMixedContext) {
-        await expectDictionaryNotifications(this.dictionary, undefined, [
-          EMPTY_DICTIONARY_CHANGESET,
-          // Insert items.
-          () => {
-            this.realm.write(() => {
-              this.dictionary.amy = "Amy";
-              this.dictionary.mary = "Mary";
-              this.dictionary.john = "John";
-            });
-          },
-          {
-            deletions: [],
-            insertions: ["amy", "mary", "john"],
-            modifications: [],
-          },
-          // Update items.
-          () => {
-            this.realm.write(() => {
-              this.dictionary.amy = "Updated Amy";
-              this.dictionary.john = "Updated John";
-            });
-          },
-          {
-            deletions: [],
-            insertions: [],
-            modifications: ["amy", "john"],
-          },
-          // Delete items.
-          () => {
-            this.realm.write(() => {
-              this.dictionary.remove("mary");
-            });
-          },
-          {
-            deletions: ["mary"],
-            insertions: [],
-            modifications: [],
-          },
-        ]);
-      });
-
-      it("does not fire when updating object in top-level list", async function (this: CollectionsInMixedContext) {
-        const realmObjectInList = this.realm.write(() => {
-          return this.realm.create(ObjectWithMixed, { mixedValue: "original" });
+      describe("List", () => {
+        it("fires when inserting, updating, and deleting at top-level", async function (this: CollectionsInMixedContext) {
+          await expectCollectionNotifications(this.list, undefined, [
+            EMPTY_COLLECTION_CHANGESET,
+            // Insert items.
+            () => {
+              this.realm.write(() => {
+                this.list.push("Amy");
+                this.list.push("Mary");
+                this.list.push("John");
+              });
+            },
+            {
+              deletions: [],
+              insertions: [0, 1, 2],
+              newModifications: [],
+              oldModifications: [],
+            },
+            // Update items.
+            () => {
+              this.realm.write(() => {
+                this.list[0] = "Updated Amy";
+                this.list[2] = "Updated John";
+              });
+            },
+            {
+              deletions: [],
+              insertions: [],
+              newModifications: [0, 2],
+              oldModifications: [0, 2],
+            },
+            // Delete items.
+            () => {
+              this.realm.write(() => {
+                this.list.remove(2);
+              });
+            },
+            {
+              deletions: [2],
+              insertions: [],
+              newModifications: [],
+              oldModifications: [],
+            },
+          ]);
         });
 
-        await expectCollectionNotifications(this.list, undefined, [
-          EMPTY_COLLECTION_CHANGESET,
-          () => {
-            this.realm.write(() => {
-              this.list.push(realmObjectInList);
-            });
-            expect(this.list.length).equals(1);
-            expect(realmObjectInList.mixedValue).equals("original");
-          },
-          {
-            deletions: [],
-            insertions: [0],
-            newModifications: [],
-            oldModifications: [],
-          },
-          () => {
-            this.realm.write(() => {
-              realmObjectInList.mixedValue = "updated";
-            });
-            expect(realmObjectInList.mixedValue).equals("updated");
-          },
-        ]);
+        it("does not fire when updating object at top-level", async function (this: CollectionsInMixedContext) {
+          const realmObjectInList = this.realm.write(() => {
+            return this.realm.create(ObjectWithMixed, { mixedValue: "original" });
+          });
+
+          await expectCollectionNotifications(this.list, undefined, [
+            EMPTY_COLLECTION_CHANGESET,
+            () => {
+              this.realm.write(() => {
+                this.list.push(realmObjectInList);
+              });
+              expect(this.list.length).equals(1);
+              expect(realmObjectInList.mixedValue).equals("original");
+            },
+            {
+              deletions: [],
+              insertions: [0],
+              newModifications: [],
+              oldModifications: [],
+            },
+            () => {
+              this.realm.write(() => {
+                realmObjectInList.mixedValue = "updated";
+              });
+              expect(realmObjectInList.mixedValue).equals("updated");
+            },
+          ]);
+        });
       });
 
-      it("does not fire when updating object in top-level dictionary", async function (this: CollectionsInMixedContext) {
-        const realmObjectInDictionary = this.realm.write(() => {
-          return this.realm.create(ObjectWithMixed, { mixedValue: "original" });
+      describe("Dictionary", () => {
+        it("fires when inserting, updating, and deleting at top-level", async function (this: CollectionsInMixedContext) {
+          await expectDictionaryNotifications(this.dictionary, undefined, [
+            EMPTY_DICTIONARY_CHANGESET,
+            // Insert items.
+            () => {
+              this.realm.write(() => {
+                this.dictionary.amy = "Amy";
+                this.dictionary.mary = "Mary";
+                this.dictionary.john = "John";
+              });
+            },
+            {
+              deletions: [],
+              insertions: ["amy", "mary", "john"],
+              modifications: [],
+            },
+            // Update items.
+            () => {
+              this.realm.write(() => {
+                this.dictionary.amy = "Updated Amy";
+                this.dictionary.john = "Updated John";
+              });
+            },
+            {
+              deletions: [],
+              insertions: [],
+              modifications: ["amy", "john"],
+            },
+            // Delete items.
+            () => {
+              this.realm.write(() => {
+                this.dictionary.remove("mary");
+              });
+            },
+            {
+              deletions: ["mary"],
+              insertions: [],
+              modifications: [],
+            },
+          ]);
         });
 
-        await expectDictionaryNotifications(this.dictionary, undefined, [
-          EMPTY_DICTIONARY_CHANGESET,
-          () => {
-            this.realm.write(() => {
-              this.dictionary.realmObject = realmObjectInDictionary;
-            });
-            expect(realmObjectInDictionary.mixedValue).equals("original");
-          },
-          {
-            deletions: [],
-            insertions: ["realmObject"],
-            modifications: [],
-          },
-          () => {
-            this.realm.write(() => {
-              realmObjectInDictionary.mixedValue = "updated";
-            });
-            expect(realmObjectInDictionary.mixedValue).equals("updated");
-          },
-        ]);
+        it("does not fire when updating object at top-level", async function (this: CollectionsInMixedContext) {
+          const realmObjectInDictionary = this.realm.write(() => {
+            return this.realm.create(ObjectWithMixed, { mixedValue: "original" });
+          });
+
+          await expectDictionaryNotifications(this.dictionary, undefined, [
+            EMPTY_DICTIONARY_CHANGESET,
+            () => {
+              this.realm.write(() => {
+                this.dictionary.realmObject = realmObjectInDictionary;
+              });
+              expect(realmObjectInDictionary.mixedValue).equals("original");
+            },
+            {
+              deletions: [],
+              insertions: ["realmObject"],
+              modifications: [],
+            },
+            () => {
+              this.realm.write(() => {
+                realmObjectInDictionary.mixedValue = "updated";
+              });
+              expect(realmObjectInDictionary.mixedValue).equals("updated");
+            },
+          ]);
+        });
       });
     });
 
@@ -1652,28 +1656,28 @@ describe("Observable", () => {
           // Insert nested dictionary.
           () => {
             this.realm.write(() => {
-              this.dictionary.nested = {};
+              this.dictionary.nestedDictionary = {};
             });
           },
           { deleted: false, changedProperties: ["mixedValue"] },
           // Insert item into nested dictionary.
           () => {
             this.realm.write(() => {
-              this.dictionary.nested.amy = "Amy";
+              this.dictionary.nestedDictionary.amy = "Amy";
             });
           },
           { deleted: false, changedProperties: ["mixedValue"] },
           // Update item in nested dictionary.
           () => {
             this.realm.write(() => {
-              this.dictionary.nested.amy = "Updated Amy";
+              this.dictionary.nestedDictionary.amy = "Updated Amy";
             });
           },
           { deleted: false, changedProperties: ["mixedValue"] },
           // Delete item from nested dictionary.
           () => {
             this.realm.write(() => {
-              this.dictionary.nested.remove("amy");
+              this.dictionary.nestedDictionary.remove("amy");
             });
           },
           { deleted: false, changedProperties: ["mixedValue"] },
