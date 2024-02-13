@@ -20,27 +20,27 @@
     "lint": {
       "command": "eslint --ext .js,.ts . && tsc --noEmit",
       "dependencies": [
-        "../../packages/realm:bundle"
+        "../../packages/realm:build"
       ]
     },
     "build": {
       "command": "tsc",
       "dependencies": [
-        "../../packages/realm:bundle",
+        "../../packages/realm:build",
         "build-dependencies"
       ]
     },
     "start": {
       "command": "mocha --watch",
       "dependencies": [
-        "../../packages/realm:bundle",
+        "../../packages/realm:build",
         "build-dependencies"
       ]
     },
     "test": {
       "command": "mocha --exit",
       "dependencies": [
-        "../../packages/realm:bundle",
+        "../../packages/realm:build",
         "build-dependencies"
       ]
     },

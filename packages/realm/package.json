@@ -77,7 +77,6 @@
     "test:types": "tsc --project type-tests/tsconfig.json",
     "lint": "eslint --ext .js,.mjs,.ts .",
     "build": "wireit",
-    "bundle": "wireit",
     "bundle:coverage": "ENABLE_TEST_COVERAGE_INSTRUMENTATION=true npm run bundle",
     "bindgen:configure": "wireit",
     "bindgen:build:node": "wireit",
@@ -115,28 +114,6 @@
         "bindgen:generate:typescript",
         "bindgen:generate:wrappers",
         "../fetch:build"
-      ]
-    },
-    "bundle": {
-      "command": "rollup --config",
-      "env": {
-        "ENABLE_TEST_COVERAGE_INSTRUMENTATION": {
-          "external": true
-        }
-      },
-      "dependencies": [
-        "bindgen:generate:typescript",
-        "bindgen:generate:wrappers",
-        "../fetch:build"
-      ],
-      "files": [
-        "rollup.config.mjs",
-        "src/**/*.ts",
-        "tsconfig.json",
-        "src/**/tsconfig.json"
-      ],
-      "output": [
-        "dist"
       ]
     },
     "bindgen:configure": {
@@ -288,7 +265,7 @@
     "docs": {
       "command": "typedoc",
       "dependencies": [
-        "bundle"
+        "build"
       ]
     }
   },
