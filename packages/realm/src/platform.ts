@@ -19,3 +19,4 @@
 export { deviceInfo } from "./platform/device-info";
 export { fs } from "./platform/file-system";
 export { network } from "./platform/network";
+export { syncProxyConfig } from "./platform/sync-proxy-config";

@@ -1,0 +1,19 @@
+{
+  "extends": "@tsconfig/node-lts",
+  "compilerOptions": {
+    "composite": true,
+    "outDir": "dist/platform/node",
+    "rootDir": "src/platform/node",
+    "resolveJsonModule": true,
+    "types": [
+      "@realm/fetch",
+      "node"
+    ],
+  },
+  "include": [
+    "src/platform/node/**/*"
+  ],
+  "references": [
+    { "path": "tsconfig.shared.json" }
+  ]
+}

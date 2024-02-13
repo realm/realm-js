@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "outDir": "dist/core",
+    "rootDir": "generated/ts",
+    "target": "es2022",
+    "module": "es2022",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "lib": [
+      "ES2022"
+    ],
+    "types": [],
+    "noResolve": true,
+    "allowJs": true
+  },
+  "files": [
+    "generated/ts/core.ts"
+  ]
+}

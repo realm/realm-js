@@ -1,0 +1,22 @@
+{
+  "extends": "@react-native/typescript-config/tsconfig.json",
+  "compilerOptions": {
+    "composite": true,
+    "outDir": "dist/platform/react-native",
+    "rootDir": "src/platform/react-native",
+    "resolveJsonModule": true,
+    "noEmit": false,
+    "allowImportingTsExtensions": false,
+    "types": [
+      "@realm/fetch",
+      "react-native",
+      "path-browserify"
+    ],
+  },
+  "include": [
+    "src/platform/react-native/**/*"
+  ],
+  "references": [
+    { "path": "tsconfig.shared.json" }
+  ]
+}

@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { binding } from "src/internal";
+import { binding } from "../internal";
 
 /**
  * Remove entries for undefined property values.

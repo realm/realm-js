@@ -16,7 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { toFetchArgs } from "src/binding";
 import { binding, extendDebug, network } from "../internal";
 import type { Headers } from "@realm/fetch";
 
@@ -33,7 +32,7 @@ function flattenHeaders(headers: Headers) {
 /** @internal */
 export function createNetworkTransport(fetch = network.fetch) {
   return binding.Helpers.makeNetworkTransport((request, callback) => {
-    const [url, init] = toFetchArgs(request);
+    const [url, init] = binding.toFetchArgs(request);
     debug("requesting %s %O", url, init);
     fetch(url, init).then(
       async (response) => {

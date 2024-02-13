@@ -43,6 +43,15 @@
       "require": "./index.node.js",
       "react-native": "./index.react-native.js"
     },
+    "./binding": {
+      "types": "./generated/ts/native.d.mts",
+      "node": "./generated/ts/native-node.mjs",
+      "react-native": "./generated/ts/native-react-native.mjs"
+    },
+    "./binding/core": {
+      "types": "./dist/core/core.d.ts",
+      "default": "./dist/core/core.js"
+    },
     "./scripts/submit-analytics": "./scripts/submit-analytics.mjs",
     "./react-native.config.js": "./react-native.config.js",
     "./package.json": "./package.json"
@@ -67,7 +76,7 @@
     "test": "wireit",
     "test:types": "tsc --project type-tests/tsconfig.json",
     "lint": "eslint --ext .js,.mjs,.ts .",
-    "build": "echo 'Run bundle, build:node, build:ios or build:android or other scripts depending on these instead' && exit 1",
+    "build": "wireit",
     "bundle": "wireit",
     "bundle:coverage": "ENABLE_TEST_COVERAGE_INSTRUMENTATION=true npm run bundle",
     "bindgen:configure": "wireit",
@@ -95,6 +104,14 @@
       "command": "mocha --exit",
       "dependencies": [
         "build:node",
+        "bindgen:generate:typescript",
+        "bindgen:generate:wrappers",
+        "../fetch:build"
+      ]
+    },
+    "build": {
+      "command": "tsc --build",
+      "dependencies": [
         "bindgen:generate:typescript",
         "bindgen:generate:wrappers",
         "../fetch:build"

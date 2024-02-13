@@ -97,9 +97,9 @@ export function generate({ rawSpec, spec: boundSpec, file }: TemplateContext): v
 
   both(`
     import { Long, ObjectId, UUID, Decimal128, EJSON } from "bson";
-    import { Float, Status } from "./core";
+    import { Float, Status } from "realm/binding/core";
 
-    export * from "./core";
+    export * from "realm/binding/core";
 
     // Copied from lib/utils.js.
     // TODO consider importing instead.
