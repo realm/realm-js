@@ -1175,68 +1175,266 @@ describe("Mixed", () => {
 
     describe("Filtering", () => {
       it("filters by query path on list of all primitive types", function (this: RealmContext) {
-        const expectedFilteredCount = 5;
-        const mixedList = [...primitiveTypesList];
+        const list = [...primitiveTypesList];
+        const nonExistentIndex = 10_000;
         const nonExistentValue = "nonExistentValue";
+        const expectedFilteredCount = 5;
 
         this.realm.write(() => {
           // Create 2 objects that should not pass the query string filter.
           this.realm.create(MixedSchema.name, { value: "not a list" });
-          mixedList.push(this.realm.create(MixedSchema.name, { value: "not a list" }));
+          list.push(this.realm.create(MixedSchema.name, { value: "not a list" }));
 
           // Create the objects that should pass the query string filter.
           for (let count = 0; count < expectedFilteredCount; count++) {
-            this.realm.create(MixedSchema.name, { value: mixedList });
+            this.realm.create(MixedSchema.name, { value: list });
           }
         });
         const objects = this.realm.objects(MixedSchema.name);
         expect(objects.length).equals(expectedFilteredCount + 2);
 
         let index = 0;
-        for (const itemToMatch of mixedList) {
+        for (const itemToMatch of list) {
           // Objects with a list item that matches the `itemToMatch` at the GIVEN index.
+
           let filtered = objects.filtered(`value[${index}] == $0`, itemToMatch);
           expect(filtered.length).equals(expectedFilteredCount);
 
           filtered = objects.filtered(`value[${index}] == $0`, nonExistentValue);
           expect(filtered.length).equals(0);
 
+          filtered = objects.filtered(`value[${nonExistentIndex}] == $0`, itemToMatch);
+          expect(filtered.length).equals(0);
+
           // Objects with a list item that matches the `itemToMatch` at ANY index.
+
           filtered = objects.filtered(`value[*] == $0`, itemToMatch);
           expect(filtered.length).equals(expectedFilteredCount);
 
           filtered = objects.filtered(`value[*] == $0`, nonExistentValue);
           expect(filtered.length).equals(0);
 
+          filtered = objects.filtered(`value[${nonExistentIndex}][*] == $0`, itemToMatch);
+          expect(filtered.length).equals(0);
+
           index++;
         }
+
+        // Objects with a list containing the same number of items as the ones inserted.
+
+        let filtered = objects.filtered(`value.@count == $0`, list.length);
+        expect(filtered.length).equals(expectedFilteredCount);
+
+        filtered = objects.filtered(`value.@count == $0`, 0);
+        expect(filtered.length).equals(0);
+
+        filtered = objects.filtered(`value.@size == $0`, list.length);
+        expect(filtered.length).equals(expectedFilteredCount);
+
+        filtered = objects.filtered(`value.@size == $0`, 0);
+        expect(filtered.length).equals(0);
+
+        // Objects where `value` itself is of the given type.
+
+        filtered = objects.filtered(`value.@type == 'collection'`);
+        expect(filtered.length).equals(expectedFilteredCount);
+
+        filtered = objects.filtered(`value.@type == 'list'`);
+        expect(filtered.length).equals(expectedFilteredCount);
+
+        filtered = objects.filtered(`value.@type == 'dictionary'`);
+        expect(filtered.length).equals(0);
+
+        // Objects with a list containing an item of the given type.
+
+        filtered = objects.filtered(`value[*].@type == 'null'`);
+        expect(filtered.length).equals(expectedFilteredCount);
+
+        filtered = objects.filtered(`value[*].@type == 'bool'`);
+        expect(filtered.length).equals(expectedFilteredCount);
+
+        // TODO: Fix.
+        // filtered = objects.filtered(`value[*].@type == 'int'`);
+        // expect(filtered.length).equals(expectedFilteredCount);
+
+        filtered = objects.filtered(`value[*].@type == 'double'`);
+        expect(filtered.length).equals(expectedFilteredCount);
+
+        filtered = objects.filtered(`value[*].@type == 'string'`);
+        expect(filtered.length).equals(expectedFilteredCount);
+
+        filtered = objects.filtered(`value[*].@type == 'data'`);
+        expect(filtered.length).equals(expectedFilteredCount);
+
+        filtered = objects.filtered(`value[*].@type == 'date'`);
+        expect(filtered.length).equals(expectedFilteredCount);
+
+        filtered = objects.filtered(`value[*].@type == 'decimal128'`);
+        expect(filtered.length).equals(expectedFilteredCount);
+
+        filtered = objects.filtered(`value[*].@type == 'objectId'`);
+        expect(filtered.length).equals(expectedFilteredCount);
+
+        filtered = objects.filtered(`value[*].@type == 'uuid'`);
+        expect(filtered.length).equals(expectedFilteredCount);
+
+        filtered = objects.filtered(`value[*].@type == 'link'`);
+        expect(filtered.length).equals(expectedFilteredCount);
+
+        filtered = objects.filtered(`value[*].@type == 'collection'`);
+        expect(filtered.length).equals(0);
+
+        filtered = objects.filtered(`value[*].@type == 'list'`);
+        expect(filtered.length).equals(0);
+
+        filtered = objects.filtered(`value[*].@type == 'dictionary'`);
+        expect(filtered.length).equals(0);
       });
 
-      it("filters by query path on dictionary of all primitive types", function (this: RealmContext) {
-        const expectedFilteredCount = 5;
-        const mixedDictionary = { ...primitiveTypesDictionary };
+      it("filters by query path on nested list of all primitive types", function (this: RealmContext) {
+        const list = [[[...primitiveTypesList]]];
+        const nonExistentIndex = 10_000;
         const nonExistentValue = "nonExistentValue";
-        const nonExistentKey = "nonExistentKey";
+        const expectedFilteredCount = 5;
 
         this.realm.write(() => {
           // Create 2 objects that should not pass the query string filter.
-          this.realm.create(MixedSchema.name, { value: "not a dictionary" });
-          mixedDictionary.realmObject = this.realm.create(MixedSchema.name, { value: "not a dictionary" });
+          this.realm.create(MixedSchema.name, { value: "not a list" });
+          list[0][0].push(this.realm.create(MixedSchema.name, { value: "not a list" }));
 
           // Create the objects that should pass the query string filter.
           for (let count = 0; count < expectedFilteredCount; count++) {
-            this.realm.create(MixedSchema.name, { value: mixedDictionary });
+            this.realm.create(MixedSchema.name, { value: list });
           }
         });
         const objects = this.realm.objects(MixedSchema.name);
         expect(objects.length).equals(expectedFilteredCount + 2);
 
-        const insertedValues = Object.values(mixedDictionary);
+        let index = 0;
+        const nestedList = list[0][0];
+        for (const itemToMatch of nestedList) {
+          // Objects with a nested list item that matches the `itemToMatch` at the GIVEN index.
 
-        for (const key in mixedDictionary) {
-          const valueToMatch = mixedDictionary[key];
+          let filtered = objects.filtered(`value[0][0][${index}] == $0`, itemToMatch);
+          expect(filtered.length).equals(expectedFilteredCount);
+
+          filtered = objects.filtered(`value[0][0][${index}] == $0`, nonExistentValue);
+          expect(filtered.length).equals(0);
+
+          filtered = objects.filtered(`value[0][0][${nonExistentIndex}] == $0`, itemToMatch);
+          expect(filtered.length).equals(0);
+
+          // Objects with a nested list item that matches the `itemToMatch` at ANY index.
+
+          filtered = objects.filtered(`value[0][0][*] == $0`, itemToMatch);
+          expect(filtered.length).equals(expectedFilteredCount);
+
+          filtered = objects.filtered(`value[0][0][*] == $0`, nonExistentValue);
+          expect(filtered.length).equals(0);
+
+          filtered = objects.filtered(`value[0][${nonExistentIndex}][*] == $0`, itemToMatch);
+          expect(filtered.length).equals(0);
+
+          index++;
+        }
+
+        // Objects with a nested list containing the same number of items as the ones inserted.
+
+        let filtered = objects.filtered(`value[0][0].@count == $0`, nestedList.length);
+        expect(filtered.length).equals(expectedFilteredCount);
+
+        filtered = objects.filtered(`value[0][0].@count == $0`, 0);
+        expect(filtered.length).equals(0);
+
+        filtered = objects.filtered(`value[0][0].@size == $0`, nestedList.length);
+        expect(filtered.length).equals(expectedFilteredCount);
+
+        filtered = objects.filtered(`value[0][0].@size == $0`, 0);
+        expect(filtered.length).equals(0);
+
+        // Objects where `value[0][0]` itself is of the given type.
+
+        filtered = objects.filtered(`value[0][0].@type == 'collection'`);
+        expect(filtered.length).equals(expectedFilteredCount);
+
+        filtered = objects.filtered(`value[0][0].@type == 'list'`);
+        expect(filtered.length).equals(expectedFilteredCount);
+
+        filtered = objects.filtered(`value[0][0].@type == 'dictionary'`);
+        expect(filtered.length).equals(0);
+
+        // Objects with a nested list containing an item of the given type.
+
+        filtered = objects.filtered(`value[0][0][*].@type == 'null'`);
+        expect(filtered.length).equals(expectedFilteredCount);
+
+        filtered = objects.filtered(`value[0][0][*].@type == 'bool'`);
+        expect(filtered.length).equals(expectedFilteredCount);
+
+        // TODO: Fix.
+        // filtered = objects.filtered(`value[0][0][*].@type == 'int'`);
+        // expect(filtered.length).equals(expectedFilteredCount);
+
+        filtered = objects.filtered(`value[0][0][*].@type == 'double'`);
+        expect(filtered.length).equals(expectedFilteredCount);
+
+        filtered = objects.filtered(`value[0][0][*].@type == 'string'`);
+        expect(filtered.length).equals(expectedFilteredCount);
+
+        filtered = objects.filtered(`value[0][0][*].@type == 'data'`);
+        expect(filtered.length).equals(expectedFilteredCount);
+
+        filtered = objects.filtered(`value[0][0][*].@type == 'date'`);
+        expect(filtered.length).equals(expectedFilteredCount);
+
+        filtered = objects.filtered(`value[0][0][*].@type == 'decimal128'`);
+        expect(filtered.length).equals(expectedFilteredCount);
+
+        filtered = objects.filtered(`value[0][0][*].@type == 'objectId'`);
+        expect(filtered.length).equals(expectedFilteredCount);
+
+        filtered = objects.filtered(`value[0][0][*].@type == 'uuid'`);
+        expect(filtered.length).equals(expectedFilteredCount);
+
+        filtered = objects.filtered(`value[0][0][*].@type == 'link'`);
+        expect(filtered.length).equals(expectedFilteredCount);
+
+        filtered = objects.filtered(`value[0][0][*].@type == 'collection'`);
+        expect(filtered.length).equals(0);
+
+        filtered = objects.filtered(`value[0][0][*].@type == 'list'`);
+        expect(filtered.length).equals(0);
+
+        filtered = objects.filtered(`value[0][0][*].@type == 'dictionary'`);
+        expect(filtered.length).equals(0);
+      });
+
+      it("filters by query path on dictionary of all primitive types", function (this: RealmContext) {
+        const dictionary = { ...primitiveTypesDictionary };
+        const nonExistentKey = "nonExistentKey";
+        const nonExistentValue = "nonExistentValue";
+        const expectedFilteredCount = 5;
+
+        this.realm.write(() => {
+          // Create 2 objects that should not pass the query string filter.
+          this.realm.create(MixedSchema.name, { value: "not a dictionary" });
+          dictionary.realmObject = this.realm.create(MixedSchema.name, { value: "not a dictionary" });
+
+          // Create the objects that should pass the query string filter.
+          for (let count = 0; count < expectedFilteredCount; count++) {
+            this.realm.create(MixedSchema.name, { value: dictionary });
+          }
+        });
+        const objects = this.realm.objects(MixedSchema.name);
+        expect(objects.length).equals(expectedFilteredCount + 2);
+
+        const insertedValues = Object.values(dictionary);
+
+        for (const key in dictionary) {
+          const valueToMatch = dictionary[key];
 
           // Objects with a dictionary value that matches the `valueToMatch` at the GIVEN key.
+
           let filtered = objects.filtered(`value['${key}'] == $0`, valueToMatch);
           expect(filtered.length).equals(expectedFilteredCount);
 
@@ -1256,26 +1454,240 @@ describe("Mixed", () => {
           expect(filtered.length).equals(0);
 
           // Objects with a dictionary value that matches the `valueToMatch` at ANY key.
+
           filtered = objects.filtered(`value[*] == $0`, valueToMatch);
           expect(filtered.length).equals(expectedFilteredCount);
 
           filtered = objects.filtered(`value[*] == $0`, nonExistentValue);
           expect(filtered.length).equals(0);
 
-          // Objects with a dictionary containing a key that matches `key`.
+          // Objects with a dictionary containing a key that matches the given key.
+
           filtered = objects.filtered(`value.@keys == $0`, key);
           expect(filtered.length).equals(expectedFilteredCount);
 
           filtered = objects.filtered(`value.@keys == $0`, nonExistentKey);
           expect(filtered.length).equals(0);
 
-          // Objects with a dictionary with the key `key` matching any of the values inserted.
+          // Objects with a dictionary value at the given key matching any of the values inserted.
+
           filtered = objects.filtered(`value.${key} IN $0`, insertedValues);
           expect(filtered.length).equals(expectedFilteredCount);
 
           filtered = objects.filtered(`value.${key} IN $0`, [nonExistentValue]);
           expect(filtered.length).equals(0);
         }
+
+        // Objects with a dictionary containing the same number of keys as the ones inserted.
+
+        let filtered = objects.filtered(`value.@count == $0`, insertedValues.length);
+        expect(filtered.length).equals(expectedFilteredCount);
+
+        filtered = objects.filtered(`value.@count == $0`, 0);
+        expect(filtered.length).equals(0);
+
+        filtered = objects.filtered(`value.@size == $0`, insertedValues.length);
+        expect(filtered.length).equals(expectedFilteredCount);
+
+        filtered = objects.filtered(`value.@size == $0`, 0);
+        expect(filtered.length).equals(0);
+
+        // Objects where `value` itself is of the given type.
+
+        filtered = objects.filtered(`value.@type == 'collection'`);
+        expect(filtered.length).equals(expectedFilteredCount);
+
+        filtered = objects.filtered(`value.@type == 'dictionary'`);
+        expect(filtered.length).equals(expectedFilteredCount);
+
+        filtered = objects.filtered(`value.@type == 'list'`);
+        expect(filtered.length).equals(0);
+
+        // Objects with a dictionary containing a property of the given type.
+
+        filtered = objects.filtered(`value[*].@type == 'null'`);
+        expect(filtered.length).equals(expectedFilteredCount);
+
+        filtered = objects.filtered(`value[*].@type == 'bool'`);
+        expect(filtered.length).equals(expectedFilteredCount);
+
+        // TODO: Fix.
+        // filtered = objects.filtered(`value[*].@type == 'int'`);
+        // expect(filtered.length).equals(expectedFilteredCount);
+
+        filtered = objects.filtered(`value[*].@type == 'double'`);
+        expect(filtered.length).equals(expectedFilteredCount);
+
+        filtered = objects.filtered(`value[*].@type == 'string'`);
+        expect(filtered.length).equals(expectedFilteredCount);
+
+        filtered = objects.filtered(`value[*].@type == 'data'`);
+        expect(filtered.length).equals(expectedFilteredCount);
+
+        filtered = objects.filtered(`value[*].@type == 'date'`);
+        expect(filtered.length).equals(expectedFilteredCount);
+
+        filtered = objects.filtered(`value[*].@type == 'decimal128'`);
+        expect(filtered.length).equals(expectedFilteredCount);
+
+        filtered = objects.filtered(`value[*].@type == 'objectId'`);
+        expect(filtered.length).equals(expectedFilteredCount);
+
+        filtered = objects.filtered(`value[*].@type == 'uuid'`);
+        expect(filtered.length).equals(expectedFilteredCount);
+
+        filtered = objects.filtered(`value[*].@type == 'link'`);
+        expect(filtered.length).equals(expectedFilteredCount);
+
+        filtered = objects.filtered(`value[*].@type == 'collection'`);
+        expect(filtered.length).equals(0);
+
+        filtered = objects.filtered(`value[*].@type == 'list'`);
+        expect(filtered.length).equals(0);
+
+        filtered = objects.filtered(`value[*].@type == 'dictionary'`);
+        expect(filtered.length).equals(0);
+      });
+
+      it("filters by query path on nested dictionary of all primitive types", function (this: RealmContext) {
+        const dictionary = { depth1: { depth2: { ...primitiveTypesDictionary } } };
+        const nonExistentKey = "nonExistentKey";
+        const nonExistentValue = "nonExistentValue";
+        const expectedFilteredCount = 5;
+
+        this.realm.write(() => {
+          // Create 2 objects that should not pass the query string filter.
+          this.realm.create(MixedSchema.name, { value: "not a dictionary" });
+          dictionary.depth1.depth2.realmObject = this.realm.create(MixedSchema.name, { value: "not a dictionary" });
+
+          // Create the objects that should pass the query string filter.
+          for (let count = 0; count < expectedFilteredCount; count++) {
+            this.realm.create(MixedSchema.name, { value: dictionary });
+          }
+        });
+        const objects = this.realm.objects(MixedSchema.name);
+        expect(objects.length).equals(expectedFilteredCount + 2);
+
+        const nestedDictionary = dictionary.depth1.depth2;
+        const insertedValues = Object.values(nestedDictionary);
+
+        for (const key in nestedDictionary) {
+          const valueToMatch = nestedDictionary[key];
+
+          // Objects with a nested dictionary value that matches the `valueToMatch` at the GIVEN key.
+
+          let filtered = objects.filtered(`value['depth1']['depth2']['${key}'] == $0`, valueToMatch);
+          expect(filtered.length).equals(expectedFilteredCount);
+
+          filtered = objects.filtered(`value['depth1']['depth2']['${key}'] == $0`, nonExistentValue);
+          expect(filtered.length).equals(0);
+
+          filtered = objects.filtered(`value['depth1']['depth2']['${nonExistentKey}'] == $0`, valueToMatch);
+          expect(filtered.length).equals(0);
+
+          filtered = objects.filtered(`value.depth1.depth2.${key} == $0`, valueToMatch);
+          expect(filtered.length).equals(expectedFilteredCount);
+
+          filtered = objects.filtered(`value.depth1.depth2.${key} == $0`, nonExistentValue);
+          expect(filtered.length).equals(0);
+
+          filtered = objects.filtered(`value.depth1.depth2.${nonExistentKey} == $0`, valueToMatch);
+          expect(filtered.length).equals(0);
+
+          // Objects with a nested dictionary value that matches the `valueToMatch` at ANY key.
+
+          filtered = objects.filtered(`value.depth1.depth2[*] == $0`, valueToMatch);
+          expect(filtered.length).equals(expectedFilteredCount);
+
+          filtered = objects.filtered(`value.depth1.depth2[*] == $0`, nonExistentValue);
+          expect(filtered.length).equals(0);
+
+          // Objects with a nested dictionary containing a key that matches the given key.
+
+          filtered = objects.filtered(`value.depth1.depth2.@keys == $0`, key);
+          expect(filtered.length).equals(expectedFilteredCount);
+
+          filtered = objects.filtered(`value.depth1.depth2.@keys == $0`, nonExistentKey);
+          expect(filtered.length).equals(0);
+
+          // Objects with a nested dictionary value at the given key matching any of the values inserted.
+
+          filtered = objects.filtered(`value.depth1.depth2.${key} IN $0`, insertedValues);
+          expect(filtered.length).equals(expectedFilteredCount);
+
+          filtered = objects.filtered(`value.depth1.depth2.${key} IN $0`, [nonExistentValue]);
+          expect(filtered.length).equals(0);
+        }
+
+        // Objects with a nested dictionary containing the same number of keys as the ones inserted.
+
+        let filtered = objects.filtered(`value.depth1.depth2.@count == $0`, insertedValues.length);
+        expect(filtered.length).equals(expectedFilteredCount);
+
+        filtered = objects.filtered(`value.depth1.depth2.@count == $0`, 0);
+        expect(filtered.length).equals(0);
+
+        filtered = objects.filtered(`value.depth1.depth2.@size == $0`, insertedValues.length);
+        expect(filtered.length).equals(expectedFilteredCount);
+
+        filtered = objects.filtered(`value.depth1.depth2.@size == $0`, 0);
+        expect(filtered.length).equals(0);
+
+        // Objects where `depth2` itself is of the given type.
+
+        filtered = objects.filtered(`value.depth1.depth2.@type == 'collection'`);
+        expect(filtered.length).equals(expectedFilteredCount);
+
+        filtered = objects.filtered(`value.depth1.depth2.@type == 'dictionary'`);
+        expect(filtered.length).equals(expectedFilteredCount);
+
+        filtered = objects.filtered(`value.depth1.depth2.@type == 'list'`);
+        expect(filtered.length).equals(0);
+
+        // Objects with a nested dictionary containing a property of the given type.
+
+        filtered = objects.filtered(`value.depth1.depth2[*].@type == 'null'`);
+        expect(filtered.length).equals(expectedFilteredCount);
+
+        filtered = objects.filtered(`value.depth1.depth2[*].@type == 'bool'`);
+        expect(filtered.length).equals(expectedFilteredCount);
+
+        // TODO: Fix.
+        // filtered = objects.filtered(`value.depth1.depth2[*].@type == 'int'`);
+        // expect(filtered.length).equals(expectedFilteredCount);
+
+        filtered = objects.filtered(`value.depth1.depth2[*].@type == 'double'`);
+        expect(filtered.length).equals(expectedFilteredCount);
+
+        filtered = objects.filtered(`value.depth1.depth2[*].@type == 'string'`);
+        expect(filtered.length).equals(expectedFilteredCount);
+
+        filtered = objects.filtered(`value.depth1.depth2[*].@type == 'data'`);
+        expect(filtered.length).equals(expectedFilteredCount);
+
+        filtered = objects.filtered(`value.depth1.depth2[*].@type == 'date'`);
+        expect(filtered.length).equals(expectedFilteredCount);
+
+        filtered = objects.filtered(`value.depth1.depth2[*].@type == 'decimal128'`);
+        expect(filtered.length).equals(expectedFilteredCount);
+
+        filtered = objects.filtered(`value.depth1.depth2[*].@type == 'objectId'`);
+        expect(filtered.length).equals(expectedFilteredCount);
+
+        filtered = objects.filtered(`value.depth1.depth2[*].@type == 'uuid'`);
+        expect(filtered.length).equals(expectedFilteredCount);
+
+        filtered = objects.filtered(`value.depth1.depth2[*].@type == 'link'`);
+        expect(filtered.length).equals(expectedFilteredCount);
+
+        filtered = objects.filtered(`value.depth1.depth2[*].@type == 'collection'`);
+        expect(filtered.length).equals(0);
+
+        filtered = objects.filtered(`value.depth1.depth2[*].@type == 'list'`);
+        expect(filtered.length).equals(0);
+
+        filtered = objects.filtered(`value.depth1.depth2[*].@type == 'dictionary'`);
+        expect(filtered.length).equals(0);
       });
     });
 
