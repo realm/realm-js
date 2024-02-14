@@ -47,12 +47,12 @@ interface IMixedNullable {
 }
 
 interface IMixedSchema {
-  value: Realm.Mixed;
+  mixed: Realm.Mixed;
 }
 
 interface IMixedAndEmbedded {
-  mixedValue: Realm.Mixed;
-  embeddedObject: { value: Realm.Mixed };
+  mixed: Realm.Mixed;
+  embeddedObject: { mixed: Realm.Mixed };
 }
 
 interface IMixedWithDefaultCollections {
@@ -105,14 +105,14 @@ const MixedNullableSchema: ObjectSchema = {
 const MixedSchema: ObjectSchema = {
   name: "MixedClass",
   properties: {
-    value: "mixed",
+    mixed: "mixed",
   },
 };
 
 const MixedAndEmbeddedSchema: ObjectSchema = {
   name: "MixedAndEmbedded",
   properties: {
-    mixedValue: "mixed",
+    mixed: "mixed",
     embeddedObject: "EmbeddedObject?",
   },
 };
@@ -121,7 +121,7 @@ const EmbeddedObjectSchema: ObjectSchema = {
   name: "EmbeddedObject",
   embedded: true,
   properties: {
-    value: "mixed",
+    mixed: "mixed",
   },
 };
 
@@ -147,7 +147,7 @@ const uint8Values = [0, 1, 2, 4, 8];
 const uint8Buffer = new Uint8Array(uint8Values).buffer;
 // The `unmanagedRealmObject` is not added to the collections below since a managed
 // Realm object will be added by the individual tests after one has been created.
-const unmanagedRealmObject: IMixedSchema = { value: 1 };
+const unmanagedRealmObject: IMixedSchema = { mixed: 1 };
 
 /**
  * An array of values representing each Realm data type allowed as `Mixed`,
@@ -306,13 +306,13 @@ describe("Mixed", () => {
       this.realm.write(() => {
         // Create an object with an embedded object property.
         const { embeddedObject } = this.realm.create(MixedAndEmbeddedSchema.name, {
-          mixedValue: null,
-          embeddedObject: { value: 1 },
+          mixed: null,
+          embeddedObject: { mixed: 1 },
         });
         expect(embeddedObject).instanceOf(Realm.Object);
 
         // Create an object with the Mixed property being the embedded object.
-        expect(() => this.realm.create(MixedAndEmbeddedSchema.name, { mixedValue: embeddedObject })).to.throw(
+        expect(() => this.realm.create(MixedAndEmbeddedSchema.name, { mixed: embeddedObject })).to.throw(
           "Using an embedded object (EmbeddedObject) as a Mixed value is not supported",
         );
       });
@@ -320,7 +320,7 @@ describe("Mixed", () => {
       // TODO: Length should equal 1 when this PR is merged: https://github.com/realm/realm-js/pull/6356
       // expect(objects.length).equals(1);
       expect(objects.length).equals(2);
-      expect(objects[0].mixedValue).to.be.null;
+      expect(objects[0].mixed).to.be.null;
     });
   });
 
@@ -378,8 +378,8 @@ describe("Mixed", () => {
       let index = 0;
       for (const item of list) {
         if (item instanceof Realm.Object) {
-          // @ts-expect-error Expecting `value` to exist.
-          expect(item.value).equals(unmanagedRealmObject.value);
+          // @ts-expect-error Expecting `mixed` to exist.
+          expect(item.mixed).equals(unmanagedRealmObject.mixed);
         } else if (item instanceof ArrayBuffer) {
           expectUint8Buffer(item);
         } else if (item instanceof Realm.List) {
@@ -409,7 +409,7 @@ describe("Mixed", () => {
         const value = dictionary[key];
         if (key === "realmObject") {
           expect(value).instanceOf(Realm.Object);
-          expect(value.value).equals(unmanagedRealmObject.value);
+          expect(value.mixed).equals(unmanagedRealmObject.mixed);
         } else if (key === "uint8Buffer") {
           expectUint8Buffer(value);
         } else if (key === "list") {
@@ -549,10 +549,10 @@ describe("Mixed", () => {
       describe("Create and access", () => {
         describe("List", () => {
           it("has all primitive types (input: JS Array)", function (this: RealmContext) {
-            const { value: list } = this.realm.write(() => {
+            const { mixed: list } = this.realm.write(() => {
               const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
               return this.realm.create<IMixedSchema>(MixedSchema.name, {
-                value: [...primitiveTypesList, realmObject],
+                mixed: [...primitiveTypesList, realmObject],
               });
             });
 
@@ -561,7 +561,7 @@ describe("Mixed", () => {
           });
 
           it("has all primitive types (input: Realm List)", function (this: RealmContext) {
-            const { value: list } = this.realm.write(() => {
+            const { mixed: list } = this.realm.write(() => {
               const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
               // Create an object with a Realm List property type (i.e. not a Mixed type).
               const realmObjectWithList = this.realm.create<ICollectionsOfMixed>(CollectionsOfMixedSchema.name, {
@@ -569,7 +569,7 @@ describe("Mixed", () => {
               });
               expectRealmList(realmObjectWithList.list);
               // Use the Realm List as the value for the Mixed property on a different object.
-              return this.realm.create<IMixedSchema>(MixedSchema.name, { value: realmObjectWithList.list });
+              return this.realm.create<IMixedSchema>(MixedSchema.name, { mixed: realmObjectWithList.list });
             });
 
             expect(this.realm.objects(MixedSchema.name).length).equals(2);
@@ -587,10 +587,10 @@ describe("Mixed", () => {
           });
 
           it("has nested lists of all primitive types", function (this: RealmContext) {
-            const { value: list } = this.realm.write(() => {
+            const { mixed: list } = this.realm.write(() => {
               const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
               return this.realm.create<IMixedSchema>(MixedSchema.name, {
-                value: [[[...primitiveTypesList, realmObject]]],
+                mixed: [[[...primitiveTypesList, realmObject]]],
               });
             });
 
@@ -599,10 +599,10 @@ describe("Mixed", () => {
           });
 
           it("has nested dictionaries of all primitive types", function (this: RealmContext) {
-            const { value: list } = this.realm.write(() => {
+            const { mixed: list } = this.realm.write(() => {
               const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
               return this.realm.create<IMixedSchema>(MixedSchema.name, {
-                value: [{ depth2: { ...primitiveTypesDictionary, realmObject } }],
+                mixed: [{ depth2: { ...primitiveTypesDictionary, realmObject } }],
               });
             });
 
@@ -611,9 +611,9 @@ describe("Mixed", () => {
           });
 
           it("has mix of nested collections of all types", function (this: RealmContext) {
-            const { value: list } = this.realm.write(() => {
+            const { mixed: list } = this.realm.write(() => {
               return this.realm.create<IMixedSchema>(MixedSchema.name, {
-                value: buildListOfCollectionsOfAllTypes({ depth: 4 }),
+                mixed: buildListOfCollectionsOfAllTypes({ depth: 4 }),
               });
             });
 
@@ -622,8 +622,8 @@ describe("Mixed", () => {
           });
 
           it("inserts all primitive types via `push()`", function (this: RealmContext) {
-            const { value: list } = this.realm.write(() => {
-              return this.realm.create<IMixedSchema>(MixedSchema.name, { value: [] });
+            const { mixed: list } = this.realm.write(() => {
+              return this.realm.create<IMixedSchema>(MixedSchema.name, { mixed: [] });
             });
             expectRealmList(list);
             expect(list.length).equals(0);
@@ -638,7 +638,7 @@ describe("Mixed", () => {
           it("inserts nested lists of all primitive types via `push()`", function (this: RealmContext) {
             const { list, realmObject } = this.realm.write(() => {
               const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
-              const { value: list } = this.realm.create<IMixedSchema>(MixedSchema.name, { value: [] });
+              const { mixed: list } = this.realm.create<IMixedSchema>(MixedSchema.name, { mixed: [] });
               return { list, realmObject };
             });
             expectRealmList(list);
@@ -653,7 +653,7 @@ describe("Mixed", () => {
           it("inserts nested dictionaries of all primitive types via `push()`", function (this: RealmContext) {
             const { list, realmObject } = this.realm.write(() => {
               const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
-              const { value: list } = this.realm.create<IMixedSchema>(MixedSchema.name, { value: [] });
+              const { mixed: list } = this.realm.create<IMixedSchema>(MixedSchema.name, { mixed: [] });
               return { list, realmObject };
             });
             expectRealmList(list);
@@ -666,8 +666,8 @@ describe("Mixed", () => {
           });
 
           it("inserts mix of nested collections of all types via `push()`", function (this: RealmContext) {
-            const { value: list } = this.realm.write(() => {
-              return this.realm.create<IMixedSchema>(MixedSchema.name, { value: [] });
+            const { mixed: list } = this.realm.write(() => {
+              return this.realm.create<IMixedSchema>(MixedSchema.name, { mixed: [] });
             });
             expectRealmList(list);
             expect(list.length).equals(0);
@@ -687,10 +687,10 @@ describe("Mixed", () => {
             const { createdWithProto, createdWithoutProto } = this.realm.write(() => {
               const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
               const createdWithProto = this.realm.create<IMixedSchema>(MixedSchema.name, {
-                value: { ...primitiveTypesDictionary, realmObject },
+                mixed: { ...primitiveTypesDictionary, realmObject },
               });
               const createdWithoutProto = this.realm.create<IMixedSchema>(MixedSchema.name, {
-                value: Object.assign(Object.create(null), {
+                mixed: Object.assign(Object.create(null), {
                   ...primitiveTypesDictionary,
                   realmObject,
                 }),
@@ -699,12 +699,12 @@ describe("Mixed", () => {
             });
 
             expect(this.realm.objects(MixedSchema.name).length).equals(3);
-            expectDictionaryOfAllTypes(createdWithProto.value);
-            expectDictionaryOfAllTypes(createdWithoutProto.value);
+            expectDictionaryOfAllTypes(createdWithProto.mixed);
+            expectDictionaryOfAllTypes(createdWithoutProto.mixed);
           });
 
           it("has all primitive types (input: Realm Dictionary)", function (this: RealmContext) {
-            const { value: dictionary } = this.realm.write(() => {
+            const { mixed: dictionary } = this.realm.write(() => {
               const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
               // Create an object with a Realm Dictionary property type (i.e. not a Mixed type).
               const realmObjectWithDictionary = this.realm.create<ICollectionsOfMixed>(CollectionsOfMixedSchema.name, {
@@ -712,7 +712,7 @@ describe("Mixed", () => {
               });
               expectRealmDictionary(realmObjectWithDictionary.dictionary);
               // Use the Realm Dictionary as the value for the Mixed property on a different object.
-              return this.realm.create<IMixedSchema>(MixedSchema.name, { value: realmObjectWithDictionary.dictionary });
+              return this.realm.create<IMixedSchema>(MixedSchema.name, { mixed: realmObjectWithDictionary.dictionary });
             });
 
             expect(this.realm.objects(MixedSchema.name).length).equals(2);
@@ -730,30 +730,30 @@ describe("Mixed", () => {
           });
 
           it("can use the spread of embedded Realm object", function (this: RealmContext) {
-            const { value: dictionary } = this.realm.write(() => {
+            const { mixed: dictionary } = this.realm.write(() => {
               const { embeddedObject } = this.realm.create<IMixedAndEmbedded>(MixedAndEmbeddedSchema.name, {
-                embeddedObject: { value: 1 },
+                embeddedObject: { mixed: 1 },
               });
               expect(embeddedObject).instanceOf(Realm.Object);
               // Spread the embedded object in order to use its entries as a dictionary in Mixed.
               return this.realm.create<IMixedSchema>(MixedSchema.name, {
-                value: { ...embeddedObject },
+                mixed: { ...embeddedObject },
               });
             });
 
             expectRealmDictionary(dictionary);
-            expect(dictionary).deep.equals({ value: 1 });
+            expect(dictionary).deep.equals({ mixed: 1 });
           });
 
           it("can use the spread of custom non-Realm object", function (this: RealmContext) {
-            const { value: dictionary } = this.realm.write(() => {
+            const { mixed: dictionary } = this.realm.write(() => {
               class CustomClass {
                 constructor(public value: number) {}
               }
               const customObject = new CustomClass(1);
               // Spread the custom object in order to use its entries as a dictionary in Mixed.
               return this.realm.create<IMixedSchema>(MixedSchema.name, {
-                value: { ...customObject },
+                mixed: { ...customObject },
               });
             });
 
@@ -762,10 +762,10 @@ describe("Mixed", () => {
           });
 
           it("has nested lists of all primitive types", function (this: RealmContext) {
-            const { value: dictionary } = this.realm.write(() => {
+            const { mixed: dictionary } = this.realm.write(() => {
               const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
               return this.realm.create<IMixedSchema>(MixedSchema.name, {
-                value: { depth1: [[...primitiveTypesList, realmObject]] },
+                mixed: { depth1: [[...primitiveTypesList, realmObject]] },
               });
             });
 
@@ -774,10 +774,10 @@ describe("Mixed", () => {
           });
 
           it("has nested dictionaries of all primitive types", function (this: RealmContext) {
-            const { value: dictionary } = this.realm.write(() => {
+            const { mixed: dictionary } = this.realm.write(() => {
               const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
               return this.realm.create<IMixedSchema>(MixedSchema.name, {
-                value: { depth1: { depth2: { ...primitiveTypesDictionary, realmObject } } },
+                mixed: { depth1: { depth2: { ...primitiveTypesDictionary, realmObject } } },
               });
             });
 
@@ -786,9 +786,9 @@ describe("Mixed", () => {
           });
 
           it("has mix of nested collections of all types", function (this: RealmContext) {
-            const { value: dictionary } = this.realm.write(() => {
+            const { mixed: dictionary } = this.realm.write(() => {
               return this.realm.create<IMixedSchema>(MixedSchema.name, {
-                value: buildDictionaryOfCollectionsOfAllTypes({ depth: 4 }),
+                mixed: buildDictionaryOfCollectionsOfAllTypes({ depth: 4 }),
               });
             });
 
@@ -797,8 +797,8 @@ describe("Mixed", () => {
           });
 
           it("inserts all primitive types via setter", function (this: RealmContext) {
-            const { value: dictionary } = this.realm.write(() => {
-              return this.realm.create<IMixedSchema>(MixedSchema.name, { value: {} });
+            const { mixed: dictionary } = this.realm.write(() => {
+              return this.realm.create<IMixedSchema>(MixedSchema.name, { mixed: {} });
             });
             expectRealmDictionary(dictionary);
             expect(Object.keys(dictionary).length).equals(0);
@@ -815,7 +815,7 @@ describe("Mixed", () => {
           it("inserts nested lists of all primitive types via setter", function (this: RealmContext) {
             const { dictionary, realmObject } = this.realm.write(() => {
               const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
-              const { value: dictionary } = this.realm.create<IMixedSchema>(MixedSchema.name, { value: {} });
+              const { mixed: dictionary } = this.realm.create<IMixedSchema>(MixedSchema.name, { mixed: {} });
               return { dictionary, realmObject };
             });
             expectRealmDictionary(dictionary);
@@ -830,7 +830,7 @@ describe("Mixed", () => {
           it("inserts nested dictionaries of all primitive types via setter", function (this: RealmContext) {
             const { dictionary, realmObject } = this.realm.write(() => {
               const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
-              const { value: dictionary } = this.realm.create<IMixedSchema>(MixedSchema.name, { value: {} });
+              const { mixed: dictionary } = this.realm.create<IMixedSchema>(MixedSchema.name, { mixed: {} });
               return { dictionary, realmObject };
             });
             expectRealmDictionary(dictionary);
@@ -843,8 +843,8 @@ describe("Mixed", () => {
           });
 
           it("inserts mix of nested collections of all types via setter", function (this: RealmContext) {
-            const { value: dictionary } = this.realm.write(() => {
-              return this.realm.create<IMixedSchema>(MixedSchema.name, { value: {} });
+            const { mixed: dictionary } = this.realm.write(() => {
+              return this.realm.create<IMixedSchema>(MixedSchema.name, { mixed: {} });
             });
             expectRealmDictionary(dictionary);
             expect(Object.keys(dictionary).length).equals(0);
@@ -865,7 +865,7 @@ describe("Mixed", () => {
           it("updates top-level item via setter", function (this: RealmContext) {
             const { list, realmObject } = this.realm.write(() => {
               const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
-              const { value: list } = this.realm.create<IMixedSchema>(MixedSchema.name, { value: ["original"] });
+              const { mixed: list } = this.realm.create<IMixedSchema>(MixedSchema.name, { mixed: ["original"] });
               return { list, realmObject };
             });
             expectRealmList(list);
@@ -898,7 +898,7 @@ describe("Mixed", () => {
           it("updates nested item via setter", function (this: RealmContext) {
             const { list, realmObject } = this.realm.write(() => {
               const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
-              const { value: list } = this.realm.create<IMixedSchema>(MixedSchema.name, { value: [["original"]] });
+              const { mixed: list } = this.realm.create<IMixedSchema>(MixedSchema.name, { mixed: [["original"]] });
               return { list, realmObject };
             });
             expectRealmList(list);
@@ -935,8 +935,8 @@ describe("Mixed", () => {
           it("updates top-level entry via setter", function (this: RealmContext) {
             const { dictionary, realmObject } = this.realm.write(() => {
               const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
-              const { value: dictionary } = this.realm.create<IMixedSchema>(MixedSchema.name, {
-                value: { depth1: "original" },
+              const { mixed: dictionary } = this.realm.create<IMixedSchema>(MixedSchema.name, {
+                mixed: { depth1: "original" },
               });
               return { dictionary, realmObject };
             });
@@ -970,8 +970,8 @@ describe("Mixed", () => {
           it("updates nested entry via setter", function (this: RealmContext) {
             const { dictionary, realmObject } = this.realm.write(() => {
               const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
-              const { value: dictionary } = this.realm.create<IMixedSchema>(MixedSchema.name, {
-                value: { depth1: { depth2: "original" } },
+              const { mixed: dictionary } = this.realm.create<IMixedSchema>(MixedSchema.name, {
+                mixed: { depth1: { depth2: "original" } },
               });
               return { dictionary, realmObject };
             });
@@ -1012,10 +1012,10 @@ describe("Mixed", () => {
 
       describe("Remove", () => {
         it("removes top-level list item via `remove()`", function (this: RealmContext) {
-          const { value: list } = this.realm.write(() => {
-            const realmObject = this.realm.create(MixedSchema.name, { value: "original" });
+          const { mixed: list } = this.realm.write(() => {
+            const realmObject = this.realm.create(MixedSchema.name, { mixed: "original" });
             return this.realm.create<IMixedSchema>(MixedSchema.name, {
-              value: ["original", [], {}, realmObject],
+              mixed: ["original", [], {}, realmObject],
             });
           });
           expectRealmList(list);
@@ -1051,10 +1051,10 @@ describe("Mixed", () => {
         });
 
         it("removes nested list item via `remove()`", function (this: RealmContext) {
-          const { value: list } = this.realm.write(() => {
-            const realmObject = this.realm.create(MixedSchema.name, { value: "original" });
+          const { mixed: list } = this.realm.write(() => {
+            const realmObject = this.realm.create(MixedSchema.name, { mixed: "original" });
             return this.realm.create<IMixedSchema>(MixedSchema.name, {
-              value: [["original", [], {}, realmObject]],
+              mixed: [["original", [], {}, realmObject]],
             });
           });
           expectRealmList(list);
@@ -1092,10 +1092,10 @@ describe("Mixed", () => {
         });
 
         it("removes top-level dictionary entries via `remove()`", function (this: RealmContext) {
-          const { value: dictionary } = this.realm.write(() => {
-            const realmObject = this.realm.create(MixedSchema.name, { value: "original" });
+          const { mixed: dictionary } = this.realm.write(() => {
+            const realmObject = this.realm.create(MixedSchema.name, { mixed: "original" });
             return this.realm.create<IMixedSchema>(MixedSchema.name, {
-              value: { string: "original", list: [], dictionary: {}, realmObject },
+              mixed: { string: "original", list: [], dictionary: {}, realmObject },
             });
           });
           expectRealmDictionary(dictionary);
@@ -1131,10 +1131,10 @@ describe("Mixed", () => {
         });
 
         it("removes nested dictionary entries via `remove()`", function (this: RealmContext) {
-          const { value: dictionary } = this.realm.write(() => {
-            const realmObject = this.realm.create(MixedSchema.name, { value: "original" });
+          const { mixed: dictionary } = this.realm.write(() => {
+            const realmObject = this.realm.create(MixedSchema.name, { mixed: "original" });
             return this.realm.create<IMixedSchema>(MixedSchema.name, {
-              value: { depth1: { string: "original", list: [], dictionary: {}, realmObject } },
+              mixed: { depth1: { string: "original", list: [], dictionary: {}, realmObject } },
             });
           });
           expectRealmDictionary(dictionary);
@@ -1182,12 +1182,12 @@ describe("Mixed", () => {
 
         this.realm.write(() => {
           // Create 2 objects that should not pass the query string filter.
-          this.realm.create(MixedSchema.name, { value: "not a list" });
-          list.push(this.realm.create(MixedSchema.name, { value: "not a list" }));
+          this.realm.create(MixedSchema.name, { mixed: "not a list" });
+          list.push(this.realm.create(MixedSchema.name, { mixed: "not a list" }));
 
           // Create the objects that should pass the query string filter.
           for (let count = 0; count < expectedFilteredCount; count++) {
-            this.realm.create(MixedSchema.name, { value: list });
+            this.realm.create(MixedSchema.name, { mixed: list });
           }
         });
         const objects = this.realm.objects(MixedSchema.name);
@@ -1197,24 +1197,24 @@ describe("Mixed", () => {
         for (const itemToMatch of list) {
           // Objects with a list item that matches the `itemToMatch` at the GIVEN index.
 
-          let filtered = objects.filtered(`value[${index}] == $0`, itemToMatch);
+          let filtered = objects.filtered(`mixed[${index}] == $0`, itemToMatch);
           expect(filtered.length).equals(expectedFilteredCount);
 
-          filtered = objects.filtered(`value[${index}] == $0`, nonExistentValue);
+          filtered = objects.filtered(`mixed[${index}] == $0`, nonExistentValue);
           expect(filtered.length).equals(0);
 
-          filtered = objects.filtered(`value[${nonExistentIndex}] == $0`, itemToMatch);
+          filtered = objects.filtered(`mixed[${nonExistentIndex}] == $0`, itemToMatch);
           expect(filtered.length).equals(0);
 
           // Objects with a list item that matches the `itemToMatch` at ANY index.
 
-          filtered = objects.filtered(`value[*] == $0`, itemToMatch);
+          filtered = objects.filtered(`mixed[*] == $0`, itemToMatch);
           expect(filtered.length).equals(expectedFilteredCount);
 
-          filtered = objects.filtered(`value[*] == $0`, nonExistentValue);
+          filtered = objects.filtered(`mixed[*] == $0`, nonExistentValue);
           expect(filtered.length).equals(0);
 
-          filtered = objects.filtered(`value[${nonExistentIndex}][*] == $0`, itemToMatch);
+          filtered = objects.filtered(`mixed[${nonExistentIndex}][*] == $0`, itemToMatch);
           expect(filtered.length).equals(0);
 
           index++;
@@ -1222,72 +1222,72 @@ describe("Mixed", () => {
 
         // Objects with a list containing the same number of items as the ones inserted.
 
-        let filtered = objects.filtered(`value.@count == $0`, list.length);
+        let filtered = objects.filtered(`mixed.@count == $0`, list.length);
         expect(filtered.length).equals(expectedFilteredCount);
 
-        filtered = objects.filtered(`value.@count == $0`, 0);
+        filtered = objects.filtered(`mixed.@count == $0`, 0);
         expect(filtered.length).equals(0);
 
-        filtered = objects.filtered(`value.@size == $0`, list.length);
+        filtered = objects.filtered(`mixed.@size == $0`, list.length);
         expect(filtered.length).equals(expectedFilteredCount);
 
-        filtered = objects.filtered(`value.@size == $0`, 0);
+        filtered = objects.filtered(`mixed.@size == $0`, 0);
         expect(filtered.length).equals(0);
 
-        // Objects where `value` itself is of the given type.
+        // Objects where `mixed` itself is of the given type.
 
-        filtered = objects.filtered(`value.@type == 'collection'`);
+        filtered = objects.filtered(`mixed.@type == 'collection'`);
         expect(filtered.length).equals(expectedFilteredCount);
 
-        filtered = objects.filtered(`value.@type == 'list'`);
+        filtered = objects.filtered(`mixed.@type == 'list'`);
         expect(filtered.length).equals(expectedFilteredCount);
 
-        filtered = objects.filtered(`value.@type == 'dictionary'`);
+        filtered = objects.filtered(`mixed.@type == 'dictionary'`);
         expect(filtered.length).equals(0);
 
         // Objects with a list containing an item of the given type.
 
-        filtered = objects.filtered(`value[*].@type == 'null'`);
+        filtered = objects.filtered(`mixed[*].@type == 'null'`);
         expect(filtered.length).equals(expectedFilteredCount);
 
-        filtered = objects.filtered(`value[*].@type == 'bool'`);
+        filtered = objects.filtered(`mixed[*].@type == 'bool'`);
         expect(filtered.length).equals(expectedFilteredCount);
 
         // TODO: Fix.
-        // filtered = objects.filtered(`value[*].@type == 'int'`);
+        // filtered = objects.filtered(`mixed[*].@type == 'int'`);
         // expect(filtered.length).equals(expectedFilteredCount);
 
-        filtered = objects.filtered(`value[*].@type == 'double'`);
+        filtered = objects.filtered(`mixed[*].@type == 'double'`);
         expect(filtered.length).equals(expectedFilteredCount);
 
-        filtered = objects.filtered(`value[*].@type == 'string'`);
+        filtered = objects.filtered(`mixed[*].@type == 'string'`);
         expect(filtered.length).equals(expectedFilteredCount);
 
-        filtered = objects.filtered(`value[*].@type == 'data'`);
+        filtered = objects.filtered(`mixed[*].@type == 'data'`);
         expect(filtered.length).equals(expectedFilteredCount);
 
-        filtered = objects.filtered(`value[*].@type == 'date'`);
+        filtered = objects.filtered(`mixed[*].@type == 'date'`);
         expect(filtered.length).equals(expectedFilteredCount);
 
-        filtered = objects.filtered(`value[*].@type == 'decimal128'`);
+        filtered = objects.filtered(`mixed[*].@type == 'decimal128'`);
         expect(filtered.length).equals(expectedFilteredCount);
 
-        filtered = objects.filtered(`value[*].@type == 'objectId'`);
+        filtered = objects.filtered(`mixed[*].@type == 'objectId'`);
         expect(filtered.length).equals(expectedFilteredCount);
 
-        filtered = objects.filtered(`value[*].@type == 'uuid'`);
+        filtered = objects.filtered(`mixed[*].@type == 'uuid'`);
         expect(filtered.length).equals(expectedFilteredCount);
 
-        filtered = objects.filtered(`value[*].@type == 'link'`);
+        filtered = objects.filtered(`mixed[*].@type == 'link'`);
         expect(filtered.length).equals(expectedFilteredCount);
 
-        filtered = objects.filtered(`value[*].@type == 'collection'`);
+        filtered = objects.filtered(`mixed[*].@type == 'collection'`);
         expect(filtered.length).equals(0);
 
-        filtered = objects.filtered(`value[*].@type == 'list'`);
+        filtered = objects.filtered(`mixed[*].@type == 'list'`);
         expect(filtered.length).equals(0);
 
-        filtered = objects.filtered(`value[*].@type == 'dictionary'`);
+        filtered = objects.filtered(`mixed[*].@type == 'dictionary'`);
         expect(filtered.length).equals(0);
       });
 
@@ -1299,12 +1299,12 @@ describe("Mixed", () => {
 
         this.realm.write(() => {
           // Create 2 objects that should not pass the query string filter.
-          this.realm.create(MixedSchema.name, { value: "not a list" });
-          list[0][0].push(this.realm.create(MixedSchema.name, { value: "not a list" }));
+          this.realm.create(MixedSchema.name, { mixed: "not a list" });
+          list[0][0].push(this.realm.create(MixedSchema.name, { mixed: "not a list" }));
 
           // Create the objects that should pass the query string filter.
           for (let count = 0; count < expectedFilteredCount; count++) {
-            this.realm.create(MixedSchema.name, { value: list });
+            this.realm.create(MixedSchema.name, { mixed: list });
           }
         });
         const objects = this.realm.objects(MixedSchema.name);
@@ -1315,24 +1315,24 @@ describe("Mixed", () => {
         for (const itemToMatch of nestedList) {
           // Objects with a nested list item that matches the `itemToMatch` at the GIVEN index.
 
-          let filtered = objects.filtered(`value[0][0][${index}] == $0`, itemToMatch);
+          let filtered = objects.filtered(`mixed[0][0][${index}] == $0`, itemToMatch);
           expect(filtered.length).equals(expectedFilteredCount);
 
-          filtered = objects.filtered(`value[0][0][${index}] == $0`, nonExistentValue);
+          filtered = objects.filtered(`mixed[0][0][${index}] == $0`, nonExistentValue);
           expect(filtered.length).equals(0);
 
-          filtered = objects.filtered(`value[0][0][${nonExistentIndex}] == $0`, itemToMatch);
+          filtered = objects.filtered(`mixed[0][0][${nonExistentIndex}] == $0`, itemToMatch);
           expect(filtered.length).equals(0);
 
           // Objects with a nested list item that matches the `itemToMatch` at ANY index.
 
-          filtered = objects.filtered(`value[0][0][*] == $0`, itemToMatch);
+          filtered = objects.filtered(`mixed[0][0][*] == $0`, itemToMatch);
           expect(filtered.length).equals(expectedFilteredCount);
 
-          filtered = objects.filtered(`value[0][0][*] == $0`, nonExistentValue);
+          filtered = objects.filtered(`mixed[0][0][*] == $0`, nonExistentValue);
           expect(filtered.length).equals(0);
 
-          filtered = objects.filtered(`value[0][${nonExistentIndex}][*] == $0`, itemToMatch);
+          filtered = objects.filtered(`mixed[0][${nonExistentIndex}][*] == $0`, itemToMatch);
           expect(filtered.length).equals(0);
 
           index++;
@@ -1340,72 +1340,72 @@ describe("Mixed", () => {
 
         // Objects with a nested list containing the same number of items as the ones inserted.
 
-        let filtered = objects.filtered(`value[0][0].@count == $0`, nestedList.length);
+        let filtered = objects.filtered(`mixed[0][0].@count == $0`, nestedList.length);
         expect(filtered.length).equals(expectedFilteredCount);
 
-        filtered = objects.filtered(`value[0][0].@count == $0`, 0);
+        filtered = objects.filtered(`mixed[0][0].@count == $0`, 0);
         expect(filtered.length).equals(0);
 
-        filtered = objects.filtered(`value[0][0].@size == $0`, nestedList.length);
+        filtered = objects.filtered(`mixed[0][0].@size == $0`, nestedList.length);
         expect(filtered.length).equals(expectedFilteredCount);
 
-        filtered = objects.filtered(`value[0][0].@size == $0`, 0);
+        filtered = objects.filtered(`mixed[0][0].@size == $0`, 0);
         expect(filtered.length).equals(0);
 
-        // Objects where `value[0][0]` itself is of the given type.
+        // Objects where `mixed[0][0]` itself is of the given type.
 
-        filtered = objects.filtered(`value[0][0].@type == 'collection'`);
+        filtered = objects.filtered(`mixed[0][0].@type == 'collection'`);
         expect(filtered.length).equals(expectedFilteredCount);
 
-        filtered = objects.filtered(`value[0][0].@type == 'list'`);
+        filtered = objects.filtered(`mixed[0][0].@type == 'list'`);
         expect(filtered.length).equals(expectedFilteredCount);
 
-        filtered = objects.filtered(`value[0][0].@type == 'dictionary'`);
+        filtered = objects.filtered(`mixed[0][0].@type == 'dictionary'`);
         expect(filtered.length).equals(0);
 
         // Objects with a nested list containing an item of the given type.
 
-        filtered = objects.filtered(`value[0][0][*].@type == 'null'`);
+        filtered = objects.filtered(`mixed[0][0][*].@type == 'null'`);
         expect(filtered.length).equals(expectedFilteredCount);
 
-        filtered = objects.filtered(`value[0][0][*].@type == 'bool'`);
+        filtered = objects.filtered(`mixed[0][0][*].@type == 'bool'`);
         expect(filtered.length).equals(expectedFilteredCount);
 
         // TODO: Fix.
-        // filtered = objects.filtered(`value[0][0][*].@type == 'int'`);
+        // filtered = objects.filtered(`mixed[0][0][*].@type == 'int'`);
         // expect(filtered.length).equals(expectedFilteredCount);
 
-        filtered = objects.filtered(`value[0][0][*].@type == 'double'`);
+        filtered = objects.filtered(`mixed[0][0][*].@type == 'double'`);
         expect(filtered.length).equals(expectedFilteredCount);
 
-        filtered = objects.filtered(`value[0][0][*].@type == 'string'`);
+        filtered = objects.filtered(`mixed[0][0][*].@type == 'string'`);
         expect(filtered.length).equals(expectedFilteredCount);
 
-        filtered = objects.filtered(`value[0][0][*].@type == 'data'`);
+        filtered = objects.filtered(`mixed[0][0][*].@type == 'data'`);
         expect(filtered.length).equals(expectedFilteredCount);
 
-        filtered = objects.filtered(`value[0][0][*].@type == 'date'`);
+        filtered = objects.filtered(`mixed[0][0][*].@type == 'date'`);
         expect(filtered.length).equals(expectedFilteredCount);
 
-        filtered = objects.filtered(`value[0][0][*].@type == 'decimal128'`);
+        filtered = objects.filtered(`mixed[0][0][*].@type == 'decimal128'`);
         expect(filtered.length).equals(expectedFilteredCount);
 
-        filtered = objects.filtered(`value[0][0][*].@type == 'objectId'`);
+        filtered = objects.filtered(`mixed[0][0][*].@type == 'objectId'`);
         expect(filtered.length).equals(expectedFilteredCount);
 
-        filtered = objects.filtered(`value[0][0][*].@type == 'uuid'`);
+        filtered = objects.filtered(`mixed[0][0][*].@type == 'uuid'`);
         expect(filtered.length).equals(expectedFilteredCount);
 
-        filtered = objects.filtered(`value[0][0][*].@type == 'link'`);
+        filtered = objects.filtered(`mixed[0][0][*].@type == 'link'`);
         expect(filtered.length).equals(expectedFilteredCount);
 
-        filtered = objects.filtered(`value[0][0][*].@type == 'collection'`);
+        filtered = objects.filtered(`mixed[0][0][*].@type == 'collection'`);
         expect(filtered.length).equals(0);
 
-        filtered = objects.filtered(`value[0][0][*].@type == 'list'`);
+        filtered = objects.filtered(`mixed[0][0][*].@type == 'list'`);
         expect(filtered.length).equals(0);
 
-        filtered = objects.filtered(`value[0][0][*].@type == 'dictionary'`);
+        filtered = objects.filtered(`mixed[0][0][*].@type == 'dictionary'`);
         expect(filtered.length).equals(0);
       });
 
@@ -1417,12 +1417,12 @@ describe("Mixed", () => {
 
         this.realm.write(() => {
           // Create 2 objects that should not pass the query string filter.
-          this.realm.create(MixedSchema.name, { value: "not a dictionary" });
-          dictionary.realmObject = this.realm.create(MixedSchema.name, { value: "not a dictionary" });
+          this.realm.create(MixedSchema.name, { mixed: "not a dictionary" });
+          dictionary.realmObject = this.realm.create(MixedSchema.name, { mixed: "not a dictionary" });
 
           // Create the objects that should pass the query string filter.
           for (let count = 0; count < expectedFilteredCount; count++) {
-            this.realm.create(MixedSchema.name, { value: dictionary });
+            this.realm.create(MixedSchema.name, { mixed: dictionary });
           }
         });
         const objects = this.realm.objects(MixedSchema.name);
@@ -1435,117 +1435,117 @@ describe("Mixed", () => {
 
           // Objects with a dictionary value that matches the `valueToMatch` at the GIVEN key.
 
-          let filtered = objects.filtered(`value['${key}'] == $0`, valueToMatch);
+          let filtered = objects.filtered(`mixed['${key}'] == $0`, valueToMatch);
           expect(filtered.length).equals(expectedFilteredCount);
 
-          filtered = objects.filtered(`value['${key}'] == $0`, nonExistentValue);
+          filtered = objects.filtered(`mixed['${key}'] == $0`, nonExistentValue);
           expect(filtered.length).equals(0);
 
-          filtered = objects.filtered(`value['${nonExistentKey}'] == $0`, valueToMatch);
+          filtered = objects.filtered(`mixed['${nonExistentKey}'] == $0`, valueToMatch);
           expect(filtered.length).equals(0);
 
-          filtered = objects.filtered(`value.${key} == $0`, valueToMatch);
+          filtered = objects.filtered(`mixed.${key} == $0`, valueToMatch);
           expect(filtered.length).equals(expectedFilteredCount);
 
-          filtered = objects.filtered(`value.${key} == $0`, nonExistentValue);
+          filtered = objects.filtered(`mixed.${key} == $0`, nonExistentValue);
           expect(filtered.length).equals(0);
 
-          filtered = objects.filtered(`value.${nonExistentKey} == $0`, valueToMatch);
+          filtered = objects.filtered(`mixed.${nonExistentKey} == $0`, valueToMatch);
           expect(filtered.length).equals(0);
 
           // Objects with a dictionary value that matches the `valueToMatch` at ANY key.
 
-          filtered = objects.filtered(`value[*] == $0`, valueToMatch);
+          filtered = objects.filtered(`mixed[*] == $0`, valueToMatch);
           expect(filtered.length).equals(expectedFilteredCount);
 
-          filtered = objects.filtered(`value[*] == $0`, nonExistentValue);
+          filtered = objects.filtered(`mixed[*] == $0`, nonExistentValue);
           expect(filtered.length).equals(0);
 
           // Objects with a dictionary containing a key that matches the given key.
 
-          filtered = objects.filtered(`value.@keys == $0`, key);
+          filtered = objects.filtered(`mixed.@keys == $0`, key);
           expect(filtered.length).equals(expectedFilteredCount);
 
-          filtered = objects.filtered(`value.@keys == $0`, nonExistentKey);
+          filtered = objects.filtered(`mixed.@keys == $0`, nonExistentKey);
           expect(filtered.length).equals(0);
 
           // Objects with a dictionary value at the given key matching any of the values inserted.
 
-          filtered = objects.filtered(`value.${key} IN $0`, insertedValues);
+          filtered = objects.filtered(`mixed.${key} IN $0`, insertedValues);
           expect(filtered.length).equals(expectedFilteredCount);
 
-          filtered = objects.filtered(`value.${key} IN $0`, [nonExistentValue]);
+          filtered = objects.filtered(`mixed.${key} IN $0`, [nonExistentValue]);
           expect(filtered.length).equals(0);
         }
 
         // Objects with a dictionary containing the same number of keys as the ones inserted.
 
-        let filtered = objects.filtered(`value.@count == $0`, insertedValues.length);
+        let filtered = objects.filtered(`mixed.@count == $0`, insertedValues.length);
         expect(filtered.length).equals(expectedFilteredCount);
 
-        filtered = objects.filtered(`value.@count == $0`, 0);
+        filtered = objects.filtered(`mixed.@count == $0`, 0);
         expect(filtered.length).equals(0);
 
-        filtered = objects.filtered(`value.@size == $0`, insertedValues.length);
+        filtered = objects.filtered(`mixed.@size == $0`, insertedValues.length);
         expect(filtered.length).equals(expectedFilteredCount);
 
-        filtered = objects.filtered(`value.@size == $0`, 0);
+        filtered = objects.filtered(`mixed.@size == $0`, 0);
         expect(filtered.length).equals(0);
 
-        // Objects where `value` itself is of the given type.
+        // Objects where `mixed` itself is of the given type.
 
-        filtered = objects.filtered(`value.@type == 'collection'`);
+        filtered = objects.filtered(`mixed.@type == 'collection'`);
         expect(filtered.length).equals(expectedFilteredCount);
 
-        filtered = objects.filtered(`value.@type == 'dictionary'`);
+        filtered = objects.filtered(`mixed.@type == 'dictionary'`);
         expect(filtered.length).equals(expectedFilteredCount);
 
-        filtered = objects.filtered(`value.@type == 'list'`);
+        filtered = objects.filtered(`mixed.@type == 'list'`);
         expect(filtered.length).equals(0);
 
         // Objects with a dictionary containing a property of the given type.
 
-        filtered = objects.filtered(`value[*].@type == 'null'`);
+        filtered = objects.filtered(`mixed[*].@type == 'null'`);
         expect(filtered.length).equals(expectedFilteredCount);
 
-        filtered = objects.filtered(`value[*].@type == 'bool'`);
+        filtered = objects.filtered(`mixed[*].@type == 'bool'`);
         expect(filtered.length).equals(expectedFilteredCount);
 
         // TODO: Fix.
-        // filtered = objects.filtered(`value[*].@type == 'int'`);
+        // filtered = objects.filtered(`mixed[*].@type == 'int'`);
         // expect(filtered.length).equals(expectedFilteredCount);
 
-        filtered = objects.filtered(`value[*].@type == 'double'`);
+        filtered = objects.filtered(`mixed[*].@type == 'double'`);
         expect(filtered.length).equals(expectedFilteredCount);
 
-        filtered = objects.filtered(`value[*].@type == 'string'`);
+        filtered = objects.filtered(`mixed[*].@type == 'string'`);
         expect(filtered.length).equals(expectedFilteredCount);
 
-        filtered = objects.filtered(`value[*].@type == 'data'`);
+        filtered = objects.filtered(`mixed[*].@type == 'data'`);
         expect(filtered.length).equals(expectedFilteredCount);
 
-        filtered = objects.filtered(`value[*].@type == 'date'`);
+        filtered = objects.filtered(`mixed[*].@type == 'date'`);
         expect(filtered.length).equals(expectedFilteredCount);
 
-        filtered = objects.filtered(`value[*].@type == 'decimal128'`);
+        filtered = objects.filtered(`mixed[*].@type == 'decimal128'`);
         expect(filtered.length).equals(expectedFilteredCount);
 
-        filtered = objects.filtered(`value[*].@type == 'objectId'`);
+        filtered = objects.filtered(`mixed[*].@type == 'objectId'`);
         expect(filtered.length).equals(expectedFilteredCount);
 
-        filtered = objects.filtered(`value[*].@type == 'uuid'`);
+        filtered = objects.filtered(`mixed[*].@type == 'uuid'`);
         expect(filtered.length).equals(expectedFilteredCount);
 
-        filtered = objects.filtered(`value[*].@type == 'link'`);
+        filtered = objects.filtered(`mixed[*].@type == 'link'`);
         expect(filtered.length).equals(expectedFilteredCount);
 
-        filtered = objects.filtered(`value[*].@type == 'collection'`);
+        filtered = objects.filtered(`mixed[*].@type == 'collection'`);
         expect(filtered.length).equals(0);
 
-        filtered = objects.filtered(`value[*].@type == 'list'`);
+        filtered = objects.filtered(`mixed[*].@type == 'list'`);
         expect(filtered.length).equals(0);
 
-        filtered = objects.filtered(`value[*].@type == 'dictionary'`);
+        filtered = objects.filtered(`mixed[*].@type == 'dictionary'`);
         expect(filtered.length).equals(0);
       });
 
@@ -1557,12 +1557,12 @@ describe("Mixed", () => {
 
         this.realm.write(() => {
           // Create 2 objects that should not pass the query string filter.
-          this.realm.create(MixedSchema.name, { value: "not a dictionary" });
-          dictionary.depth1.depth2.realmObject = this.realm.create(MixedSchema.name, { value: "not a dictionary" });
+          this.realm.create(MixedSchema.name, { mixed: "not a dictionary" });
+          dictionary.depth1.depth2.realmObject = this.realm.create(MixedSchema.name, { mixed: "not a dictionary" });
 
           // Create the objects that should pass the query string filter.
           for (let count = 0; count < expectedFilteredCount; count++) {
-            this.realm.create(MixedSchema.name, { value: dictionary });
+            this.realm.create(MixedSchema.name, { mixed: dictionary });
           }
         });
         const objects = this.realm.objects(MixedSchema.name);
@@ -1576,117 +1576,117 @@ describe("Mixed", () => {
 
           // Objects with a nested dictionary value that matches the `valueToMatch` at the GIVEN key.
 
-          let filtered = objects.filtered(`value['depth1']['depth2']['${key}'] == $0`, valueToMatch);
+          let filtered = objects.filtered(`mixed['depth1']['depth2']['${key}'] == $0`, valueToMatch);
           expect(filtered.length).equals(expectedFilteredCount);
 
-          filtered = objects.filtered(`value['depth1']['depth2']['${key}'] == $0`, nonExistentValue);
+          filtered = objects.filtered(`mixed['depth1']['depth2']['${key}'] == $0`, nonExistentValue);
           expect(filtered.length).equals(0);
 
-          filtered = objects.filtered(`value['depth1']['depth2']['${nonExistentKey}'] == $0`, valueToMatch);
+          filtered = objects.filtered(`mixed['depth1']['depth2']['${nonExistentKey}'] == $0`, valueToMatch);
           expect(filtered.length).equals(0);
 
-          filtered = objects.filtered(`value.depth1.depth2.${key} == $0`, valueToMatch);
+          filtered = objects.filtered(`mixed.depth1.depth2.${key} == $0`, valueToMatch);
           expect(filtered.length).equals(expectedFilteredCount);
 
-          filtered = objects.filtered(`value.depth1.depth2.${key} == $0`, nonExistentValue);
+          filtered = objects.filtered(`mixed.depth1.depth2.${key} == $0`, nonExistentValue);
           expect(filtered.length).equals(0);
 
-          filtered = objects.filtered(`value.depth1.depth2.${nonExistentKey} == $0`, valueToMatch);
+          filtered = objects.filtered(`mixed.depth1.depth2.${nonExistentKey} == $0`, valueToMatch);
           expect(filtered.length).equals(0);
 
           // Objects with a nested dictionary value that matches the `valueToMatch` at ANY key.
 
-          filtered = objects.filtered(`value.depth1.depth2[*] == $0`, valueToMatch);
+          filtered = objects.filtered(`mixed.depth1.depth2[*] == $0`, valueToMatch);
           expect(filtered.length).equals(expectedFilteredCount);
 
-          filtered = objects.filtered(`value.depth1.depth2[*] == $0`, nonExistentValue);
+          filtered = objects.filtered(`mixed.depth1.depth2[*] == $0`, nonExistentValue);
           expect(filtered.length).equals(0);
 
           // Objects with a nested dictionary containing a key that matches the given key.
 
-          filtered = objects.filtered(`value.depth1.depth2.@keys == $0`, key);
+          filtered = objects.filtered(`mixed.depth1.depth2.@keys == $0`, key);
           expect(filtered.length).equals(expectedFilteredCount);
 
-          filtered = objects.filtered(`value.depth1.depth2.@keys == $0`, nonExistentKey);
+          filtered = objects.filtered(`mixed.depth1.depth2.@keys == $0`, nonExistentKey);
           expect(filtered.length).equals(0);
 
           // Objects with a nested dictionary value at the given key matching any of the values inserted.
 
-          filtered = objects.filtered(`value.depth1.depth2.${key} IN $0`, insertedValues);
+          filtered = objects.filtered(`mixed.depth1.depth2.${key} IN $0`, insertedValues);
           expect(filtered.length).equals(expectedFilteredCount);
 
-          filtered = objects.filtered(`value.depth1.depth2.${key} IN $0`, [nonExistentValue]);
+          filtered = objects.filtered(`mixed.depth1.depth2.${key} IN $0`, [nonExistentValue]);
           expect(filtered.length).equals(0);
         }
 
         // Objects with a nested dictionary containing the same number of keys as the ones inserted.
 
-        let filtered = objects.filtered(`value.depth1.depth2.@count == $0`, insertedValues.length);
+        let filtered = objects.filtered(`mixed.depth1.depth2.@count == $0`, insertedValues.length);
         expect(filtered.length).equals(expectedFilteredCount);
 
-        filtered = objects.filtered(`value.depth1.depth2.@count == $0`, 0);
+        filtered = objects.filtered(`mixed.depth1.depth2.@count == $0`, 0);
         expect(filtered.length).equals(0);
 
-        filtered = objects.filtered(`value.depth1.depth2.@size == $0`, insertedValues.length);
+        filtered = objects.filtered(`mixed.depth1.depth2.@size == $0`, insertedValues.length);
         expect(filtered.length).equals(expectedFilteredCount);
 
-        filtered = objects.filtered(`value.depth1.depth2.@size == $0`, 0);
+        filtered = objects.filtered(`mixed.depth1.depth2.@size == $0`, 0);
         expect(filtered.length).equals(0);
 
         // Objects where `depth2` itself is of the given type.
 
-        filtered = objects.filtered(`value.depth1.depth2.@type == 'collection'`);
+        filtered = objects.filtered(`mixed.depth1.depth2.@type == 'collection'`);
         expect(filtered.length).equals(expectedFilteredCount);
 
-        filtered = objects.filtered(`value.depth1.depth2.@type == 'dictionary'`);
+        filtered = objects.filtered(`mixed.depth1.depth2.@type == 'dictionary'`);
         expect(filtered.length).equals(expectedFilteredCount);
 
-        filtered = objects.filtered(`value.depth1.depth2.@type == 'list'`);
+        filtered = objects.filtered(`mixed.depth1.depth2.@type == 'list'`);
         expect(filtered.length).equals(0);
 
         // Objects with a nested dictionary containing a property of the given type.
 
-        filtered = objects.filtered(`value.depth1.depth2[*].@type == 'null'`);
+        filtered = objects.filtered(`mixed.depth1.depth2[*].@type == 'null'`);
         expect(filtered.length).equals(expectedFilteredCount);
 
-        filtered = objects.filtered(`value.depth1.depth2[*].@type == 'bool'`);
+        filtered = objects.filtered(`mixed.depth1.depth2[*].@type == 'bool'`);
         expect(filtered.length).equals(expectedFilteredCount);
 
         // TODO: Fix.
-        // filtered = objects.filtered(`value.depth1.depth2[*].@type == 'int'`);
+        // filtered = objects.filtered(`mixed.depth1.depth2[*].@type == 'int'`);
         // expect(filtered.length).equals(expectedFilteredCount);
 
-        filtered = objects.filtered(`value.depth1.depth2[*].@type == 'double'`);
+        filtered = objects.filtered(`mixed.depth1.depth2[*].@type == 'double'`);
         expect(filtered.length).equals(expectedFilteredCount);
 
-        filtered = objects.filtered(`value.depth1.depth2[*].@type == 'string'`);
+        filtered = objects.filtered(`mixed.depth1.depth2[*].@type == 'string'`);
         expect(filtered.length).equals(expectedFilteredCount);
 
-        filtered = objects.filtered(`value.depth1.depth2[*].@type == 'data'`);
+        filtered = objects.filtered(`mixed.depth1.depth2[*].@type == 'data'`);
         expect(filtered.length).equals(expectedFilteredCount);
 
-        filtered = objects.filtered(`value.depth1.depth2[*].@type == 'date'`);
+        filtered = objects.filtered(`mixed.depth1.depth2[*].@type == 'date'`);
         expect(filtered.length).equals(expectedFilteredCount);
 
-        filtered = objects.filtered(`value.depth1.depth2[*].@type == 'decimal128'`);
+        filtered = objects.filtered(`mixed.depth1.depth2[*].@type == 'decimal128'`);
         expect(filtered.length).equals(expectedFilteredCount);
 
-        filtered = objects.filtered(`value.depth1.depth2[*].@type == 'objectId'`);
+        filtered = objects.filtered(`mixed.depth1.depth2[*].@type == 'objectId'`);
         expect(filtered.length).equals(expectedFilteredCount);
 
-        filtered = objects.filtered(`value.depth1.depth2[*].@type == 'uuid'`);
+        filtered = objects.filtered(`mixed.depth1.depth2[*].@type == 'uuid'`);
         expect(filtered.length).equals(expectedFilteredCount);
 
-        filtered = objects.filtered(`value.depth1.depth2[*].@type == 'link'`);
+        filtered = objects.filtered(`mixed.depth1.depth2[*].@type == 'link'`);
         expect(filtered.length).equals(expectedFilteredCount);
 
-        filtered = objects.filtered(`value.depth1.depth2[*].@type == 'collection'`);
+        filtered = objects.filtered(`mixed.depth1.depth2[*].@type == 'collection'`);
         expect(filtered.length).equals(0);
 
-        filtered = objects.filtered(`value.depth1.depth2[*].@type == 'list'`);
+        filtered = objects.filtered(`mixed.depth1.depth2[*].@type == 'list'`);
         expect(filtered.length).equals(0);
 
-        filtered = objects.filtered(`value.depth1.depth2[*].@type == 'dictionary'`);
+        filtered = objects.filtered(`mixed.depth1.depth2[*].@type == 'dictionary'`);
         expect(filtered.length).equals(0);
       });
     });
@@ -1694,7 +1694,7 @@ describe("Mixed", () => {
     describe("Invalid operations", () => {
       it("throws when creating a set (input: JS Set)", function (this: RealmContext) {
         this.realm.write(() => {
-          expect(() => this.realm.create(MixedSchema.name, { value: new Set() })).to.throw(
+          expect(() => this.realm.create(MixedSchema.name, { mixed: new Set() })).to.throw(
             "Using a Set as a Mixed value is not supported",
           );
         });
@@ -1709,7 +1709,7 @@ describe("Mixed", () => {
         this.realm.write(() => {
           const { set } = this.realm.create(CollectionsOfMixedSchema.name, { set: [int] });
           expect(set).instanceOf(Realm.Set);
-          expect(() => this.realm.create(MixedSchema.name, { value: set })).to.throw(
+          expect(() => this.realm.create(MixedSchema.name, { mixed: set })).to.throw(
             "Using a RealmSet as a Mixed value is not supported",
           );
         });
@@ -1723,8 +1723,8 @@ describe("Mixed", () => {
       it("throws when updating a list item to a set", function (this: RealmContext) {
         const { set, list } = this.realm.write(() => {
           const realmObjectWithSet = this.realm.create(CollectionsOfMixedSchema.name, { set: [int] });
-          const realmObjectWithMixed = this.realm.create<IMixedSchema>(MixedSchema.name, { value: ["original"] });
-          return { set: realmObjectWithSet.set, list: realmObjectWithMixed.value };
+          const realmObjectWithMixed = this.realm.create<IMixedSchema>(MixedSchema.name, { mixed: ["original"] });
+          return { set: realmObjectWithSet.set, list: realmObjectWithMixed.mixed };
         });
         expectRealmList(list);
         expect(list[0]).equals("original");
@@ -1740,9 +1740,9 @@ describe("Mixed", () => {
         const { set, dictionary } = this.realm.write(() => {
           const realmObjectWithSet = this.realm.create(CollectionsOfMixedSchema.name, { set: [int] });
           const realmObjectWithMixed = this.realm.create<IMixedSchema>(MixedSchema.name, {
-            value: { key: "original" },
+            mixed: { key: "original" },
           });
-          return { set: realmObjectWithSet.set, dictionary: realmObjectWithMixed.value };
+          return { set: realmObjectWithSet.set, dictionary: realmObjectWithMixed.mixed };
         });
         expectRealmDictionary(dictionary);
         expect(dictionary.key).equals("original");
@@ -1758,16 +1758,16 @@ describe("Mixed", () => {
         this.realm.write(() => {
           // Create an object with an embedded object property.
           const { embeddedObject } = this.realm.create(MixedAndEmbeddedSchema.name, {
-            embeddedObject: { value: 1 },
+            embeddedObject: { mixed: 1 },
           });
           expect(embeddedObject).instanceOf(Realm.Object);
 
-          // Create two objects with the Mixed property (`value`) being a list and
-          // dictionary (respectively) containing the reference to the embedded object.
-          expect(() => this.realm.create(MixedAndEmbeddedSchema.name, { mixedValue: [embeddedObject] })).to.throw(
+          // Create two objects with the Mixed property being a list and dictionary
+          // (respectively) containing the reference to the embedded object.
+          expect(() => this.realm.create(MixedAndEmbeddedSchema.name, { mixed: [embeddedObject] })).to.throw(
             "Using an embedded object (EmbeddedObject) as a Mixed value is not supported",
           );
-          expect(() => this.realm.create(MixedAndEmbeddedSchema.name, { mixedValue: { embeddedObject } })).to.throw(
+          expect(() => this.realm.create(MixedAndEmbeddedSchema.name, { mixed: { embeddedObject } })).to.throw(
             "Using an embedded object (EmbeddedObject) as a Mixed value is not supported",
           );
         });
@@ -1781,18 +1781,18 @@ describe("Mixed", () => {
         this.realm.write(() => {
           // Create an object with an embedded object property.
           const { embeddedObject } = this.realm.create(MixedAndEmbeddedSchema.name, {
-            embeddedObject: { value: 1 },
+            embeddedObject: { mixed: 1 },
           });
           expect(embeddedObject).instanceOf(Realm.Object);
 
           // Create two objects with the Mixed property being a list and dictionary respectively.
-          const { mixedValue: list } = this.realm.create<IMixedAndEmbedded>(MixedAndEmbeddedSchema.name, {
-            mixedValue: ["original"],
+          const { mixed: list } = this.realm.create<IMixedAndEmbedded>(MixedAndEmbeddedSchema.name, {
+            mixed: ["original"],
           });
           expectRealmList(list);
 
-          const { mixedValue: dictionary } = this.realm.create<IMixedAndEmbedded>(MixedAndEmbeddedSchema.name, {
-            mixedValue: { key: "original" },
+          const { mixed: dictionary } = this.realm.create<IMixedAndEmbedded>(MixedAndEmbeddedSchema.name, {
+            mixed: { key: "original" },
           });
           expectRealmDictionary(dictionary);
 
@@ -1808,33 +1808,33 @@ describe("Mixed", () => {
         expect(objects.length).equals(3);
 
         // Check that the list and dictionary are unchanged.
-        const list = objects[1].mixedValue;
+        const list = objects[1].mixed;
         expectRealmList(list);
         expect(list[0]).equals("original");
 
-        const dictionary = objects[2].mixedValue;
+        const dictionary = objects[2].mixed;
         expectRealmDictionary(dictionary);
         expect(dictionary.key).equals("original");
       });
 
       it("throws when setting a list or dictionary outside a transaction", function (this: RealmContext) {
         const created = this.realm.write(() => {
-          return this.realm.create<IMixedSchema>(MixedSchema.name, { value: "original" });
+          return this.realm.create<IMixedSchema>(MixedSchema.name, { mixed: "original" });
         });
-        expect(created.value).equals("original");
-        expect(() => (created.value = ["a list item"])).to.throw(
+        expect(created.mixed).equals("original");
+        expect(() => (created.mixed = ["a list item"])).to.throw(
           "Cannot modify managed objects outside of a write transaction",
         );
-        expect(() => (created.value = { key: "a dictionary value" })).to.throw(
+        expect(() => (created.mixed = { key: "a dictionary value" })).to.throw(
           "Cannot modify managed objects outside of a write transaction",
         );
-        expect(created.value).equals("original");
+        expect(created.mixed).equals("original");
       });
 
       it("throws when setting a list item out of bounds", function (this: RealmContext) {
-        const { value: list } = this.realm.write(() => {
+        const { mixed: list } = this.realm.write(() => {
           // Create an empty list as the Mixed value.
-          return this.realm.create<IMixedSchema>(MixedSchema.name, { value: [] });
+          return this.realm.create<IMixedSchema>(MixedSchema.name, { mixed: [] });
         });
         expectRealmList(list);
         expect(list.length).equals(0);
@@ -1860,29 +1860,29 @@ describe("Mixed", () => {
 
       it("invalidates the list when removed", function (this: RealmContext) {
         const created = this.realm.write(() => {
-          return this.realm.create<IMixedSchema>(MixedSchema.name, { value: [1] });
+          return this.realm.create<IMixedSchema>(MixedSchema.name, { mixed: [1] });
         });
-        const list = created.value;
+        const list = created.mixed;
         expectRealmList(list);
 
         this.realm.write(() => {
-          created.value = null;
+          created.mixed = null;
         });
-        expect(created.value).to.be.null;
+        expect(created.mixed).to.be.null;
         expect(() => list[0]).to.throw("List is no longer valid");
       });
 
       it("invalidates the dictionary when removed", function (this: RealmContext) {
         const created = this.realm.write(() => {
-          return this.realm.create<IMixedSchema>(MixedSchema.name, { value: { prop: 1 } });
+          return this.realm.create<IMixedSchema>(MixedSchema.name, { mixed: { prop: 1 } });
         });
-        const dictionary = created.value;
+        const dictionary = created.mixed;
         expectRealmDictionary(dictionary);
 
         this.realm.write(() => {
-          created.value = null;
+          created.mixed = null;
         });
-        expect(created.value).to.be.null;
+        expect(created.mixed).to.be.null;
         expect(() => dictionary.prop).to.throw("This collection is no more");
       });
 
@@ -1891,7 +1891,7 @@ describe("Mixed", () => {
         expect(() => {
           this.realm.write(() => {
             this.realm.create<IMixedSchema>(MixedSchema.name, {
-              value: [1, [2, [3, [4, [5]]]]],
+              mixed: [1, [2, [3, [4, [5]]]]],
             });
           });
         }).to.throw("Max nesting level reached");
@@ -1899,7 +1899,7 @@ describe("Mixed", () => {
         expect(() => {
           this.realm.write(() => {
             this.realm.create<IMixedSchema>(MixedSchema.name, {
-              value: { depth1: { depth2: { depth3: { depth4: { depth5: "value" } } } } },
+              mixed: { depth1: { depth2: { depth3: { depth4: { depth5: "value" } } } } },
             });
           });
         }).to.throw("Max nesting level reached");
@@ -1916,18 +1916,18 @@ describe("Mixed", () => {
       const uint8Buffer1 = new Uint8Array(uint8Values1).buffer;
       const uint8Buffer2 = new Uint8Array(uint8Values2).buffer;
       this.realm.write(() => {
-        this.realm.create("MixedClass", { value: uint8Buffer1 });
+        this.realm.create("MixedClass", { mixed: uint8Buffer1 });
       });
       let mixedObjects = this.realm.objects<IMixedSchema>("MixedClass");
-      let returnedData = [...new Uint8Array(mixedObjects[0].value as Iterable<number>)];
+      let returnedData = [...new Uint8Array(mixedObjects[0].mixed as Iterable<number>)];
       expect(returnedData).eql(uint8Values1);
 
       this.realm.write(() => {
-        mixedObjects[0].value = uint8Buffer2;
+        mixedObjects[0].mixed = uint8Buffer2;
       });
 
       mixedObjects = this.realm.objects<IMixedSchema>("MixedClass");
-      returnedData = [...new Uint8Array(mixedObjects[0].value as Iterable<number>)];
+      returnedData = [...new Uint8Array(mixedObjects[0].mixed as Iterable<number>)];
       expect(returnedData).eql(uint8Values2);
 
       this.realm.write(() => {
@@ -1936,10 +1936,10 @@ describe("Mixed", () => {
 
       // Test with empty array
       this.realm.write(() => {
-        this.realm.create<IMixedSchema>("MixedClass", { value: new Uint8Array(0) });
+        this.realm.create<IMixedSchema>("MixedClass", { mixed: new Uint8Array(0) });
       });
 
-      const emptyArrayBuffer = mixedObjects[0].value;
+      const emptyArrayBuffer = mixedObjects[0].mixed;
       expect(emptyArrayBuffer).instanceOf(ArrayBuffer);
       expect((emptyArrayBuffer as ArrayBuffer).byteLength).equals(0);
 
@@ -1951,11 +1951,11 @@ describe("Mixed", () => {
       const uint16Values = [0, 512, 256, 65535];
       const uint16Buffer = new Uint16Array(uint16Values).buffer;
       this.realm.write(() => {
-        this.realm.create("MixedClass", { value: uint16Buffer });
+        this.realm.create("MixedClass", { mixed: uint16Buffer });
       });
 
       const uint16Objects = this.realm.objects<IMixedSchema>("MixedClass");
-      returnedData = [...new Uint16Array(uint16Objects[0].value as Iterable<number>)];
+      returnedData = [...new Uint16Array(uint16Objects[0].mixed as Iterable<number>)];
       expect(returnedData).eql(uint16Values);
 
       this.realm.write(() => {
@@ -1966,11 +1966,11 @@ describe("Mixed", () => {
       const uint32Values = [0, 121393, 121393, 317811, 514229, 4294967295];
       const uint32Buffer = new Uint32Array(uint32Values).buffer;
       this.realm.write(() => {
-        this.realm.create("MixedClass", { value: uint32Buffer });
+        this.realm.create("MixedClass", { mixed: uint32Buffer });
       });
 
       const uint32Objects = this.realm.objects<IMixedSchema>("MixedClass");
-      returnedData = [...new Uint32Array(uint32Objects[0].value as Iterable<number>)];
+      returnedData = [...new Uint32Array(uint32Objects[0].mixed as Iterable<number>)];
       expect(returnedData).eql(uint32Values);
 
       this.realm.close();
