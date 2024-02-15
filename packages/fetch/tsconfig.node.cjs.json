@@ -2,7 +2,8 @@
   "extends": "./tsconfig.node.base.json",
   "compilerOptions": {
     "outDir": "./dist/node-cjs",
-    "module": "CommonJS"
+    "module": "Node16",
+    "moduleResolution": "Node16"
   },
   "references": [
     { "path": "tsconfig.types.json" }

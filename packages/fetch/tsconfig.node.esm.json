@@ -2,7 +2,8 @@
   "extends": "./tsconfig.node.base.json",
   "compilerOptions": {
     "outDir": "./dist/node-esm",
-    "module": "ES2022"
+    "module": "es2022",
+    "moduleResolution": "Bundler"
   },
   "references": [
     { "path": "tsconfig.types.json" }
