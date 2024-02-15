@@ -1204,6 +1204,7 @@ describe("Mixed", () => {
           const topIterator = list.values();
           const nestedList = topIterator.next().value;
           expectRealmList(nestedList);
+
           const nestedDictionary = topIterator.next().value;
           expectRealmDictionary(nestedDictionary);
           expect(topIterator.next().done).to.be.true;
@@ -1213,6 +1214,37 @@ describe("Mixed", () => {
           const nestedIterator = nestedList.values();
           for (const item of nestedIterator) {
             expect(item).equals(insertedPrimitives[index++]);
+          }
+          expect(nestedIterator.next().done).to.be.true;
+        });
+
+        it("entries()", function (this: RealmContext) {
+          const insertedPrimitives = [true, 1, "hello"];
+          const { mixed: list } = this.realm.write(() => {
+            return this.realm.create<IMixedSchema>(MixedSchema.name, {
+              // We only care about values inside lists for the tested API.
+              mixed: [insertedPrimitives, {}],
+            });
+          });
+          expectRealmList(list);
+
+          // Check that there's a list at index 0 and dictionary at index 1.
+          const topIterator = list.entries();
+          const [nestedListIndex, nestedList] = topIterator.next().value;
+          expect(nestedListIndex).equals(0);
+          expectRealmList(nestedList);
+
+          const [nestedDictionaryIndex, nestedDictionary] = topIterator.next().value;
+          expect(nestedDictionaryIndex).equals(1);
+          expectRealmDictionary(nestedDictionary);
+          expect(topIterator.next().done).to.be.true;
+
+          // Check that the nested iterator yields correct entries.
+          let currentIndex = 0;
+          const nestedIterator = nestedList.entries();
+          for (const [index, item] of nestedIterator) {
+            expect(index).equals(currentIndex);
+            expect(item).equals(insertedPrimitives[currentIndex++]);
           }
           expect(nestedIterator.next().done).to.be.true;
         });
