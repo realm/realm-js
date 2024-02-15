@@ -135,7 +135,7 @@ const CollectionsOfMixedSchema: ObjectSchema = {
 };
 
 const bool = true;
-const int = 123;
+const int = BigInt(123);
 const double = 123.456;
 const d128 = BSON.Decimal128.fromString("6.022e23");
 const string = "hello";
@@ -1253,9 +1253,8 @@ describe("Mixed", () => {
         filtered = objects.filtered(`mixed[*].@type == 'bool'`);
         expect(filtered.length).equals(expectedFilteredCount);
 
-        // TODO: Fix.
-        // filtered = objects.filtered(`mixed[*].@type == 'int'`);
-        // expect(filtered.length).equals(expectedFilteredCount);
+        filtered = objects.filtered(`mixed[*].@type == 'int'`);
+        expect(filtered.length).equals(expectedFilteredCount);
 
         filtered = objects.filtered(`mixed[*].@type == 'double'`);
         expect(filtered.length).equals(expectedFilteredCount);
@@ -1371,9 +1370,8 @@ describe("Mixed", () => {
         filtered = objects.filtered(`mixed[0][0][*].@type == 'bool'`);
         expect(filtered.length).equals(expectedFilteredCount);
 
-        // TODO: Fix.
-        // filtered = objects.filtered(`mixed[0][0][*].@type == 'int'`);
-        // expect(filtered.length).equals(expectedFilteredCount);
+        filtered = objects.filtered(`mixed[0][0][*].@type == 'int'`);
+        expect(filtered.length).equals(expectedFilteredCount);
 
         filtered = objects.filtered(`mixed[0][0][*].@type == 'double'`);
         expect(filtered.length).equals(expectedFilteredCount);
@@ -1511,9 +1509,8 @@ describe("Mixed", () => {
         filtered = objects.filtered(`mixed[*].@type == 'bool'`);
         expect(filtered.length).equals(expectedFilteredCount);
 
-        // TODO: Fix.
-        // filtered = objects.filtered(`mixed[*].@type == 'int'`);
-        // expect(filtered.length).equals(expectedFilteredCount);
+        filtered = objects.filtered(`mixed[*].@type == 'int'`);
+        expect(filtered.length).equals(expectedFilteredCount);
 
         filtered = objects.filtered(`mixed[*].@type == 'double'`);
         expect(filtered.length).equals(expectedFilteredCount);
@@ -1652,9 +1649,8 @@ describe("Mixed", () => {
         filtered = objects.filtered(`mixed.depth1.depth2[*].@type == 'bool'`);
         expect(filtered.length).equals(expectedFilteredCount);
 
-        // TODO: Fix.
-        // filtered = objects.filtered(`mixed.depth1.depth2[*].@type == 'int'`);
-        // expect(filtered.length).equals(expectedFilteredCount);
+        filtered = objects.filtered(`mixed.depth1.depth2[*].@type == 'int'`);
+        expect(filtered.length).equals(expectedFilteredCount);
 
         filtered = objects.filtered(`mixed.depth1.depth2[*].@type == 'double'`);
         expect(filtered.length).equals(expectedFilteredCount);
