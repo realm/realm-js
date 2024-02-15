@@ -1,9 +1,10 @@
 {
-  "extends": "@tsconfig/node-lts",
+  "extends": [
+    "@tsconfig/node-lts",
+    "./tsconfig.base.json"
+  ],
   "compilerOptions": {
     "composite": true,
-    "module": "ES2022",
-    "moduleResolution": "Bundler",
     "esModuleInterop": true,
     "noEmit": true,
     "strictFunctionTypes": false,

@@ -1,5 +1,8 @@
 {
-  "extends": "@react-native/typescript-config/tsconfig.json",
+  "extends": [
+    "@react-native/typescript-config/tsconfig.json",
+    "./tsconfig.base.json"
+  ],
   "compilerOptions": {
     "composite": true,
     "outDir": "dist/platform/react-native",

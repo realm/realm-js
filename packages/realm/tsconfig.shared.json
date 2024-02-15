@@ -1,11 +1,10 @@
 {
+  "extends": "./tsconfig.base.json",
   "compilerOptions": {
     "composite": true,
     "outDir": "dist",
     "rootDir": "src",
     "target": "es2022",
-    "module": "eS2015",
-    "moduleResolution": "Bundler",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -13,14 +12,14 @@
     "lib": [
       "ES2022"
     ],
+    "noResolve": true,
     "types": [
       "bson",
       "debug",
       "@realm/fetch",
       "realm/binding",
       "realm/binding/core"
-    ],
-    "noResolve": true
+    ]
   },
   "include": [
     "src/**/*"

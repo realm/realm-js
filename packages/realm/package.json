@@ -38,10 +38,15 @@
   "react-native": "./index.react-native.js",
   "exports": {
     ".": {
-      "types": "./types.d.cts",
-      "node": "./index.node.js",
-      "require": "./index.node.js",
-      "react-native": "./index.react-native.js"
+      "node": {
+        "types": "./dist/platform/node/index.d.cts",
+        "default": "./dist/platform/node/index.cjs"
+      },
+      "react-native": {
+        "types": "./dist/platform/react-native/index.d.cts",
+        "default": "./dist/platform/react-native/index.cjs"
+      },
+      "types": "./dist/index.d.cts"
     },
     "./binding": {
       "types": "./generated/ts/native.d.mts",
