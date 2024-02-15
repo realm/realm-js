@@ -1,0 +1,27 @@
+{
+  "extends": "@tsconfig/node-lts",
+  "compilerOptions": {
+    "composite": true,
+    "module": "ES2022",
+    "moduleResolution": "Bundler",
+    "esModuleInterop": true,
+    "noEmit": true,
+    "strictFunctionTypes": false,
+    "strictNullChecks": false,
+    "types": [
+      "mocha",
+      "node"
+    ],
+    "paths": {
+      "realm/binding/core": [
+        "./generated/ts/core.ts"
+      ]
+    }
+  },
+  "include": [
+    "src/tests/**/*"
+  ],
+  "references": [
+    { "path": "tsconfig.shared.json" }
+  ]
+}

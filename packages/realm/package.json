@@ -106,7 +106,10 @@
         "bindgen:generate:typescript",
         "bindgen:generate:wrappers",
         "../fetch:build"
-      ]
+      ],
+      "env": {
+        "TSX_TSCONFIG_PATH": "tsconfig.tests.json"
+      }
     },
     "build": {
       "command": "tsc --build",
