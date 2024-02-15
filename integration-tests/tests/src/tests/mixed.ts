@@ -355,11 +355,11 @@ describe("Mixed", () => {
       ],
     });
 
-    function expectRealmList(value: unknown): asserts value is Realm.List<any> {
+    function expectRealmList(value: unknown): asserts value is Realm.List<unknown> {
       expect(value).instanceOf(Realm.List);
     }
 
-    function expectRealmDictionary(value: unknown): asserts value is Realm.Dictionary<any> {
+    function expectRealmDictionary(value: unknown): asserts value is Realm.Dictionary<unknown> {
       expect(value).instanceOf(Realm.Dictionary);
     }
 
@@ -371,7 +371,7 @@ describe("Mixed", () => {
      *   - A nested list with the same criteria.
      *   - A nested dictionary with the same criteria.
      */
-    function expectListOfAllTypes(list: unknown) {
+    function expectListOfAllTypes(list: unknown): asserts list is Realm.List<unknown> {
       expectRealmList(list);
       expect(list.length).greaterThanOrEqual(primitiveTypesList.length);
 
@@ -401,7 +401,7 @@ describe("Mixed", () => {
      *   - Key `list`: A nested list with the same criteria.
      *   - Key `dictionary`: A nested dictionary with the same criteria.
      */
-    function expectDictionaryOfAllTypes(dictionary: unknown) {
+    function expectDictionaryOfAllTypes(dictionary: unknown): asserts dictionary is Realm.Dictionary<unknown> {
       expectRealmDictionary(dictionary);
       expect(Object.keys(dictionary)).to.include.members(Object.keys(primitiveTypesDictionary));
 
@@ -409,6 +409,7 @@ describe("Mixed", () => {
         const value = dictionary[key];
         if (key === "realmObject") {
           expect(value).instanceOf(Realm.Object);
+          // @ts-expect-error Expecting `mixed` to exist.
           expect(value.mixed).equals(unmanagedRealmObject.mixed);
         } else if (key === "uint8Buffer") {
           expectUint8Buffer(value);
@@ -429,7 +430,7 @@ describe("Mixed", () => {
      *     - All values in {@link primitiveTypesList}.
      *     - The managed object of {@link unmanagedRealmObject}.
      */
-    function expectListOfListsOfAllTypes(list: unknown) {
+    function expectListOfListsOfAllTypes(list: unknown): asserts list is Realm.List<unknown> {
       expectRealmList(list);
       expect(list.length).equals(1);
       const [depth1] = list;
@@ -446,7 +447,7 @@ describe("Mixed", () => {
      *     - All entries in {@link primitiveTypesDictionary}.
      *     - Key `realmObject`: The managed object of {@link unmanagedRealmObject}.
      */
-    function expectListOfDictionariesOfAllTypes(list: unknown) {
+    function expectListOfDictionariesOfAllTypes(list: unknown): asserts list is Realm.List<unknown> {
       expectRealmList(list);
       expect(list.length).equals(1);
       const [depth1] = list;
@@ -463,7 +464,7 @@ describe("Mixed", () => {
      *     - All values in {@link primitiveTypesList}.
      *     - The managed object of {@link unmanagedRealmObject}.
      */
-    function expectDictionaryOfListsOfAllTypes(dictionary: unknown) {
+    function expectDictionaryOfListsOfAllTypes(dictionary: unknown): asserts dictionary is Realm.Dictionary<unknown> {
       expectRealmDictionary(dictionary);
       expectKeys(dictionary, ["depth1"]);
       const { depth1 } = dictionary;
@@ -480,7 +481,9 @@ describe("Mixed", () => {
      *     - All entries in {@link primitiveTypesDictionary}.
      *     - Key `realmObject`: The managed object of {@link unmanagedRealmObject}.
      */
-    function expectDictionaryOfDictionariesOfAllTypes(dictionary: unknown) {
+    function expectDictionaryOfDictionariesOfAllTypes(
+      dictionary: unknown,
+    ): asserts dictionary is Realm.Dictionary<unknown> {
       expectRealmDictionary(dictionary);
       expectKeys(dictionary, ["depth1"]);
       const { depth1 } = dictionary;
@@ -490,7 +493,7 @@ describe("Mixed", () => {
       expectDictionaryOfAllTypes(depth2);
     }
 
-    function expectUint8Buffer(value: unknown) {
+    function expectUint8Buffer(value: unknown): asserts value is ArrayBuffer {
       expect(value).instanceOf(ArrayBuffer);
       expect([...new Uint8Array(value as ArrayBuffer)]).eql(uint8Values);
     }
@@ -1183,6 +1186,35 @@ describe("Mixed", () => {
             nestedDictionary.remove("string");
           });
           expect(Object.keys(nestedDictionary).length).equals(0);
+        });
+      });
+
+      describe("JS Array methods", () => {
+        it("values()", function (this: RealmContext) {
+          const insertedPrimitives = [true, 1, "hello"];
+          const { mixed: list } = this.realm.write(() => {
+            return this.realm.create<IMixedSchema>(MixedSchema.name, {
+              // We only care about values inside lists for the tested API.
+              mixed: [insertedPrimitives, {}],
+            });
+          });
+          expectRealmList(list);
+
+          // Check that there's a list at index 0 and dictionary at index 1.
+          const topIterator = list.values();
+          const nestedList = topIterator.next().value;
+          expectRealmList(nestedList);
+          const nestedDictionary = topIterator.next().value;
+          expectRealmDictionary(nestedDictionary);
+          expect(topIterator.next().done).to.be.true;
+
+          // Check that the nested iterator yields correct values.
+          let index = 0;
+          const nestedIterator = nestedList.values();
+          for (const item of nestedIterator) {
+            expect(item).equals(insertedPrimitives[index++]);
+          }
+          expect(nestedIterator.next().done).to.be.true;
         });
       });
     });
