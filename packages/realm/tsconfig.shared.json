@@ -4,7 +4,7 @@
     "outDir": "dist",
     "rootDir": "src",
     "target": "es2022",
-    "module": "es2022",
+    "module": "eS2015",
     "moduleResolution": "Bundler",
     "strict": true,
     "esModuleInterop": true,
