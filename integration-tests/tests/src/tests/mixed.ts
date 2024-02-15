@@ -857,6 +857,20 @@ describe("Mixed", () => {
             });
             expectDictionaryOfAllTypes(dictionary);
           });
+
+          it("inserts mix of nested collections of all types via `set()` overloads", function (this: RealmContext) {
+            const { mixed: dictionary } = this.realm.write(() => {
+              return this.realm.create<IMixedSchema>(MixedSchema.name, { mixed: {} });
+            });
+            expectRealmDictionary(dictionary);
+            expect(Object.keys(dictionary).length).equals(0);
+
+            const unmanagedDictionary = buildDictionaryOfCollectionsOfAllTypes({ depth: 4 });
+            this.realm.write(() => {
+              dictionary.set(unmanagedDictionary);
+            });
+            expectDictionaryOfAllTypes(dictionary);
+          });
         });
       });
 

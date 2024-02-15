@@ -293,14 +293,22 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
    * @since 10.6.0
    */
   set(elementsOrKey: string | { [key: string]: T }, value?: T): this {
+    assert.inTransaction(this[REALM]);
     const elements = typeof elementsOrKey === "object" ? elementsOrKey : { [elementsOrKey]: value };
     assert(Object.getOwnPropertySymbols(elements).length === 0, "Symbols cannot be used as keys of a dictionary");
-    assert.inTransaction(this[REALM]);
     const internal = this[INTERNAL];
-    const toBinding = this[HELPERS].toBinding;
+    const { set: customSet, toBinding } = this[HELPERS];
 
-    for (const [key, val] of Object.entries(elements)) {
-      internal.insertAny(key, toBinding(val));
+    const entries = Object.entries(elements);
+    // Use separate for-loops rather than checking `customSet` for each entry.
+    if (customSet) {
+      for (const [key, value] of entries) {
+        customSet(internal, key, value);
+      }
+    } else {
+      for (const [key, value] of entries) {
+        internal.insertAny(key, toBinding(value));
+      }
     }
     return this;
   }
