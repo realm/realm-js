@@ -16,11 +16,13 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { useEffect, useState } from "react";
 import Realm from "realm";
 import { renderHook } from "@testing-library/react-native";
+import assert from "node:assert";
 
 import { createUseObject } from "../useObject";
+import { createRealmTestContext } from "./createRealmTestContext";
+import { profileHook } from "./profileHook";
 
 const dogSchema: Realm.ObjectSchema = {
   name: "dog",
@@ -28,69 +30,129 @@ const dogSchema: Realm.ObjectSchema = {
   properties: {
     _id: "int",
     name: "string",
+    age: "int",
   },
 };
 
 interface IDog {
   _id: number;
   name: string;
+  age: number;
 }
 
-const configuration = {
-  schema: [dogSchema],
-  path: "testArtifacts/use-object-hook.realm",
-};
-
-const useRealm = () => {
-  const [realm, setRealm] = useState(new Realm(configuration));
-  useEffect(() => {
-    return () => {
-      realm.close();
-    };
-  }, [realm, setRealm]);
-
-  return new Realm(configuration);
-};
-
-const useObject = createUseObject(useRealm);
+const context = createRealmTestContext({ schema: [dogSchema] });
+const useObject = createUseObject(context.useRealm);
 
 const testDataSet = [
-  { _id: 4, name: "Vincent" },
-  { _id: 5, name: "River" },
-  { _id: 6, name: "Schatzi" },
+  { _id: 4, name: "Vincent", age: 5 },
+  { _id: 5, name: "River", age: 25 },
+  { _id: 6, name: "Schatzi", age: 13 },
 ];
 
-describe("useObject hook", () => {
+describe("useObject", () => {
   beforeEach(() => {
-    const realm = new Realm(configuration);
+    const realm = context.openRealm();
     realm.write(() => {
       realm.deleteAll();
       testDataSet.forEach((data) => {
         realm.create("dog", data);
       });
     });
-    realm.close();
   });
 
   afterEach(() => {
-    Realm.clearTestState();
+    context.cleanup();
   });
 
   it("can retrieve a single object using useObject", () => {
-    const [, dog2] = testDataSet;
-
-    const { result } = renderHook(() => useObject<IDog>("dog", dog2._id));
-
+    const [, river] = testDataSet;
+    const { result } = renderHook(() => useObject<IDog>("dog", river._id));
     const object = result.current;
-
-    expect(object).toMatchObject(dog2);
+    expect(object).toMatchObject(river);
   });
 
-  it("object is null", () => {
-    const { result } = renderHook(() => useObject<IDog>("dog", 12));
+  describe("missing objects", () => {
+    it("return null", () => {
+      const { result } = renderHook(() => useObject<IDog>("dog", 12));
+      expect(result.current).toEqual(null);
+    });
 
-    const object = result.current;
+    it("rerenders and return object once created", () => {
+      const { write, realm } = context;
+      const { result, renders } = profileHook(() => useObject<IDog>("dog", 12));
+      expect(renders).toHaveLength(1);
+      expect(result.current).toEqual(null);
+      write(() => {
+        realm.create<IDog>("dog", { _id: 12, name: "Lassie", age: 32 });
+      });
+      expect(renders).toHaveLength(2);
+      expect(result.current?.name).toEqual("Lassie");
+    });
+  });
 
-    expect(object).toEqual(null);
+  describe("key-path filtering", () => {
+    it("can filter notifications using key-path array", async () => {
+      const [vincent] = testDataSet;
+      const { write } = context;
+      const { result, renders } = profileHook(() => useObject<IDog>("dog", vincent._id, ["name"]));
+      expect(renders).toHaveLength(1);
+      expect(result.current).toMatchObject(vincent);
+      // Update the name and expect a re-render
+      write(() => {
+        assert(result.current);
+        result.current.name = "Vince!";
+      });
+      expect(renders).toHaveLength(2);
+      expect(result.current?.name).toEqual("Vince!");
+      // Update the age and don't expect a re-render
+      write(() => {
+        assert(result.current);
+        result.current.age = 5;
+      });
+      expect(renders).toHaveLength(2);
+    });
+
+    it("can filter notifications using key-path string", async () => {
+      const [vincent] = testDataSet;
+      const { write } = context;
+      const { result, renders } = profileHook(() => useObject<IDog>("dog", vincent._id, "age"));
+      expect(renders).toHaveLength(1);
+      expect(result.current).toMatchObject(vincent);
+      // Update the name and expect a re-render
+      write(() => {
+        assert(result.current);
+        result.current.age = 13;
+      });
+      expect(renders).toHaveLength(2);
+      expect(result.current?.age).toEqual(13);
+      // Update the age and don't expect a re-render
+      write(() => {
+        assert(result.current);
+        result.current.name = "Vince!";
+      });
+      expect(renders).toHaveLength(2);
+    });
+  });
+
+  describe("passing options object as argument", () => {
+    it("rerenders on updates", () => {
+      const { write, realm } = context;
+
+      const vincent = realm.objectForPrimaryKey("dog", 4);
+      assert(vincent);
+
+      const { result, renders } = profileHook(() => useObject<IDog>({ type: "dog", primaryKey: 4, keyPaths: "name" }));
+      expect(renders).toHaveLength(1);
+      write(() => {
+        vincent.name = "Vinnie";
+      });
+      expect(renders).toHaveLength(2);
+      expect(result.current?.name).toEqual("Vinnie");
+      // Expect no renders when updating a property outside key-paths
+      write(() => {
+        vincent.age = 30;
+      });
+      expect(renders).toHaveLength(2);
+    });
   });
 });

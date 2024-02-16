@@ -22,6 +22,7 @@ import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 import { FlatList, ListRenderItem, Text, TextInput, TouchableHighlight, View } from "react-native";
 
 import { createRealmContext } from "..";
+import { randomRealmPath } from "./helpers";
 
 class Item extends Realm.Object {
   id!: number;
@@ -66,7 +67,7 @@ const testCollection = [...new Array(30)].map((_, index) => ({ id: index, name: 
 const configuration: Realm.Configuration = {
   schema: [Item, Tag],
   inMemory: true,
-  path: "testArtifacts/use-query-rerender.realm",
+  path: randomRealmPath(),
 };
 
 const itemRenderCounter = jest.fn();

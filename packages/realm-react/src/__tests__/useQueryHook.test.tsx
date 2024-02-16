@@ -17,10 +17,11 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import Realm from "realm";
-import { useEffect, useState } from "react";
 import { renderHook } from "@testing-library/react-native";
 
 import { createUseQuery } from "../useQuery";
+import { profileHook } from "./profileHook";
+import { createRealmTestContext } from "./createRealmTestContext";
 
 const dogSchema: Realm.ObjectSchema = {
   name: "dog",
@@ -41,24 +42,6 @@ interface IDog {
   age: number;
   gender: string;
 }
-const configuration: Realm.Configuration = {
-  schema: [dogSchema],
-  path: "testArtifacts/use-query-hook.realm",
-  deleteRealmIfMigrationNeeded: true,
-};
-
-const useRealm = () => {
-  const [realm, setRealm] = useState(new Realm(configuration));
-  useEffect(() => {
-    return () => {
-      realm.close();
-    };
-  }, [realm, setRealm]);
-
-  return new Realm(configuration);
-};
-
-const useQuery = createUseQuery(useRealm);
 
 const testDataSet = [
   { _id: 1, name: "Vincent", color: "black and white", gender: "male", age: 4 },
@@ -69,20 +52,22 @@ const testDataSet = [
   { _id: 6, name: "Sadie", color: "gold", gender: "female", age: 5 },
 ];
 
-describe("useQueryHook", () => {
+describe("useQuery", () => {
+  const context = createRealmTestContext({ schema: [dogSchema] });
+  const useQuery = createUseQuery(context.useRealm);
+
   beforeEach(() => {
-    const realm = new Realm(configuration);
+    const realm = context.openRealm();
     realm.write(() => {
       realm.deleteAll();
       testDataSet.forEach((data) => {
         realm.create("dog", data);
       });
     });
-    realm.close();
   });
 
   afterEach(() => {
-    Realm.clearTestState();
+    context.cleanup();
   });
 
   it("can retrieve collections using useQuery", () => {
@@ -110,5 +95,106 @@ describe("useQueryHook", () => {
     const collection = result.current;
 
     expect(collection[99]).toBe(undefined);
+  });
+
+  it("can filter objects via type and callback", () => {
+    const { result } = renderHook(() => useQuery<IDog>("dog", (dogs) => dogs.filtered("age > 10")));
+    expect(result.current.length).toBe(3);
+  });
+
+  describe("passing an object of options as argument", () => {
+    it("can filter objects via a 'query' property", () => {
+      const { result, renders } = profileHook(() =>
+        useQuery<IDog>({
+          type: "dog",
+          query: (dogs) => dogs.filtered("age > 10"),
+        }),
+      );
+      expect(result.current.length).toBe(3);
+      expect(renders).toHaveLength(1);
+    });
+
+    it("can update filter objects via a 'query' property", () => {
+      const { result, renders, rerender } = profileHook(
+        ({ age }) =>
+          useQuery<IDog>(
+            {
+              type: "dog",
+              query: (dogs) => dogs.filtered("age > $0", age),
+            },
+            [age],
+          ),
+        { initialProps: { age: 10 } },
+      );
+      expect(result.current.length).toBe(3);
+      expect(renders).toHaveLength(1);
+
+      // Update the query to filter for a different age
+      rerender({ age: 15 });
+      expect(result.current.length).toBe(1);
+      expect(renders).toHaveLength(2);
+    });
+
+    it("can filter notifications using key-path array", async () => {
+      const { write } = context;
+      const { result, renders } = profileHook(() =>
+        useQuery<IDog>({
+          type: "dog",
+          query: (dogs) => dogs.filtered("age > 10"),
+          keyPaths: ["name"],
+        }),
+      );
+
+      const initialCollection = result.current;
+      expect(initialCollection).toHaveLength(3);
+      expect(renders).toHaveLength(1);
+
+      // Updating a name in the database and expect a render
+      const [firstDog] = result.current;
+      expect(firstDog.name).toEqual("River");
+      write(() => {
+        firstDog.name = "Rivery!";
+      });
+      expect(renders).toHaveLength(2);
+      expect(initialCollection).not.toBe(result.current);
+
+      // Updating an age in the database and don't expect a render
+      expect(firstDog.age).toEqual(12);
+      write(() => {
+        firstDog.age = 13;
+      });
+      expect(renders).toHaveLength(2);
+    });
+
+    it("can filter notifications using key-path string", async () => {
+      const { write } = context;
+      const { result, renders } = profileHook(() =>
+        useQuery<IDog>({
+          type: "dog",
+          query: (dogs) => dogs.filtered("name != $0", "Vincent"),
+          keyPaths: "age",
+        }),
+      );
+
+      const initialCollection = result.current;
+      expect(initialCollection).toHaveLength(5);
+      expect(renders).toHaveLength(1);
+
+      // Updating an age in the database and expect a render
+      const [firstDog] = result.current;
+      expect(firstDog.name).toEqual("River");
+      write(() => {
+        firstDog.age = 16;
+      });
+      expect(renders).toHaveLength(2);
+      expect(initialCollection).not.toBe(result.current);
+
+      // Updating a name in the database and don't expect a render
+      expect(firstDog.age).toEqual(16);
+      write(() => {
+        firstDog.name = "Rivery!";
+      });
+      expect(renders).toHaveLength(2);
+    });
   });
 });
