@@ -146,6 +146,7 @@ function fromBindingTimeoutSignal(timeoutMs: Int64Type): AbortSignal | undefined
   return timeout > 0 ? AbortSignal.timeout(timeout) : undefined;
 }
 
+/** @internal */
 export function toFetchArgs({ url, method, timeoutMs, body, headers }: Request): Parameters<typeof fetch> {
   return [
     url,
