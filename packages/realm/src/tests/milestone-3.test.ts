@@ -18,7 +18,7 @@
 
 import { expect } from "chai";
 
-import { ObjectChangeSet, Realm, Results } from "../index";
+import { ObjectChangeSet, Realm, Results } from "../internal";
 import { RealmContext, closeRealm, generateTempRealmPath } from "./utils";
 
 describe("Milestone #3", () => {

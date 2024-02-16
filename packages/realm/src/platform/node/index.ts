@@ -21,5 +21,5 @@ import "./device-info";
 import "./sync-proxy-config";
 import "./custom-inspect";
 
-import { Realm } from "../../index";
+import { Realm } from "../../Realm";
 export = Realm;
