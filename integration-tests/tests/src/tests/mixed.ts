@@ -153,13 +153,24 @@ const unmanagedRealmObject: IMixedSchema = { mixed: 1 };
  * An array of values representing each Realm data type allowed as `Mixed`,
  * except for a managed Realm Object, a nested list, and a nested dictionary.
  */
-const primitiveTypesList: unknown[] = [bool, int, double, d128, string, date, oid, uuid, nullValue, uint8Buffer];
+const primitiveTypesList: readonly unknown[] = [
+  bool,
+  int,
+  double,
+  d128,
+  string,
+  date,
+  oid,
+  uuid,
+  nullValue,
+  uint8Buffer,
+];
 
 /**
  * An object with values representing each Realm data type allowed as `Mixed`,
  * except for a managed Realm Object, a nested list, and a nested dictionary.
  */
-const primitiveTypesDictionary: Record<string, unknown> = {
+const primitiveTypesDictionary: Readonly<Record<string, unknown>> = {
   bool,
   int,
   double,
@@ -1189,64 +1200,120 @@ describe("Mixed", () => {
         });
       });
 
-      describe("JS Array methods", () => {
-        it("values()", function (this: RealmContext) {
-          const insertedPrimitives = [true, 1, "hello"];
-          const { mixed: list } = this.realm.write(() => {
-            return this.realm.create<IMixedSchema>(MixedSchema.name, {
-              // We only care about values inside lists for the tested API.
-              mixed: [insertedPrimitives, {}],
-            });
-          });
-          expectRealmList(list);
+      describe("JS collection methods", () => {
+        const unmanagedList: readonly unknown[] = [bool, double, string];
+        const unmanagedDictionary: Readonly<Record<string, unknown>> = { bool, double, string };
 
-          // Check that there's a list at index 0 and dictionary at index 1.
-          const topIterator = list.values();
+        /**
+         * Expects {@link collection} to contain the managed versions of:
+         * - {@link unmanagedList} - At index 0 (if list), or lowest key (if dictionary).
+         * - {@link unmanagedDictionary} - At index 1 (if list), or highest key (if dictionary).
+         */
+        function expectIteratorValues(collection: Realm.List | Realm.Dictionary) {
+          const topIterator = collection.values();
+
+          // Expect a list as first item.
           const nestedList = topIterator.next().value;
           expectRealmList(nestedList);
 
+          // Expect a dictionary as second item.
           const nestedDictionary = topIterator.next().value;
           expectRealmDictionary(nestedDictionary);
           expect(topIterator.next().done).to.be.true;
 
-          // Check that the nested iterator yields correct values.
+          // Expect that the nested list iterator yields correct values.
           let index = 0;
-          const nestedIterator = nestedList.values();
-          for (const item of nestedIterator) {
-            expect(item).equals(insertedPrimitives[index++]);
+          const nestedListIterator = nestedList.values();
+          for (const value of nestedListIterator) {
+            expect(value).equals(unmanagedList[index++]);
           }
-          expect(nestedIterator.next().done).to.be.true;
-        });
+          expect(nestedListIterator.next().done).to.be.true;
 
-        it("entries()", function (this: RealmContext) {
-          const insertedPrimitives = [true, 1, "hello"];
+          // Expect that the nested dictionary iterator yields correct values.
+          const nestedDictionaryIterator = nestedDictionary.values();
+          expect(nestedDictionaryIterator.next().value).equals(unmanagedDictionary.bool);
+          expect(nestedDictionaryIterator.next().value).equals(unmanagedDictionary.double);
+          expect(nestedDictionaryIterator.next().value).equals(unmanagedDictionary.string);
+          expect(nestedDictionaryIterator.next().done).to.be.true;
+        }
+
+        it("values() - list with nested collections", function (this: RealmContext) {
           const { mixed: list } = this.realm.write(() => {
             return this.realm.create<IMixedSchema>(MixedSchema.name, {
-              // We only care about values inside lists for the tested API.
-              mixed: [insertedPrimitives, {}],
+              mixed: [unmanagedList, unmanagedDictionary],
             });
           });
           expectRealmList(list);
+          expectIteratorValues(list);
+        });
 
-          // Check that there's a list at index 0 and dictionary at index 1.
-          const topIterator = list.entries();
-          const [nestedListIndex, nestedList] = topIterator.next().value;
-          expect(nestedListIndex).equals(0);
+        it("values() - dictionary with nested collections", function (this: RealmContext) {
+          const { mixed: dictionary } = this.realm.write(() => {
+            return this.realm.create<IMixedSchema>(MixedSchema.name, {
+              // Use `a_` and `b_` prefixes to get the same order once retrieved internally.
+              mixed: { a_list: unmanagedList, b_dictionary: unmanagedDictionary },
+            });
+          });
+          expectRealmDictionary(dictionary);
+          expectIteratorValues(dictionary);
+        });
+
+        /**
+         * Expects {@link collection} to contain the managed versions of:
+         * - {@link unmanagedList} - At index 0 (if list), or key `a_list` (if dictionary).
+         * - {@link unmanagedDictionary} - At index 1 (if list), or key `b_dictionary` (if dictionary).
+         */
+        function expectIteratorEntries(collection: Realm.List | Realm.Dictionary) {
+          const usesIndex = collection instanceof Realm.List;
+          const topIterator = collection.entries();
+
+          // Expect a list as first item.
+          const [nestedListIndexOrKey, nestedList] = topIterator.next().value;
+          expect(nestedListIndexOrKey).equals(usesIndex ? 0 : "a_list");
           expectRealmList(nestedList);
 
-          const [nestedDictionaryIndex, nestedDictionary] = topIterator.next().value;
-          expect(nestedDictionaryIndex).equals(1);
+          // Expect a dictionary as second item.
+          const [nestedDictionaryIndexOrKey, nestedDictionary] = topIterator.next().value;
+          expect(nestedDictionaryIndexOrKey).equals(usesIndex ? 1 : "b_dictionary");
           expectRealmDictionary(nestedDictionary);
           expect(topIterator.next().done).to.be.true;
 
-          // Check that the nested iterator yields correct entries.
+          // Expect that the nested list iterator yields correct entries.
           let currentIndex = 0;
-          const nestedIterator = nestedList.entries();
-          for (const [index, item] of nestedIterator) {
+          const nestedListIterator = nestedList.entries();
+          for (const [index, item] of nestedListIterator) {
             expect(index).equals(currentIndex);
-            expect(item).equals(insertedPrimitives[currentIndex++]);
+            expect(item).equals(unmanagedList[currentIndex++]);
           }
-          expect(nestedIterator.next().done).to.be.true;
+          expect(nestedListIterator.next().done).to.be.true;
+
+          // Expect that the nested dictionary iterator yields correct entries.
+          const nestedDictionaryIterator = nestedDictionary.entries();
+          expect(nestedDictionaryIterator.next().value).deep.equals(["bool", unmanagedDictionary.bool]);
+          expect(nestedDictionaryIterator.next().value).deep.equals(["double", unmanagedDictionary.double]);
+          expect(nestedDictionaryIterator.next().value).deep.equals(["string", unmanagedDictionary.string]);
+          expect(nestedDictionaryIterator.next().done).to.be.true;
+        }
+
+        it("entries() - list with nested collections", function (this: RealmContext) {
+          const { mixed: list } = this.realm.write(() => {
+            return this.realm.create<IMixedSchema>(MixedSchema.name, {
+              mixed: [unmanagedList, unmanagedDictionary],
+            });
+          });
+          expectRealmList(list);
+          expectIteratorEntries(list);
+        });
+
+        it("entries() - dictionary with nested collections", function (this: RealmContext) {
+          const { mixed: dictionary } = this.realm.write(() => {
+            return this.realm.create<IMixedSchema>(MixedSchema.name, {
+              // Use `a_` and `b_` prefixes to get the same order once retrieved internally.
+              mixed: { a_list: unmanagedList, b_dictionary: unmanagedDictionary },
+            });
+          });
+          expectRealmDictionary(dictionary);
+          expectIteratorEntries(dictionary);
         });
       });
     });
