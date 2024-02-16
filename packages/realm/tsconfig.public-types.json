@@ -1,7 +1,7 @@
 {
   "extends": "./tsconfig.shared.json",
   "compilerOptions": {
-    "outDir": "public-types",
+    "outDir": "dist/public-types",
     "emitDeclarationOnly": true,
     "declarationMap": true,
     "stripInternal": true

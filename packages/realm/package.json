@@ -33,12 +33,12 @@
   "config": {
     "anonymizedBundleId": "tkgif/+3l1e9wStGJp2TOngAK3UcQ2u7OM8ZYJU5JYo="
   },
-  "types": "./public-types/index.d.ts",
+  "types": "./dist/public-types/index.d.ts",
   "main": "./dist/platform/node/index.js",
   "react-native": "./dist/platform/react-native/index.js",
   "exports": {
     ".": {
-      "types": "./public-types/index.d.ts",
+      "types": "./dist/public-types/index.d.ts",
       "node": "./dist/platform/node/index.js",
       "react-native": "./dist/platform/react-native/index.js"
     },
