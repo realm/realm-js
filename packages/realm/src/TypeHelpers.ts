@@ -235,6 +235,16 @@ function getDictionaryHelpersForMixed(realm: Realm, options: TypeOptions) {
       }
       return dictionary.tryGetAny(key);
     },
+    snapshotGet(results, index) {
+      const elementType = binding.Helpers.getMixedElementType(results, index);
+      if (elementType === binding.MixedDataType.List) {
+        return new List(realm, results.getList(index), getListHelpersForMixed(realm, options));
+      }
+      if (elementType === binding.MixedDataType.Dictionary) {
+        return new Dictionary(realm, results.getDictionary(index), helpers);
+      }
+      return results.getAny(index);
+    },
     set(dictionary, key, value) {
       if (isList(value)) {
         dictionary.insertCollection(key, binding.CollectionType.List);

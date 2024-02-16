@@ -49,6 +49,7 @@ export type DictionaryChangeCallback = (dictionary: Dictionary, changes: Diction
  */
 export type DictionaryHelpers = TypeHelpers & {
   get?(dictionary: binding.Dictionary, key: string): unknown;
+  snapshotGet?(results: binding.Results, index: number): unknown;
   set?(dictionary: binding.Dictionary, key: string, value: unknown): void;
 };
 
@@ -231,12 +232,19 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
    * @since 10.5.0
    * @ts-expect-error We're exposing methods in the end-users namespace of values */
   *values(): Generator<T> {
-    const { fromBinding } = this[HELPERS];
+    const { snapshotGet, fromBinding } = this[HELPERS];
     const snapshot = this[INTERNAL].values.snapshot();
     const size = snapshot.size();
-    for (let i = 0; i < size; i++) {
-      const value = snapshot.getAny(i);
-      yield fromBinding(value) as T;
+
+    // Use separate for-loops rather than checking `snapshotGet` for each entry.
+    if (snapshotGet) {
+      for (let i = 0; i < size; i++) {
+        yield snapshotGet(snapshot, i) as T;
+      }
+    } else {
+      for (let i = 0; i < size; i++) {
+        yield fromBinding(snapshot.getAny(i)) as T;
+      }
     }
   }
 
@@ -246,15 +254,21 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
    * @since 10.5.0
    * @ts-expect-error We're exposing methods in the end-users namespace of entries */
   *entries(): Generator<[string, T]> {
-    const { fromBinding } = this[HELPERS];
+    const { snapshotGet, fromBinding } = this[HELPERS];
     const keys = this[INTERNAL].keys.snapshot();
     const values = this[INTERNAL].values.snapshot();
     const size = keys.size();
     assert(size === values.size(), "Expected keys and values to equal in size");
-    for (let i = 0; i < size; i++) {
-      const key = keys.getAny(i);
-      const value = values.getAny(i);
-      yield [key, fromBinding(value)] as [string, T];
+
+    // Use separate for-loops rather than checking `snapshotGet` for each entry.
+    if (snapshotGet) {
+      for (let i = 0; i < size; i++) {
+        yield [keys.getAny(i), snapshotGet(values, i)] as [string, T];
+      }
+    } else {
+      for (let i = 0; i < size; i++) {
+        yield [keys.getAny(i), fromBinding(values.getAny(i))] as [string, T];
+      }
     }
   }
 
