@@ -33,20 +33,14 @@
   "config": {
     "anonymizedBundleId": "tkgif/+3l1e9wStGJp2TOngAK3UcQ2u7OM8ZYJU5JYo="
   },
-  "types": "./types.d.cts",
-  "main": "./index.node.js",
-  "react-native": "./index.react-native.js",
+  "types": "./public-types/index.d.ts",
+  "main": "./dist/platform/node/index.js",
+  "react-native": "./dist/platform/react-native/index.js",
   "exports": {
     ".": {
-      "node": {
-        "types": "./dist/platform/node/index.d.cts",
-        "default": "./dist/platform/node/index.cjs"
-      },
-      "react-native": {
-        "types": "./dist/platform/react-native/index.d.cts",
-        "default": "./dist/platform/react-native/index.cjs"
-      },
-      "types": "./dist/index.d.cts"
+      "types": "./public-types/index.d.ts",
+      "node": "./dist/platform/node/index.js",
+      "react-native": "./dist/platform/react-native/index.js"
     },
     "./binding": {
       "types": "./generated/ts/native.d.mts",
@@ -64,6 +58,7 @@
   "files": [
     "dependencies.list",
     "dist",
+    "public-types",
     "index.node.js",
     "index.react-native.js",
     "types.d.cts",
