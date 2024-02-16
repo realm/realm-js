@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { DeviceInfo } from "../binding";
+import type { DeviceInfo } from "../binding";
 
 type DeviceInfoType = {
   create(): DeviceInfo;
@@ -28,6 +28,6 @@ export const deviceInfo: DeviceInfoType = {
   },
 };
 
-export function inject(injected: DeviceInfoType) {
-  Object.freeze(Object.assign(deviceInfo, injected));
+export function inject(value: DeviceInfoType) {
+  Object.freeze(Object.assign(deviceInfo, value));
 }

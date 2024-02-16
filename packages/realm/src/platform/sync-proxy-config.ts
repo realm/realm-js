@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { SyncProxyConfig } from "../binding";
+import type { SyncProxyConfig } from "../binding";
 
 type SyncProxyConfigType = {
   create(): SyncProxyConfig | undefined;
@@ -28,6 +28,6 @@ export const syncProxyConfig: SyncProxyConfigType = {
   },
 };
 
-export function inject(injected: SyncProxyConfigType) {
-  Object.freeze(Object.assign(syncProxyConfig, injected));
+export function inject(value: SyncProxyConfigType) {
+  Object.freeze(Object.assign(syncProxyConfig, value));
 }
