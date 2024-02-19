@@ -22,7 +22,7 @@ import Realm, { BSON } from "realm";
 import { authenticateUserBefore, importAppBefore, openRealmBeforeEach } from "../../hooks";
 import { buildAppConfig } from "../../utils/build-app-config";
 
-describe.skipIf(environment.missingServer, "Asymmetric sync", function () {
+describe("Asymmetric sync", function () {
   [true, false].forEach((embeddedAndAsymmetric) => {
     describe(`Configuration and schema (embedded = ${embeddedAndAsymmetric})`, function () {
       this.longTimeout();

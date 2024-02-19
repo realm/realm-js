@@ -21,7 +21,7 @@ import { authenticateUserBefore, importAppBefore, openRealmBefore } from "../../
 import { itUploadsDeletesAndDownloads } from "./upload-delete-download";
 import { buildAppConfig } from "../../utils/build-app-config";
 
-describe.skipIf(environment.missingServer, "Type roundtrip of set object", () => {
+describe("Type roundtrip of set object", () => {
   importAppBefore(buildAppConfig("with-pbs").anonAuth().partitionBasedSync());
   authenticateUserBefore();
 

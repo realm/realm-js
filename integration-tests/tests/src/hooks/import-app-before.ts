@@ -86,6 +86,9 @@ export function importAppBefore(config: AppConfig | { config: AppConfig }, sdkCo
   }
 
   before(importAppBefore.name, async function (this: AppContext & Mocha.Context) {
+    if (missingServer) {
+      this.skip();
+    }
     // Importing an app might take up to 5 minutes when the app has a MongoDB Atlas service enabled.
     this.longTimeout();
     if (this.app) {

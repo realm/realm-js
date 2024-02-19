@@ -1361,7 +1361,7 @@ describe("Realmtest", () => {
       });
     });
 
-    describe.skipIf(environment.missingServer, "schemaVersion", () => {
+    describe("schemaVersion", () => {
       importAppBefore(buildAppConfig("with-pbs").anonAuth().partitionBasedSync());
 
       [true, false].forEach((encryption) => {
@@ -1380,7 +1380,7 @@ describe("Realmtest", () => {
       });
     });
 
-    describe.skipIf(environment.missingServer, "exists", () => {
+    describe("exists", () => {
       importAppBefore(buildAppConfig("with-pbs").anonAuth().partitionBasedSync());
 
       it("yields correct value on a local realm", () => {
@@ -1391,7 +1391,7 @@ describe("Realmtest", () => {
         expect(Realm.exists(config)).to.be.true;
       });
 
-      it.skipIf(environment.missingServerm, "yields correct value on a synced realm", function (this: AppContext) {
+      it("yields correct value on a synced realm", function (this: AppContext) {
         const credentials = Realm.Credentials.anonymous();
 
         return this.app.logIn(credentials).then((user) => {
@@ -2108,7 +2108,7 @@ describe("Realmtest", () => {
     });
   });
 
-  describe.skipIf(environment.missingServer, "with sync", () => {
+  describe("with sync", () => {
     importAppBefore(buildAppConfig("with-anon").anonAuth().partitionBasedSync());
 
     it("data is deleted on realm with custom path", function (this: RealmContext & AppContext) {

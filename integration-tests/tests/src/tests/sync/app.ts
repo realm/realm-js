@@ -178,7 +178,7 @@ describe("App", () => {
     });
   });
 
-  describe.skipIf(environment.missingServer, "with valid app", async () => {
+  describe("with valid app", async () => {
     importAppBefore(buildAppConfig("with-anon").anonAuth());
 
     it("logins successfully ", async function (this: Mocha.Context & AppContext & RealmContext) {
@@ -281,7 +281,7 @@ describe("App", () => {
     });
   });
 
-  describe.skipIf(environment.missingServer, "with email-password auth", () => {
+  describe("with email-password auth", () => {
     importAppBefore(
       buildAppConfig("with-email-password").emailPasswordAuth({
         autoConfirm: true,
@@ -302,7 +302,7 @@ describe("App", () => {
     });
   });
 
-  describe.skipIf(environment.missingServer, "with sync", () => {
+  describe("with sync", () => {
     importAppBefore(buildAppConfig("with-pbs").anonAuth().partitionBasedSync());
 
     it("migration while sync is enabled throws", async function (this: Mocha.Context & AppContext & RealmContext) {

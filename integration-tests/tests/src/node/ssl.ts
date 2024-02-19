@@ -45,7 +45,7 @@ import { baseUrl } from "../hooks/import-app-before";
 // * Can only run on non-Apple machines, otherwise tests will await forever.
 // * Can only run if the baseUrl points to a server using TLS / HTTPs.
 const missingTLS = baseUrl.startsWith("http://");
-describe.skipIf(platform() === "darwin" || environment.missingServer || missingTLS, "SSL Configuration", function () {
+describe.skipIf(platform() === "darwin" || missingTLS, "SSL Configuration", function () {
   this.longTimeout();
   importAppBefore(buildAppConfig("with-flx").anonAuth().flexibleSync());
 

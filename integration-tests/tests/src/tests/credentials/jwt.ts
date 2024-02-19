@@ -26,7 +26,7 @@ import { buildAppConfig } from "../../utils/build-app-config";
 
 const privateKey = "2k66QfKeTRk3MdZ5vpDYgZCu2k66QfKeTRk3MdZ5vpDYgZCu";
 
-describe.skipIf(environment.missingServer, "jwt credentials", () => {
+describe("jwt credentials", () => {
   importAppBefore(
     buildAppConfig("with-custom-token").customTokenAuth({
       privateKey,

@@ -78,7 +78,7 @@ function removeExistingUsers(): void {
   });
 }
 
-describe.skipIf(environment.missingServer, "User", () => {
+describe("User", () => {
   describe("email password", () => {
     importAppBefore(buildAppConfig("with-email-password").emailPasswordAuth());
     removeExistingUsers();
