@@ -79,6 +79,31 @@ function isConnectionRefused(err: unknown) {
   );
 }
 
+function printWarningBox(...lines: string[]) {
+  const contentWidth = Math.max(...lines.map((line) => line.length));
+  const bar = "━".repeat(contentWidth + 2);
+  console.warn(`┏${bar}┓`);
+  for (const line of lines) {
+    const padding = " ".repeat(contentWidth - line.length);
+    console.warn(`┃ ${line}${padding} ┃`);
+  }
+  console.warn(`┗${bar}┛`);
+}
+
+/** Ensure we'll only ever install a single after hook with this warning */
+let skippedAppImportAfterHookInstalled = false;
+function ensureSkippedAppImportAfterHook() {
+  if (!skippedAppImportAfterHookInstalled) {
+    skippedAppImportAfterHookInstalled = true;
+    after(function (this: Mocha.Context) {
+      printWarningBox(
+        "Connection got refused while importing an app - skipping tests",
+        "Run this with `MOCHA_REMOTE_CONTEXT=missingServer` to silence this warning",
+      );
+    });
+  }
+}
+
 export function importAppBefore(config: AppConfig | { config: AppConfig }, sdkConfig?: AppConfigurationRelaxed): void {
   // Unwrap when passed a builder directly
   if ("config" in config) {
@@ -99,8 +124,7 @@ export function importAppBefore(config: AppConfig | { config: AppConfig }, sdkCo
         this.app = new Realm.App({ id: appId, baseUrl, ...sdkConfig });
       } catch (err) {
         if (isConnectionRefused(err) && allowSkippingServerTests) {
-          console.warn("Connection refused when importing app: Skipped importing an app and all dependent tests.");
-          console.log("Set `missingServer=false` or ");
+          ensureSkippedAppImportAfterHook();
           this.skip();
         } else {
           throw err;
