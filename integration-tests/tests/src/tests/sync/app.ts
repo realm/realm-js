@@ -74,12 +74,13 @@ interface IDogForSyncSchema {
   realm_id: string | undefined;
 }
 
+const missingAppConfig = { id: "smurf", baseUrl };
+
 describe("App", () => {
   describe("instantiation", function () {
     afterEach(async () => {
       Realm.clearTestState();
     });
-    const missingAppConfig = { id: "smurf", baseUrl };
 
     it("from config", () => {
       //even if "id" is not an existing app we can still instantiate a new Realm.
@@ -123,12 +124,6 @@ describe("App", () => {
           default: "request to http://localhost:9999/api/client/v2.0/app/smurf/location failed",
         }),
       );
-    });
-
-    it.skipIf(environment.missingServer, "logging in throws on non existing app", async function () {
-      const app = new Realm.App(missingAppConfig);
-      const credentials = Realm.Credentials.anonymous();
-      await expect(app.logIn(credentials)).to.be.rejectedWith("cannot find app using Client App ID 'smurf'");
     });
 
     it("get returns cached app", () => {
@@ -179,7 +174,14 @@ describe("App", () => {
   });
 
   describe("with valid app", async () => {
-    importAppBefore(buildAppConfig("with-anon").anonAuth());
+    importAppBefore(buildAppConfig().anonAuth());
+
+    it("logging in throws on non existing app", async function () {
+      // This test is moved here to ensure the server is available before connecting with a non-exisiting app id
+      const app = new Realm.App(missingAppConfig);
+      const credentials = Realm.Credentials.anonymous();
+      await expect(app.logIn(credentials)).to.be.rejectedWith("cannot find app using Client App ID 'smurf'");
+    });
 
     it("logins successfully ", async function (this: Mocha.Context & AppContext & RealmContext) {
       let user;
@@ -281,7 +283,7 @@ describe("App", () => {
     });
   });
 
-  describe("with email-password auth", () => {
+  describe.skipIf(environment.missingServer, "with email-password auth", () => {
     importAppBefore(
       buildAppConfig("with-email-password").emailPasswordAuth({
         autoConfirm: true,
@@ -302,7 +304,7 @@ describe("App", () => {
     });
   });
 
-  describe("with sync", () => {
+  describe.skipIf(environment.missingServer, "with sync", () => {
     importAppBefore(buildAppConfig("with-pbs").anonAuth().partitionBasedSync());
 
     it("migration while sync is enabled throws", async function (this: Mocha.Context & AppContext & RealmContext) {
