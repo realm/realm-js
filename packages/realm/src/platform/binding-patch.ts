@@ -19,6 +19,10 @@
 import { binding } from "./binding";
 import { AbortSignal } from "@realm/fetch";
 
+/**
+ * Applies SDK level patches to the binding.
+ * NOTE: This should only be called after the binding has been injected.
+ */
 export function applyPatch() {
   binding.IndexSet.prototype.asIndexes = function* (this: binding.IndexSet) {
     for (const [from, to] of this) {
