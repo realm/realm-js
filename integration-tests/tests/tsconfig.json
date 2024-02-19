@@ -10,7 +10,7 @@
 		"resolveJsonModule": true,
 		"outDir": "dist",
 		"lib": [
-			"es2020"
+			"es2022"
 		],
 		"types": [
 			"realm",

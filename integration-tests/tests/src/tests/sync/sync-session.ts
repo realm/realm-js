@@ -17,12 +17,11 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
-import Realm, { ConnectionState, ObjectSchema, BSON, User, SyncConfiguration } from "realm";
+import Realm, { ConnectionState, ObjectSchema, BSON, SyncConfiguration } from "realm";
 import { importAppBefore } from "../../hooks";
 import { DogSchema } from "../../schemas/person-and-dog-with-object-ids";
 import { getRegisteredEmailPassCredentials } from "../../utils/credentials";
 import { generatePartition } from "../../utils/generators";
-import { importApp } from "../../utils/import-app";
 import { sleep, throwAfterTimeout } from "../../utils/sleep";
 import { buildAppConfig } from "../../utils/build-app-config";
 

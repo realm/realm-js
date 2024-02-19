@@ -21,7 +21,7 @@ import Realm, { AppConfiguration, BSON, MetadataMode } from "realm";
 
 import { importAppBefore } from "../../hooks";
 import { generatePartition } from "../../utils/generators";
-import { baseUrl } from "../../utils/import-app";
+import { baseUrl } from "../../hooks/import-app-before";
 import { select } from "../../utils/select";
 import { buildAppConfig } from "../../utils/build-app-config";
 

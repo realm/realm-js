@@ -39,7 +39,7 @@ import { buildAppConfig } from "../utils/build-app-config";
 import { closeRealm } from "../utils/close-realm";
 import { createPromiseHandle } from "../utils/promise-handle";
 import { importAppBefore } from "../hooks";
-import { baseUrl } from "../utils/import-app";
+import { baseUrl } from "../hooks/import-app-before";
 
 // IMPORTANT:
 // * Can only run on non-Apple machines, otherwise tests will await forever.

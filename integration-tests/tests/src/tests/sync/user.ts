@@ -27,7 +27,7 @@ import {
   randomVerifiableEmail,
 } from "../../utils/generators";
 import { buildAppConfig } from "../../utils/build-app-config";
-import { baseUrl } from "../../utils/import-app";
+import { baseUrl } from "../../hooks/import-app-before";
 
 type AnyApp = Realm.App<any, any>;
 type AnyUser = Realm.User<any, any, any>;

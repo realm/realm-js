@@ -16,15 +16,27 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import Realm, { AppConfiguration } from "realm";
+import Realm from "realm";
 
-import { importApp } from "../utils/import-app";
-import { AppConfig } from "@realm/app-importer";
+import { AppConfig, AppImporter, Credentials } from "@realm/app-importer";
 import { mongodbServiceType } from "../utils/ExtendedAppConfigBuilder";
 
 const REALM_LOG_LEVELS = ["all", "trace", "debug", "detail", "info", "warn", "error", "fatal", "off"];
 
-const { syncLogLevel = "warn" } = environment;
+const {
+  syncLogLevel = "warn",
+  baseUrl = "http://localhost:9090",
+  reuseApp = false,
+  username = "unique_user@domain.com",
+  password = "password",
+  publicKey,
+  privateKey,
+  missingServer,
+} = environment;
+
+export { baseUrl };
+
+const allowSkippingServerTests = typeof environment.baseUrl === "undefined" || missingServer !== false;
 
 export type AppConfigurationRelaxed = {
   id?: string;
@@ -33,6 +45,39 @@ export type AppConfigurationRelaxed = {
   multiplexSessions?: boolean;
   baseFilePath?: string;
 };
+
+function getCredentials(): Credentials {
+  if (typeof publicKey === "string" && typeof privateKey === "string") {
+    return {
+      kind: "api-key",
+      publicKey,
+      privateKey,
+    };
+  } else {
+    return {
+      kind: "username-password",
+      username,
+      password,
+    };
+  }
+}
+
+const credentials = getCredentials();
+
+const importer = new AppImporter({
+  baseUrl,
+  credentials,
+  reuseApp,
+});
+
+function isConnectionRefused(err: unknown) {
+  return (
+    err instanceof Error &&
+    err.cause instanceof AggregateError &&
+    "code" in err.cause &&
+    err.cause.code === "ECONNREFUSED"
+  );
+}
 
 export function importAppBefore(config: AppConfig | { config: AppConfig }, sdkConfig?: AppConfigurationRelaxed): void {
   // Unwrap when passed a builder directly
