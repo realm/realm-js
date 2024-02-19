@@ -36,7 +36,7 @@ const {
 
 export { baseUrl };
 
-const allowSkippingServerTests = typeof environment.baseUrl === "undefined" || missingServer !== false;
+const allowSkippingServerTests = typeof environment.baseUrl === "undefined" && missingServer !== false;
 
 export type AppConfigurationRelaxed = {
   id?: string;
