@@ -2,8 +2,8 @@
   "files": [],
   "references": [
     { "path": "./tsconfig.node.json" },
-    { "path": "tsconfig.react-native.json" },
-    { "path": "tsconfig.tests.json" },
-    { "path": "tsconfig.public-types.json" }
+    { "path": "./tsconfig.react-native.json" },
+    { "path": "./tsconfig.tests.json" },
+    { "path": "./tsconfig.public-types.json" }
   ]
 }
