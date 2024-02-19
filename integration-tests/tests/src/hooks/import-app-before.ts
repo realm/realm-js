@@ -104,6 +104,11 @@ function ensureSkippedAppImportAfterHook() {
   }
 }
 
+/**
+ * Imports an app before the suite runs and stores an `App` instance on the test context (accessible via `this.app` of a test).
+ * If the `missingServer` context is set the suite will be skipped.
+ * If the import fails due to a connection refusal, the suite will be skipped and a warning printed at the end of the test run.
+ */
 export function importAppBefore(config: AppConfig | { config: AppConfig }, sdkConfig?: AppConfigurationRelaxed): void {
   // Unwrap when passed a builder directly
   if ("config" in config) {
