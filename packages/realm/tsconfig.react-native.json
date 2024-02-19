@@ -7,6 +7,7 @@
     "composite": true,
     "outDir": "dist/platform/react-native",
     "rootDir": "src/platform/react-native",
+    "sourceMap": true,
     "resolveJsonModule": true,
     "noEmit": false,
     "allowImportingTsExtensions": false,
