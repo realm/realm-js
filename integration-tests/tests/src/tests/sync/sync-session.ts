@@ -344,39 +344,6 @@ describe("SessionTest", () => {
     });
   });
 
-  describe("Logging", () => {
-    afterEach(() => Realm.clearTestState());
-    // Skipped because reusing a single app across tests break this
-    it.skip("can set custom logging function", async function (this: AppContext) {
-      // setting a custom logging function must be done immediately after instantiating an app
-
-      const { appId, baseUrl } = await importApp(buildAppConfig("with-pbs").anonAuth().partitionBasedSync().config);
-      const app = new Realm.App({ id: appId, baseUrl });
-
-      const partition = generatePartition();
-      const credentials = Realm.Credentials.anonymous();
-
-      const logLevelStr = "info"; // "all", "trace", "debug", "detail", "info", "warn", "error", "fatal", "off"
-      const logLevelNum = 4; // == "info", see index.d.ts, logger.hpp for definitions
-
-      const promisedLog = new Promise((resolve) => {
-        Realm.App.Sync.setLogLevel(app, logLevelStr);
-        Realm.App.Sync.setLogger(app, (level, message) => {
-          if (level == logLevelNum && message.includes("Connection") && message.includes("Session")) {
-            // we should, at some point, receive a log message that looks like
-            // Connection[1]: Session[1]: client_reset_config = false, Realm exists = true, client reset = false
-            resolve(true);
-          }
-        });
-      });
-
-      const user = await app.logIn(credentials);
-      const config = getSyncConfiguration(user, partition);
-      await Realm.open(config);
-      await promisedLog;
-    });
-  });
-
   describe("Connection", () => {
     afterEach(() => Realm.clearTestState());
     it("can add connectionNotification", async function (this: AppContext) {
