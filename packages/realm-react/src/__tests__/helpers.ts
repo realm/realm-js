@@ -27,8 +27,10 @@ const {
   PRIVATE_KEY: privateKey,
   USERNAME: username = "unique_user@domain.com",
   PASSWORD: password = "password",
-  REALM_BASE_URL: realmBaseUrl = "http://localhost:9090",
+  REALM_BASE_URL: baseUrl = "http://localhost:9090",
 } = process.env;
+
+export { baseUrl };
 
 export async function testAuthOperation({
   authOperation,
@@ -44,8 +46,6 @@ export async function testAuthOperation({
     expectedResult();
   });
 }
-
-export const baseUrl = realmBaseUrl;
 
 function getCredentials(): Credentials {
   if (typeof publicKey === "string" && typeof privateKey === "string") {

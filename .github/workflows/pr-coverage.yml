@@ -62,7 +62,7 @@ jobs:
         timeout-minutes: 60
         run: npm run ci:coverage --workspace @realm/integration-tests -- --reporter mocha-github-actions-reporter --timeout ${{ env.MOCHA_TIMEOUT }}
         env:
-          CONTEXT: syncLogLevel=warn,longTimeout=${{ env.LONG_TIMEOUT }},realmBaseUrl=${{ steps.baas.outputs.baas-url }}
+          CONTEXT: syncLogLevel=warn,longTimeout=${{ env.LONG_TIMEOUT }},baseUrl=${{ steps.baas.outputs.baas-url }}
 
       - name: Coveralls
         uses: coverallsapp/github-action@v2
