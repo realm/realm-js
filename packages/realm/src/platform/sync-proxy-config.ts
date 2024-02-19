@@ -16,10 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import type { SyncProxyConfig } from "../binding";
+import type { binding } from "../binding";
 
 type SyncProxyConfigType = {
-  create(): SyncProxyConfig | undefined;
+  create(): binding.SyncProxyConfig | undefined;
 };
 
 export const syncProxyConfig: SyncProxyConfigType = {

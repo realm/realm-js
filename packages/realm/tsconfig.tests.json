@@ -12,17 +12,12 @@
     "types": [
       "mocha",
       "node"
-    ],
-    "paths": {
-      "realm/binding/core": [
-        "./generated/ts/core.ts"
-      ]
-    }
+    ]
   },
   "include": [
     "src/tests/**/*"
   ],
   "references": [
-    { "path": "tsconfig.shared.json" }
+    { "path": "./tsconfig.shared.json" }
   ]
 }

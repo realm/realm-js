@@ -15,6 +15,8 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
+
+import "./binding";
 import "./fs";
 import "./device-info";
 import "./sync-proxy-config";

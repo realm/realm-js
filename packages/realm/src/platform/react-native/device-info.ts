@@ -21,7 +21,7 @@ import { Platform } from "react-native";
 import { config, version } from "realm/package.json";
 
 import { inject } from "../device-info";
-import { JsPlatformHelpers } from "../../binding";
+import { binding } from "../binding";
 
 function getDeviceName() {
   if (Platform.OS === "ios") {
@@ -71,7 +71,7 @@ inject({
       deviceName: getDeviceName(),
       deviceVersion: getDeviceVersion(),
 
-      cpuArch: JsPlatformHelpers.getCpuArch(),
+      cpuArch: binding.JsPlatformHelpers.getCpuArch(),
 
       frameworkName: "react-native",
       frameworkVersion: getReactNativeVersion(),

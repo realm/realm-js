@@ -16,10 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import type { DeviceInfo } from "../binding";
+import type { binding } from "../binding";
 
 type DeviceInfoType = {
-  create(): DeviceInfo;
+  create(): binding.DeviceInfo;
 };
 
 export const deviceInfo: DeviceInfoType = {

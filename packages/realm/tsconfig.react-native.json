@@ -20,6 +20,6 @@
     "src/platform/react-native/**/*"
   ],
   "references": [
-    { "path": "tsconfig.shared.json" }
+    { "path": "./tsconfig.shared.json" }
   ]
 }

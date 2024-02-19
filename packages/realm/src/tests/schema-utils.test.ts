@@ -19,14 +19,15 @@
 import { expect } from "chai";
 import { inspect } from "util";
 
-import {
-  ObjectSchema as BindingObjectSchema,
-  Property as BindingProperty,
-  PropertyType as BindingPropertyType,
-  ColKey,
-  TableKey,
-  TableType,
-} from "../binding";
+import { binding } from "../binding";
+
+import BindingObjectSchema = binding.ObjectSchema;
+import BindingProperty = binding.Property;
+import BindingPropertyType = binding.PropertyType;
+import ColKey = binding.ColKey;
+import TableKey = binding.TableKey;
+import TableType = binding.TableType;
+
 import { CanonicalObjectSchema, CanonicalPropertySchema } from "../schema";
 import { fromBindingObjectSchema, fromBindingPropertySchema } from "../schema/from-binding";
 

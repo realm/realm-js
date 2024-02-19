@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2022 Realm Inc.
+// Copyright 2024 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,11 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import "./binding";
-import "./fs";
-import "./device-info";
-import "./sync-proxy-config";
-import "./custom-inspect";
+import { inject } from "../binding";
+import * as binding from "./generated/native";
 
-import { Realm } from "../../Realm";
-export = Realm;
+inject(binding);

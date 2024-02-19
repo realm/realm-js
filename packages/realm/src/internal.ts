@@ -29,7 +29,7 @@ export * from "./safeGlobalThis";
 export * from "./platform";
 
 /** @internal */
-export * as binding from "./binding";
+export * from "./binding";
 export * from "./flags";
 export * from "./bson";
 export * from "./errors";

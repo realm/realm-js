@@ -16,13 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import {
-  ObjectSchema_Relaxed as BindingObjectSchema,
-  Property_Relaxed as BindingProperty,
-  PropertyType as BindingPropertyType,
-  TableType,
-} from "../binding";
-import { CanonicalObjectSchema, CanonicalPropertySchema, PropertyTypeName, assert } from "../internal";
+import { CanonicalObjectSchema, CanonicalPropertySchema, PropertyTypeName, assert, binding } from "../internal";
+
+type BindingObjectSchema = binding.ObjectSchema_Relaxed;
+type BindingProperty = binding.Property_Relaxed;
+import TableType = binding.TableType;
+import BindingPropertyType = binding.PropertyType;
 
 /** @internal */
 export const TYPE_MAPPINGS: Record<PropertyTypeName, BindingPropertyType> = {

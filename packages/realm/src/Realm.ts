@@ -1893,5 +1893,5 @@ Object.defineProperty(safeGlobalThis, "Realm", {
     }
     return RealmConstructor;
   },
-  configurable: false,
+  configurable: true,
 });

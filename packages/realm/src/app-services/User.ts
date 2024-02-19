@@ -37,6 +37,7 @@ import {
   createFactory,
   isProviderType,
   network,
+  toFetchArgs,
 } from "../internal";
 
 export type UserChangeCallback = () => void;
@@ -310,7 +311,7 @@ export class User<
       serviceName,
     );
 
-    const response = await network.fetch(...binding.toFetchArgs(request));
+    const response = await network.fetch(...toFetchArgs(request));
     assert(response.ok, () => `Request failed: ${response.statusText} (${response.status})`);
     assert(response.body, "Expected a body in the response");
 

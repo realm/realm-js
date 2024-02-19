@@ -16,52 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import {
-  HttpMethod,
-  IndexSet,
-  Int64,
-  Int64Type,
-  ObjKey,
-  Request,
-  SyncSession,
-  Timestamp,
-  WeakSyncSession,
-} from "realm/binding";
+import { binding } from "./platform/binding";
+export { binding };
+
 import { AbortSignal, fetch } from "@realm/fetch";
 
-/** @internal */
-export * from "realm/binding";
-
-/** @internal */
-declare module "realm/binding" {
-  interface IndexSet {
-    asIndexes(): Iterator<number>;
-  }
-  interface Timestamp {
-    toDate(): Date;
-  }
-  // eslint-disable-next-line @typescript-eslint/no-namespace
-  namespace Timestamp {
-    export function fromDate(d: Date): Timestamp;
-  }
-
-  interface SyncSession {
-    /** Returns a WeakSyncSession and releases the strong reference held by this SyncSession */
-    weaken(): WeakSyncSession;
-  }
-
-  interface WeakSyncSession {
-    /**
-     * Similar to WeakRef.deref(), but takes a callback so that the strong reference can be
-     * automatically released when the callback exists (either by returning or throwing).
-     * It is not legal to hold on to the SyncSession after this returns because its
-     * strong reference will have been deleted.
-     */
-    withDeref<Ret = void>(callback: (shared: SyncSession | null) => Ret): Ret;
-  }
-}
-
-IndexSet.prototype.asIndexes = function* (this: IndexSet) {
+binding.IndexSet.prototype.asIndexes = function* (this: binding.IndexSet) {
   for (const [from, to] of this) {
     let i = from;
     while (i < to) {
@@ -71,22 +31,24 @@ IndexSet.prototype.asIndexes = function* (this: IndexSet) {
   }
 };
 
-Timestamp.fromDate = (d: Date) =>
-  Timestamp.make(Int64.numToInt(Math.floor(d.valueOf() / 1000)), (d.valueOf() % 1000) * 1000_000);
+binding.Timestamp.fromDate = (d: Date) =>
+  binding.Timestamp.make(binding.Int64.numToInt(Math.floor(d.valueOf() / 1000)), (d.valueOf() % 1000) * 1000_000);
 
-Timestamp.prototype.toDate = function () {
+binding.Timestamp.prototype.toDate = function () {
   return new Date(Number(this.seconds) * 1000 + this.nanoseconds / 1000_000);
 };
 
-SyncSession.prototype.weaken = function () {
+binding.SyncSession.prototype.weaken = function () {
   try {
-    return WeakSyncSession.weakCopyOf(this);
+    return binding.WeakSyncSession.weakCopyOf(this);
   } finally {
     this.$resetSharedPtr();
   }
 };
 
-WeakSyncSession.prototype.withDeref = function <Ret = void>(callback: (shared: SyncSession | null) => Ret) {
+binding.WeakSyncSession.prototype.withDeref = function <Ret = void>(
+  callback: (shared: binding.SyncSession | null) => Ret,
+) {
   const shared = this.rawDereference();
   try {
     return callback(shared);
@@ -96,26 +58,26 @@ WeakSyncSession.prototype.withDeref = function <Ret = void>(callback: (shared: S
 };
 
 /** @internal */
-export class InvalidObjKey extends TypeError {
+binding.InvalidObjKey = class InvalidObjKey extends TypeError {
   constructor(input: string) {
     super(`Cannot convert '${input}' to an ObjKey`);
   }
-}
+};
 
 /** @internal */
-export function stringToObjKey(input: string): ObjKey {
+binding.stringToObjKey = (input: string) => {
   try {
-    return Int64.strToInt(input) as unknown as ObjKey;
+    return binding.Int64.strToInt(input) as unknown as binding.ObjKey;
   } catch {
-    throw new InvalidObjKey(input);
+    throw new binding.InvalidObjKey(input);
   }
-}
+};
 
 /** @internal */
-export function isEmptyObjKey(objKey: ObjKey) {
+binding.isEmptyObjKey = (objKey: binding.ObjKey) => {
   // This relies on the JS representation of an ObjKey being a bigint
-  return Int64.equals(objKey as unknown as Int64, -1);
-}
+  return binding.Int64.equals(objKey as unknown as binding.Int64, -1);
+};
 
 function fromBindingFetchBody(body: string) {
   if (body.length === 0) {
@@ -125,15 +87,15 @@ function fromBindingFetchBody(body: string) {
   }
 }
 
-const HTTP_METHOD: Record<HttpMethod, string> = {
-  [HttpMethod.Get]: "GET",
-  [HttpMethod.Post]: "POST",
-  [HttpMethod.Put]: "PUT",
-  [HttpMethod.Patch]: "PATCH",
-  [HttpMethod.Del]: "DELETE",
+const HTTP_METHOD: Record<binding.HttpMethod, string> = {
+  [binding.HttpMethod.Get]: "GET",
+  [binding.HttpMethod.Post]: "POST",
+  [binding.HttpMethod.Put]: "PUT",
+  [binding.HttpMethod.Patch]: "PATCH",
+  [binding.HttpMethod.Del]: "DELETE",
 };
 
-function fromBindingFetchMethod(method: HttpMethod) {
+function fromBindingFetchMethod(method: binding.HttpMethod) {
   if (method in HTTP_METHOD) {
     return HTTP_METHOD[method];
   } else {
@@ -141,13 +103,13 @@ function fromBindingFetchMethod(method: HttpMethod) {
   }
 }
 
-function fromBindingTimeoutSignal(timeoutMs: Int64Type): AbortSignal | undefined {
+function fromBindingTimeoutSignal(timeoutMs: binding.Int64Type): AbortSignal | undefined {
   const timeout = Number(timeoutMs);
   return timeout > 0 ? AbortSignal.timeout(timeout) : undefined;
 }
 
 /** @internal */
-export function toFetchArgs({ url, method, timeoutMs, body, headers }: Request): Parameters<typeof fetch> {
+export function toFetchArgs({ url, method, timeoutMs, body, headers }: binding.Request): Parameters<typeof fetch> {
   return [
     url,
     {

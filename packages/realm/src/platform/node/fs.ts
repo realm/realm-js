@@ -21,7 +21,7 @@ import { dirname, isAbsolute, join } from "node:path";
 
 import { inject } from "../file-system";
 import { extendDebug } from "../../debug";
-import { JsPlatformHelpers } from "../../binding";
+import { binding } from "../binding";
 
 const debug = extendDebug("fs");
 
@@ -48,10 +48,10 @@ inject({
   },
   setDefaultDirectoryPath(path) {
     debug("setDefaultDirectoryPath", path);
-    return JsPlatformHelpers.setDefaultRealmFileDirectory(path);
+    return binding.JsPlatformHelpers.setDefaultRealmFileDirectory(path);
   },
   getDefaultDirectoryPath() {
-    return JsPlatformHelpers.defaultRealmFileDirectory();
+    return binding.JsPlatformHelpers.defaultRealmFileDirectory();
   },
   exists(path) {
     debug("exists", path);

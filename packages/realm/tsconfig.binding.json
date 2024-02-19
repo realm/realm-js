@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
     "composite": true,
-    "outDir": "dist/core",
-    "rootDir": "generated/ts",
+    "outDir": "dist",
+    "rootDir": "src",
     "target": "es2022",
     "module": "es2022",
     "moduleResolution": "Bundler",
@@ -14,10 +14,9 @@
       "ES2022"
     ],
     "types": [],
-    "noResolve": true,
-    "allowJs": true
+    "noResolve": true
   },
   "files": [
-    "generated/ts/core.ts"
+    "src/generated/core.ts"
   ]
 }

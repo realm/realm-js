@@ -8,6 +8,7 @@
     "outDir": "dist/platform/node",
     "rootDir": "src/platform/node",
     "resolveJsonModule": true,
+    "allowJs": true,
     "types": [
       "@realm/fetch",
       "node"
@@ -17,6 +18,6 @@
     "src/platform/node/**/*"
   ],
   "references": [
-    { "path": "tsconfig.shared.json" }
+    { "path": "./tsconfig.shared.json" }
   ]
 }

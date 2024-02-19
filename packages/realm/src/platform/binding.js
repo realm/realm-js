@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2022 Realm Inc.
+// Copyright 2024 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,11 +16,28 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import "./binding";
-import "./fs";
-import "./device-info";
-import "./sync-proxy-config";
-import "./custom-inspect";
+let injected = null;
 
-import { Realm } from "../../Realm";
-export = Realm;
+export const binding = new Proxy(
+  {},
+  {
+    get(_, prop, receiver) {
+      if (injected) {
+        return Reflect.get(injected, prop, receiver);
+      } else {
+        throw new Error(`Getting '${prop}' from binding before it was injected`);
+      }
+    },
+    set(_, prop, value) {
+      if (injected) {
+        return Reflect.set(injected, prop, value, injected);
+      } else {
+        throw new Error(`Setting '${prop}' on binding before it was injected`);
+      }
+    },
+  },
+);
+
+export function inject(value) {
+  injected = value;
+}
