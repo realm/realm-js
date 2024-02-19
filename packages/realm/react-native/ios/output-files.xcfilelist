@@ -1,0 +1,8 @@
+$(SRCROOT)/react-native/ios/build/lib/librealm.a
+$(SRCROOT)/react-native/ios/build/lib/librealm-sync.a
+$(SRCROOT)/react-native/ios/build/lib/librealm-parser.a
+$(SRCROOT)/react-native/ios/build/lib/librealm-object-store.a
+$(SRCROOT)/react-native/ios/lib/librealm.a
+$(SRCROOT)/react-native/ios/lib/librealm-sync.a
+$(SRCROOT)/react-native/ios/lib/librealm-parser.a
+$(SRCROOT)/react-native/ios/lib/librealm-object-store.a

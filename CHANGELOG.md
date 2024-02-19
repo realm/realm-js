@@ -4,7 +4,10 @@
 * None
 
 ### Enhancements
-* None
+* Building for iOS and Android has been optimized for compatibility with future React Native versions.
+  * Android builds now compile on the consumers machine rather than through prebuilds.
+  * iOS builds also compile on the consumers machine and can opt-in to compile Realm Core from source with the `REALM_BUILD_CORE` flag when running `pod install`.
+  * Package size has decreased since prebuilds have been removed.
 
 ### Fixed
 * Fixed `User#callFunction` to correctly pass arguments to the server. Previously they would be sent as an array, so if your server-side function used to handle the unwrapping of arguments, it would need an update too. The "functions factory" pattern of calling `user.functions.sum(1, 2, 3)` wasn't affected by this bug. Thanks to @deckyfx for finding this and suggesting the fix! ([#6447](https://github.com/realm/realm-js/issues/6447), since v12.0.0)
