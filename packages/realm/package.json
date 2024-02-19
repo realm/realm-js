@@ -42,18 +42,12 @@
       "node": "./dist/platform/node/index.js",
       "react-native": "./dist/platform/react-native/index.js"
     },
-    "./binding": {
-      "types": "./generated/ts/native.d.mts",
-      "node": "./generated/ts/native-node.mjs",
-      "react-native": "./generated/ts/native-react-native.mjs"
-    },
-    "./binding/core": {
-      "types": "./dist/core/core.d.ts",
-      "default": "./dist/core/core.js"
-    },
     "./scripts/submit-analytics": "./scripts/submit-analytics.mjs",
     "./react-native.config.js": "./react-native.config.js",
     "./package.json": "./package.json"
+  },
+  "imports": {
+    "#realm.node": "./binding/build/realm.node"
   },
   "files": [
     "dependencies.list",
@@ -81,7 +75,8 @@
     "bindgen:configure": "wireit",
     "bindgen:build:node": "wireit",
     "bindgen:generate:typescript": "wireit",
-    "bindgen:generate:wrappers": "wireit",
+    "bindgen:generate:node-wrapper": "wireit",
+    "bindgen:generate:react-native-wrapper": "wireit",
     "bindgen:generate:spec-schema": "wireit",
     "build:node": "wireit",
     "build:node:prebuild": "wireit",
@@ -104,7 +99,8 @@
       "dependencies": [
         "build:node",
         "bindgen:generate:typescript",
-        "bindgen:generate:wrappers",
+        "bindgen:generate:node-wrapper",
+        "bindgen:generate:react-native-wrapper",
         "../fetch:build"
       ],
       "env": {
@@ -115,7 +111,8 @@
       "command": "tsc --build",
       "dependencies": [
         "bindgen:generate:typescript",
-        "bindgen:generate:wrappers",
+        "bindgen:generate:node-wrapper",
+        "bindgen:generate:react-native-wrapper",
         "../fetch:build"
       ]
     },
@@ -129,7 +126,7 @@
       ]
     },
     "bindgen:generate:typescript": {
-      "command": "realm-bindgen --template bindgen/src/templates/typescript.ts --spec bindgen/vendor/realm-core/bindgen/spec.yml --spec bindgen/js_spec.yml --opt-in bindgen/js_opt_in_spec.yml --output ./generated/ts",
+      "command": "realm-bindgen --template bindgen/src/templates/typescript.ts --spec bindgen/vendor/realm-core/bindgen/spec.yml --spec bindgen/js_spec.yml --opt-in bindgen/js_opt_in_spec.yml --output ./src/generated",
       "dependencies": [
         "bindgen:generate:spec-schema"
       ],
@@ -143,12 +140,11 @@
         "bindgen/src/templates/typescript.ts"
       ],
       "output": [
-        "generated/ts/core.ts",
-        "generated/ts/native.d.mts"
+        "src/generated"
       ]
     },
-    "bindgen:generate:wrappers": {
-      "command": "realm-bindgen --template bindgen/src/templates/node-wrapper.ts --spec bindgen/vendor/realm-core/bindgen/spec.yml --spec bindgen/js_spec.yml --opt-in bindgen/js_opt_in_spec.yml --output ./generated/ts",
+    "bindgen:generate:node-wrapper": {
+      "command": "realm-bindgen --template bindgen/src/templates/node-wrapper.ts --spec bindgen/vendor/realm-core/bindgen/spec.yml --spec bindgen/js_spec.yml --opt-in bindgen/js_opt_in_spec.yml --output ./src/platform/node/generated",
       "dependencies": [
         "bindgen:generate:spec-schema"
       ],
@@ -159,11 +155,30 @@
         "bindgen/js_opt_in_spec.yml",
         "bindgen/src",
         "!bindgen/src/templates",
+        "bindgen/src/templates/base-wrapper.ts",
         "bindgen/src/templates/node-wrapper.ts"
       ],
       "output": [
-        "generated/ts/native-node.mjs",
-        "generated/ts/native-react-native.mjs"
+        "src/platform/node/generated"
+      ]
+    },
+    "bindgen:generate:react-native-wrapper": {
+      "command": "realm-bindgen --template bindgen/src/templates/react-native-wrapper.ts --spec bindgen/vendor/realm-core/bindgen/spec.yml --spec bindgen/js_spec.yml --opt-in bindgen/js_opt_in_spec.yml --output ./src/platform/react-native/generated",
+      "dependencies": [
+        "bindgen:generate:spec-schema"
+      ],
+      "files": [
+        "bindgen/vendor/realm-core/bindgen/spec.yml",
+        "bindgen/vendor/realm-core/bindgen/src",
+        "bindgen/js_spec.yml",
+        "bindgen/js_opt_in_spec.yml",
+        "bindgen/src",
+        "!bindgen/src/templates",
+        "bindgen/src/templates/base-wrapper.ts",
+        "bindgen/src/templates/react-native-wrapper.ts"
+      ],
+      "output": [
+        "src/platform/react-native/generated"
       ]
     },
     "bindgen:generate:spec-schema": {

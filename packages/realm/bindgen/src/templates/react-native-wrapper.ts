@@ -27,23 +27,38 @@ export function generate(context: TemplateContext): void {
   out("// This file is generated: Update the spec instead of editing this file directly");
 
   out(`
-    /*global global, require */
-    import { createRequire } from 'node:module';
-    const nodeRequire = typeof require === 'function' ? require : createRequire(import.meta.url);
-    const nativeModule = nodeRequire("#realm.node");
-
+    /*global global*/
+    import { Platform, NativeModules } from "react-native";
+    if (Platform.OS === "android") {
+      // Getting the native module on Android will inject the Realm global
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const RealmNativeModule = NativeModules.Realm;
+    }
+    // TODO: Remove the need to store Realm as a global
+    // @see https://github.com/realm/realm-js/issues/2126
+    const nativeModule = global.__RealmFuncs;
     if(!nativeModule) {
       throw new Error("Could not find the Realm binary. Please consult our troubleshooting guide: https://www.mongodb.com/docs/realm-sdks/js/latest/#md:troubleshooting-missing-binary");
     }
 
-    // We know that node always has real WeakRefs so just use them.
-    export const WeakRef = global.WeakRef;
+    export const WeakRef = global.WeakRef ?? class WeakRef {
+        constructor(obj) { this.native = nativeModule.createWeakRef(obj) }
+        deref() { return nativeModule.lockWeakRef(this.native) }
+    };
   `);
 
   generateNativeBigIntSupport(out);
 
   out(`
-    export const Int64 = NativeBigIntSupport; // Node always supports BigInt
+    // Hermes supports BigInt, but JSC doesn't.
+    export const Int64 = global.HermesInternal ? NativeBigIntSupport : {
+      add(a, b) { return a.add(b); },
+      equals(a, b) { return a.equals(b); },
+      isInt(a) { return a instanceof Long; },
+      numToInt(a) { return Long.fromNumber(a); },
+      strToInt(a) { return Long.fromString(a); },
+      intToNum(a) { return a.toNumber(); },
+    }
   `);
 
   generateBase(context, out);

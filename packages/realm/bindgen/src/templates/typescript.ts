@@ -174,14 +174,11 @@ export function generate({ rawSpec, spec: boundSpec, file }: TemplateContext): v
     }
   `);
 
-  const out = file("native.d.mts", eslint);
+  const out = file("native.d.ts", eslint);
   out("// This file is generated: Update the spec instead of editing this file directly");
-
-  out("declare module 'realm/binding' {");
-
   out('import { ObjectId, UUID, Decimal128 } from "bson";');
-  out("import { Float, Status, ", spec.enums.map((e) => e.name).join(", "), '} from "realm/binding/core";');
-  out('export * from "realm/binding/core";');
+  out("import { Float, Status, ", spec.enums.map((e) => e.name).join(", "), '} from "./core";');
+  out('export * from "./core";');
 
   out("// Utilities");
   out("export type AppError = Error & {code: number};");
@@ -290,6 +287,4 @@ export function generate({ rawSpec, spec: boundSpec, file }: TemplateContext): v
     }
     out(`}`);
   }
-
-  out("} // end of module declaration");
 }
