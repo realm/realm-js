@@ -70,8 +70,7 @@
     "test": "wireit",
     "test:types": "tsc --project type-tests/tsconfig.json",
     "lint": "eslint --ext .js,.mjs,.ts .",
-    "build": "wireit",
-    "bundle:coverage": "ENABLE_TEST_COVERAGE_INSTRUMENTATION=true npm run bundle",
+    "build:typescript": "wireit",
     "bindgen:configure": "wireit",
     "bindgen:build:node": "wireit",
     "bindgen:generate:typescript": "wireit",
@@ -108,7 +107,7 @@
         "TSX_TSCONFIG_PATH": "tsconfig.tests.json"
       }
     },
-    "build": {
+    "build:typescript": {
       "command": "tsc --build",
       "dependencies": [
         "bindgen:generate:typescript",
@@ -284,7 +283,7 @@
     "docs": {
       "command": "typedoc",
       "dependencies": [
-        "build"
+        "build:typescript"
       ]
     }
   },
