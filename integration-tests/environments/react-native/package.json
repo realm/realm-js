@@ -216,7 +216,7 @@
     "@react-native/eslint-config": "0.73.2",
     "@react-native/metro-config": "0.73.3",
     "@react-native/typescript-config": "0.73.1",
-    "@types/react": "^18.2.6",
+    "@types/react": "^18.2.55",
     "@types/react-test-renderer": "^18.0.0",
     "concurrently": "^8.2.2",
     "mocha-github-actions-reporter": "^0.3.1",
