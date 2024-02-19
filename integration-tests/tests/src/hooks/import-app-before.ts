@@ -94,8 +94,18 @@ export function importAppBefore(config: AppConfig | { config: AppConfig }, sdkCo
     if (this.app) {
       throw new Error("Unexpected app on context, use only one importAppBefore per test");
     } else {
-      const { appId, baseUrl } = await importApp(config);
-      this.app = new Realm.App({ id: appId, baseUrl, ...sdkConfig });
+      try {
+        const { appId } = await importer.importApp(config);
+        this.app = new Realm.App({ id: appId, baseUrl, ...sdkConfig });
+      } catch (err) {
+        if (isConnectionRefused(err) && allowSkippingServerTests) {
+          console.warn("Connection refused when importing app: Skipped importing an app and all dependent tests.");
+          console.log("Set `missingServer=false` or ");
+          this.skip();
+        } else {
+          throw err;
+        }
+      }
 
       // Extract the sync database name from the config
       const databaseNames: (string | undefined)[] = config.services
