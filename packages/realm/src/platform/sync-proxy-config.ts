@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import type { binding } from "../binding";
+import type { binding } from "./binding";
 
 type SyncProxyConfigType = {
   create(): binding.SyncProxyConfig | undefined;

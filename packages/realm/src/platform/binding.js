@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import { applyPatch } from "./binding-patch";
+
 let injected = null;
 
 export const binding = new Proxy(
@@ -40,4 +42,5 @@ export const binding = new Proxy(
 
 export function inject(value) {
   injected = value;
+  applyPatch(injected);
 }

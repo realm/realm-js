@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import type { binding } from "../binding";
+import type { binding } from "./binding";
 
 type DeviceInfoType = {
   create(): binding.DeviceInfo;

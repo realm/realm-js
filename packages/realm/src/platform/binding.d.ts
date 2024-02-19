@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import type { fetch } from "@realm/fetch";
+
 declare module "../generated/native" {
   /** @internal */
   export interface IndexSet {
@@ -47,6 +49,7 @@ declare module "../generated/native" {
   }
   export function stringToObjKey(input: string): ObjKey;
   export function isEmptyObjKey(objKey: binding.ObjKey): boolean;
+  export function toFetchArgs(request: binding.Request): Parameters<typeof fetch>;
 }
 
 export * as binding from "../generated/native";

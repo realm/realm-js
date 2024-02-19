@@ -28,8 +28,6 @@ export * from "./safeGlobalThis";
 /** @internal */
 export * from "./platform";
 
-/** @internal */
-export * from "./binding";
 export * from "./flags";
 export * from "./bson";
 export * from "./errors";

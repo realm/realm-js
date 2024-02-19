@@ -19,7 +19,7 @@
 import { expect } from "chai";
 import { inspect } from "util";
 
-import { binding } from "../binding";
+import { binding } from "../platform/binding";
 
 import BindingObjectSchema = binding.ObjectSchema;
 import BindingProperty = binding.Property;

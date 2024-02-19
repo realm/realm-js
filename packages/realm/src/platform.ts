@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+export { binding } from "./platform/binding";
 export { deviceInfo } from "./platform/device-info";
 export { fs } from "./platform/file-system";
 export { network } from "./platform/network";
