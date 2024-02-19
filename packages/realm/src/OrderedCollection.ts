@@ -216,6 +216,10 @@ export abstract class OrderedCollection<
    * @internal
    */
   public get(index: number): T {
+    // In most cases it seems like this `fromBinding()` call is unnecessary
+    // as the `get()` call will already return the SDK representation.
+    // TODO: Look into where the `get()` call does not do this and remove
+    // this `fromBinding()` if possible.
     return this.helpers.fromBinding(this.helpers.get(this.results, index)) as T;
   }
 

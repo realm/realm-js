@@ -60,7 +60,7 @@ const PROXY_HANDLER: ProxyHandler<Dictionary> = {
     if (typeof value === "undefined" && typeof prop === "string") {
       const internal = target[INTERNAL];
       const { get: customGet, fromBinding } = target[HELPERS];
-      return fromBinding(customGet ? customGet(internal, prop) : internal.tryGetAny(prop));
+      return customGet ? customGet(internal, prop) : fromBinding(internal.tryGetAny(prop));
     } else {
       return value;
     }
@@ -236,15 +236,8 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
     const snapshot = this[INTERNAL].values.snapshot();
     const size = snapshot.size();
 
-    // Use separate for-loops rather than checking `snapshotGet` for each entry.
-    if (snapshotGet) {
-      for (let i = 0; i < size; i++) {
-        yield snapshotGet(snapshot, i) as T;
-      }
-    } else {
-      for (let i = 0; i < size; i++) {
-        yield fromBinding(snapshot.getAny(i)) as T;
-      }
+    for (let i = 0; i < size; i++) {
+      yield (snapshotGet ? snapshotGet(snapshot, i) : fromBinding(snapshot.getAny(i))) as T;
     }
   }
 
@@ -260,15 +253,10 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
     const size = keys.size();
     assert(size === values.size(), "Expected keys and values to equal in size");
 
-    // Use separate for-loops rather than checking `snapshotGet` for each entry.
-    if (snapshotGet) {
-      for (let i = 0; i < size; i++) {
-        yield [keys.getAny(i), snapshotGet(values, i)] as [string, T];
-      }
-    } else {
-      for (let i = 0; i < size; i++) {
-        yield [keys.getAny(i), fromBinding(values.getAny(i))] as [string, T];
-      }
+    for (let i = 0; i < size; i++) {
+      const key = keys.getAny(i);
+      const value = snapshotGet ? snapshotGet(values, i) : fromBinding(values.getAny(i));
+      yield [key, value] as [string, T];
     }
   }
 
@@ -314,13 +302,10 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
     const { set: customSet, toBinding } = this[HELPERS];
 
     const entries = Object.entries(elements);
-    // Use separate for-loops rather than checking `customSet` for each entry.
-    if (customSet) {
-      for (const [key, value] of entries) {
+    for (const [key, value] of entries) {
+      if (customSet) {
         customSet(internal, key, value);
-      }
-    } else {
-      for (const [key, value] of entries) {
+      } else {
         internal.insertAny(key, toBinding(value));
       }
     }

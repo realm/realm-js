@@ -193,7 +193,7 @@ function getListHelpersForMixed(realm: Realm, options: TypeOptions) {
       if (elementType === binding.MixedDataType.Dictionary) {
         return new Dictionary(realm, results.getDictionary(index), getDictionaryHelpersForMixed(realm, options));
       }
-      return results.getAny(index);
+      return mixedFromBinding(options, results.getAny(index));
     },
     set(list, index, value) {
       if (isList(value)) {
@@ -233,7 +233,8 @@ function getDictionaryHelpersForMixed(realm: Realm, options: TypeOptions) {
       if (elementType === binding.MixedDataType.Dictionary) {
         return new Dictionary(realm, dictionary.getDictionary(key), helpers);
       }
-      return dictionary.tryGetAny(key);
+      const value = dictionary.tryGetAny(key);
+      return value === undefined ? undefined : mixedFromBinding(options, value);
     },
     snapshotGet(results, index) {
       const elementType = binding.Helpers.getMixedElementType(results, index);
@@ -243,7 +244,7 @@ function getDictionaryHelpersForMixed(realm: Realm, options: TypeOptions) {
       if (elementType === binding.MixedDataType.Dictionary) {
         return new Dictionary(realm, results.getDictionary(index), helpers);
       }
-      return results.getAny(index);
+      return mixedFromBinding(options, results.getAny(index));
     },
     set(dictionary, key, value) {
       if (isList(value)) {
