@@ -89,6 +89,7 @@
     "build:ios:debug:simulator": "wireit",
     "build:ios:debug:ios": "wireit",
     "build:ios:debug:catalyst": "wireit",
+    "clean": "git clean -fdx -e node_modules",
     "install": "prebuild-install --runtime napi || echo 'Failed to download prebuild for Realm'",
     "docs": "wireit",
     "postinstall": "node ./scripts/submit-analytics.mjs"
