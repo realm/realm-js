@@ -92,6 +92,7 @@ export * from "./app-services/SubscriptionSet";
 export * from "./app-services/Subscription";
 export * from "./app-services/Sync";
 export * from "./app-services/App";
+export * from "./app-services/Auth";
 
 export * from "./Realm";
 export * from "./RealmListeners";

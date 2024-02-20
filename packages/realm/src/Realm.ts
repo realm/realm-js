@@ -1149,6 +1149,7 @@ export namespace Realm {
 
   export import Object = internal.RealmObject;
   export import App = internal.App;
+  export import Auth = internal.Auth;
   export import BSON = internal.BSON;
   export import Types = internal.Types;
 
