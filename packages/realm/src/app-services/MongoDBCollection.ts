@@ -23,7 +23,7 @@ import { DefaultFunctionsFactory, User, binding, createFactory, toArrayBuffer } 
 /**
  * A remote MongoDB service enabling access to an Atlas cluster.
  */
-export type MongoDB = {
+export type MongoDBService = {
   /**
    * The name of the MongoDB service.
    */

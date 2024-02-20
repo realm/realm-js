@@ -26,8 +26,8 @@ import {
   DefaultUserProfileData,
   Document,
   Listeners,
-  MongoDB,
   MongoDBCollection,
+  MongoDBService,
   ProviderType,
   PushClient,
   assert,
@@ -345,7 +345,7 @@ export class User<
    *                       .collection<Widget>("widgets")
    *                       .find({ color: "blue" });
    */
-  mongoClient(serviceName: string): MongoDB {
+  mongoClient(serviceName: string): MongoDBService {
     assert.string(serviceName, "serviceName");
     assert(serviceName.length, "Please provide the name of the MongoDB service to connect to.");
 
