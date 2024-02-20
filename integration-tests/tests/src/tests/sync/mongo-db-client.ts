@@ -41,7 +41,7 @@ type TestContext = CollectionContext & AppContext & UserContext & Mocha.Context;
 const serviceName = "mongodb";
 const collectionName = "test-collection";
 
-describe.skipIf(environment.missingServer, "MongoDB Client", function () {
+describe("MongoDB Client", function () {
   this.timeout(60_000); // TODO: Temporarily hardcoded until envs are set up.
   importAppBefore(buildAppConfig("with-flx").anonAuth().flexibleSync());
   authenticateUserBefore();

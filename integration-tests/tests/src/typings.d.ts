@@ -50,9 +50,9 @@ type KnownEnvironment = {
   // BaaS server and Realm App Importer specific variables below
 
   /** Are the tests running without a server? In which case all sync tests should be skipped. */
-  missingServer?: true;
+  missingServer?: boolean;
   /** The URL of the Realm server to run tests against. */
-  realmBaseUrl?: string;
+  baseUrl?: string;
   /**
    * Public key part used when authenticating towards BaaS during import of an app.
    * Note: This is only used when the app importer is ran from within the test suite.

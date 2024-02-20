@@ -17,12 +17,11 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
-import Realm, { ConnectionState, ObjectSchema, BSON, User, SyncConfiguration } from "realm";
+import Realm, { ConnectionState, ObjectSchema, BSON, SyncConfiguration } from "realm";
 import { importAppBefore } from "../../hooks";
 import { DogSchema } from "../../schemas/person-and-dog-with-object-ids";
 import { getRegisteredEmailPassCredentials } from "../../utils/credentials";
 import { generatePartition } from "../../utils/generators";
-import { importApp } from "../../utils/import-app";
 import { sleep, throwAfterTimeout } from "../../utils/sleep";
 import { buildAppConfig } from "../../utils/build-app-config";
 
@@ -124,7 +123,7 @@ async function seedDataWithExternalUser(app: Realm.App, partition: string) {
   user.logOut();
 }
 
-describe.skipIf(environment.missingServer, "SessionTest", () => {
+describe("SessionTest", () => {
   importAppBefore(buildAppConfig("with-pbs").emailPasswordAuth().partitionBasedSync({ required: true }));
 
   describe("invalid syncsessions", () => {
@@ -342,39 +341,6 @@ describe.skipIf(environment.missingServer, "SessionTest", () => {
       });
       await realm.close();
       user.logOut();
-    });
-  });
-
-  describe("Logging", () => {
-    afterEach(() => Realm.clearTestState());
-    // Skipped because reusing a single app across tests break this
-    it.skip("can set custom logging function", async function (this: AppContext) {
-      // setting a custom logging function must be done immediately after instantiating an app
-
-      const { appId, baseUrl } = await importApp(buildAppConfig("with-pbs").anonAuth().partitionBasedSync().config);
-      const app = new Realm.App({ id: appId, baseUrl });
-
-      const partition = generatePartition();
-      const credentials = Realm.Credentials.anonymous();
-
-      const logLevelStr = "info"; // "all", "trace", "debug", "detail", "info", "warn", "error", "fatal", "off"
-      const logLevelNum = 4; // == "info", see index.d.ts, logger.hpp for definitions
-
-      const promisedLog = new Promise((resolve) => {
-        Realm.App.Sync.setLogLevel(app, logLevelStr);
-        Realm.App.Sync.setLogger(app, (level, message) => {
-          if (level == logLevelNum && message.includes("Connection") && message.includes("Session")) {
-            // we should, at some point, receive a log message that looks like
-            // Connection[1]: Session[1]: client_reset_config = false, Realm exists = true, client reset = false
-            resolve(true);
-          }
-        });
-      });
-
-      const user = await app.logIn(credentials);
-      const config = getSyncConfiguration(user, partition);
-      await Realm.open(config);
-      await promisedLog;
     });
   });
 

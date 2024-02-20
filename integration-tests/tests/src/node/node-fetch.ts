@@ -16,15 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { expect } from "chai";
 import nodeFetch from "node-fetch";
 import Realm from "realm";
 
 import { importAppBefore } from "../hooks";
 import { buildAppConfig } from "../utils/build-app-config";
-import { baseUrl } from "../utils/import-app";
+import { baseUrl } from "../hooks/import-app-before";
 
-describe.skipIf(environment.missingServer, "passing node-fetch to AppConfiguration", () => {
+describe("passing node-fetch to AppConfiguration", () => {
   importAppBefore(buildAppConfig().anonAuth());
 
   it("is supported", async function (this: AppContext) {
