@@ -70,7 +70,7 @@
     "test": "wireit",
     "test:types": "tsc --project type-tests/tsconfig.json",
     "lint": "eslint --ext .js,.mjs,.ts .",
-    "build:typescript": "wireit",
+    "build:ts": "wireit",
     "bindgen:configure": "wireit",
     "bindgen:build:node": "wireit",
     "bindgen:generate:typescript": "wireit",
@@ -107,7 +107,7 @@
         "TSX_TSCONFIG_PATH": "tsconfig.tests.json"
       }
     },
-    "build:typescript": {
+    "build:ts": {
       "command": "tsc --build",
       "dependencies": [
         "bindgen:generate:typescript",
@@ -126,7 +126,7 @@
       ]
     },
     "bindgen:generate:typescript": {
-      "command": "realm-bindgen --template bindgen/src/templates/typescript.ts --spec bindgen/vendor/realm-core/bindgen/spec.yml --spec bindgen/js_spec.yml --opt-in bindgen/js_opt_in_spec.yml --output ./src/generated",
+      "command": "realm-bindgen --template bindgen/src/templates/typescript.ts --spec bindgen/vendor/realm-core/bindgen/spec.yml --spec bindgen/js_spec.yml --opt-in bindgen/js_opt_in_spec.yml --output ./binding/ts/generated",
       "dependencies": [
         "bindgen:generate:spec-schema"
       ],
@@ -144,7 +144,7 @@
       ]
     },
     "bindgen:generate:node-wrapper": {
-      "command": "realm-bindgen --template bindgen/src/templates/node-wrapper.ts --spec bindgen/vendor/realm-core/bindgen/spec.yml --spec bindgen/js_spec.yml --opt-in bindgen/js_opt_in_spec.yml --output ./src/platform/node/generated",
+      "command": "realm-bindgen --template bindgen/src/templates/node-wrapper.ts --spec bindgen/vendor/realm-core/bindgen/spec.yml --spec bindgen/js_spec.yml --opt-in bindgen/js_opt_in_spec.yml --output ./binding/ts/generated",
       "dependencies": [
         "bindgen:generate:spec-schema"
       ],
@@ -163,7 +163,7 @@
       ]
     },
     "bindgen:generate:react-native-wrapper": {
-      "command": "realm-bindgen --template bindgen/src/templates/react-native-wrapper.ts --spec bindgen/vendor/realm-core/bindgen/spec.yml --spec bindgen/js_spec.yml --opt-in bindgen/js_opt_in_spec.yml --output ./src/platform/react-native/generated",
+      "command": "realm-bindgen --template bindgen/src/templates/react-native-wrapper.ts --spec bindgen/vendor/realm-core/bindgen/spec.yml --spec bindgen/js_spec.yml --opt-in bindgen/js_opt_in_spec.yml --output ./binding/ts/generated",
       "dependencies": [
         "bindgen:generate:spec-schema"
       ],
@@ -283,7 +283,7 @@
     "docs": {
       "command": "typedoc",
       "dependencies": [
-        "build:typescript"
+        "build:ts"
       ]
     }
   },
