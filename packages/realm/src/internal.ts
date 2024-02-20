@@ -98,3 +98,5 @@ export * from "./ProgressRealmPromise";
 
 export * from "./Unmanaged";
 export * from "./schema";
+
+import "./deprecated-global";
