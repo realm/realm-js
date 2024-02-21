@@ -49,7 +49,7 @@
     "mocha-remote-cli": "^1.8.0"
   },
   "dependencies": {
-    "@electron/remote": "^2.0.9",
+    "@electron/remote": "^2.1.2",
     "@realm/integration-tests": "*",
     "fs-extra": "^11.2.0",
     "mocha-remote-client": "^1.8.0",

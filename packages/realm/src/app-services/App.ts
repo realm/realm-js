@@ -267,7 +267,7 @@ export class App<
   constructor(configOrId: AppConfiguration | string) {
     const config: AppConfiguration = typeof configOrId === "string" ? { id: configOrId } : configOrId;
     assert.object(config, "config");
-    const { id, baseUrl, app, timeout, multiplexSessions = true, baseFilePath, metadata, fetch } = config;
+    const { id, baseUrl, timeout, multiplexSessions = true, baseFilePath, metadata, fetch } = config;
     assert.string(id, "id");
     if (timeout !== undefined) {
       assert.number(timeout, "timeout");

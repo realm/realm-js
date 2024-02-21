@@ -21,7 +21,7 @@ import Realm, { AppConfiguration, BSON, MetadataMode } from "realm";
 
 import { importAppBefore } from "../../hooks";
 import { generatePartition } from "../../utils/generators";
-import { baseUrl } from "../../utils/import-app";
+import { baseUrl } from "../../hooks/import-app-before";
 import { select } from "../../utils/select";
 import { buildAppConfig } from "../../utils/build-app-config";
 
@@ -74,12 +74,13 @@ interface IDogForSyncSchema {
   realm_id: string | undefined;
 }
 
+const missingAppConfig = { id: "smurf", baseUrl };
+
 describe("App", () => {
   describe("instantiation", function () {
     afterEach(async () => {
       Realm.clearTestState();
     });
-    const missingAppConfig = { id: "smurf", baseUrl };
 
     it("from config", () => {
       //even if "id" is not an existing app we can still instantiate a new Realm.
@@ -123,12 +124,6 @@ describe("App", () => {
           default: "request to http://localhost:9999/api/client/v2.0/app/smurf/location failed",
         }),
       );
-    });
-
-    it.skipIf(environment.missingServer, "logging in throws on non existing app", async function () {
-      const app = new Realm.App(missingAppConfig);
-      const credentials = Realm.Credentials.anonymous();
-      await expect(app.logIn(credentials)).to.be.rejectedWith("cannot find app using Client App ID 'smurf'");
     });
 
     it("get returns cached app", () => {
@@ -178,8 +173,15 @@ describe("App", () => {
     });
   });
 
-  describe.skipIf(environment.missingServer, "with valid app", async () => {
-    importAppBefore(buildAppConfig("with-anon").anonAuth());
+  describe("with valid app", async () => {
+    importAppBefore(buildAppConfig().anonAuth());
+
+    it("logging in throws on non existing app", async function () {
+      // This test is moved here to ensure the server is available before connecting with a non-exisiting app id
+      const app = new Realm.App(missingAppConfig);
+      const credentials = Realm.Credentials.anonymous();
+      await expect(app.logIn(credentials)).to.be.rejectedWith("cannot find app using Client App ID 'smurf'");
+    });
 
     it("logins successfully ", async function (this: Mocha.Context & AppContext & RealmContext) {
       let user;

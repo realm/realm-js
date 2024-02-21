@@ -4,6 +4,26 @@
 * None
 
 ### Enhancements
+* None
+
+### Fixed
+* Fixed `User#callFunction` to correctly pass arguments to the server. Previously they would be sent as an array, so if your server-side function used to handle the unwrapping of arguments, it would need an update too. The "functions factory" pattern of calling `user.functions.sum(1, 2, 3)` wasn't affected by this bug. Thanks to @deckyfx for finding this and suggesting the fix! ([#6447](https://github.com/realm/realm-js/issues/6447), since v12.0.0)
+
+### Compatibility
+* React Native >= v0.71.4
+* Realm Studio v14.0.0.
+* File format: generates Realms with format v23 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
+
+### Internal
+<!-- * Either mention core version or upgrade -->
+<!-- * Using Realm Core vX.Y.Z -->
+<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
+* Fix Cocoapods to version 1.14.3 on Github Actions.
+* Migrated bingen from `util::Optional` to `std::optional`.
+
+## 12.6.0 (2024-01-29)
+
+### Enhancements
 * Added an optional `fetch` parameter to the `AppConfiguration`. Use this to specify a custom implementation of the `fetch` function used by the app to perform network requests.
 
 ### Fixed

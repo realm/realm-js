@@ -16,11 +16,15 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import { binding } from "src/internal";
+
 /**
  * Remove entries for undefined property values.
  * @internal
  */
-export function cleanArguments(args: unknown[] | unknown): unknown[] | unknown {
+export function cleanArguments(args: unknown[]): binding.EJson[];
+export function cleanArguments(args: unknown): binding.EJson;
+export function cleanArguments(args: unknown[] | unknown) {
   if (Array.isArray(args)) {
     // Note: `undefined` elements in the array is not removed.
     return args.map(cleanArguments);

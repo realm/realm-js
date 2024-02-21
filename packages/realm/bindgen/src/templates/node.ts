@@ -51,7 +51,11 @@ function tryWrap(body: string) {
 }
 
 class CppNodeFunc extends CppFunc {
-  constructor(private addon: NodeAddon, name: string, props?: CppFuncProps) {
+  constructor(
+    private addon: NodeAddon,
+    name: string,
+    props?: CppFuncProps,
+  ) {
     super(name, "Napi::Value", [node_callback_info], props);
   }
 
@@ -367,7 +371,7 @@ function convertToNode(addon: NodeAddon, type: Type, expr: string): string {
           return c(new Pointer(inner), expr);
         case "Nullable":
           return `[&] (auto&& val) { return !val ? ${env}.Null() : ${c(inner, "FWD(val)")}; }(${expr})`;
-        case "util::Optional":
+        case "std::optional":
           return `[&] (auto&& opt) { return !opt ? ${env}.Undefined() : ${c(inner, "*FWD(opt)")}; }(${expr})`;
         case "std::vector":
           // TODO try different ways to create the array to see what is fastest.
@@ -480,7 +484,7 @@ function convertFromNode(addon: NodeAddon, type: Type, expr: string): string {
           return `std::make_shared<${inner.toCpp()}>(${c(inner, expr)})`;
         case "Nullable":
           return `[&] (Napi::Value val) { return val.IsNull() ? ${inner.toCpp()}() : ${c(inner, "val")}; }(${expr})`;
-        case "util::Optional":
+        case "std::optional":
           return `[&] (Napi::Value val) {
               return val.IsUndefined() ? ${type.toCpp()}() : ${c(inner, "val")};
           }(${expr})`;
@@ -889,7 +893,7 @@ class NodeCppDecls extends CppDecls {
               const auto ctorName = obj.Get("constructor").As<Napi::Object>().Get("name").As<Napi::String>().Utf8Value();
               throw Napi::TypeError::New(${env}, "Unable to convert an object with ctor '" + ctorName + "' to a Mixed");
           }
-          // NOTE: must not treat undefined as null here, because that makes Optional<Mixed> ambiguous.
+          // NOTE: must not treat undefined as null here, because that makes optional<Mixed> ambiguous.
           ${["undefined", "symbol", "function", "external"]
             .map((t) => `case napi_${t}: throw Napi::TypeError::New(${env}, "Can't convert ${t} to Mixed");`)
             .join("\n")}

@@ -29,6 +29,7 @@ import "./tests/sync/dictionary";
 import "./tests/sync/encryption";
 import "./tests/sync/flexible";
 import "./tests/sync/geospatial";
+import "./tests/sync/logging";
 import "./tests/sync/mixed";
 import "./tests/sync/mongo-db-client";
 import "./tests/sync/open-behavior";

@@ -156,7 +156,7 @@ const expectQueryResultValues = (
   );
 };
 
-describe.skipIf(environment.missingServer, `GeoSpatial`, () => {
+describe(`GeoSpatial`, () => {
   importAppBefore(buildAppConfig("with-flx").anonAuth().flexibleSync());
   authenticateUserBefore();
 

@@ -1,5 +1,12 @@
 name: Test Coverage
-on: ["push", "pull_request"]
+on:
+  pull_request:
+    paths:
+      # Trigger only when files affecting coverage has changed
+      - "**.ts"
+      - "**.js"
+      # Or the workflow itself
+      - ".github/workflows/pr-coverage.yml"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -55,7 +62,7 @@ jobs:
         timeout-minutes: 60
         run: npm run ci:coverage --workspace @realm/integration-tests -- --reporter mocha-github-actions-reporter --timeout ${{ env.MOCHA_TIMEOUT }}
         env:
-          CONTEXT: syncLogLevel=warn,longTimeout=${{ env.LONG_TIMEOUT }},realmBaseUrl=${{ steps.baas.outputs.baas-url }}
+          CONTEXT: syncLogLevel=warn,longTimeout=${{ env.LONG_TIMEOUT }},baseUrl=${{ steps.baas.outputs.baas-url }}
 
       - name: Coveralls
         uses: coverallsapp/github-action@v2

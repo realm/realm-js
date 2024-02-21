@@ -16,15 +16,27 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import Realm, { AppConfiguration } from "realm";
+import Realm from "realm";
 
-import { importApp } from "../utils/import-app";
-import { AppConfig } from "@realm/app-importer";
+import { AppConfig, AppImporter, Credentials } from "@realm/app-importer";
 import { mongodbServiceType } from "../utils/ExtendedAppConfigBuilder";
 
 const REALM_LOG_LEVELS = ["all", "trace", "debug", "detail", "info", "warn", "error", "fatal", "off"];
 
-const { syncLogLevel = "warn" } = environment;
+const {
+  syncLogLevel = "warn",
+  baseUrl = "http://localhost:9090",
+  reuseApp = false,
+  username = "unique_user@domain.com",
+  password = "password",
+  publicKey,
+  privateKey,
+  missingServer,
+} = environment;
+
+export { baseUrl };
+
+const allowSkippingServerTests = typeof environment.baseUrl === "undefined" && missingServer !== false;
 
 export type AppConfigurationRelaxed = {
   id?: string;
@@ -34,6 +46,69 @@ export type AppConfigurationRelaxed = {
   baseFilePath?: string;
 };
 
+function getCredentials(): Credentials {
+  if (typeof publicKey === "string" && typeof privateKey === "string") {
+    return {
+      kind: "api-key",
+      publicKey,
+      privateKey,
+    };
+  } else {
+    return {
+      kind: "username-password",
+      username,
+      password,
+    };
+  }
+}
+
+const credentials = getCredentials();
+
+const importer = new AppImporter({
+  baseUrl,
+  credentials,
+  reuseApp,
+});
+
+function isConnectionRefused(err: unknown) {
+  return (
+    err instanceof Error &&
+    err.cause instanceof AggregateError &&
+    "code" in err.cause &&
+    err.cause.code === "ECONNREFUSED"
+  );
+}
+
+function printWarningBox(...lines: string[]) {
+  const contentWidth = Math.max(...lines.map((line) => line.length));
+  const bar = "━".repeat(contentWidth + 2);
+  console.warn(`┏${bar}┓`);
+  for (const line of lines) {
+    const padding = " ".repeat(contentWidth - line.length);
+    console.warn(`┃ ${line}${padding} ┃`);
+  }
+  console.warn(`┗${bar}┛`);
+}
+
+/** Ensure we'll only ever install a single after hook with this warning */
+let skippedAppImportAfterHookInstalled = false;
+function ensureSkippedAppImportAfterHook() {
+  if (!skippedAppImportAfterHookInstalled) {
+    skippedAppImportAfterHookInstalled = true;
+    after(function (this: Mocha.Context) {
+      printWarningBox(
+        "Connection got refused while importing an app - skipping tests",
+        "Run this with `MOCHA_REMOTE_CONTEXT=missingServer` to silence this warning",
+      );
+    });
+  }
+}
+
+/**
+ * Imports an app before the suite runs and stores an `App` instance on the test context (accessible via `this.app` of a test).
+ * If the `missingServer` context is set the suite will be skipped.
+ * If the import fails due to a connection refusal, the suite will be skipped and a warning printed at the end of the test run.
+ */
 export function importAppBefore(config: AppConfig | { config: AppConfig }, sdkConfig?: AppConfigurationRelaxed): void {
   // Unwrap when passed a builder directly
   if ("config" in config) {
@@ -41,13 +116,25 @@ export function importAppBefore(config: AppConfig | { config: AppConfig }, sdkCo
   }
 
   before(importAppBefore.name, async function (this: AppContext & Mocha.Context) {
+    if (missingServer) {
+      this.skip();
+    }
     // Importing an app might take up to 5 minutes when the app has a MongoDB Atlas service enabled.
     this.longTimeout();
     if (this.app) {
       throw new Error("Unexpected app on context, use only one importAppBefore per test");
     } else {
-      const { appId, baseUrl } = await importApp(config);
-      this.app = new Realm.App({ id: appId, baseUrl, ...sdkConfig });
+      try {
+        const { appId } = await importer.importApp(config);
+        this.app = new Realm.App({ id: appId, baseUrl, ...sdkConfig });
+      } catch (err) {
+        if (isConnectionRefused(err) && allowSkippingServerTests) {
+          ensureSkippedAppImportAfterHook();
+          this.skip();
+        } else {
+          throw err;
+        }
+      }
 
       // Extract the sync database name from the config
       const databaseNames: (string | undefined)[] = config.services

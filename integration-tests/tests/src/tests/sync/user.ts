@@ -27,7 +27,7 @@ import {
   randomVerifiableEmail,
 } from "../../utils/generators";
 import { buildAppConfig } from "../../utils/build-app-config";
-import { baseUrl } from "../../utils/import-app";
+import { baseUrl } from "../../hooks/import-app-before";
 
 type AnyApp = Realm.App<any, any>;
 type AnyUser = Realm.User<any, any, any>;
@@ -78,7 +78,7 @@ function removeExistingUsers(): void {
   });
 }
 
-describe.skipIf(environment.missingServer, "User", () => {
+describe("User", () => {
   describe("email password", () => {
     importAppBefore(buildAppConfig("with-email-password").emailPasswordAuth());
     removeExistingUsers();
@@ -643,7 +643,7 @@ describe.skipIf(environment.missingServer, "User", () => {
           private: false,
           source: `
             exports = function (...args) {
-              return parseInt(args.reduce((a, b) => a + b, 0));
+              return args.reduce((a, b) => a + b, 0);
             };
           `,
         }),

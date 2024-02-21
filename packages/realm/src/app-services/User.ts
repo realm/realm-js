@@ -289,13 +289,12 @@ export class User<
    * await doThing(a2);
    */
   callFunction(name: string, ...args: unknown[]): Promise<unknown> {
-    return this.callFunctionOnService(name, undefined, args);
+    return this.callFunctionOnService(name, undefined, ...args);
   }
 
   /** @internal */
-  callFunctionOnService(name: string, serviceName: string | undefined, ...args: unknown[]): Promise<unknown> {
-    const cleanedArgs = cleanArguments(args);
-    return this.app.internal.callFunction(this.internal, name, cleanedArgs as binding.EJson[], serviceName);
+  async callFunctionOnService(name: string, serviceName: string | undefined, ...args: unknown[]): Promise<unknown> {
+    return this.app.internal.callFunction(this.internal, name, cleanArguments(args), serviceName);
   }
 
   /** @internal */
@@ -307,7 +306,7 @@ export class User<
     const request = this.app.internal.makeStreamingRequest(
       this.internal,
       functionName,
-      cleanArguments(functionArgs) as binding.EJson[],
+      cleanArguments(functionArgs),
       serviceName,
     );
 

@@ -34,7 +34,6 @@ afterEach(() => {
   }
 });
 
-import "./utils/import-app.test.ts";
 import "./utils/chai-plugin.test.ts";
 import "./utils/listener-stub.test.ts";
 import "./utils/promise-handle.test.ts";

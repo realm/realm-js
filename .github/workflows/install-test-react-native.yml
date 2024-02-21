@@ -24,7 +24,7 @@ jobs:
           - ios
           - android
         realm-version:
-          - v11 # For the last major version
+          # - v12 # For the last major version
           - latest
           #- next # For release candidates
         react-native-version:

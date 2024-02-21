@@ -71,7 +71,12 @@ function addSharedPtrMethods(spec: BoundSpec) {
 }
 
 class CustomProperty extends Property {
-  constructor(on: Class, public readonly name: string, type: Type, public call: MethodCallSig) {
+  constructor(
+    on: Class,
+    public readonly name: string,
+    type: Type,
+    public call: MethodCallSig,
+  ) {
     assert(name.startsWith("$"));
     super(on, "DOLLAR_" + name.slice(1), type);
   }
@@ -82,7 +87,12 @@ class CustomProperty extends Property {
 }
 
 class CustomInstanceMethod extends InstanceMethod {
-  constructor(on: Class, public name: string, sig: Func, public call: MethodCallSig) {
+  constructor(
+    on: Class,
+    public name: string,
+    sig: Func,
+    public call: MethodCallSig,
+  ) {
     assert(name.startsWith("$"));
     const unique_name = "DOLLAR_" + name.slice(1);
     super(on, name, unique_name, unique_name, sig);

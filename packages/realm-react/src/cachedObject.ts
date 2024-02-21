@@ -44,6 +44,11 @@ type CachedObjectArgs = {
    * The implementing component should reset this to false when updating its object reference
    */
   updatedRef: React.MutableRefObject<boolean>;
+
+  /**
+   * Optional list of key-paths to limit notifications.
+   */
+  keyPaths?: string[];
 };
 
 export type CachedObject = {
@@ -62,7 +67,13 @@ export type CachedObject = {
  * @param args - {@link CachedObjectArgs} object arguments
  * @returns Proxy object wrapping the {@link Realm.Object}
  */
-export function createCachedObject({ object, realm, updateCallback, updatedRef }: CachedObjectArgs): CachedObject {
+export function createCachedObject({
+  object,
+  realm,
+  updateCallback,
+  updatedRef,
+  keyPaths,
+}: CachedObjectArgs): CachedObject {
   const listCaches = new Map();
   const listTearDowns: Array<() => void> = [];
   // If the object doesn't exist, just return it with an noop tearDown
@@ -135,10 +146,10 @@ export function createCachedObject({ object, realm, updateCallback, updatedRef }
     // see https://github.com/realm/realm-js/issues/4375
     if (realm.isInTransaction) {
       setImmediate(() => {
-        object.addListener(listenerCallback);
+        object.addListener(listenerCallback, keyPaths);
       });
     } else {
-      object.addListener(listenerCallback);
+      object.addListener(listenerCallback, keyPaths);
     }
   }
 

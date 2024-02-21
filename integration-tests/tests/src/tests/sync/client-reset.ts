@@ -296,21 +296,73 @@ function getSchema(useFlexibleSync: boolean) {
 // FIXME: ngrok reports "Syntax Error" when tiggerClientResetFunction() is used.
 // Once ngrok behaves nicely, the skipped tests can be enabled.
 [false /*, true*/].forEach((useFlexibleSync) => {
-  describe.skipIf(
-    environment.missingServer,
-    `client reset handling (${getPartialTestTitle(useFlexibleSync)} sync)`,
-    function () {
-      this.longTimeout(); // client reset with flexible sync can take quite some time
-      importAppBefore(
-        useFlexibleSync
-          ? buildAppConfig("with-flx").anonAuth().flexibleSync() /* .triggerClientResetFunction() */
-          : buildAppConfig("with-pbs").anonAuth().partitionBasedSync() /* .triggerClientResetFunction() */,
-      );
-      authenticateUserBefore();
+  describe(`client reset handling (${getPartialTestTitle(useFlexibleSync)} sync)`, function () {
+    this.longTimeout(); // client reset with flexible sync can take quite some time
+    importAppBefore(
+      useFlexibleSync
+        ? buildAppConfig("with-flx").anonAuth().flexibleSync() /* .triggerClientResetFunction() */
+        : buildAppConfig("with-pbs").anonAuth().partitionBasedSync() /* .triggerClientResetFunction() */,
+    );
+    authenticateUserBefore();
 
-      it(`manual client reset requires either error handler, client reset callback or both (${getPartialTestTitle(
-        useFlexibleSync,
-      )} sync)`, async function (this: RealmContext) {
+    it(`manual client reset requires either error handler, client reset callback or both (${getPartialTestTitle(
+      useFlexibleSync,
+    )} sync)`, async function (this: RealmContext) {
+      const config: ConfigurationWithSync = {
+        schema: getSchema(useFlexibleSync),
+        sync: {
+          // @ts-expect-error this setting is not for users to consume
+          _sessionStopPolicy: SessionStopPolicy.Immediately,
+          ...(useFlexibleSync ? { flexible: true } : { partitionValue: getPartitionValue() }),
+          user: this.user,
+          clientReset: {
+            mode: ClientResetMode.Manual,
+          },
+        },
+      };
+
+      expect(() => new Realm(config)).throws();
+    });
+
+    it(`handles manual simulated client resets with ${getPartialTestTitle(
+      useFlexibleSync,
+    )} sync enabled`, async function (this: RealmContext) {
+      const config: ConfigurationWithSync = {
+        schema: getSchema(useFlexibleSync),
+        sync: {
+          //@ts-expect-error Internal field
+          _sessionStopPolicy: SessionStopPolicy.Immediately,
+          ...(useFlexibleSync ? { flexible: true } : { partitionValue: getPartitionValue() }),
+          user: this.user,
+          clientReset: {
+            mode: ClientResetMode.Manual,
+          },
+        },
+      };
+      await expectClientResetError(
+        config,
+        this.user,
+        (realm) => {
+          if (useFlexibleSync) {
+            addSubscriptions(realm);
+          }
+          const session = realm.syncSession;
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore calling undocumented method _simulateError
+          session._simulateError(211, "Simulate Client Reset", "realm::sync::ProtocolError", false); // 211 -> diverging histories
+        },
+        (error: SyncError) => {
+          expect(error.name).to.equal("ClientReset");
+          expect(error.message).to.equal("Simulate Client Reset");
+          expect(error.code).to.equal(1032); // diverging client will cause a client reset (error code 1032)
+        },
+      );
+    });
+
+    it(`handles manual simulated client resets by callback with ${getPartialTestTitle(
+      useFlexibleSync,
+    )} sync enabled`, async function (this: RealmContext) {
+      return new Promise<void>((resolve) => {
         const config: ConfigurationWithSync = {
           schema: getSchema(useFlexibleSync),
           sync: {
@@ -320,251 +372,195 @@ function getSchema(useFlexibleSync: boolean) {
             user: this.user,
             clientReset: {
               mode: ClientResetMode.Manual,
+              onManual: (session, path) => {
+                expect(session).to.be.not.null;
+                expect(path).to.not.empty;
+                resolve();
+              },
             },
           },
         };
 
-        expect(() => new Realm(config)).throws();
+        const realm = new Realm(config);
+        if (useFlexibleSync) {
+          addSubscriptions(realm);
+        }
+        const session = realm.syncSession;
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore calling undocumented method _simulateError
+        session._simulateError(211, "Simulate Client Reset", "realm::sync::ProtocolError", true); // 211 -> diverging histories
       });
+    });
 
-      it(`handles manual simulated client resets with ${getPartialTestTitle(
-        useFlexibleSync,
-      )} sync enabled`, async function (this: RealmContext) {
+    it(`handles manual simulated client resets by callback from error handler with ${getPartialTestTitle(
+      useFlexibleSync,
+    )} sync enabled`, async function (this: RealmContext) {
+      return new Promise((resolve, reject) => {
         const config: ConfigurationWithSync = {
           schema: getSchema(useFlexibleSync),
           sync: {
-            //@ts-expect-error Internal field
+            // @ts-expect-error this setting is not for users to consume
             _sessionStopPolicy: SessionStopPolicy.Immediately,
             ...(useFlexibleSync ? { flexible: true } : { partitionValue: getPartitionValue() }),
             user: this.user,
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            onError: (_) => {
+              reject();
+            },
             clientReset: {
               mode: ClientResetMode.Manual,
-            },
-          },
-        };
-        await expectClientResetError(
-          config,
-          this.user,
-          (realm) => {
-            if (useFlexibleSync) {
-              addSubscriptions(realm);
-            }
-            const session = realm.syncSession;
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore calling undocumented method _simulateError
-            session._simulateError(211, "Simulate Client Reset", "realm::sync::ProtocolError", false); // 211 -> diverging histories
-          },
-          (error: SyncError) => {
-            expect(error.name).to.equal("ClientReset");
-            expect(error.message).to.equal("Simulate Client Reset");
-            expect(error.code).to.equal(1032); // diverging client will cause a client reset (error code 1032)
-          },
-        );
-      });
-
-      it(`handles manual simulated client resets by callback with ${getPartialTestTitle(
-        useFlexibleSync,
-      )} sync enabled`, async function (this: RealmContext) {
-        return new Promise<void>((resolve) => {
-          const config: ConfigurationWithSync = {
-            schema: getSchema(useFlexibleSync),
-            sync: {
-              // @ts-expect-error this setting is not for users to consume
-              _sessionStopPolicy: SessionStopPolicy.Immediately,
-              ...(useFlexibleSync ? { flexible: true } : { partitionValue: getPartitionValue() }),
-              user: this.user,
-              clientReset: {
-                mode: ClientResetMode.Manual,
-                onManual: (session, path) => {
-                  expect(session).to.be.not.null;
-                  expect(path).to.not.empty;
-                  resolve();
-                },
-              },
-            },
-          };
-
-          const realm = new Realm(config);
-          if (useFlexibleSync) {
-            addSubscriptions(realm);
-          }
-          const session = realm.syncSession;
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore calling undocumented method _simulateError
-          session._simulateError(211, "Simulate Client Reset", "realm::sync::ProtocolError", true); // 211 -> diverging histories
-        });
-      });
-
-      it(`handles manual simulated client resets by callback from error handler with ${getPartialTestTitle(
-        useFlexibleSync,
-      )} sync enabled`, async function (this: RealmContext) {
-        return new Promise((resolve, reject) => {
-          const config: ConfigurationWithSync = {
-            schema: getSchema(useFlexibleSync),
-            sync: {
-              // @ts-expect-error this setting is not for users to consume
-              _sessionStopPolicy: SessionStopPolicy.Immediately,
-              ...(useFlexibleSync ? { flexible: true } : { partitionValue: getPartitionValue() }),
-              user: this.user,
-              // eslint-disable-next-line @typescript-eslint/no-unused-vars
-              onError: (_) => {
-                reject();
-              },
-              clientReset: {
-                mode: ClientResetMode.Manual,
-                onManual: (session, path) => {
-                  expect(session).to.be.not.null;
-                  expect(path).to.not.empty;
-                  resolve();
-                },
-              },
-            },
-          };
-
-          const realm = new Realm(config);
-          const session = realm.syncSession;
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore calling undocumented method _simulateError
-          session._simulateError(211, "Simulate Client Reset", "realm::sync::ProtocolError", true); // 211 -> diverging histories
-        });
-      });
-
-      it(`client reset fails, the error handler is called (${getPartialTestTitle(
-        useFlexibleSync,
-      )})`, async function (this: RealmContext) {
-        // if client reset fails, the error handler is called
-        // and the two before/after handlers are not called
-        // we simulate the failure by error code 132")
-
-        return new Promise((resolve, reject) => {
-          const config: Configuration = {
-            schema: getSchema(useFlexibleSync),
-            sync: {
-              user: this.user,
-              ...(useFlexibleSync ? { flexible: true } : { partitionValue: getPartitionValue() }),
-              onError: () => {
+              onManual: (session, path) => {
+                expect(session).to.be.not.null;
+                expect(path).to.not.empty;
                 resolve();
               },
-              clientReset: {
-                mode: ClientResetMode.DiscardUnsyncedChanges,
-                onBefore: () => {
-                  reject();
-                },
-                onAfter: () => {
-                  reject();
-                },
+            },
+          },
+        };
+
+        const realm = new Realm(config);
+        const session = realm.syncSession;
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore calling undocumented method _simulateError
+        session._simulateError(211, "Simulate Client Reset", "realm::sync::ProtocolError", true); // 211 -> diverging histories
+      });
+    });
+
+    it(`client reset fails, the error handler is called (${getPartialTestTitle(
+      useFlexibleSync,
+    )})`, async function (this: RealmContext) {
+      // if client reset fails, the error handler is called
+      // and the two before/after handlers are not called
+      // we simulate the failure by error code 132")
+
+      return new Promise((resolve, reject) => {
+        const config: Configuration = {
+          schema: getSchema(useFlexibleSync),
+          sync: {
+            user: this.user,
+            ...(useFlexibleSync ? { flexible: true } : { partitionValue: getPartitionValue() }),
+            onError: () => {
+              resolve();
+            },
+            clientReset: {
+              mode: ClientResetMode.DiscardUnsyncedChanges,
+              onBefore: () => {
+                reject();
+              },
+              onAfter: () => {
+                reject();
               },
             },
-          };
+          },
+        };
 
-          const realm = new Realm(config);
-          if (useFlexibleSync) {
-            addSubscriptions(realm);
-          }
-          const session = realm.syncSession;
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore calling undocumented method _simulateError
-          session._simulateError(132, "Simulate Client Reset", "realm::sync::ProtocolError", true); // 132 -> automatic client reset failed
-        });
+        const realm = new Realm(config);
+        if (useFlexibleSync) {
+          addSubscriptions(realm);
+        }
+        const session = realm.syncSession;
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore calling undocumented method _simulateError
+        session._simulateError(132, "Simulate Client Reset", "realm::sync::ProtocolError", true); // 132 -> automatic client reset failed
       });
+    });
 
-      it(`handles discard local simulated client reset with ${getPartialTestTitle(
+    it(`handles discard local simulated client reset with ${getPartialTestTitle(
+      useFlexibleSync,
+    )} sync enabled`, async function (this: RealmContext) {
+      // (i)   using a client reset in "DiscardUnsyncedChanges" mode, a fresh copy
+      //       of the Realm will be downloaded (resync)
+      // (ii)  two callback will be called, while the sync error handler is not
+      // (iii) after the reset, the Realm can be used as before
+
+      const clientResetBefore = (realm: Realm) => {
+        expect(realm.schema.length).to.equal(2);
+      };
+      const clientResetAfter = (beforeRealm: Realm, afterRealm: Realm) => {
+        expect(beforeRealm.schema.length).to.equal(2);
+        expect(afterRealm.schema.length).to.equal(2);
+      };
+
+      await waitSimulatedClientResetDiscardUnsyncedChangesCallbacks(
         useFlexibleSync,
-      )} sync enabled`, async function (this: RealmContext) {
-        // (i)   using a client reset in "DiscardUnsyncedChanges" mode, a fresh copy
-        //       of the Realm will be downloaded (resync)
-        // (ii)  two callback will be called, while the sync error handler is not
-        // (iii) after the reset, the Realm can be used as before
+        getSchema(useFlexibleSync),
+        this.user,
+        clientResetBefore,
+        clientResetAfter,
+      );
+    });
 
-        const clientResetBefore = (realm: Realm) => {
-          expect(realm.schema.length).to.equal(2);
-        };
-        const clientResetAfter = (beforeRealm: Realm, afterRealm: Realm) => {
-          expect(beforeRealm.schema.length).to.equal(2);
-          expect(afterRealm.schema.length).to.equal(2);
-        };
+    it(`handles simulated client reset with recovery with ${getPartialTestTitle(
+      useFlexibleSync,
+    )} sync enabled`, async function (this: RealmContext) {
+      const clientResetBefore = (realm: Realm): void => {
+        expect(realm.schema.length).to.equal(2);
+      };
+      const clientResetAfter = (beforeRealm: Realm, afterRealm: Realm) => {
+        expect(beforeRealm.schema.length).to.equal(2);
+        expect(afterRealm.schema.length).to.equal(2);
+      };
 
-        await waitSimulatedClientResetDiscardUnsyncedChangesCallbacks(
-          useFlexibleSync,
-          getSchema(useFlexibleSync),
-          this.user,
-          clientResetBefore,
-          clientResetAfter,
-        );
-      });
-
-      it(`handles simulated client reset with recovery with ${getPartialTestTitle(
+      await waitSimulatedClientResetRecoverCallbacks(
         useFlexibleSync,
-      )} sync enabled`, async function (this: RealmContext) {
-        const clientResetBefore = (realm: Realm): void => {
-          expect(realm.schema.length).to.equal(2);
-        };
-        const clientResetAfter = (beforeRealm: Realm, afterRealm: Realm) => {
-          expect(beforeRealm.schema.length).to.equal(2);
-          expect(afterRealm.schema.length).to.equal(2);
-        };
+        getSchema(useFlexibleSync),
+        this.user,
+        clientResetBefore,
+        clientResetAfter,
+      );
+    });
 
-        await waitSimulatedClientResetRecoverCallbacks(
-          useFlexibleSync,
-          getSchema(useFlexibleSync),
-          this.user,
-          clientResetBefore,
-          clientResetAfter,
-        );
-      });
+    it.skip(`handles discard local client reset with ${getPartialTestTitle(
+      useFlexibleSync,
+    )} sync enabled`, async function (this: RealmContext) {
+      // (i)   using a client reset in "DiscardUnsyncedChanges" mode, a fresh copy
+      //       of the Realm will be downloaded (resync)
+      // (ii)  two callback will be called, while the sync error handler is not
+      // (iii) after the reset, the Realm can be used as before
 
-      it.skip(`handles discard local client reset with ${getPartialTestTitle(
+      const clientResetBefore = (realm: Realm) => {
+        expect(realm.schema.length).to.equal(2);
+      };
+      const clientResetAfter = (beforeRealm: Realm, afterRealm: Realm) => {
+        expect(beforeRealm.schema.length).to.equal(2);
+        expect(afterRealm.schema.length).to.equal(2);
+      };
+
+      await waitServerSideClientResetDiscardUnsyncedChangesCallbacks(
         useFlexibleSync,
-      )} sync enabled`, async function (this: RealmContext) {
-        // (i)   using a client reset in "DiscardUnsyncedChanges" mode, a fresh copy
-        //       of the Realm will be downloaded (resync)
-        // (ii)  two callback will be called, while the sync error handler is not
-        // (iii) after the reset, the Realm can be used as before
+        getSchema(useFlexibleSync),
+        this.app,
+        this.user,
+        clientResetBefore,
+        clientResetAfter,
+      );
+    });
 
-        const clientResetBefore = (realm: Realm) => {
-          expect(realm.schema.length).to.equal(2);
-        };
-        const clientResetAfter = (beforeRealm: Realm, afterRealm: Realm) => {
-          expect(beforeRealm.schema.length).to.equal(2);
-          expect(afterRealm.schema.length).to.equal(2);
-        };
+    it.skip(`handles recovery client reset with ${getPartialTestTitle(
+      useFlexibleSync,
+    )} sync enabled`, async function (this: RealmContext) {
+      // (i)   using a client reset in "Recovery" mode, a fresh copy
+      //       of the Realm will be downloaded (resync)
+      // (ii)  two callback will be called, while the sync error handler is not
+      // (iii) after the reset, the Realm can be used as before
+      this.timeout(5 * 60 * 1000);
+      this.retries(3);
+      const clientResetBefore = (realm: Realm) => {
+        expect(realm.schema.length).to.equal(2);
+      };
+      const clientResetAfter = (beforeRealm: Realm, afterRealm: Realm) => {
+        expect(beforeRealm.schema.length).to.equal(2);
+        expect(afterRealm.schema.length).to.equal(2);
+      };
 
-        await waitServerSideClientResetDiscardUnsyncedChangesCallbacks(
-          useFlexibleSync,
-          getSchema(useFlexibleSync),
-          this.app,
-          this.user,
-          clientResetBefore,
-          clientResetAfter,
-        );
-      });
-
-      it.skip(`handles recovery client reset with ${getPartialTestTitle(
+      await waitServerSideClientResetRecoveryCallbacks(
         useFlexibleSync,
-      )} sync enabled`, async function (this: RealmContext) {
-        // (i)   using a client reset in "Recovery" mode, a fresh copy
-        //       of the Realm will be downloaded (resync)
-        // (ii)  two callback will be called, while the sync error handler is not
-        // (iii) after the reset, the Realm can be used as before
-        this.timeout(5 * 60 * 1000);
-        this.retries(3);
-        const clientResetBefore = (realm: Realm) => {
-          expect(realm.schema.length).to.equal(2);
-        };
-        const clientResetAfter = (beforeRealm: Realm, afterRealm: Realm) => {
-          expect(beforeRealm.schema.length).to.equal(2);
-          expect(afterRealm.schema.length).to.equal(2);
-        };
-
-        await waitServerSideClientResetRecoveryCallbacks(
-          useFlexibleSync,
-          getSchema(useFlexibleSync),
-          this.app,
-          this.user,
-          clientResetBefore,
-          clientResetAfter,
-        );
-      });
-    },
-  );
+        getSchema(useFlexibleSync),
+        this.app,
+        this.user,
+        clientResetBefore,
+        clientResetAfter,
+      );
+    });
+  });
 });

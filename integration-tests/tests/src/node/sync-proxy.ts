@@ -58,7 +58,7 @@ function getSyncConfiguration(user: Realm.User, partition: string, addProxyConfi
   return realmConfig;
 }
 
-describe.skipIf(environment.missingServer, "Proxy support", function () {
+describe("Proxy support", function () {
   let proxyServer: http.Server;
   let nCalls = 0;
 
