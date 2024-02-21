@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { inject } from "../binding";
-import * as binding from "./generated/native";
+import { injectAndPatch } from "../binding";
+import * as binding from "../../../binding/generated/native.node.cjs";
 
-inject(binding);
+injectAndPatch(binding);

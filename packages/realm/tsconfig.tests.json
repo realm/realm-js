@@ -15,7 +15,10 @@
     ]
   },
   "include": [
-    "src/tests/**/*"
+    "src/tests/**/*",
+    "binding/generated/native.d.ts",
+    "binding/generated/core.ts",
+    "binding/dist/core.d.ts"
   ],
   "references": [
     { "path": "./tsconfig.shared.json" }

@@ -18,11 +18,13 @@
       "bson",
       "debug",
       "@realm/fetch"
-    ],
-    "allowJs": true
+    ]
   },
   "include": [
-    "src/**/*"
+    "src/**/*",
+    "binding/generated/native.d.ts",
+    "binding/dist/core.d.ts",
+    "binding/index.d.ts"
   ],
   "exclude": [
     "src/tests",

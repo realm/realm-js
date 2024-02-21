@@ -22,7 +22,7 @@ import { generate as generateBase, generateNativeBigIntSupport } from "./base-wr
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function generate(context: TemplateContext): void {
-  const out = context.file("native.js", eslint);
+  const out = context.file("native.react-native.mjs", eslint);
 
   out("// This file is generated: Update the spec instead of editing this file directly");
 
@@ -62,4 +62,7 @@ export function generate(context: TemplateContext): void {
   `);
 
   generateBase(context, out);
+
+  context.file("native.react-native.d.mts", eslint)("export * from './native'");
+  context.file("native.react-native.d.cts", eslint)("import * as binding from './native'; export = binding;");
 }

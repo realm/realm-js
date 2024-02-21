@@ -17,12 +17,12 @@
     "build": {
       "dependencies": [
         "bundle",
-        "./packages/realm:build:typescript"
+        "./packages/realm:build:ts"
       ]
     },
     "bundle": {
       "dependencies": [
-        "./packages/realm:build:typescript",
+        "./packages/realm:build:ts",
         "./packages/babel-plugin:bundle",
         "./packages/mocha-reporter:bundle",
         "./packages/realm-react:bundle",

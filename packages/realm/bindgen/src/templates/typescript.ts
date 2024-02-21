@@ -177,8 +177,8 @@ export function generate({ rawSpec, spec: boundSpec, file }: TemplateContext): v
   const out = file("native.d.ts", eslint);
   out("// This file is generated: Update the spec instead of editing this file directly");
   out('import { ObjectId, UUID, Decimal128 } from "bson";');
-  out("import { Float, Status, ", spec.enums.map((e) => e.name).join(", "), '} from "./core";');
-  out('export * from "./core";');
+  out("import { Float, Status, ", spec.enums.map((e) => e.name).join(", "), '} from "../dist/core";');
+  out('export * from "../dist/core";');
 
   out("// Utilities");
   out("export type AppError = Error & {code: number};");

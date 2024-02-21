@@ -2,3 +2,4 @@ dist/
 docs/
 bindgen/vendor/realm-core/
 src/tests/realms/
+binding/generated/*.cjs

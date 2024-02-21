@@ -16,14 +16,51 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { binding } from "./binding";
-import { AbortSignal } from "@realm/fetch";
+import { AbortSignal, fetch } from "@realm/fetch";
+import type * as binding from "../../binding/generated/native";
+
+type Binding = typeof binding;
+
+declare module "../../binding/generated/native" {
+  /** @internal */
+  export interface IndexSet {
+    asIndexes(): Iterator<number>;
+  }
+  export interface Timestamp {
+    toDate(): Date;
+  }
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  export namespace Timestamp {
+    function fromDate(d: Date): binding.Timestamp;
+  }
+  export interface SyncSession {
+    /** Returns a WeakSyncSession and releases the strong reference held by this SyncSession */
+    weaken(): WeakSyncSession;
+  }
+
+  export interface WeakSyncSession {
+    /**
+     * Similar to WeakRef.deref(), but takes a callback so that the strong reference can be
+     * automatically released when the callback exists (either by returning or throwing).
+     * It is not legal to hold on to the SyncSession after this returns because its
+     * strong reference will have been deleted.
+     */
+    withDeref<Ret = void>(callback: (shared: SyncSession | null) => Ret): Ret;
+  }
+
+  export class InvalidObjKey extends TypeError {
+    constructor(input: string);
+  }
+  export function stringToObjKey(input: string): binding.ObjKey;
+  export function isEmptyObjKey(objKey: binding.ObjKey): boolean;
+  export function toFetchArgs(request: binding.Request): Parameters<typeof fetch>;
+}
 
 /**
  * Applies SDK level patches to the binding.
  * NOTE: This should only be called after the binding has been injected.
  */
-export function applyPatch() {
+export function applyPatch(binding: Binding) {
   binding.IndexSet.prototype.asIndexes = function* (this: binding.IndexSet) {
     for (const [from, to] of this) {
       let i = from;

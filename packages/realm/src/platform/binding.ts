@@ -15,32 +15,12 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-
+import { binding, inject } from "../../binding";
 import { applyPatch } from "./binding-patch";
+export { binding };
 
-let injected = null;
-
-export const binding = new Proxy(
-  {},
-  {
-    get(_, prop, receiver) {
-      if (injected) {
-        return Reflect.get(injected, prop, receiver);
-      } else {
-        throw new Error(`Getting '${prop}' from binding before it was injected`);
-      }
-    },
-    set(_, prop, value) {
-      if (injected) {
-        return Reflect.set(injected, prop, value, injected);
-      } else {
-        throw new Error(`Setting '${prop}' on binding before it was injected`);
-      }
-    },
-  },
-);
-
-export function inject(value) {
-  injected = value;
-  applyPatch(injected);
+/** @internal */
+export function injectAndPatch(value: typeof binding) {
+  inject(value);
+  applyPatch(value);
 }

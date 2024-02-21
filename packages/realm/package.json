@@ -71,12 +71,6 @@
     "test:types": "tsc --project type-tests/tsconfig.json",
     "lint": "eslint --ext .js,.mjs,.ts .",
     "build:ts": "wireit",
-    "bindgen:configure": "wireit",
-    "bindgen:build:node": "wireit",
-    "bindgen:generate:typescript": "wireit",
-    "bindgen:generate:node-wrapper": "wireit",
-    "bindgen:generate:react-native-wrapper": "wireit",
-    "bindgen:generate:spec-schema": "wireit",
     "build:node": "wireit",
     "build:node:prebuild": "wireit",
     "build:node:prebuild:arm": "wireit",
@@ -110,10 +104,24 @@
     "build:ts": {
       "command": "tsc --build",
       "dependencies": [
+        "../fetch:build",
         "bindgen:generate:typescript",
         "bindgen:generate:node-wrapper",
         "bindgen:generate:react-native-wrapper",
-        "../fetch:build"
+        "bindgen:transpile"
+      ]
+    },
+    "bindgen:transpile": {
+      "command": "babel binding/generated --out-dir binding/generated --extensions .mjs --out-file-extension .cjs --plugins @babel/plugin-transform-modules-commonjs",
+      "dependencies": [
+        "bindgen:generate:node-wrapper",
+        "bindgen:generate:react-native-wrapper"
+      ],
+      "files": [
+        "binding/generated/*.mjs"
+      ],
+      "output": [
+        "binding/generated/*.cjs"
       ]
     },
     "bindgen:configure": {
@@ -126,7 +134,7 @@
       ]
     },
     "bindgen:generate:typescript": {
-      "command": "realm-bindgen --template bindgen/src/templates/typescript.ts --spec bindgen/vendor/realm-core/bindgen/spec.yml --spec bindgen/js_spec.yml --opt-in bindgen/js_opt_in_spec.yml --output ./binding/ts/generated",
+      "command": "realm-bindgen --template bindgen/src/templates/typescript.ts --spec bindgen/vendor/realm-core/bindgen/spec.yml --spec bindgen/js_spec.yml --opt-in bindgen/js_opt_in_spec.yml --output binding/generated",
       "dependencies": [
         "bindgen:generate:spec-schema"
       ],
@@ -140,11 +148,12 @@
         "bindgen/src/templates/typescript.ts"
       ],
       "output": [
-        "src/generated"
+        "binding/generated/core.mts",
+        "binding/generated/native.d.ts"
       ]
     },
     "bindgen:generate:node-wrapper": {
-      "command": "realm-bindgen --template bindgen/src/templates/node-wrapper.ts --spec bindgen/vendor/realm-core/bindgen/spec.yml --spec bindgen/js_spec.yml --opt-in bindgen/js_opt_in_spec.yml --output ./binding/ts/generated",
+      "command": "realm-bindgen --template bindgen/src/templates/node-wrapper.ts --spec bindgen/vendor/realm-core/bindgen/spec.yml --spec bindgen/js_spec.yml --opt-in bindgen/js_opt_in_spec.yml --output binding/generated",
       "dependencies": [
         "bindgen:generate:spec-schema"
       ],
@@ -159,11 +168,13 @@
         "bindgen/src/templates/node-wrapper.ts"
       ],
       "output": [
-        "src/platform/node/generated"
+        "binding/generated/native.node.mjs",
+        "binding/generated/native.node.d.mts",
+        "binding/generated/native.node.d.cts"
       ]
     },
     "bindgen:generate:react-native-wrapper": {
-      "command": "realm-bindgen --template bindgen/src/templates/react-native-wrapper.ts --spec bindgen/vendor/realm-core/bindgen/spec.yml --spec bindgen/js_spec.yml --opt-in bindgen/js_opt_in_spec.yml --output ./binding/ts/generated",
+      "command": "realm-bindgen --template bindgen/src/templates/react-native-wrapper.ts --spec bindgen/vendor/realm-core/bindgen/spec.yml --spec bindgen/js_spec.yml --opt-in bindgen/js_opt_in_spec.yml --output binding/generated",
       "dependencies": [
         "bindgen:generate:spec-schema"
       ],
@@ -178,7 +189,9 @@
         "bindgen/src/templates/react-native-wrapper.ts"
       ],
       "output": [
-        "src/platform/react-native/generated"
+        "binding/generated/native.react-native.mjs",
+        "binding/generated/native.react-native.d.mts",
+        "binding/generated/native.react-native.d.cts"
       ]
     },
     "bindgen:generate:spec-schema": {
@@ -302,6 +315,9 @@
     }
   },
   "devDependencies": {
+    "@babel/cli": "^7.23.9",
+    "@babel/core": "^7.23.9",
+    "@babel/plugin-transform-modules-commonjs": "^7.23.3",
     "@realm/bindgen": "^0.1.0",
     "@realm/fetch": "^0.1.0",
     "@types/chai": "^4.3.3",
@@ -328,7 +344,7 @@
   },
   "binary": {
     "module_name": "realm",
-    "module_path": "generated/ts",
+    "module_path": "binding/build",
     "host": "https://static.realm.io",
     "remote_path": "realm-js-prebuilds/{version}",
     "napi_versions": [

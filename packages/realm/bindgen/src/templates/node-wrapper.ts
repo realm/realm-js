@@ -22,15 +22,14 @@ import { generate as generateBase, generateNativeBigIntSupport } from "./base-wr
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function generate(context: TemplateContext): void {
-  const out = context.file("native.js", eslint);
+  const out = context.file("native.node.mjs", eslint);
 
   out("// This file is generated: Update the spec instead of editing this file directly");
 
   out(`
-    /*global global, require */
-    import { createRequire } from 'node:module';
-    const nodeRequire = typeof require === 'function' ? require : createRequire(import.meta.url);
-    const nativeModule = nodeRequire("#realm.node");
+    /* eslint-disable @typescript-eslint/no-var-requires */
+    /* global global, require */
+    const nativeModule = require("#realm.node");
 
     if(!nativeModule) {
       throw new Error("Could not find the Realm binary. Please consult our troubleshooting guide: https://www.mongodb.com/docs/realm-sdks/js/latest/#md:troubleshooting-missing-binary");
@@ -47,4 +46,7 @@ export function generate(context: TemplateContext): void {
   `);
 
   generateBase(context, out);
+
+  context.file("native.node.d.mts", eslint)("export * from './native'");
+  context.file("native.node.d.cts", eslint)("import * as binding from './native'; export = binding;");
 }

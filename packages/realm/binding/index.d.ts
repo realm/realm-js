@@ -15,8 +15,7 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
+import * as binding from "./generated/native";
+export { binding };
 
-import { injectAndPatch } from "../binding";
-import * as binding from "../../../binding/generated/native.react-native.cjs";
-
-injectAndPatch(binding);
+export function inject(value: typeof binding): void;

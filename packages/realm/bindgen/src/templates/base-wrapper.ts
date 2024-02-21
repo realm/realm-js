@@ -20,7 +20,6 @@ import { Property } from "@realm/bindgen/bound-model";
 import { TemplateContext } from "@realm/bindgen/context";
 import { Outputter } from "@realm/bindgen/outputter";
 
-import { eslint } from "../eslint-formatter";
 import { doJsPasses } from "../js-passes";
 
 export function generateNativeBigIntSupport(out: Outputter) {
@@ -42,9 +41,9 @@ export function generate({ spec: boundSpec, file }: TemplateContext, out: Output
 
   out(`
     import { Long, ObjectId, UUID, Decimal128, EJSON } from "bson";
-    import { Float, Status } from "../../../generated/core";
+    import { Float, Status } from "../dist/core";
 
-    export * from "../../../generated/core";
+    export * from "../dist/core";
 
     // Copied from lib/utils.js.
     // TODO consider importing instead.
