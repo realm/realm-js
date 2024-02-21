@@ -6,6 +6,7 @@
     "noEmit": true,
     "strictFunctionTypes": false,
     "strictNullChecks": false,
+    "forceConsistentCasingInFileNames": true,
     "types": [
       "mocha",
       "node"

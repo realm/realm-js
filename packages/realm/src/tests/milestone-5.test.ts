@@ -20,7 +20,7 @@ import { expect } from "chai";
 import { inspect } from "node:util";
 import { Decimal128, ObjectId, UUID } from "bson";
 
-import { List, PropertySchema, PropertyTypeName, Realm, RealmObject } from "../internal";
+import { List, PropertySchema, PropertyTypeName, Realm, Object as RealmObject } from "../index";
 import { RealmContext, closeRealm, generateTempRealmPath } from "./utils";
 
 type ValueFunction<T = unknown> = (realm: Realm) => T;

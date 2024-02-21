@@ -19,7 +19,7 @@
 import path from "node:path";
 import fs from "node:fs";
 
-import type { Realm } from "../realm";
+import type { Realm } from "../Realm";
 
 export type RealmContext = Mocha.Context & { realm: Realm };
 

@@ -18,12 +18,8 @@
 
 import { expect } from "chai";
 
-import {
-  ObjectSchemaParseError,
-  PropertySchemaParseError,
-  validateObjectSchema,
-  validatePropertySchema,
-} from "../internal";
+import { validateObjectSchema, validatePropertySchema } from "../schema/validate";
+import { ObjectSchemaParseError, PropertySchemaParseError } from "../errors";
 
 const OBJECT_NAME = "MyObject";
 const PROPERTY_NAME = "prop";
