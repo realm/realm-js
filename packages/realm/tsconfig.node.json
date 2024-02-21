@@ -1,10 +1,9 @@
 {
-  "extends": [
-    "@tsconfig/node-lts",
-    "./tsconfig.base.json"
-  ],
+  "extends": "@tsconfig/node-lts",
   "compilerOptions": {
     "composite": true,
+    "module": "Node16",
+    "moduleResolution": "Node16",
     "outDir": "dist/platform/node",
     "rootDir": "src/platform/node",
     "sourceMap": true,

@@ -1,7 +1,8 @@
 {
-  "extends": "./tsconfig.base.json",
   "compilerOptions": {
     "composite": true,
+    "module": "Node16",
+    "moduleResolution": "Node16",
     "outDir": "dist",
     "rootDir": "src",
     "sourceMap": true,

@@ -1,8 +1,5 @@
 {
-  "extends": [
-    "@tsconfig/node-lts",
-    "./tsconfig.base.json"
-  ],
+  "extends": "@tsconfig/node-lts",
   "compilerOptions": {
     "composite": true,
     "esModuleInterop": true,
