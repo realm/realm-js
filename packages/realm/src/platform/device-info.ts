@@ -22,12 +22,14 @@ type DeviceInfoType = {
   create(): binding.DeviceInfo;
 };
 
+/** @internal */
 export const deviceInfo: DeviceInfoType = {
   create() {
     throw new Error("Not supported on this platform");
   },
 };
 
+/** @internal */
 export function inject(value: DeviceInfoType) {
   Object.freeze(Object.assign(deviceInfo, value));
 }

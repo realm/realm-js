@@ -22,12 +22,14 @@ type SyncProxyConfigType = {
   create(): binding.SyncProxyConfig | undefined;
 };
 
+/** @internal */
 export const syncProxyConfig: SyncProxyConfigType = {
   create() {
     throw new Error("proxyConfig is not supported on this platform");
   },
 };
 
+/** @internal */
 export function inject(value: SyncProxyConfigType) {
   Object.freeze(Object.assign(syncProxyConfig, value));
 }

@@ -15,8 +15,12 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
+
+/** @internal */
 import { binding, inject } from "../../binding";
 import { applyPatch } from "./binding-patch";
+
+/** @internal */
 export { binding };
 
 /** @internal */

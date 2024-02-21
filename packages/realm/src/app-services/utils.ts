@@ -23,6 +23,10 @@ import { binding } from "../internal";
  * @internal
  */
 export function cleanArguments(args: unknown[]): binding.EJson[];
+/**
+ * Remove entries for undefined property values.
+ * @internal
+ */
 export function cleanArguments(args: unknown): binding.EJson;
 export function cleanArguments(args: unknown[] | unknown) {
   if (Array.isArray(args)) {

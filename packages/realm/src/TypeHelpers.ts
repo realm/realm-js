@@ -76,6 +76,7 @@ export type TypeHelpers<T = unknown> = {
   fromBinding(value: unknown): T;
 };
 
+/** @internal */
 export type TypeOptions = {
   realm: Realm;
   name: string;
@@ -88,6 +89,7 @@ export type TypeOptions = {
 // TODO: Consider testing for expected object instance types and throw something similar to the legacy SDK:
 // "Only Realm instances are supported." (which should probably have been "RealmObject")
 // instead of relying on the binding to throw.
+/** @internal */
 export function mixedToBinding(realm: binding.Realm, value: unknown): binding.MixedArg {
   if (typeof value === "string" || typeof value === "number" || typeof value === "boolean" || value === null) {
     // Fast track pass through for the most commonly used types
@@ -387,6 +389,7 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => Type
   },
 };
 
+/** @internal */
 export function getTypeHelpers(type: binding.PropertyType, options: TypeOptions): TypeHelpers {
   const helpers = TYPES_MAPPING[type];
   assert(helpers, `Unexpected type ${type}`);

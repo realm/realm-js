@@ -17,10 +17,13 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { AbortSignal, fetch } from "@realm/fetch";
+
+/** @internal */
 import type * as binding from "../../binding/generated/native";
 
 type Binding = typeof binding;
 
+/** @internal */
 declare module "../../binding/generated/native" {
   /** @internal */
   export interface IndexSet {
@@ -59,6 +62,7 @@ declare module "../../binding/generated/native" {
 /**
  * Applies SDK level patches to the binding.
  * NOTE: This should only be called after the binding has been injected.
+ * @internal
  */
 export function applyPatch(binding: Binding) {
   binding.IndexSet.prototype.asIndexes = function* (this: binding.IndexSet) {
