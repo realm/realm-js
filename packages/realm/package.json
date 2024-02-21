@@ -92,11 +92,12 @@
     "test": {
       "command": "mocha --exit",
       "dependencies": [
+        "../fetch:build",
         "build:node",
         "bindgen:generate:typescript",
         "bindgen:generate:node-wrapper",
         "bindgen:generate:react-native-wrapper",
-        "../fetch:build"
+        "bindgen:transpile"
       ],
       "env": {
         "TSX_TSCONFIG_PATH": "tsconfig.tests.json"
