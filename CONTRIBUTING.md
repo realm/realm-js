@@ -52,13 +52,13 @@ npm install
 npm test --workspace @realm/node-tests
 ```
 
-## Running the "sync test" (requires running the sync server, aka. baas)
+## Running the "sync test" (requires running the sync server, a.k.a. baas)
 
 Due to its proprietary license, we're not able to publish docker images for the server, so the following steps are only available to MongoDB employees.
 
-First, you need to follow the guide on ["Using Docker to run a BAAS server instance"](https://wiki.corp.mongodb.com/display/10GEN/%28Device+Sync%29+Using+Docker+to+run+a+BAAS+server+instance), this will 
+First, you need to follow the guide on ["Using Docker to run a BAAS server instance"](https://wiki.corp.mongodb.com/display/10GEN/%28Device+Sync%29+Using+Docker+to+run+a+BAAS+server+instance).
 
-Create an `.env` file in the `integration-tests/baas-test-server` directory, with the following content (replacing `...` with the values from following the guide):
+Create an `.env` file in the `integration-tests/baas-test-server` directory, with the following content (replacing `...` with values from the guide above):
 
 ```
 AWS_PROFILE="..."
