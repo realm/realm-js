@@ -2,4 +2,6 @@ dist/
 docs/
 bindgen/vendor/realm-core/
 src/tests/realms/
+
+# Files transpiled by babel from generated files
 binding/generated/*.cjs
