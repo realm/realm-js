@@ -4,6 +4,11 @@
     "outDir": "dist/public-types",
     "emitDeclarationOnly": true,
     "declarationMap": true,
-    "stripInternal": true
+    "stripInternal": true,
+    "types": [
+      "@realm/fetch",
+      "bson",
+      "debug"
+    ]
   }
 }

@@ -94,7 +94,7 @@
       "dependencies": [
         "../fetch:build",
         "build:node",
-        "bindgen:generate:typescript",
+        "bindgen:build:typescript",
         "bindgen:generate:node-wrapper",
         "bindgen:generate:react-native-wrapper",
         "bindgen:transpile"
@@ -107,7 +107,7 @@
       "command": "tsc --build",
       "dependencies": [
         "../fetch:build",
-        "bindgen:generate:typescript",
+        "bindgen:build:typescript",
         "bindgen:generate:node-wrapper",
         "bindgen:generate:react-native-wrapper",
         "bindgen:transpile"
@@ -133,6 +133,19 @@
       "command": "cmake --build bindgen/build --target realm-js-node",
       "dependencies": [
         "bindgen:configure"
+      ]
+    },
+    "bindgen:build:typescript": {
+      "command": "tsc --project tsconfig.binding.json",
+      "dependencies": [
+        "bindgen:generate:typescript"
+      ],
+      "files": [
+        "binding/generated/core.ts"
+      ],
+      "output": [
+        "binding/dist/core.js",
+        "binding/dist/core.d.ts"
       ]
     },
     "bindgen:generate:typescript": {

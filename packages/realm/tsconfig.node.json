@@ -15,8 +15,7 @@
     ],
   },
   "include": [
-    "src/platform/node/**/*",
-    "binding/dist/core.d.ts"
+    "src/platform/node/**/*"
   ],
   "references": [
     { "path": "./tsconfig.shared.json" }
