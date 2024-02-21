@@ -149,7 +149,6 @@ export function applyPatch(binding: Binding) {
     return timeout > 0 ? AbortSignal.timeout(timeout) : undefined;
   }
 
-  /** @internal */
   binding.toFetchArgs = ({ url, method, timeoutMs, body, headers }) => {
     return [
       url,
