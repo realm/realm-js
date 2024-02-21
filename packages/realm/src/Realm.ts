@@ -1142,9 +1142,12 @@ function isEmbedded(objectSchema: binding.ObjectSchema): boolean {
 // @see https://www.typescriptlang.org/docs/handbook/declaration-merging.html#merging-namespaces-with-classes-functions-and-enums
 
 import * as internal from "./internal";
+// Needed to avoid complaints about a self-reference
+import RealmItself = Realm;
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace Realm {
+  export import Realm = RealmItself;
   export import flags = internal.flags;
 
   export import Object = internal.RealmObject;
