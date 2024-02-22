@@ -1,8 +1,7 @@
 {
-  "extends": "@istanbuljs/nyc-config-typescript",
   "cwd": "../..",
   "include": [
-    "packages/realm/dist/**/*",
-    "packages/realm/src/**/*"
+    "packages/realm/dist/**",
+    "packages/realm/src/**"
   ]
 }

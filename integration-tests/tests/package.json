@@ -47,14 +47,14 @@
     "coverage": {
       "command": "nyc mocha --exit",
       "dependencies": [
-        "../../packages/realm:build:ts:instrumented",
+        "../../packages/realm:build:ts",
         "build-dependencies"
       ]
     },
     "ci:coverage": {
       "command": "nyc --reporter=lcov -- mocha --exit",
       "dependencies": [
-        "../../packages/realm:build:ts:instrumented",
+        "../../packages/realm:build:ts",
         "build-dependencies"
       ]
     },
@@ -69,7 +69,6 @@
     "realm": "*"
   },
   "devDependencies": {
-    "@istanbuljs/nyc-config-typescript": "^1.0.2",
     "@realm/app-importer": "*",
     "@realm/mocha-reporter": "*",
     "@thi.ng/bench": "^3.1.16",

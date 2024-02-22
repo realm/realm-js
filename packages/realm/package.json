@@ -71,7 +71,6 @@
     "test:types": "tsc --project type-tests/tsconfig.json",
     "lint": "eslint --ext .js,.mjs,.ts .",
     "build:ts": "wireit",
-    "build:ts:instrumented": "wireit",
     "build:node": "wireit",
     "build:node:prebuild": "wireit",
     "build:node:prebuild:arm": "wireit",
@@ -112,12 +111,6 @@
         "bindgen:generate:node-wrapper",
         "bindgen:generate:react-native-wrapper",
         "bindgen:transpile"
-      ]
-    },
-    "build:ts:instrumented": {
-      "command": "nyc instrument --in-place ./dist && rm *.tsbuildinfo",
-      "dependencies": [
-        "build:ts"
       ]
     },
     "bindgen:transpile": {
