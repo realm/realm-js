@@ -20,7 +20,7 @@ import * as internal from "../internal";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace Services {
-  export import MongoDB = internal.MongoDBService;
+  export import MongoDB = internal.MongoDB;
   export import MongoDBDatabase = internal.MongoDBDatabase;
   /** @deprecated Please read {@link https://www.mongodb.com/docs/atlas/app-services/reference/push-notifications/} */
   export type Push = internal.PushClient;

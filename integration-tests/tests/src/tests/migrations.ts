@@ -18,7 +18,6 @@
 import Realm from "realm";
 import { expect } from "chai";
 import { DogSchema, IDog, IPerson, PersonSchema } from "../schemas/person-and-dogs";
-import { BSON } from "realm/dist/bundle";
 
 const TestSchema = {
   name: "Test",

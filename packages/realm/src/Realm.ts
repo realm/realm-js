@@ -1155,6 +1155,7 @@ export namespace Realm {
   export import Auth = internal.Auth;
   export import BSON = internal.BSON;
   export import Types = internal.Types;
+  export import Services = internal.Services;
 
   export import index = internal.index;
   export import mapTo = internal.mapTo;
@@ -1196,7 +1197,7 @@ export namespace Realm {
   export import Dictionary = internal.Dictionary;
   export import DictionaryChangeCallback = internal.DictionaryChangeCallback;
   export import DictionaryChangeSet = internal.DictionaryChangeSet;
-  export import ErrorCallback = internal.DictionaryChangeSet;
+  export import ErrorCallback = internal.ErrorCallback;
   export import FlexibleSyncConfiguration = internal.FlexibleSyncConfiguration;
   export import IndexDecorator = internal.IndexDecorator;
   export import List = internal.List;
