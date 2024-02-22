@@ -19,12 +19,12 @@
 import type { AnyFetch } from "@realm/fetch";
 import {
   AnyUser,
+  Configuration,
   Credentials,
   DefaultFunctionsFactory,
   DefaultObject,
   EmailPasswordAuth,
   Listeners,
-  Sync,
   User,
   assert,
   binding,
