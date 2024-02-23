@@ -61,7 +61,7 @@ declare module "../../binding/generated/native" {
 
 /**
  * Applies SDK level patches to the binding.
- * NOTE: This should only be called after the binding has been injected.
+ * This should only be called after the binding has been injected.
  * @internal
  */
 export function applyPatch(binding: Binding) {

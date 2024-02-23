@@ -35,8 +35,7 @@ export function generateNativeBigIntSupport(out: Outputter) {
   `);
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function generate({ spec: boundSpec, file }: TemplateContext, out: Outputter): void {
+export function generate({ spec: boundSpec }: TemplateContext, out: Outputter): void {
   const spec = doJsPasses(boundSpec);
 
   out(`

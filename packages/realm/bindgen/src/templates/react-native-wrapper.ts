@@ -20,7 +20,6 @@ import { TemplateContext } from "@realm/bindgen/context";
 import { eslint } from "../eslint-formatter";
 import { generate as generateBase, generateNativeBigIntSupport } from "./base-wrapper";
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function generate(context: TemplateContext): void {
   const out = context.file("native.react-native.mjs", eslint);
 
