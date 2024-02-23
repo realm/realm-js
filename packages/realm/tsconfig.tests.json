@@ -9,14 +9,11 @@
     "forceConsistentCasingInFileNames": true,
     "types": [
       "mocha",
-      "node"
+      "node",
     ]
   },
   "include": [
-    "src/tests/**/*",
-    "binding/generated/native.d.ts",
-    "binding/generated/core.ts",
-    "binding/dist/core.d.ts"
+    "src/tests/**/*"
   ],
   "references": [
     { "path": "./tsconfig.shared.json" }

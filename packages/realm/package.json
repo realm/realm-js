@@ -106,7 +106,7 @@
       "command": "tsc --build",
       "dependencies": [
         "../fetch:build",
-        "bindgen:build:typescript",
+        "bindgen:generate:typescript",
         "bindgen:generate:node-wrapper",
         "bindgen:generate:react-native-wrapper",
         "bindgen:transpile"

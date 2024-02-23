@@ -18,14 +18,14 @@
     "types": [
       "bson",
       "debug",
-      "@realm/fetch"
+      "@realm/fetch",
+      "./binding/generated/native.d.ts",
+      "./binding/dist/core.d.ts",
+      "./binding/index.d.ts"
     ]
   },
   "include": [
-    "src/**/*",
-    "binding/generated/native.d.ts",
-    "binding/dist/core.d.ts",
-    "binding/index.d.ts"
+    "src/**/*"
   ],
   "exclude": [
     "src/tests",

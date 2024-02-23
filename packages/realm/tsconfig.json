@@ -1,6 +1,7 @@
 {
   "files": [],
   "references": [
+    { "path": "./tsconfig.shared.json" },
     { "path": "./tsconfig.node.json" },
     { "path": "./tsconfig.react-native.json" },
     { "path": "./tsconfig.tests.json" },
