@@ -35,12 +35,12 @@
   },
   "types": "./dist/public-types/index.d.ts",
   "main": "./dist/platform/node/index.js",
-  "react-native": "./dist/platform/react-native/index.js",
+  "react-native": "./index.react-native.js",
   "exports": {
     ".": {
       "types": "./dist/public-types/index.d.ts",
       "node": "./dist/platform/node/index.js",
-      "react-native": "./dist/platform/react-native/index.js"
+      "react-native": "./index.react-native.js"
     },
     "./scripts/submit-analytics": "./scripts/submit-analytics.mjs",
     "./react-native.config.js": "./react-native.config.js",
