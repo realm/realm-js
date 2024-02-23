@@ -52,6 +52,10 @@
   "files": [
     "dependencies.list",
     "dist",
+    "binding/dist",
+    "binding/generated/*.cjs",
+    "binding/generated/*.d.cts",
+    "binding/generated/*.d.ts",
     "public-types",
     "index.node.js",
     "index.react-native.js",
