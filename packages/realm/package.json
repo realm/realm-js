@@ -166,7 +166,7 @@
         "bindgen/src/templates/typescript.ts"
       ],
       "output": [
-        "binding/generated/core.mts",
+        "binding/generated/core.ts",
         "binding/generated/native.d.ts"
       ]
     },
