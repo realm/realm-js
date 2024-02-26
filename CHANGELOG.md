@@ -20,7 +20,8 @@
 <!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
 * Fix Cocoapods to version 1.14.3 on Github Actions.
 * Migrated bingen from `util::Optional` to `std::optional`.
-* Upgrading `@realm/fetch` to the newly released v0.1.1.
+* Upgrading `@realm/fetch` to the newly released v0.1.1 and no longer bundling it into the SDK package.
+* SDK package is no longer using Rollup, but instead using bare `tsc` utilizing TypeScript project references. ([#6492](https://github.com/realm/realm-js/pull/6492))
 
 ## 12.6.0 (2024-01-29)
 
