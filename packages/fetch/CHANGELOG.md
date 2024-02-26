@@ -1,16 +1,7 @@
-## vNext (TBD)
-
-### Deprecations
-* None
+## 0.1.0 (2024-02-26)
 
 ### Enhancements
 * Initial public release.
-
-### Fixed
-* None
-
-### Internal
-* None
 
 
 ## 0.0.0 (2024-02-26)
