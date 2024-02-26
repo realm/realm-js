@@ -28,6 +28,9 @@
     "react-native": "./dist/react-native/react-native.js",
     "browser": "./dist/browser/browser.js"
   },
+  "files": [
+    "dist"
+  ],
   "react-native": "./dist/react-native/react-native.js",
   "types": "./dist/types/types.d.ts",
   "devDependencies": {
