@@ -1,4 +1,4 @@
-## vNext (TBD)
+## 0.1.1 (2024-02-26)
 
 ### Fixed
 * Adding `dist` to NPM archive.
