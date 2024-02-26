@@ -28,7 +28,7 @@ import {
   WaitForSync,
   assert,
   binding,
-  createGetterByIndex,
+  createDefaultGetter,
 } from "./internal";
 
 /**
@@ -200,8 +200,8 @@ export function createResultsHelpers<T>({
   isObjectItem,
 }: ResultsHelpersFactoryOptions<T>): ResultsHelpers<T> {
   return {
-    get: createGetterByIndex({ fromBinding: typeHelpers.fromBinding, isObjectItem }),
-    snapshotGet: createGetterByIndex({ fromBinding: typeHelpers.fromBinding, isObjectItem }),
+    get: createDefaultGetter({ fromBinding: typeHelpers.fromBinding, isObjectItem }),
+    snapshotGet: createDefaultGetter({ fromBinding: typeHelpers.fromBinding, isObjectItem }),
     set: () => {
       throw new Error("Assigning into a Results is not supported.");
     },

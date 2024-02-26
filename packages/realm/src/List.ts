@@ -27,8 +27,8 @@ import {
   TypeHelpers,
   assert,
   binding,
+  createDefaultGetter,
   createDictionaryHelpers,
-  createGetterByIndex,
   insertIntoDictionaryInMixed,
   isJsOrRealmDictionary,
 } from "./internal";
@@ -357,8 +357,8 @@ function createListHelpersForKnownType<T>({
   isEmbedded,
 }: Omit<ListHelpersFactoryOptions<T>, "isMixed">): ListHelpers<T> {
   return {
-    get: createGetterByIndex({ fromBinding, isObjectItem }),
-    snapshotGet: createGetterByIndex({ fromBinding, isObjectItem }),
+    get: createDefaultGetter({ fromBinding, isObjectItem }),
+    snapshotGet: createDefaultGetter({ fromBinding, isObjectItem }),
     set: (...args) => setKnownType(realm, toBinding, !!isEmbedded, ...args),
     insert: (...args) => insertKnownType(realm, toBinding, !!isEmbedded, ...args),
     fromBinding,

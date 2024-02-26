@@ -24,7 +24,7 @@ import {
   TypeHelpers,
   assert,
   binding,
-  createGetterByIndex,
+  createDefaultGetter,
 } from "./internal";
 
 /**
@@ -154,8 +154,8 @@ type SetHelpersFactoryOptions<T> = {
 export function createSetHelpers<T>({ typeHelpers, isObjectItem }: SetHelpersFactoryOptions<T>): SetHelpers<T> {
   const { fromBinding, toBinding } = typeHelpers;
   return {
-    get: createGetterByIndex({ fromBinding, isObjectItem }),
-    snapshotGet: createGetterByIndex({ fromBinding, isObjectItem }),
+    get: createDefaultGetter({ fromBinding, isObjectItem }),
+    snapshotGet: createDefaultGetter({ fromBinding, isObjectItem }),
     // Directly setting by "index" to a Set is a no-op.
     set: () => {},
     fromBinding,

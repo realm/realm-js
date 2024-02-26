@@ -922,7 +922,7 @@ type GetterFactoryOptions<T> = {
 };
 
 /** @internal */
-export function createGetterByIndex<CollectionType extends OrderedCollectionInternal, T>({
+export function createDefaultGetter<CollectionType extends OrderedCollectionInternal, T>({
   fromBinding,
   isObjectItem,
 }: GetterFactoryOptions<T>): Getter<CollectionType, T> {
