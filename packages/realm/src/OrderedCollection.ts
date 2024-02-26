@@ -192,6 +192,7 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
 
   /** @internal */
   protected declare classHelpers: ClassHelpers | null;
+  /** @internal */
   private declare mixedToBinding: (value: unknown) => binding.MixedArg;
 
   /**
@@ -890,6 +891,7 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
     return new Results(this.realm, this.results.snapshot(), this.helpers);
   }
 
+  /** @internal */
   private getPropertyColumnKey(name: string | undefined): binding.ColKey {
     if (this.classHelpers) {
       assert.string(name, "name");
@@ -901,6 +903,7 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
     }
   }
 
+  /** @internal */
   private mapKeyPaths(keyPaths: string[]) {
     return this.realm.internal.createKeyPathArray(this.results.objectType, keyPaths);
   }

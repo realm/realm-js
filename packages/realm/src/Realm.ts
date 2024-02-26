@@ -1269,6 +1269,8 @@ export namespace Realm {
   export import ObjectSchemaProperty = internal.PropertySchema;
   /** @deprecated Will be removed in v13.0.0. Please use {@link internal.RealmObjectConstructor} */
   export import ObjectClass = internal.RealmObjectConstructor;
+  /** @deprecated Will be removed in v13.0.0. Please use {@link internal.PropertyTypeName} */
+  export import PropertyType = internal.PropertyTypeName;
 }
 
 //Set default logger and log level.
