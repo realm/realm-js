@@ -244,10 +244,6 @@ classes:
       - get_results_description
       - feed_buffer
       - make_ssl_verify_callback
-      - get_mixed_type
-      - get_mixed_element_type
-      - get_mixed_element_type_from_list
-      - get_mixed_element_type_from_dict
 
   LogCategoryRef:
     methods:

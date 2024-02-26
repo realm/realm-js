@@ -576,6 +576,12 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
         return "decimal128";
       } else if (value instanceof BSON.UUID) {
         return "uuid";
+      } else if (value === binding.ListSentinel) {
+        return "list";
+      } else if (value === binding.DictionarySentinel) {
+        return "dictionary";
+      } else if (typeof value === "symbol") {
+        throw new Error(`Unexpected Symbol: ${value.toString()}`);
       } else {
         assert.never(value, "value");
       }

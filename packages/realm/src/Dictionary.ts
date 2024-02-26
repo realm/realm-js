@@ -380,32 +380,29 @@ function snapshotGetKnownType<T>(
 }
 
 function getMixed<T>(realm: Realm, typeHelpers: TypeHelpers<T>, dictionary: binding.Dictionary, key: string): T {
-  const elementType = binding.Helpers.getMixedElementTypeFromDict(dictionary, key);
-  if (elementType === binding.MixedDataType.List) {
+  const value = dictionary.tryGetAny(key);
+  if (value === binding.ListSentinel) {
     const listHelpers = createListHelpers<T>({ realm, typeHelpers, isMixedItem: true });
     return new List<T>(realm, dictionary.getList(key), listHelpers) as T;
   }
-  if (elementType === binding.MixedDataType.Dictionary) {
+  if (value === binding.DictionarySentinel) {
     const dictionaryHelpers = createDictionaryHelpers<T>({ realm, typeHelpers, isMixedItem: true });
     return new Dictionary<T>(realm, dictionary.getDictionary(key), dictionaryHelpers) as T;
   }
-  // TODO: Perhaps we should just use: `return typeHelpers.fromBinding(dictionary.tryGetAny(key))) as T;`
-  const value = dictionary.tryGetAny(key);
-  return (value === undefined ? undefined : typeHelpers.fromBinding(value)) as T;
+  return typeHelpers.fromBinding(value) as T;
 }
 
-// TODO: Reuse most of `getMixed()` when introducing sentinel.
 function snapshotGetMixed<T>(realm: Realm, typeHelpers: TypeHelpers<T>, snapshot: binding.Results, index: number): T {
-  const elementType = binding.Helpers.getMixedElementType(snapshot, index);
-  if (elementType === binding.MixedDataType.List) {
+  const value = snapshot.getAny(index);
+  if (value === binding.ListSentinel) {
     const listHelpers = createListHelpers<T>({ realm, typeHelpers, isMixedItem: true });
     return new List<T>(realm, snapshot.getList(index), listHelpers) as T;
   }
-  if (elementType === binding.MixedDataType.Dictionary) {
+  if (value === binding.DictionarySentinel) {
     const dictionaryHelpers = createDictionaryHelpers<T>({ realm, typeHelpers, isMixedItem: true });
     return new Dictionary<T>(realm, snapshot.getDictionary(index), dictionaryHelpers) as T;
   }
-  return typeHelpers.fromBinding(snapshot.getAny(index));
+  return typeHelpers.fromBinding(value);
 }
 
 function setKnownType<T>(

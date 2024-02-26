@@ -319,29 +319,23 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
   },
   [binding.PropertyType.Mixed](options) {
     const { realm, columnKey, typeHelpers } = options;
+    const { fromBinding, toBinding } = typeHelpers;
     const listHelpers = createListHelpers({ realm, typeHelpers, isMixedItem: true });
     const dictionaryHelpers = createDictionaryHelpers({ realm, typeHelpers, isMixedItem: true });
 
     return {
       get(obj) {
         try {
-          // We currently rely on the Core helper `get_mixed_type()` for calling `obj.get_any()`
-          // since doing it here in the SDK layer will cause the binding layer to throw for
-          // collections. It's non-trivial to do in the bindgen templates as a `binding.List`
-          // would have to be constructed using the `realm` and `obj`. Going via the helpers
-          // bypasses that as we will return a primitive (the data type). If possible, revisiting
-          // this for a more performant solution would be ideal as we now make an extra call into
-          // Core for each Mixed access, not only for collections.
-          const mixedType = binding.Helpers.getMixedType(obj, columnKey);
-          if (mixedType === binding.MixedDataType.List) {
+          const value = obj.getAny(columnKey);
+          if (value === binding.ListSentinel) {
             const internal = binding.List.make(realm.internal, obj, columnKey);
             return new List(realm, internal, listHelpers);
           }
-          if (mixedType === binding.MixedDataType.Dictionary) {
+          if (value === binding.DictionarySentinel) {
             const internal = binding.Dictionary.make(realm.internal, obj, columnKey);
             return new Dictionary(realm, internal, dictionaryHelpers);
           }
-          return defaultGet(options)(obj);
+          return fromBinding(value);
         } catch (err) {
           assert.isValid(obj);
           throw err;
@@ -353,12 +347,12 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
         if (isJsOrRealmList(value)) {
           obj.setCollection(columnKey, binding.CollectionType.List);
           const internal = binding.List.make(realm.internal, obj, columnKey);
-          insertIntoListInMixed(value, internal, typeHelpers.toBinding);
+          insertIntoListInMixed(value, internal, toBinding);
         } else if (isJsOrRealmDictionary(value)) {
           obj.setCollection(columnKey, binding.CollectionType.Dictionary);
           const internal = binding.Dictionary.make(realm.internal, obj, columnKey);
           internal.removeAll();
-          insertIntoDictionaryInMixed(value, internal, typeHelpers.toBinding);
+          insertIntoDictionaryInMixed(value, internal, toBinding);
         } else {
           defaultSet(options)(obj, value);
         }

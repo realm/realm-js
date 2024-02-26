@@ -343,7 +343,7 @@ function createListHelpersForMixed<T>({
 }: Pick<ListHelpersFactoryOptions<T>, "realm" | "typeHelpers">): ListHelpers<T> {
   return {
     get: (...args) => getMixed(realm, typeHelpers, ...args),
-    snapshotGet: (...args) => snapshotGetMixed(realm, typeHelpers, ...args),
+    snapshotGet: (...args) => getMixed(realm, typeHelpers, ...args),
     set: (...args) => setMixed(realm, typeHelpers.toBinding, ...args),
     insert: (...args) => insertMixed(realm, typeHelpers.toBinding, ...args),
     ...typeHelpers,
@@ -366,31 +366,22 @@ function createListHelpersForKnownType<T>({
   };
 }
 
-function getMixed<T>(realm: Realm, typeHelpers: TypeHelpers<T>, list: binding.List, index: number): T {
-  const elementType = binding.Helpers.getMixedElementTypeFromList(list, index);
-  if (elementType === binding.MixedDataType.List) {
+function getMixed<T>(
+  realm: Realm,
+  typeHelpers: TypeHelpers<T>,
+  list: binding.List | binding.Results,
+  index: number,
+): T {
+  const value = list.getAny(index);
+  if (value === binding.ListSentinel) {
     const listHelpers = createListHelpers<T>({ realm, typeHelpers, isMixedItem: true });
     return new List<T>(realm, list.getList(index), listHelpers) as T;
   }
-  if (elementType === binding.MixedDataType.Dictionary) {
+  if (value === binding.DictionarySentinel) {
     const dictionaryHelpers = createDictionaryHelpers<T>({ realm, typeHelpers, isMixedItem: true });
     return new Dictionary<T>(realm, list.getDictionary(index), dictionaryHelpers) as T;
   }
-  return typeHelpers.fromBinding(list.getAny(index));
-}
-
-// TODO: Remove when introducing sentinel (then reuse `getMixed()`).
-function snapshotGetMixed<T>(realm: Realm, typeHelpers: TypeHelpers<T>, snapshot: binding.Results, index: number): T {
-  const elementType = binding.Helpers.getMixedElementType(snapshot, index);
-  if (elementType === binding.MixedDataType.List) {
-    const listHelpers = createListHelpers<T>({ realm, typeHelpers, isMixedItem: true });
-    return new List<T>(realm, snapshot.getList(index), listHelpers) as T;
-  }
-  if (elementType === binding.MixedDataType.Dictionary) {
-    const dictionaryHelpers = createDictionaryHelpers<T>({ realm, typeHelpers, isMixedItem: true });
-    return new Dictionary<T>(realm, snapshot.getDictionary(index), dictionaryHelpers) as T;
-  }
-  return typeHelpers.fromBinding(snapshot.getAny(index));
+  return typeHelpers.fromBinding(value);
 }
 
 function setKnownType<T>(
