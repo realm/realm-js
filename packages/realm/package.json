@@ -52,6 +52,8 @@
   "files": [
     "dependencies.list",
     "dist",
+    "binding/index.js",
+    "binding/index.d.ts",
     "binding/dist",
     "binding/generated/*.cjs",
     "binding/generated/*.d.cts",
@@ -325,6 +327,7 @@
     }
   },
   "dependencies": {
+    "@realm/fetch": "^0.1.0",
     "bson": "^4.7.2",
     "debug": "^4.3.4",
     "node-machine-id": "^1.1.12",
@@ -343,7 +346,6 @@
     "@babel/core": "^7.23.9",
     "@babel/plugin-transform-modules-commonjs": "^7.23.3",
     "@realm/bindgen": "^0.1.0",
-    "@realm/fetch": "^0.1.0",
     "@types/chai": "^4.3.3",
     "@types/mocha": "^10.0.0",
     "@types/node": "^18.19.8",
