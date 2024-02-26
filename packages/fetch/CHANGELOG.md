@@ -1,4 +1,4 @@
-## vNext (TBD)
+## 0.1.0 (2024-02-26)
 
 ### Enhancements
 * Initial public release.
