@@ -18,6 +18,7 @@ on:
         - '@realm/react'
         - '@realm/tools'
         - '@realm/web'
+        - '@realm/fetch'
 
 jobs:
   prepare-package-release:
@@ -54,6 +55,11 @@ jobs:
                 "PACKAGE_PATH": "packages/realm-web",
                 "PACKAGE_NAME": "realm-web",
                 "VERSION_PREFIX": "realm-web-"
+              },
+              "@realm/fetch": {
+                "PACKAGE_PATH": "packages/fetch",
+                "PACKAGE_NAME": "@realm/fetch",
+                "VERSION_PREFIX": "realm-fetch-"
               }
             }
       - name: Checkout Code
