@@ -56,7 +56,7 @@ declare global {
    * @deprecated Will be removed in v13.0.0. Please use an import statement.
    */
   export namespace Realm {
-    export import Realm = RealmConstructor;
+    export import Realm = RealmItself;
     export import flags = internal.flags;
 
     export import Object = internal.RealmObject;
@@ -71,33 +71,43 @@ declare global {
     export import kmToRadians = internal.kmToRadians;
     export import miToRadians = internal.miToRadians;
 
+    export import AnyCollection = internal.AnyCollection;
+    export import AnyDictionary = internal.AnyDictionary;
+    export import AnyList = internal.AnyList;
+    export import AnyRealmObject = internal.AnyRealmObject;
+    export import AnyResults = internal.AnyResults;
+    export import AnyUser = internal.AnyUser;
+    export import ApiKey = internal.ApiKey;
     export import AppChangeCallback = internal.AppChangeCallback;
+    export import AssertionError = internal.AssertionError;
     export import AppConfiguration = internal.AppConfiguration;
     export import AppServicesFunction = internal.AppServicesFunction;
     export import BaseConfiguration = internal.BaseConfiguration;
     export import BaseObjectSchema = internal.BaseObjectSchema;
     export import BaseSyncConfiguration = internal.BaseSyncConfiguration;
+    export import CanonicalGeoPoint = internal.CanonicalGeoPoint;
+    export import CanonicalGeoPolygon = internal.CanonicalGeoPolygon;
     export import CanonicalObjectSchema = internal.CanonicalObjectSchema;
-    export import CanonicalPropertySchema = internal.CanonicalPropertySchema;
     export import CanonicalPropertiesTypes = internal.CanonicalPropertiesTypes;
-    export import ClientResetMode = internal.ClientResetMode;
-    export import ClientResetFallbackCallback = internal.ClientResetFallbackCallback;
-    export import ClientResetBeforeCallback = internal.ClientResetBeforeCallback;
+    export import CanonicalPropertySchema = internal.CanonicalPropertySchema;
     export import ClientResetAfterCallback = internal.ClientResetAfterCallback;
-    export import ClientResetManualConfiguration = internal.ClientResetManualConfiguration;
-    export import ClientResetDiscardUnsyncedChangesConfiguration = internal.ClientResetDiscardUnsyncedChangesConfiguration;
-    export import ClientResetRecoverUnsyncedChangesConfiguration = internal.ClientResetRecoverUnsyncedChangesConfiguration;
-    export import ClientResetRecoverOrDiscardUnsyncedChangesConfiguration = internal.ClientResetRecoverOrDiscardUnsyncedChangesConfiguration;
+    export import ClientResetBeforeCallback = internal.ClientResetBeforeCallback;
     export import ClientResetConfig = internal.ClientResetConfig;
+    export import ClientResetDiscardUnsyncedChangesConfiguration = internal.ClientResetDiscardUnsyncedChangesConfiguration;
+    export import ClientResetFallbackCallback = internal.ClientResetFallbackCallback;
+    export import ClientResetManualConfiguration = internal.ClientResetManualConfiguration;
+    export import ClientResetMode = internal.ClientResetMode;
+    export import ClientResetRecoverOrDiscardUnsyncedChangesConfiguration = internal.ClientResetRecoverOrDiscardUnsyncedChangesConfiguration;
+    export import ClientResetRecoverUnsyncedChangesConfiguration = internal.ClientResetRecoverUnsyncedChangesConfiguration;
+    export import Collection = internal.Collection;
     export import CollectionChangeCallback = internal.CollectionChangeCallback;
     export import CollectionChangeSet = internal.CollectionChangeSet;
     export import CollectionPropertyTypeName = internal.CollectionPropertyTypeName;
-    export import Collection = internal.Collection;
     export import CompensatingWriteError = internal.CompensatingWriteError;
     export import CompensatingWriteInfo = internal.CompensatingWriteInfo;
+    export import Configuration = internal.Configuration;
     export import ConfigurationWithoutSync = internal.ConfigurationWithoutSync;
     export import ConfigurationWithSync = internal.ConfigurationWithSync;
-    export import Configuration = internal.Configuration;
     export import ConnectionNotificationCallback = internal.ConnectionNotificationCallback;
     export import ConnectionState = internal.ConnectionState;
     export import Credentials = internal.Credentials;
@@ -108,14 +118,26 @@ declare global {
     export import DictionaryChangeSet = internal.DictionaryChangeSet;
     export import ErrorCallback = internal.ErrorCallback;
     export import FlexibleSyncConfiguration = internal.FlexibleSyncConfiguration;
+    export import GeoBox = internal.GeoBox;
+    export import GeoCircle = internal.GeoCircle;
+    export import GeoPoint = internal.GeoPoint;
+    export import GeoPolygon = internal.GeoPolygon;
+    export import GeoPosition = internal.GeoPosition;
     export import IndexDecorator = internal.IndexDecorator;
+    export import IndexedType = internal.IndexedType;
+    export import InitialSubscriptions = internal.InitialSubscriptions;
     export import List = internal.List;
     export import LocalAppConfiguration = internal.LocalAppConfiguration;
+    export import Logger = internal.Logger;
+    export import LoggerCallback = internal.LoggerCallback;
     export import MapToDecorator = internal.MapToDecorator;
-    export import MetadataMode = internal.MetadataMode;
     export import Metadata = internal.Metadata;
+    export import MetadataMode = internal.MetadataMode;
     export import MigrationCallback = internal.MigrationCallback;
+    export import MigrationOptions = internal.MigrationOptions;
     export import Mixed = internal.Types.Mixed;
+    export import MongoDB = internal.MongoDB;
+    export import MongoDBService = internal.MongoDBService;
     export import NumericLogLevel = internal.NumericLogLevel;
     export import ObjectChangeCallback = internal.ObjectChangeCallback;
     export import ObjectChangeSet = internal.ObjectChangeSet;
@@ -131,6 +153,7 @@ declare global {
     export import ProgressDirection = internal.ProgressDirection;
     export import ProgressMode = internal.ProgressMode;
     export import ProgressNotificationCallback = internal.ProgressNotificationCallback;
+    export import ProgressRealmPromise = internal.ProgressRealmPromise;
     export import PropertiesTypes = internal.PropertiesTypes;
     export import PropertySchema = internal.PropertySchema;
     export import PropertySchemaParseError = internal.PropertySchemaParseError;
@@ -139,11 +162,14 @@ declare global {
     export import PropertyTypeName = internal.PropertyTypeName;
     export import ProviderType = internal.ProviderType;
     export import ProxyType = internal.ProxyType;
+    export import RealmEvent = internal.RealmEvent;
     export import RealmEventName = internal.RealmEventName;
+    export import RealmListenerCallback = internal.RealmListenerCallback;
     export import RealmObjectConstructor = internal.RealmObjectConstructor;
     export import RelationshipPropertyTypeName = internal.RelationshipPropertyTypeName;
     export import Results = internal.Results;
     export import SchemaParseError = internal.SchemaParseError;
+    export import SecretApiKey = internal.SecretApiKey;
     export import SessionState = internal.SessionState;
     export import SessionStopPolicy = internal.SessionStopPolicy;
     export import Set = internal.RealmSet;
@@ -154,18 +180,17 @@ declare global {
     export import SubscriptionSetState = internal.SubscriptionSetState;
     export import SyncConfiguration = internal.SyncConfiguration;
     export import SyncError = internal.SyncError;
+    export import SyncProxyConfig = internal.SyncProxyConfig;
+    export import TypeAssertionError = internal.TypeAssertionError;
+    export import Unmanaged = internal.Unmanaged;
     export import UpdateMode = internal.UpdateMode;
-    export import UserChangeCallback = internal.UserChangeCallback;
-    export import UserState = internal.UserState;
     export import User = internal.User;
+    export import UserChangeCallback = internal.UserChangeCallback;
+    export import UserIdentity = internal.UserIdentity;
+    export import UserState = internal.UserState;
     export import WaitForSync = internal.WaitForSync;
-    export import GeoBox = internal.GeoBox;
-    export import GeoCircle = internal.GeoCircle;
-    export import GeoPoint = internal.GeoPoint;
-    export import GeoPolygon = internal.GeoPolygon;
-    export import CanonicalGeoPolygon = internal.CanonicalGeoPolygon;
-    export import CanonicalGeoPoint = internal.CanonicalGeoPoint;
-    export import GeoPosition = internal.GeoPosition;
+    export import WatchOptionsFilter = internal.WatchOptionsFilter;
+    export import WatchOptionsIds = internal.WatchOptionsIds;
 
     // Deprecated exports below
     /** @deprecated Will be removed in v13.0.0. Please use {@link internal.AppServicesFunction} */
@@ -180,5 +205,9 @@ declare global {
     export import ObjectClass = internal.RealmObjectConstructor;
     /** @deprecated Will be removed in v13.0.0. Please use {@link internal.PropertyTypeName} */
     export import PropertyType = internal.PropertyTypeName;
+    /** @deprecated Use the another {@link internal.ClientResetMode} than {@link internal.ClientResetMode.Manual}. */
+    export import ClientResetError = internal.ClientResetError;
+    /** @deprecated Use the another {@link internal.ClientResetMode} than {@link internal.ClientResetMode.Manual}. */
+    export import PushClient = internal.PushClient;
   }
 }

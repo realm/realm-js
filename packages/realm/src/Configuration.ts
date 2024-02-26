@@ -16,17 +16,17 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import {
+import type {
   AnyRealmObject,
+  AppConfiguration,
   ObjectSchema,
   Realm,
   RealmObjectConstructor,
   SyncConfiguration,
-  TypeAssertionError,
-  assert,
-  validateRealmSchema,
-  validateSyncConfiguration,
+  User,
 } from "./internal";
+
+import { TypeAssertionError, assert, validateRealmSchema, validateSyncConfiguration } from "./internal";
 
 /**
  * A function which can be called to migrate a Realm from one version of the schema to another.
@@ -55,7 +55,7 @@ export type MigrationOptions = {
 export type BaseConfiguration = {
   /**
    * The path to the file where the Realm database should be stored. For synced Realms, a relative path
-   * is used together with the {@link AppConfiguration.id | app ID} and {@link User.id | user ID} in order
+   * is used together with the {@link AppConfiguration} and {@link User.id} in order
    * to avoid collisions with other apps or users.
    * An absolute path is left untouched and on some platforms (iOS and Android) the app might not have
    * permissions to create or open the file - permissions are not validated.

@@ -18,8 +18,26 @@
 
 import { INTERNAL, Listeners, PropertyMap, RealmObject, binding, getClassHelpers } from "./internal";
 
-export type ObjectChangeSet<T> = { deleted: boolean; changedProperties: (keyof T)[] };
-export type ObjectChangeCallback<T> = (object: RealmObject<T> & T, changes: ObjectChangeSet<T>) => void;
+export type ObjectChangeSet<T> = {
+  /**
+   * Is `true` if the object has been deleted.
+   */
+  deleted: boolean;
+  /**
+   * An array of properties that have changed their value.
+   */
+  changedProperties: (keyof T)[];
+};
+
+export type ObjectChangeCallback<T> = (
+  /**
+   * The object that changed.
+   */ object: RealmObject<T> & T,
+  /**
+   * A dictionary with information about the changes.
+   */
+  changes: ObjectChangeSet<T>,
+) => void;
 
 /** @internal */
 export class ObjectListeners<T> {

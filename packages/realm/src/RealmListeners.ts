@@ -24,7 +24,20 @@ export enum RealmEvent {
   BeforeNotify = "beforenotify",
 }
 
-export type RealmListenerCallback = (realm: Realm, name: RealmEvent, schema?: CanonicalObjectSchema[]) => void;
+export type RealmListenerCallback = (
+  /**
+   * The Realm in which the change event occurred.
+   */
+  realm: Realm,
+  /**
+   * The name of the event that occurred.
+   */
+  name: RealmEvent,
+  /**
+   * The schema of the Realm file when the event occurred.
+   */
+  schema?: CanonicalObjectSchema[],
+) => void;
 
 // Temporary functions to work between event names and corresponding enums
 // TODO: We should update the external API to take a `RealmEvent` instead of a string.
