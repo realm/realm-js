@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2023 Realm Inc.
+// Copyright 2024 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,7 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-/* eslint-disable @typescript-eslint/no-var-requires -- We're exporting using CJS assignment */
 /* eslint-env commonjs */
+/* global process */
 
-module.exports = require("./dist/bundle.react-native").Realm;
+// Runtime check to provide our Node.js entrypoint instead of requiring end-users to apply a mock
+if (typeof process !== "undefined" && typeof process.env?.JEST_WORKER_ID !== "undefined") {
+  // Re-naming "require" to obfuscate the call from Metro
+  const nodeRequire = require;
+  module.exports = nodeRequire("./dist/platform/node/index.js");
+} else {
+  module.exports = require("./dist/platform/react-native/index.js");
+}

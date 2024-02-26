@@ -20,46 +20,42 @@
     "lint": {
       "command": "eslint --ext .js,.ts . && tsc --noEmit",
       "dependencies": [
-        "../../packages/realm:bundle"
+        "build-dependencies"
       ]
     },
     "build": {
       "command": "tsc",
       "dependencies": [
-        "../../packages/realm:bundle",
         "build-dependencies"
       ]
     },
     "start": {
       "command": "mocha --watch",
       "dependencies": [
-        "../../packages/realm:bundle",
         "build-dependencies"
       ]
     },
     "test": {
       "command": "mocha --exit",
       "dependencies": [
-        "../../packages/realm:bundle",
         "build-dependencies"
       ]
     },
     "coverage": {
       "command": "nyc mocha --exit",
       "dependencies": [
-        "../../packages/realm:bundle:coverage",
         "build-dependencies"
       ]
     },
     "ci:coverage": {
       "command": "nyc --reporter=lcov -- mocha --exit",
       "dependencies": [
-        "../../packages/realm:bundle:coverage",
         "build-dependencies"
       ]
     },
     "build-dependencies": {
       "dependencies": [
+        "../../packages/realm:build:ts",
         "../../packages/realm:build:node",
         "../../packages/mocha-reporter:bundle"
       ]
@@ -69,7 +65,6 @@
     "realm": "*"
   },
   "devDependencies": {
-    "@istanbuljs/nyc-config-typescript": "^1.0.2",
     "@realm/app-importer": "*",
     "@realm/mocha-reporter": "*",
     "@thi.ng/bench": "^3.1.16",

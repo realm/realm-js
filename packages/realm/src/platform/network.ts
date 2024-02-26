@@ -22,6 +22,6 @@ type NetworkType = { fetch: typeof fetch };
 
 export const network: NetworkType = { fetch };
 
-export function inject(injected: NetworkType) {
-  Object.freeze(Object.assign(network, injected));
+export function inject(value: NetworkType) {
+  Object.freeze(Object.assign(network, value));
 }

@@ -48,6 +48,8 @@ jobs:
           path: |
             README.md
             packages/*/dist
+            packages/realm/binding/dist
+            packages/realm/binding/generated
 
   build:
     name: Build for ${{ matrix.variant.os }} ${{ matrix.variant.arch }}

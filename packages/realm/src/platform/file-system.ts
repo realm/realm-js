@@ -74,6 +74,6 @@ export const fs: FileSystemType = {
   },
 };
 
-export function inject(injected: FileSystemType) {
-  Object.freeze(Object.assign(fs, injected));
+export function inject(value: FileSystemType) {
+  Object.freeze(Object.assign(fs, value));
 }

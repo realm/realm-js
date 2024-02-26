@@ -18,8 +18,10 @@
 
 import createDebug from "debug";
 
+/** @internal */
 export const debug = createDebug("realm");
 
+/** @internal */
 export function extendDebug(namespace: string) {
   return debug.extend(namespace);
 }

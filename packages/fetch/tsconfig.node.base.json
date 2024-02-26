@@ -4,6 +4,7 @@
     "@tsconfig/node18/tsconfig.json",
   ],
   "files": [
-    "src/node.ts"
+    "src/node.ts",
+    "src/types.ts"
   ]
 }

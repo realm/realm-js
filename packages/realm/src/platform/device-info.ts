@@ -16,18 +16,20 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { DeviceInfo } from "../binding";
+import type { binding } from "./binding";
 
 type DeviceInfoType = {
-  create(): DeviceInfo;
+  create(): binding.DeviceInfo;
 };
 
+/** @internal */
 export const deviceInfo: DeviceInfoType = {
   create() {
     throw new Error("Not supported on this platform");
   },
 };
 
-export function inject(injected: DeviceInfoType) {
-  Object.freeze(Object.assign(deviceInfo, injected));
+/** @internal */
+export function inject(value: DeviceInfoType) {
+  Object.freeze(Object.assign(deviceInfo, value));
 }

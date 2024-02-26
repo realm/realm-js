@@ -1,0 +1,21 @@
+{
+  "extends": "@tsconfig/node-lts",
+  "compilerOptions": {
+    "composite": true,
+    "esModuleInterop": true,
+    "noEmit": true,
+    "strictFunctionTypes": false,
+    "strictNullChecks": false,
+    "forceConsistentCasingInFileNames": true,
+    "types": [
+      "mocha",
+      "node",
+    ]
+  },
+  "include": [
+    "src/tests/**/*"
+  ],
+  "references": [
+    { "path": "./tsconfig.shared.json" }
+  ]
+}

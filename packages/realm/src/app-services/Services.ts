@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2023 Realm Inc.
+// Copyright 2024 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,7 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-/* eslint-disable @typescript-eslint/no-var-requires -- We're exporting using CJS assignment */
-/* eslint-env commonjs */
+import * as internal from "../internal";
 
-module.exports = require("./dist/bundle.node").Realm;
+// eslint-disable-next-line @typescript-eslint/no-namespace
+export namespace Services {
+  export import MongoDB = internal.MongoDB;
+  export import MongoDBDatabase = internal.MongoDBDatabase;
+  /** @deprecated Please read {@link https://www.mongodb.com/docs/atlas/app-services/reference/push-notifications/} */
+  export type Push = internal.PushClient;
+}

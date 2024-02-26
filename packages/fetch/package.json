@@ -21,13 +21,13 @@
     }
   },
   "exports": {
+    "types": "./dist/types/types.d.ts",
     "node": {
       "import": "./dist/node-esm/node.js",
       "require": "./dist/node-cjs/node.js"
     },
     "react-native": "./dist/react-native/react-native.js",
-    "browser": "./dist/browser/browser.js",
-    "types": "./dist/types/types.d.ts"
+    "browser": "./dist/browser/browser.js"
   },
   "react-native": "./dist/react-native/react-native.js",
   "types": "./dist/types/types.d.ts",

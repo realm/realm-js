@@ -16,13 +16,17 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { binding } from "src/internal";
+import { binding } from "../internal";
 
 /**
  * Remove entries for undefined property values.
  * @internal
  */
 export function cleanArguments(args: unknown[]): binding.EJson[];
+/**
+ * Remove entries for undefined property values.
+ * @internal
+ */
 export function cleanArguments(args: unknown): binding.EJson;
 export function cleanArguments(args: unknown[] | unknown) {
   if (Array.isArray(args)) {

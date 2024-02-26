@@ -137,35 +137,7 @@ list(FILTER SDK_TS_FILES EXCLUDE REGEX "templates/[^/]*\.ts$")
 
 set(JS_SPEC_FILE ${SDK_DIR}/bindgen/js_spec.yml)
 set(JS_OPT_IN_FILE ${SDK_DIR}/bindgen/js_opt_in_spec.yml)
-set(TYPESCRIPT_OUTPUT_DIR ${SDK_DIR}/generated/ts)
-
-set(GENERATED_TS_FILES
-    ${TYPESCRIPT_OUTPUT_DIR}/native.d.mts
-    ${TYPESCRIPT_OUTPUT_DIR}/core.ts
-)
-bindgen(
-    TEMPLATE ${SDK_DIR}/bindgen/src/templates/typescript.ts
-    OUTPUTS ${GENERATED_TS_FILES}
-    OUTDIR ${TYPESCRIPT_OUTPUT_DIR}
-    SPECS ${JS_SPEC_FILE}
-    OPTIN ${JS_OPT_IN_FILE}
-    SOURCES ${SDK_TS_FILES}
-)
-
-set(GENERATED_JS_FILES
-    ${TYPESCRIPT_OUTPUT_DIR}/native-node.mjs
-    ${TYPESCRIPT_OUTPUT_DIR}/native-react-native.mjs
-)
-bindgen(
-    TEMPLATE ${SDK_DIR}/bindgen/src/templates/node-wrapper.ts
-    OUTPUTS ${GENERATED_JS_FILES}
-    OUTDIR ${TYPESCRIPT_OUTPUT_DIR}
-    SPECS ${JS_SPEC_FILE}
-    OPTIN ${JS_OPT_IN_FILE}
-    SOURCES ${SDK_TS_FILES}
-)
-
-add_custom_target(TypeScript ALL DEPENDS ${GENERATED_TS_FILES} ${GENERATED_JS_FILES})
+set(NODE_OUTPUT_DIR ${SDK_DIR}/binding/build)
 
 if(DEFINED CMAKE_JS_VERSION)
     include(node.cmake)

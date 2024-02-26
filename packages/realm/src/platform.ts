@@ -16,6 +16,13 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+/** @internal */
+export { binding } from "./platform/binding";
+/** @internal */
 export { deviceInfo } from "./platform/device-info";
+/** @internal */
 export { fs } from "./platform/file-system";
+/** @internal */
 export { network } from "./platform/network";
+/** @internal */
+export { syncProxyConfig } from "./platform/sync-proxy-config";

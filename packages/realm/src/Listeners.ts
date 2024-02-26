@@ -24,6 +24,7 @@ export type CallbackAdder<CallbackType, TokenType, Args extends unknown[] = []> 
 /** @internal */
 export type CallbackRemover<TokenType> = (token: TokenType) => void;
 
+/** @internal */
 export type ListenersOptions<CallbackType, TokenType, Args extends unknown[]> = {
   add: CallbackAdder<CallbackType, TokenType, Args>;
   remove: CallbackRemover<TokenType>;

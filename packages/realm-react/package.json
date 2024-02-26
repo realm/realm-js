@@ -18,7 +18,7 @@
     "bundle": {
       "command": "rollup --config && tsc -p tsconfig.types.json",
       "dependencies": [
-        "../realm:bundle",
+        "../realm:build:ts",
         "../realm-common:bundle"
       ],
       "files": [
@@ -33,7 +33,7 @@
     "test": {
       "command": "jest --forceExit",
       "dependencies": [
-        "../realm:bundle",
+        "../realm:build:ts",
         "../realm:build:node",
         "../realm-common:bundle",
         "../realm-app-importer:type-check"

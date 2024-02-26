@@ -19,12 +19,12 @@
 import type { AnyFetch } from "@realm/fetch";
 import {
   AnyUser,
+  Configuration,
   Credentials,
   DefaultFunctionsFactory,
   DefaultObject,
   EmailPasswordAuth,
   Listeners,
-  Sync,
   User,
   assert,
   binding,
@@ -211,14 +211,6 @@ export class App<
     return newApp;
   }
 
-  public static Sync = Sync;
-
-  /**
-   * All credentials available for authentication.
-   * @see https://www.mongodb.com/docs/atlas/app-services/authentication/
-   */
-  public static Credentials = Credentials;
-
   /** @internal */
   public static deviceInfo = deviceInfo.create();
   /** @internal */
@@ -401,4 +393,16 @@ export class App<
   public removeAllListeners() {
     this.listeners.removeAll();
   }
+}
+
+import * as internal from "../internal";
+
+// eslint-disable-next-line @typescript-eslint/no-namespace
+export namespace App {
+  /**
+   * All credentials available for authentication.
+   * @see https://www.mongodb.com/docs/atlas/app-services/authentication/
+   */
+  export type Credentials = internal.Credentials;
+  export import Sync = internal.Sync;
 }

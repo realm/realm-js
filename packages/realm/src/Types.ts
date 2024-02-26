@@ -16,18 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { BSON, Dictionary, List, RealmSet, Results } from "./internal";
-
-const RealmDictionary = Dictionary;
-type RealmDictionary<T> = Dictionary<T>;
-
-const RealmList = List;
-type RealmList<T> = List<T>;
-
-const RealmResults = Results;
-type RealmResults<T> = Results<T>;
+import * as internal from "./internal";
 
 const GlobalDate = Date;
+type GlobalDate = Date;
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace Types {
@@ -37,29 +29,22 @@ export namespace Types {
   export type Float = number;
   export type Double = number;
 
-  export type Decimal128 = BSON.Decimal128;
-  export const Decimal128 = BSON.Decimal128;
+  export import Decimal128 = internal.BSON.Decimal128;
+  export import ObjectId = internal.BSON.ObjectId;
+  export import UUID = internal.BSON.UUID;
 
-  export type ObjectId = BSON.ObjectId;
-  export const ObjectId = BSON.ObjectId;
-
-  export type UUID = BSON.UUID;
-  export const UUID = BSON.UUID;
-
-  export type Date = typeof GlobalDate;
+  export type Date = GlobalDate;
   export const Date = GlobalDate;
 
   export type Data = ArrayBuffer;
   export const Data = ArrayBuffer;
 
-  export type List<T> = RealmList<T>;
-  export const List: typeof RealmList = RealmList;
-  export type Set<T> = RealmSet<T>;
-  export const Set: typeof RealmSet = RealmSet;
-  export type Dictionary<T> = RealmDictionary<T>;
-  export const Dictionary: typeof RealmDictionary = RealmDictionary;
+  export import List = internal.List;
+  export import Set = internal.RealmSet;
+  export import Dictionary = internal.Dictionary;
+
   export type Mixed = unknown;
   /* eslint-disable-next-line @typescript-eslint/no-unused-vars -- We don't use the `LinkingPropertyName` at runtime */
-  export type LinkingObjects<ObjectTypeT, LinkingPropertyName> = RealmResults<ObjectTypeT>;
-  export const LinkingObjects: typeof RealmResults = RealmResults;
+  export type LinkingObjects<ObjectTypeT, LinkingPropertyName> = internal.Results<ObjectTypeT>;
+  export const LinkingObjects = internal.Results;
 }

@@ -15,8 +15,11 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
+
+import "./binding";
 import "./fs";
 import "./device-info";
 import "./sync-proxy-config";
 
-export * from "../../index";
+import { Realm } from "../../Realm";
+export = Realm;

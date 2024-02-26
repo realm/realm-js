@@ -1,0 +1,38 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "module": "Node16",
+    "moduleResolution": "Node16",
+    "outDir": "dist",
+    "rootDir": "src",
+    "sourceMap": true,
+    "target": "es2022",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "lib": [
+      "ES2022"
+    ],
+    "noResolve": true,
+    "types": [
+      "bson",
+      "debug",
+      "@realm/fetch",
+      "./binding/generated/native.d.ts",
+      "./binding/dist/core.d.ts",
+      "./binding/index.d.ts"
+    ]
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "src/tests",
+    "src/platform/node",
+    "src/platform/react-native"
+  ],
+  "references": [
+    { "path": "./tsconfig.binding.json" }
+  ]
+}

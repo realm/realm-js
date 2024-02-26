@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { EJSON, ObjectId, UUID } from "bson";
-import { syncProxyConfig } from "src/platform/sync-proxy-config";
 
 import {
   AnyUser,
@@ -32,6 +31,7 @@ import {
   User,
   assert,
   binding,
+  syncProxyConfig,
   toBindingClientResetMode,
   toBindingErrorHandler,
   toBindingErrorHandlerWithOnManual,

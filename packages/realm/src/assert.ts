@@ -25,6 +25,7 @@ import { AssertionError, BSON, DefaultObject, PrimaryKey, Realm, TypeAssertionEr
  * @param condition The condition that must be truthy to avoid throwing.
  * @param err Optional message or error to throw.
  * Or a function producing this, which is useful to avoid computing the error message in case it's not needed.
+ * @internal
  */
 export function assert(
   condition: unknown,

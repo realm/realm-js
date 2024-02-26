@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2023 Realm Inc.
+// Copyright 2024 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,5 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Realm } from "./dist/bundle";
-export = Realm;
+import { injectAndPatch } from "../binding";
+import * as binding from "../../../binding/generated/native.react-native.cjs";
+
+injectAndPatch(binding);
