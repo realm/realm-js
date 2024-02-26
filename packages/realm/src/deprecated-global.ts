@@ -56,7 +56,7 @@ declare global {
    * @deprecated Will be removed in v13.0.0. Please use an import statement.
    */
   export namespace Realm {
-    export import Realm = RealmConstructor;
+    export import Realm = RealmItself;
     export import flags = internal.flags;
 
     export import Object = internal.RealmObject;
