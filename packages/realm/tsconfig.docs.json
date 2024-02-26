@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "noEmit": true,
+    "strict": true,
+    "lib": [
+      "es2020"
+    ],
+    "types": [
+      "bson",
+      "@realm/fetch"
+    ]
+  },
+  "include": [
+    "dist/public-types"
+  ],
+  "exclude": [
+    "./binding/generated/native.d.ts"
+  ]
+}

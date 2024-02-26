@@ -1,6 +1,6 @@
 {
-  "entryPoints": ["src/index.ts"],
-  "tsconfig": "./tsconfig.json",
+  "entryPoints": ["dist/public-types/index.d.ts"],
+  "tsconfig": "./tsconfig.docs.json",
   "excludeInternal": true,
   "excludePrivate": true,
   "customCss": "../../typedoc/style.css",
@@ -8,5 +8,5 @@
   "name": "Realm JavaScript",
   "includeVersion": true,
   "sourceLinkTemplate": "https://github.com/realm/realm-js/blob/{gitRevision}/{path}#L{line}",
-  "plugin": ["typedoc-plugin-missing-exports"]
+  "plugin": ["typedoc-plugin-rename-defaults"]
 }
