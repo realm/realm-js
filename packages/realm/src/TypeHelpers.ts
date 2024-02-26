@@ -21,10 +21,8 @@ import {
   ClassHelpers,
   Collection,
   Dictionary,
-  DictionaryHelpers,
   INTERNAL,
   List,
-  ListHelpers,
   ObjCreator,
   REALM,
   Realm,
@@ -36,13 +34,11 @@ import {
   binding,
   boxToBindingGeospatial,
   circleToBindingGeospatial,
-  insertIntoDictionaryInMixed,
-  insertIntoListInMixed,
-  isDictionary,
+  createDictionaryHelpers,
+  createListHelpers,
   isGeoBox,
   isGeoCircle,
   isGeoPolygon,
-  isList,
   polygonToBindingGeospatial,
   safeGlobalThis,
 } from "./internal";
@@ -78,7 +74,10 @@ export function toArrayBuffer(value: unknown, stringToBase64 = true) {
   return value;
 }
 
-/** @internal */
+/**
+ * Helpers for converting a value to and from its binding representation.
+ * @internal
+ */
 export type TypeHelpers<T = unknown> = {
   toBinding(
     value: T,
@@ -173,92 +172,14 @@ function mixedFromBinding(options: TypeOptions, value: binding.MixedArg): unknow
     const { wrapObject } = getClassHelpers(value.tableKey);
     return wrapObject(linkedObj);
   } else if (value instanceof binding.List) {
-    return new List(realm, value, getListHelpersForMixed(realm, options));
+    const typeHelpers = getTypeHelpers(binding.PropertyType.Mixed, options);
+    return new List(realm, value, createListHelpers({ realm, typeHelpers, isMixedItem: true }));
   } else if (value instanceof binding.Dictionary) {
-    return new Dictionary(realm, value, getDictionaryHelpersForMixed(realm, options));
+    const typeHelpers = getTypeHelpers(binding.PropertyType.Mixed, options);
+    return new Dictionary(realm, value, createDictionaryHelpers({ realm, typeHelpers, isMixedItem: true }));
   } else {
     return value;
   }
-}
-
-function getListHelpersForMixed(realm: Realm, options: TypeOptions) {
-  const helpers: ListHelpers = {
-    toBinding: mixedToBinding.bind(null, realm.internal),
-    fromBinding: mixedFromBinding.bind(null, options),
-    get(results, index) {
-      const elementType = binding.Helpers.getMixedElementType(results, index);
-      if (elementType === binding.MixedDataType.List) {
-        return new List(realm, results.getList(index), helpers);
-      }
-      if (elementType === binding.MixedDataType.Dictionary) {
-        return new Dictionary(realm, results.getDictionary(index), getDictionaryHelpersForMixed(realm, options));
-      }
-      return mixedFromBinding(options, results.getAny(index));
-    },
-    set(list, index, value) {
-      if (isList(value)) {
-        list.setCollection(index, binding.CollectionType.List);
-        insertIntoListInMixed(value, list.getList(index), helpers.toBinding);
-      } else if (isDictionary(value)) {
-        list.setCollection(index, binding.CollectionType.Dictionary);
-        insertIntoDictionaryInMixed(value, list.getDictionary(index), helpers.toBinding);
-      } else {
-        list.setAny(index, helpers.toBinding(value));
-      }
-    },
-    insert(list, index, value) {
-      if (isList(value)) {
-        list.insertCollection(index, binding.CollectionType.List);
-        insertIntoListInMixed(value, list.getList(index), helpers.toBinding);
-      } else if (isDictionary(value)) {
-        list.insertCollection(index, binding.CollectionType.Dictionary);
-        insertIntoDictionaryInMixed(value, list.getDictionary(index), helpers.toBinding);
-      } else {
-        list.insertAny(index, helpers.toBinding(value));
-      }
-    },
-  };
-  return helpers;
-}
-
-function getDictionaryHelpersForMixed(realm: Realm, options: TypeOptions) {
-  const helpers: DictionaryHelpers = {
-    toBinding: mixedToBinding.bind(null, realm.internal),
-    fromBinding: mixedFromBinding.bind(null, options),
-    get(dictionary, key) {
-      const elementType = binding.Helpers.getMixedElementTypeFromDict(dictionary, key);
-      if (elementType === binding.MixedDataType.List) {
-        return new List(realm, dictionary.getList(key), getListHelpersForMixed(realm, options));
-      }
-      if (elementType === binding.MixedDataType.Dictionary) {
-        return new Dictionary(realm, dictionary.getDictionary(key), helpers);
-      }
-      const value = dictionary.tryGetAny(key);
-      return value === undefined ? undefined : mixedFromBinding(options, value);
-    },
-    snapshotGet(results, index) {
-      const elementType = binding.Helpers.getMixedElementType(results, index);
-      if (elementType === binding.MixedDataType.List) {
-        return new List(realm, results.getList(index), getListHelpersForMixed(realm, options));
-      }
-      if (elementType === binding.MixedDataType.Dictionary) {
-        return new Dictionary(realm, results.getDictionary(index), helpers);
-      }
-      return mixedFromBinding(options, results.getAny(index));
-    },
-    set(dictionary, key, value) {
-      if (isList(value)) {
-        dictionary.insertCollection(key, binding.CollectionType.List);
-        insertIntoListInMixed(value, dictionary.getList(key), helpers.toBinding);
-      } else if (isDictionary(value)) {
-        dictionary.insertCollection(key, binding.CollectionType.Dictionary);
-        insertIntoDictionaryInMixed(value, dictionary.getDictionary(key), helpers.toBinding);
-      } else {
-        dictionary.insertAny(key, helpers.toBinding(value));
-      }
-    },
-  };
-  return helpers;
 }
 
 function defaultToBinding(value: unknown): binding.MixedArg {
@@ -415,9 +336,8 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => Type
     };
   },
   [binding.PropertyType.Mixed](options) {
-    const { realm } = options;
     return {
-      toBinding: mixedToBinding.bind(null, realm.internal),
+      toBinding: mixedToBinding.bind(null, options.realm.internal),
       fromBinding: mixedFromBinding.bind(null, options),
     };
   },
@@ -451,6 +371,7 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => Type
   [binding.PropertyType.Array]({ realm, getClassHelpers, name, objectSchemaName }) {
     assert.string(objectSchemaName, "objectSchemaName");
     const classHelpers = getClassHelpers(objectSchemaName);
+
     return {
       fromBinding(value: unknown) {
         assert.instanceOf(value, binding.List);

@@ -16,11 +16,23 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import type { Dictionary, List, Results } from "./internal";
+import type { Dictionary, DictionaryHelpers, List, OrderedCollectionHelpers, RealmSet, Results } from "./internal";
 import { CallbackAdder, IllegalConstructorError, Listeners, TypeAssertionError, assert, binding } from "./internal";
 
 /**
- * Abstract base class containing methods shared by Realm {@link List}, {@link Dictionary} and {@link Results}.
+ * Collection helpers identifier.
+ * @internal
+ */
+export const COLLECTION_HELPERS = Symbol("Collection#helpers");
+
+/**
+ * Helpers for getting and setting items in the collection, as well
+ * as converting the values to and from their binding representations.
+ */
+type CollectionHelpers<T = unknown> = OrderedCollectionHelpers<T> | DictionaryHelpers<T>;
+
+/**
+ * Abstract base class containing methods shared by Realm {@link List}, {@link Dictionary}, {@link Results} and {@link RealmSet}.
  *
  * A {@link Collection} always reflect the current state of the Realm. The one exception to this is
  * when using `for...in` or `for...of` enumeration, which will always enumerate over the
@@ -34,13 +46,24 @@ export abstract class Collection<
   EntryType = [KeyType, ValueType],
   T = ValueType,
   ChangeCallbackType = unknown,
+  Helpers extends CollectionHelpers<ValueType> = CollectionHelpers<ValueType>,
 > implements Iterable<T>
 {
+  /**
+   * Helpers for getting items in the collection, as well as
+   * converting the values to and from their binding representations.
+   * @internal
+   */
+  protected readonly [COLLECTION_HELPERS]: Helpers;
+
   /** @internal */
   private listeners: Listeners<ChangeCallbackType, binding.NotificationToken, [string[] | undefined]>;
 
   /** @internal */
-  constructor(addListener: CallbackAdder<ChangeCallbackType, binding.NotificationToken, [string[] | undefined]>) {
+  constructor(
+    helpers: Helpers,
+    addListener: CallbackAdder<ChangeCallbackType, binding.NotificationToken, [string[] | undefined]>,
+  ) {
     if (arguments.length === 0) {
       throw new IllegalConstructorError("Collection");
     }
@@ -56,6 +79,8 @@ export abstract class Collection<
       configurable: false,
       writable: false,
     });
+
+    this[COLLECTION_HELPERS] = helpers;
   }
 
   /**

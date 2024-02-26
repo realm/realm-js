@@ -17,16 +17,18 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import {
+  COLLECTION_HELPERS as HELPERS,
   IllegalConstructorError,
   OrderedCollection,
-  OrderedCollectionHelpers,
   Realm,
   SubscriptionOptions,
   TimeoutPromise,
+  TypeHelpers,
   Unmanaged,
   WaitForSync,
   assert,
   binding,
+  createGetterByIndex,
 } from "./internal";
 
 /**
@@ -38,12 +40,13 @@ import {
  * will thus never be called).
  * @see https://www.mongodb.com/docs/realm/sdk/react-native/model-data/data-types/collections/
  */
-export class Results<T = unknown> extends OrderedCollection<T> {
+export class Results<T = unknown> extends OrderedCollection<T, [number, T], ResultsHelpers<T>> {
   /**
    * The representation in the binding.
    * @internal
    */
-  public declare internal: binding.Results;
+  public declare readonly internal: binding.Results;
+
   /** @internal */
   public subscriptionName?: string;
 
@@ -51,11 +54,12 @@ export class Results<T = unknown> extends OrderedCollection<T> {
    * Create a `Results` wrapping a set of query `Results` from the binding.
    * @internal
    */
-  constructor(realm: Realm, internal: binding.Results, helpers: OrderedCollectionHelpers) {
+  constructor(realm: Realm, internal: binding.Results, helpers: ResultsHelpers<T>) {
     if (arguments.length === 0 || !(internal instanceof binding.Results)) {
       throw new IllegalConstructorError("Results");
     }
     super(realm, internal, helpers);
+
     Object.defineProperty(this, "internal", {
       enumerable: false,
       configurable: false,
@@ -98,18 +102,15 @@ export class Results<T = unknown> extends OrderedCollection<T> {
    * @since 2.0.0
    */
   update(propertyName: keyof Unmanaged<T>, value: Unmanaged<T>[typeof propertyName]): void {
-    const {
-      classHelpers,
-      helpers: { get },
-    } = this;
     assert.string(propertyName);
-    assert(this.type === "object" && classHelpers, "Expected a result of Objects");
+    const { classHelpers, type, results } = this;
+    assert(type === "object" && classHelpers, "Expected a result of Objects");
     const { set } = classHelpers.properties.get(propertyName);
-
-    const snapshot = this.results.snapshot();
+    const { snapshotGet } = this[HELPERS];
+    const snapshot = results.snapshot();
     const size = snapshot.size();
     for (let i = 0; i < size; i++) {
-      const obj = get(snapshot, i);
+      const obj = snapshotGet(snapshot, i);
       assert.instanceOf(obj, binding.Obj);
       set(obj, value);
     }
@@ -175,6 +176,37 @@ export class Results<T = unknown> extends OrderedCollection<T> {
   isEmpty(): boolean {
     return this.internal.size() === 0;
   }
+}
+
+/**
+ * Helpers for getting and setting results items, as well as
+ * converting the values to and from their binding representations.
+ * @internal
+ */
+export type ResultsHelpers<T = unknown> = TypeHelpers<T> & {
+  get: (results: binding.Results, index: number) => T;
+  set: (results: binding.Results, index: number, value: T) => never;
+  snapshotGet: (snapshot: binding.Results, index: number) => T;
+};
+
+type ResultsHelpersFactoryOptions<T> = {
+  typeHelpers: TypeHelpers<T>;
+  isObjectItem?: boolean;
+};
+
+/** @internal */
+export function createResultsHelpers<T>({
+  typeHelpers,
+  isObjectItem,
+}: ResultsHelpersFactoryOptions<T>): ResultsHelpers<T> {
+  return {
+    get: createGetterByIndex({ fromBinding: typeHelpers.fromBinding, isObjectItem }),
+    snapshotGet: createGetterByIndex({ fromBinding: typeHelpers.fromBinding, isObjectItem }),
+    set: () => {
+      throw new Error("Assigning into a Results is not supported.");
+    },
+    ...typeHelpers,
+  };
 }
 
 /* eslint-disable-next-line @typescript-eslint/no-explicit-any -- Useful for APIs taking any `Results` */

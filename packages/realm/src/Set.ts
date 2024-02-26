@@ -17,12 +17,14 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import {
+  COLLECTION_HELPERS as HELPERS,
   IllegalConstructorError,
   OrderedCollection,
-  OrderedCollectionHelpers,
   Realm,
+  TypeHelpers,
   assert,
   binding,
+  createGetterByIndex,
 } from "./internal";
 
 /**
@@ -39,16 +41,17 @@ import {
  * a user-supplied insertion order.
  * @see https://www.mongodb.com/docs/realm/sdk/react-native/model-data/data-types/sets/
  */
-export class RealmSet<T = unknown> extends OrderedCollection<T, [T, T]> {
+export class RealmSet<T = unknown> extends OrderedCollection<T, [T, T], SetHelpers<T>> {
   /** @internal */
-  private declare internal: binding.Set;
+  public declare readonly internal: binding.Set;
 
   /** @internal */
-  constructor(realm: Realm, internal: binding.Set, helpers: OrderedCollectionHelpers) {
+  constructor(realm: Realm, internal: binding.Set, helpers: SetHelpers<T>) {
     if (arguments.length === 0 || !(internal instanceof binding.Set)) {
       throw new IllegalConstructorError("Set");
     }
     super(realm, internal.asResults(), helpers);
+
     Object.defineProperty(this, "internal", {
       enumerable: false,
       configurable: false,
@@ -56,6 +59,7 @@ export class RealmSet<T = unknown> extends OrderedCollection<T, [T, T]> {
       value: internal,
     });
   }
+
   /**
    * @returns The number of values in the Set.
    */
@@ -79,7 +83,7 @@ export class RealmSet<T = unknown> extends OrderedCollection<T, [T, T]> {
    */
   delete(value: T): boolean {
     assert.inTransaction(this.realm);
-    const [, success] = this.internal.removeAny(this.helpers.toBinding(value));
+    const [, success] = this.internal.removeAny(this[HELPERS].toBinding(value));
     return success;
   }
 
@@ -93,7 +97,7 @@ export class RealmSet<T = unknown> extends OrderedCollection<T, [T, T]> {
    */
   add(value: T): this {
     assert.inTransaction(this.realm);
-    this.internal.insertAny(this.helpers.toBinding(value));
+    this.internal.insertAny(this[HELPERS].toBinding(value));
     return this;
   }
 
@@ -128,4 +132,33 @@ export class RealmSet<T = unknown> extends OrderedCollection<T, [T, T]> {
       yield [value, value] as [T, T];
     }
   }
+}
+
+/**
+ * Helpers for getting and setting Set items, as well as
+ * converting the values to and from their binding representations.
+ * @internal
+ */
+export type SetHelpers<T = unknown> = TypeHelpers<T> & {
+  get: (set: binding.Set, index: number) => T;
+  snapshotGet: (snapshot: binding.Results, index: number) => T;
+  set: (set: binding.Set, index: number, value: T) => void;
+};
+
+type SetHelpersFactoryOptions<T> = {
+  typeHelpers: TypeHelpers<T>;
+  isObjectItem?: boolean;
+};
+
+/** @internal */
+export function createSetHelpers<T>({ typeHelpers, isObjectItem }: SetHelpersFactoryOptions<T>): SetHelpers<T> {
+  const { fromBinding, toBinding } = typeHelpers;
+  return {
+    get: createGetterByIndex({ fromBinding, isObjectItem }),
+    snapshotGet: createGetterByIndex({ fromBinding, isObjectItem }),
+    // Directly setting by "index" to a Set is a no-op.
+    set: () => {},
+    fromBinding,
+    toBinding,
+  };
 }

@@ -7,10 +7,10 @@
 # * `classes` and their `methods`
 #   * Methods, static methods, constructors, and properties in the general `spec.yml`
 #     should all be listed in this opt-in list as `methods`.
-# * `records` and their `fields``
+# * `records` and their `fields`
 #
-# If all methods in a class, or all fields of a property, are opted out of,
-# the entire class/property should be removed.
+# If all methods in a class, or all fields of a record, are opted out of,
+# the entire class/record should be removed.
 
 records:
   Property:
@@ -246,6 +246,7 @@ classes:
       - make_ssl_verify_callback
       - get_mixed_type
       - get_mixed_element_type
+      - get_mixed_element_type_from_list
       - get_mixed_element_type_from_dict
 
   LogCategoryRef:
@@ -371,6 +372,7 @@ classes:
   Collection:
     methods:
       - get_object_schema
+      - get_type
       - size
       - is_valid
       - get_any
@@ -379,6 +381,7 @@ classes:
   List:
     methods:
       - make
+      - get_obj
       - get_list
       - get_dictionary
       - move
@@ -396,6 +399,7 @@ classes:
   Set:
     methods:
       - make
+      - get_obj
       - insert_any
       - remove_any
       - remove_all

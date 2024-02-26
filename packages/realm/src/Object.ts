@@ -29,14 +29,15 @@ import {
   ObjectListeners,
   OmittedRealmTypes,
   OrderedCollection,
-  OrderedCollectionHelpers,
   Realm,
   RealmObjectConstructor,
   Results,
   TypeAssertionError,
+  TypeHelpers,
   Unmanaged,
   assert,
   binding,
+  createResultsHelpers,
   flags,
   getTypeName,
 } from "./internal";
@@ -439,27 +440,24 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
       () => `'${targetObjectSchema.name}#${propertyName}' is not a relationship to '${originObjectSchema.name}'`,
     );
 
-    const collectionHelpers: OrderedCollectionHelpers = {
+    const typeHelpers: TypeHelpers<T> = {
       // See `[binding.PropertyType.LinkingObjects]` in `TypeHelpers.ts`.
       toBinding(value: unknown) {
         return value as binding.MixedArg;
       },
       fromBinding(value: unknown) {
         assert.instanceOf(value, binding.Obj);
-        return wrapObject(value);
-      },
-      // See `[binding.PropertyType.Array]` in `PropertyHelpers.ts`.
-      get(results: binding.Results, index: number) {
-        return results.getObj(index);
+        return wrapObject(value) as T;
       },
     };
+    const resultsHelpers = createResultsHelpers<T>({ typeHelpers, isObjectItem: true });
 
     // Create the Result for the backlink view.
     const tableRef = binding.Helpers.getTable(this[REALM].internal, targetObjectSchema.tableKey);
     const tableView = this[INTERNAL].getBacklinkView(tableRef, targetProperty.columnKey);
     const results = binding.Results.fromTableView(this[REALM].internal, tableView);
 
-    return new Results(this[REALM], results, collectionHelpers);
+    return new Results<T>(this[REALM], results, resultsHelpers);
   }
 
   /**

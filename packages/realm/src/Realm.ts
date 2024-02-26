@@ -169,6 +169,7 @@ import {
   SyncError,
   SyncSession,
   TypeAssertionError,
+  TypeHelpers,
   Types,
   Unmanaged,
   Update,
@@ -204,6 +205,7 @@ import {
   validateConfiguration,
   validateObjectSchema,
   validateRealmSchema,
+  createResultsHelpers,
 } from "./internal";
 
 const debug = extendDebug("Realm");
@@ -1119,16 +1121,17 @@ export class Realm {
 
     const table = binding.Helpers.getTable(this.internal, objectSchema.tableKey);
     const results = binding.Results.fromTable(this.internal, table);
-    return new Results<T>(this, results, {
-      get(results: binding.Results, index: number) {
-        return results.getObj(index);
+    const typeHelpers: TypeHelpers<T> = {
+      fromBinding(value) {
+        return wrapObject(value as binding.Obj) as T;
       },
-      fromBinding: wrapObject,
-      toBinding(value: unknown) {
+      toBinding(value) {
         assert.instanceOf(value, RealmObject);
         return value[INTERNAL];
       },
-    });
+    };
+    const resultsHelpers = createResultsHelpers<T>({ typeHelpers, isObjectItem: true });
+    return new Results<T>(this, results, resultsHelpers);
   }
 
   /**

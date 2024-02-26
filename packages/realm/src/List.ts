@@ -18,26 +18,22 @@
 
 import {
   AssertionError,
+  Dictionary,
+  COLLECTION_HELPERS as HELPERS,
   IllegalConstructorError,
   ObjectSchema,
   OrderedCollection,
-  OrderedCollectionHelpers,
   Realm,
+  TypeHelpers,
   assert,
   binding,
+  createDictionaryHelpers,
+  createGetterByIndex,
+  insertIntoDictionaryInMixed,
+  isJsOrRealmDictionary,
 } from "./internal";
 
 type PartiallyWriteableArray<T> = Pick<Array<T>, "pop" | "push" | "shift" | "unshift" | "splice">;
-
-/**
- * Helpers for getting, setting, and inserting list items, as well as
- * converting the values to and from their binding representations.
- * @internal
- */
-export type ListHelpers = OrderedCollectionHelpers & {
-  set?(list: binding.List, index: number, value: unknown): void;
-  insert?(list: binding.List, index: number, value: unknown): void;
-};
 
 /**
  * Instances of this class will be returned when accessing object properties whose type is `"list"`.
@@ -47,29 +43,30 @@ export type ListHelpers = OrderedCollectionHelpers & {
  * properties of the List), and can only be modified inside a {@link Realm.write | write} transaction.
  */
 export class List<T = unknown>
-  extends OrderedCollection<T, [number, T], ListHelpers>
+  extends OrderedCollection<T, [number, T], ListHelpers<T>>
   implements PartiallyWriteableArray<T>
 {
   /**
    * The representation in the binding.
    * @internal
    */
-  public declare internal: binding.List;
+  public declare readonly internal: binding.List;
 
   /** @internal */
   private declare isEmbedded: boolean;
 
   /** @internal */
-  constructor(realm: Realm, internal: binding.List, helpers: ListHelpers) {
+  constructor(realm: Realm, internal: binding.List, helpers: ListHelpers<T>) {
     if (arguments.length === 0 || !(internal instanceof binding.List)) {
       throw new IllegalConstructorError("List");
     }
-    super(realm, internal.asResults(), helpers);
+    const results = internal.asResults();
+    super(realm, results, helpers);
 
     // Getting the `objectSchema` off the internal will throw if base type isn't object
-    const baseType = this.results.type & ~binding.PropertyType.Flags;
+    const itemType = results.type & ~binding.PropertyType.Flags;
     const isEmbedded =
-      baseType === binding.PropertyType.Object && internal.objectSchema.tableType === binding.TableType.Embedded;
+      itemType === binding.PropertyType.Object && internal.objectSchema.tableType === binding.TableType.Embedded;
 
     Object.defineProperty(this, "internal", {
       enumerable: false,
@@ -94,31 +91,6 @@ export class List<T = unknown>
   }
 
   /**
-   * Set an element of the ordered collection by index
-   * @param index The index
-   * @param value The value
-   * @internal
-   */
-  public set(index: number, value: unknown): void {
-    const {
-      realm,
-      internal,
-      isEmbedded,
-      helpers: { set: customSet, toBinding },
-    } = this;
-    assert.inTransaction(realm);
-    if (customSet) {
-      customSet(internal, index, value);
-    } else {
-      // TODO: Consider a more performant way to determine if the list is embedded
-      internal.setAny(
-        index,
-        toBinding(value, isEmbedded ? { createObj: () => [internal.setEmbedded(index), true] } : undefined),
-      );
-    }
-  }
-
-  /**
    * @returns The number of values in the list.
    */
   get length(): number {
@@ -139,13 +111,10 @@ export class List<T = unknown>
    */
   pop(): T | undefined {
     assert.inTransaction(this.realm);
-    const {
-      internal,
-      helpers: { fromBinding },
-    } = this;
+    const { internal } = this;
     const lastIndex = internal.size - 1;
     if (lastIndex >= 0) {
-      const result = fromBinding(internal.getAny(lastIndex));
+      const result = this[HELPERS].fromBinding(internal.getAny(lastIndex));
       internal.remove(lastIndex);
       return result as T;
     }
@@ -161,24 +130,11 @@ export class List<T = unknown>
    */
   push(...items: T[]): number {
     assert.inTransaction(this.realm);
-    const {
-      isEmbedded,
-      internal,
-      helpers: { insert: customInsert, toBinding },
-    } = this;
+    const { internal } = this;
     const start = internal.size;
     for (const [offset, item] of items.entries()) {
       const index = start + offset;
-      if (customInsert) {
-        customInsert(internal, index, item);
-      } else {
-        if (isEmbedded) {
-          // Simply transforming to binding will insert the embedded object
-          toBinding(item, { createObj: () => [internal.insertEmbedded(index), true] });
-        } else {
-          internal.insertAny(index, toBinding(item));
-        }
-      }
+      this[HELPERS].insert(internal, index, item);
     }
     return internal.size;
   }
@@ -190,12 +146,9 @@ export class List<T = unknown>
    */
   shift(): T | undefined {
     assert.inTransaction(this.realm);
-    const {
-      internal,
-      helpers: { fromBinding },
-    } = this;
+    const { internal } = this;
     if (internal.size > 0) {
-      const result = fromBinding(internal.getAny(0)) as T;
+      const result = this[HELPERS].fromBinding(internal.getAny(0)) as T;
       internal.remove(0);
       return result;
     }
@@ -211,11 +164,8 @@ export class List<T = unknown>
    */
   unshift(...items: T[]): number {
     assert.inTransaction(this.realm);
-    const {
-      isEmbedded,
-      internal,
-      helpers: { toBinding },
-    } = this;
+    const { isEmbedded, internal } = this;
+    const { toBinding } = this[HELPERS];
     for (const [index, item] of items.entries()) {
       if (isEmbedded) {
         // Simply transforming to binding will insert the embedded object
@@ -271,11 +221,8 @@ export class List<T = unknown>
     // Comments in the code below is copied from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/splice
     assert.inTransaction(this.realm);
     assert.number(start, "start");
-    const {
-      isEmbedded,
-      internal,
-      helpers: { fromBinding, toBinding },
-    } = this;
+    const { isEmbedded, internal } = this;
+    const { fromBinding, toBinding } = this[HELPERS];
     // If negative, it will begin that many elements from the end of the array.
     if (start < 0) {
       start = internal.size + start;
@@ -363,4 +310,181 @@ export class List<T = unknown>
 
     this.internal.swap(index1, index2);
   }
+}
+
+/**
+ * Helpers for getting, setting, and inserting list items, as well as
+ * converting the values to and from their binding representations.
+ * @internal
+ */
+export type ListHelpers<T = unknown> = TypeHelpers<T> & {
+  get: (list: binding.List, index: number) => T;
+  snapshotGet: (snapshot: binding.Results, index: number) => T;
+  set: (list: binding.List, index: number, value: T) => void;
+  insert: (list: binding.List, index: number, value: T) => void;
+};
+
+type ListHelpersFactoryOptions<T> = {
+  realm: Realm;
+  typeHelpers: TypeHelpers<T>;
+  isMixedItem?: boolean;
+  isObjectItem?: boolean;
+  isEmbedded?: boolean;
+};
+
+/** @internal */
+export function createListHelpers<T>(options: ListHelpersFactoryOptions<T>): ListHelpers<T> {
+  return options.isMixedItem ? createListHelpersForMixed<T>(options) : createListHelpersForKnownType<T>(options);
+}
+
+function createListHelpersForMixed<T>({
+  realm,
+  typeHelpers,
+}: Pick<ListHelpersFactoryOptions<T>, "realm" | "typeHelpers">): ListHelpers<T> {
+  return {
+    get: (...args) => getMixed(realm, typeHelpers, ...args),
+    snapshotGet: (...args) => snapshotGetMixed(realm, typeHelpers, ...args),
+    set: (...args) => setMixed(realm, typeHelpers.toBinding, ...args),
+    insert: (...args) => insertMixed(realm, typeHelpers.toBinding, ...args),
+    ...typeHelpers,
+  };
+}
+
+function createListHelpersForKnownType<T>({
+  realm,
+  typeHelpers: { fromBinding, toBinding },
+  isObjectItem,
+  isEmbedded,
+}: Omit<ListHelpersFactoryOptions<T>, "isMixed">): ListHelpers<T> {
+  return {
+    get: createGetterByIndex({ fromBinding, isObjectItem }),
+    snapshotGet: createGetterByIndex({ fromBinding, isObjectItem }),
+    set: (...args) => setKnownType(realm, toBinding, !!isEmbedded, ...args),
+    insert: (...args) => insertKnownType(realm, toBinding, !!isEmbedded, ...args),
+    fromBinding,
+    toBinding,
+  };
+}
+
+function getMixed<T>(realm: Realm, typeHelpers: TypeHelpers<T>, list: binding.List, index: number): T {
+  const elementType = binding.Helpers.getMixedElementTypeFromList(list, index);
+  if (elementType === binding.MixedDataType.List) {
+    const listHelpers = createListHelpers<T>({ realm, typeHelpers, isMixedItem: true });
+    return new List<T>(realm, list.getList(index), listHelpers) as T;
+  }
+  if (elementType === binding.MixedDataType.Dictionary) {
+    const dictionaryHelpers = createDictionaryHelpers<T>({ realm, typeHelpers, isMixedItem: true });
+    return new Dictionary<T>(realm, list.getDictionary(index), dictionaryHelpers) as T;
+  }
+  return typeHelpers.fromBinding(list.getAny(index));
+}
+
+// TODO: Remove when introducing sentinel (then reuse `getMixed()`).
+function snapshotGetMixed<T>(realm: Realm, typeHelpers: TypeHelpers<T>, snapshot: binding.Results, index: number): T {
+  const elementType = binding.Helpers.getMixedElementType(snapshot, index);
+  if (elementType === binding.MixedDataType.List) {
+    const listHelpers = createListHelpers<T>({ realm, typeHelpers, isMixedItem: true });
+    return new List<T>(realm, snapshot.getList(index), listHelpers) as T;
+  }
+  if (elementType === binding.MixedDataType.Dictionary) {
+    const dictionaryHelpers = createDictionaryHelpers<T>({ realm, typeHelpers, isMixedItem: true });
+    return new Dictionary<T>(realm, snapshot.getDictionary(index), dictionaryHelpers) as T;
+  }
+  return typeHelpers.fromBinding(snapshot.getAny(index));
+}
+
+function setKnownType<T>(
+  realm: Realm,
+  toBinding: TypeHelpers<T>["toBinding"],
+  isEmbedded: boolean,
+  list: binding.List,
+  index: number,
+  value: T,
+): void {
+  assert.inTransaction(realm);
+  list.setAny(index, toBinding(value, isEmbedded ? { createObj: () => [list.setEmbedded(index), true] } : undefined));
+}
+
+function setMixed<T>(
+  realm: Realm,
+  toBinding: TypeHelpers<T>["toBinding"],
+  list: binding.List,
+  index: number,
+  value: T,
+): void {
+  assert.inTransaction(realm);
+
+  if (isJsOrRealmList(value)) {
+    list.setCollection(index, binding.CollectionType.List);
+    insertIntoListInMixed(value, list.getList(index), toBinding);
+  } else if (isJsOrRealmDictionary(value)) {
+    list.setCollection(index, binding.CollectionType.Dictionary);
+    insertIntoDictionaryInMixed(value, list.getDictionary(index), toBinding);
+  } else {
+    list.setAny(index, toBinding(value));
+  }
+}
+
+function insertKnownType<T>(
+  realm: Realm,
+  toBinding: TypeHelpers<T>["toBinding"],
+  isEmbedded: boolean,
+  list: binding.List,
+  index: number,
+  value: T,
+): void {
+  assert.inTransaction(realm);
+
+  if (isEmbedded) {
+    // Simply transforming to binding will insert the embedded object
+    toBinding(value, { createObj: () => [list.insertEmbedded(index), true] });
+  } else {
+    list.insertAny(index, toBinding(value));
+  }
+}
+
+function insertMixed<T>(
+  realm: Realm,
+  toBinding: TypeHelpers<T>["toBinding"],
+  list: binding.List,
+  index: number,
+  value: T,
+): void {
+  assert.inTransaction(realm);
+
+  if (isJsOrRealmList(value)) {
+    list.insertCollection(index, binding.CollectionType.List);
+    insertIntoListInMixed(value, list.getList(index), toBinding);
+  } else if (isJsOrRealmDictionary(value)) {
+    list.insertCollection(index, binding.CollectionType.Dictionary);
+    insertIntoDictionaryInMixed(value, list.getDictionary(index), toBinding);
+  } else {
+    list.insertAny(index, toBinding(value));
+  }
+}
+
+/** @internal */
+export function insertIntoListInMixed(
+  list: List | unknown[],
+  internal: binding.List,
+  toBinding: TypeHelpers["toBinding"],
+) {
+  let index = 0;
+  for (const item of list) {
+    if (isJsOrRealmList(item)) {
+      internal.insertCollection(index, binding.CollectionType.List);
+      insertIntoListInMixed(item, internal.getList(index), toBinding);
+    } else if (isJsOrRealmDictionary(item)) {
+      internal.insertCollection(index, binding.CollectionType.Dictionary);
+      insertIntoDictionaryInMixed(item, internal.getDictionary(index), toBinding);
+    } else {
+      internal.insertAny(index, toBinding(item));
+    }
+    index++;
+  }
+}
+
+/** @internal */
+export function isJsOrRealmList(value: unknown): value is List | unknown[] {
+  return Array.isArray(value) || value instanceof List;
 }

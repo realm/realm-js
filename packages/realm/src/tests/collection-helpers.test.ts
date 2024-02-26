@@ -18,9 +18,9 @@
 
 import { expect } from "chai";
 
-import { isPOJO } from "../PropertyHelpers";
+import { isPOJO } from "../Dictionary";
 
-describe("PropertyHelpers", () => {
+describe("Collection helpers", () => {
   describe("isPOJO()", () => {
     it("returns true for object literal", () => {
       const object = {};

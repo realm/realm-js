@@ -20,7 +20,7 @@ import {
   ClassHelpers,
   Dictionary,
   List,
-  OrderedCollectionHelpers,
+  ListHelpers,
   Realm,
   RealmSet,
   Results,
@@ -29,7 +29,15 @@ import {
   TypeOptions,
   assert,
   binding,
+  createDictionaryHelpers,
+  createListHelpers,
+  createResultsHelpers,
+  createSetHelpers,
   getTypeHelpers,
+  insertIntoDictionaryInMixed,
+  insertIntoListInMixed,
+  isJsOrRealmDictionary,
+  isJsOrRealmList,
 } from "./internal";
 
 type PropertyContext = binding.Property & {
@@ -38,13 +46,6 @@ type PropertyContext = binding.Property & {
   embedded: boolean;
   default?: unknown;
 };
-
-function getObj(results: binding.Results, index: number) {
-  return results.getObj(index);
-}
-function getAny(results: binding.Results, index: number) {
-  return results.getAny(index);
-}
 
 export type HelperOptions = {
   realm: Realm;
@@ -62,7 +63,7 @@ type PropertyOptions = {
 type PropertyAccessors = {
   get(obj: binding.Obj): unknown;
   set(obj: binding.Obj, value: unknown): unknown;
-  collectionHelpers?: OrderedCollectionHelpers;
+  collectionHelpers?: ListHelpers;
 };
 
 export type PropertyHelpers = TypeHelpers &
@@ -151,11 +152,9 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
     linkOriginPropertyName,
     getClassHelpers,
     optional,
-    typeHelpers: { fromBinding },
   }) {
     const realmInternal = realm.internal;
     const itemType = type & ~binding.PropertyType.Flags;
-
     const itemHelpers = getTypeHelpers(itemType, {
       realm,
       name: `element of ${name}`,
@@ -164,13 +163,6 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
       objectType,
       objectSchemaName: undefined,
     });
-
-    // Properties of items are only available on lists of objects
-    const isObjectItem = itemType === binding.PropertyType.Object || itemType === binding.PropertyType.LinkingObjects;
-    const collectionHelpers: OrderedCollectionHelpers = {
-      ...itemHelpers,
-      get: isObjectItem ? getObj : getAny,
-    };
 
     if (itemType === binding.PropertyType.LinkingObjects) {
       // Locate the table of the targeted object
@@ -184,12 +176,13 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
       const targetProperty = persistedProperties.find((p) => p.name === linkOriginPropertyName);
       assert(targetProperty, `Expected a '${linkOriginPropertyName}' property on ${objectType}`);
       const tableRef = binding.Helpers.getTable(realmInternal, tableKey);
+      const resultsHelpers = createResultsHelpers({ typeHelpers: itemHelpers, isObjectItem: true });
 
       return {
         get(obj: binding.Obj) {
           const tableView = obj.getBacklinkView(tableRef, targetProperty.columnKey);
           const results = binding.Results.fromTableView(realmInternal, tableView);
-          return new Results(realm, results, collectionHelpers);
+          return new Results(realm, results, resultsHelpers);
         },
         set() {
           throw new Error("Not supported");
@@ -197,12 +190,19 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
       };
     } else {
       const { toBinding: itemToBinding } = itemHelpers;
+      const listHelpers = createListHelpers({
+        realm,
+        typeHelpers: itemHelpers,
+        isObjectItem: itemType === binding.PropertyType.Object,
+        isEmbedded: embedded,
+      });
+
       return {
-        collectionHelpers,
+        collectionHelpers: listHelpers,
         get(obj: binding.Obj) {
           const internal = binding.List.make(realm.internal, obj, columnKey);
           assert.instanceOf(internal, binding.List);
-          return fromBinding(internal);
+          return new List(realm, internal, listHelpers);
         },
         set(obj, values) {
           assert.inTransaction(realm);
@@ -257,10 +257,11 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
       optional,
       objectSchemaName: undefined,
     });
+    const dictionaryHelpers = createDictionaryHelpers({ realm, typeHelpers: itemHelpers });
     return {
       get(obj) {
         const internal = binding.Dictionary.make(realm.internal, obj, columnKey);
-        return new Dictionary(realm, internal, itemHelpers);
+        return new Dictionary(realm, internal, dictionaryHelpers);
       },
       set(obj, value) {
         const internal = binding.Dictionary.make(realm.internal, obj, columnKey);
@@ -295,15 +296,15 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
       objectSchemaName: undefined,
     });
     assert.string(objectType);
-    const collectionHelpers: OrderedCollectionHelpers = {
-      get: itemType === binding.PropertyType.Object ? getObj : getAny,
-      fromBinding: itemHelpers.fromBinding,
-      toBinding: itemHelpers.toBinding,
-    };
+    const setHelpers = createSetHelpers({
+      typeHelpers: itemHelpers,
+      isObjectItem: itemType === binding.PropertyType.Object,
+    });
+
     return {
       get(obj) {
         const internal = binding.Set.make(realm.internal, obj, columnKey);
-        return new RealmSet(realm, internal, collectionHelpers);
+        return new RealmSet(realm, internal, setHelpers);
       },
       set(obj, value) {
         const internal = binding.Set.make(realm.internal, obj, columnKey);
@@ -317,11 +318,9 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
     };
   },
   [binding.PropertyType.Mixed](options) {
-    const {
-      realm,
-      columnKey,
-      typeHelpers: { fromBinding, toBinding },
-    } = options;
+    const { realm, columnKey, typeHelpers } = options;
+    const listHelpers = createListHelpers({ realm, typeHelpers, isMixedItem: true });
+    const dictionaryHelpers = createDictionaryHelpers({ realm, typeHelpers, isMixedItem: true });
 
     return {
       get(obj) {
@@ -335,10 +334,12 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
           // Core for each Mixed access, not only for collections.
           const mixedType = binding.Helpers.getMixedType(obj, columnKey);
           if (mixedType === binding.MixedDataType.List) {
-            return fromBinding(binding.List.make(realm.internal, obj, columnKey));
+            const internal = binding.List.make(realm.internal, obj, columnKey);
+            return new List(realm, internal, listHelpers);
           }
           if (mixedType === binding.MixedDataType.Dictionary) {
-            return fromBinding(binding.Dictionary.make(realm.internal, obj, columnKey));
+            const internal = binding.Dictionary.make(realm.internal, obj, columnKey);
+            return new Dictionary(realm, internal, dictionaryHelpers);
           }
           return defaultGet(options)(obj);
         } catch (err) {
@@ -349,15 +350,15 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
       set(obj: binding.Obj, value: unknown) {
         assert.inTransaction(realm);
 
-        if (isList(value)) {
+        if (isJsOrRealmList(value)) {
           obj.setCollection(columnKey, binding.CollectionType.List);
           const internal = binding.List.make(realm.internal, obj, columnKey);
-          insertIntoListInMixed(value, internal, toBinding);
-        } else if (isDictionary(value)) {
+          insertIntoListInMixed(value, internal, typeHelpers.toBinding);
+        } else if (isJsOrRealmDictionary(value)) {
           obj.setCollection(columnKey, binding.CollectionType.Dictionary);
           const internal = binding.Dictionary.make(realm.internal, obj, columnKey);
           internal.removeAll();
-          insertIntoDictionaryInMixed(value, internal, toBinding);
+          insertIntoDictionaryInMixed(value, internal, typeHelpers.toBinding);
         } else {
           defaultSet(options)(obj, value);
         }
@@ -365,53 +366,6 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
     };
   },
 };
-
-export function isList(value: unknown): value is List | unknown[] {
-  return value instanceof List || Array.isArray(value);
-}
-
-export function isDictionary(value: unknown): value is Dictionary | Record<string, unknown> {
-  return value instanceof Dictionary || isPOJO(value);
-}
-
-export function insertIntoListInMixed(
-  list: List | unknown[],
-  internal: binding.List,
-  toBinding: TypeHelpers["toBinding"],
-) {
-  let index = 0;
-  for (const item of list) {
-    if (isList(item)) {
-      internal.insertCollection(index, binding.CollectionType.List);
-      insertIntoListInMixed(item, internal.getList(index), toBinding);
-    } else if (isDictionary(item)) {
-      internal.insertCollection(index, binding.CollectionType.Dictionary);
-      insertIntoDictionaryInMixed(item, internal.getDictionary(index), toBinding);
-    } else {
-      internal.insertAny(index, toBinding(item));
-    }
-    index++;
-  }
-}
-
-export function insertIntoDictionaryInMixed(
-  dictionary: Dictionary | Record<string, unknown>,
-  internal: binding.Dictionary,
-  toBinding: TypeHelpers["toBinding"],
-) {
-  for (const key in dictionary) {
-    const value = dictionary[key];
-    if (isList(value)) {
-      internal.insertCollection(key, binding.CollectionType.List);
-      insertIntoListInMixed(value, internal.getList(key), toBinding);
-    } else if (isDictionary(value)) {
-      internal.insertCollection(key, binding.CollectionType.Dictionary);
-      insertIntoDictionaryInMixed(value, internal.getDictionary(key), toBinding);
-    } else {
-      internal.insertAny(key, toBinding(value));
-    }
-  }
-}
 
 function getPropertyHelpers(type: binding.PropertyType, options: PropertyOptions): PropertyHelpers {
   const { typeHelpers, columnKey, embedded, objectType } = options;
@@ -458,15 +412,4 @@ export function createPropertyHelpers(property: PropertyContext, options: Helper
       typeHelpers: getTypeHelpers(baseType, typeOptions),
     });
   }
-}
-
-/** @internal */
-export function isPOJO(value: unknown): value is Record<string, unknown> {
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    // Lastly check for the absence of a prototype as POJOs
-    // can still be created using `Object.create(null)`.
-    (value.constructor === Object || !Object.getPrototypeOf(value))
-  );
 }
