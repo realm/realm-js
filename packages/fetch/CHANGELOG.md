@@ -1,10 +1,12 @@
-x.x.x Release notes (yyyy-MM-dd)
-=============================================================
+## vNext (TBD)
 
-### Enhancement
+### Deprecations
+* None
+
+### Enhancements
 * Initial public release.
 
-### Fixes
+### Fixed
 * None
 
 ### Internal
