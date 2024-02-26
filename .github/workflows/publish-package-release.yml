@@ -23,6 +23,7 @@ on:
         - '@realm/react'
         - '@realm/tools'
         - '@realm/web'
+        - '@realm/fetch'
 
 jobs:
   publish-package-release:
@@ -69,6 +70,13 @@ jobs:
               "VERSION_PREFIX": "realm-web-",
               "RELEASE_TITLE": "Realm Web",
               "SDK_NAME": "Web"
+            },
+            "@realm/fetch": {
+              "PACKAGE_PATH": "packages/fetch",
+              "PACKAGE_NAME": "@realm/fetch",
+              "VERSION_PREFIX": "realm-fetch-",
+              "RELEASE_TITLE": "Realm Fetch",
+              "SDK_NAME": "Fetch"
             }
           }
 
