@@ -694,6 +694,26 @@ describe("Mixed", () => {
             });
             expectListOfAllTypes(list);
           });
+
+          it("returns different reference for each access", function (this: RealmContext) {
+            const unmanagedList: unknown[] = [];
+            const created = this.realm.write(() => {
+              return this.realm.create<IMixedSchema>(MixedSchema.name, { mixed: unmanagedList });
+            });
+            expectRealmList(created.mixed);
+            // @ts-expect-error Testing different types.
+            expect(created.mixed === unmanagedList).to.be.false;
+            expect(created.mixed === created.mixed).to.be.false;
+            expect(Object.is(created.mixed, created.mixed)).to.be.false;
+
+            const { mixed: list } = this.realm.write(() => {
+              return this.realm.create<IMixedSchema>(MixedSchema.name, { mixed: [unmanagedList] });
+            });
+            expectRealmList(list);
+            expect(list[0] === unmanagedList).to.be.false;
+            expect(list[0] === list[0]).to.be.false;
+            expect(Object.is(list[0], list[0])).to.be.false;
+          });
         });
 
         describe("Dictionary", () => {
@@ -884,6 +904,25 @@ describe("Mixed", () => {
               dictionary.set(unmanagedDictionary);
             });
             expectDictionaryOfAllTypes(dictionary);
+          });
+
+          it("returns different reference for each access", function (this: RealmContext) {
+            const unmanagedDictionary: Record<string, unknown> = {};
+            const created = this.realm.write(() => {
+              return this.realm.create<IMixedSchema>(MixedSchema.name, { mixed: unmanagedDictionary });
+            });
+            expectRealmDictionary(created.mixed);
+            expect(created.mixed === unmanagedDictionary).to.be.false;
+            expect(created.mixed === created.mixed).to.be.false;
+            expect(Object.is(created.mixed, created.mixed)).to.be.false;
+
+            const { mixed: dictionary } = this.realm.write(() => {
+              return this.realm.create<IMixedSchema>(MixedSchema.name, { mixed: { key: unmanagedDictionary } });
+            });
+            expectRealmDictionary(dictionary);
+            expect(dictionary.key === unmanagedDictionary).to.be.false;
+            expect(dictionary.key === dictionary.key).to.be.false;
+            expect(Object.is(dictionary.key, dictionary.key)).to.be.false;
           });
         });
       });
