@@ -1039,281 +1039,287 @@ describe("Mixed", () => {
       });
 
       describe("Remove", () => {
-        it("removes top-level list item via `remove()`", function (this: RealmContext) {
-          const { mixed: list } = this.realm.write(() => {
-            const realmObject = this.realm.create(MixedSchema.name, { mixed: "original" });
-            return this.realm.create<IMixedSchema>(MixedSchema.name, {
-              mixed: ["original", [], {}, realmObject],
+        describe("List", () => {
+          it("removes top-level item via `remove()`", function (this: RealmContext) {
+            const { mixed: list } = this.realm.write(() => {
+              const realmObject = this.realm.create(MixedSchema.name, { mixed: "original" });
+              return this.realm.create<IMixedSchema>(MixedSchema.name, {
+                mixed: ["original", [], {}, realmObject],
+              });
             });
-          });
-          expectRealmList(list);
-          expect(list.length).equals(4);
+            expectRealmList(list);
+            expect(list.length).equals(4);
 
-          // Remove each item one-by-one starting from the last.
+            // Remove each item one-by-one starting from the last.
 
-          this.realm.write(() => {
-            list.remove(3);
-          });
-          expect(list.length).equals(3);
-          expect(list[0]).equals("original");
-          expectRealmList(list[1]);
-          expectRealmDictionary(list[2]);
+            this.realm.write(() => {
+              list.remove(3);
+            });
+            expect(list.length).equals(3);
+            expect(list[0]).equals("original");
+            expectRealmList(list[1]);
+            expectRealmDictionary(list[2]);
 
-          this.realm.write(() => {
-            list.remove(2);
-          });
-          expect(list.length).equals(2);
-          expect(list[0]).equals("original");
-          expectRealmList(list[1]);
+            this.realm.write(() => {
+              list.remove(2);
+            });
+            expect(list.length).equals(2);
+            expect(list[0]).equals("original");
+            expectRealmList(list[1]);
 
-          this.realm.write(() => {
-            list.remove(1);
-          });
-          expect(list.length).equals(1);
-          expect(list[0]).equals("original");
+            this.realm.write(() => {
+              list.remove(1);
+            });
+            expect(list.length).equals(1);
+            expect(list[0]).equals("original");
 
-          this.realm.write(() => {
-            list.remove(0);
+            this.realm.write(() => {
+              list.remove(0);
+            });
+            expect(list.length).equals(0);
           });
-          expect(list.length).equals(0);
+
+          it("removes nested item via `remove()`", function (this: RealmContext) {
+            const { mixed: list } = this.realm.write(() => {
+              const realmObject = this.realm.create(MixedSchema.name, { mixed: "original" });
+              return this.realm.create<IMixedSchema>(MixedSchema.name, {
+                mixed: [["original", [], {}, realmObject]],
+              });
+            });
+            expectRealmList(list);
+            const [nestedList] = list;
+            expectRealmList(nestedList);
+            expect(nestedList.length).equals(4);
+
+            // Remove each item one-by-one starting from the last.
+
+            this.realm.write(() => {
+              nestedList.remove(3);
+            });
+            expect(nestedList.length).equals(3);
+            expect(nestedList[0]).equals("original");
+            expectRealmList(nestedList[1]);
+            expectRealmDictionary(nestedList[2]);
+
+            this.realm.write(() => {
+              nestedList.remove(2);
+            });
+            expect(nestedList.length).equals(2);
+            expect(nestedList[0]).equals("original");
+            expectRealmList(nestedList[1]);
+
+            this.realm.write(() => {
+              nestedList.remove(1);
+            });
+            expect(nestedList.length).equals(1);
+            expect(nestedList[0]).equals("original");
+
+            this.realm.write(() => {
+              nestedList.remove(0);
+            });
+            expect(nestedList.length).equals(0);
+          });
         });
 
-        it("removes nested list item via `remove()`", function (this: RealmContext) {
-          const { mixed: list } = this.realm.write(() => {
-            const realmObject = this.realm.create(MixedSchema.name, { mixed: "original" });
-            return this.realm.create<IMixedSchema>(MixedSchema.name, {
-              mixed: [["original", [], {}, realmObject]],
+        describe("Dictionary", () => {
+          it("removes top-level entry via `remove()`", function (this: RealmContext) {
+            const { mixed: dictionary } = this.realm.write(() => {
+              const realmObject = this.realm.create(MixedSchema.name, { mixed: "original" });
+              return this.realm.create<IMixedSchema>(MixedSchema.name, {
+                mixed: { string: "original", list: [], dictionary: {}, realmObject },
+              });
             });
-          });
-          expectRealmList(list);
-          const [nestedList] = list;
-          expectRealmList(nestedList);
-          expect(nestedList.length).equals(4);
+            expectRealmDictionary(dictionary);
+            expectKeys(dictionary, ["string", "list", "dictionary", "realmObject"]);
 
-          // Remove each item one-by-one starting from the last.
+            // Remove each entry one-by-one.
 
-          this.realm.write(() => {
-            nestedList.remove(3);
-          });
-          expect(nestedList.length).equals(3);
-          expect(nestedList[0]).equals("original");
-          expectRealmList(nestedList[1]);
-          expectRealmDictionary(nestedList[2]);
-
-          this.realm.write(() => {
-            nestedList.remove(2);
-          });
-          expect(nestedList.length).equals(2);
-          expect(nestedList[0]).equals("original");
-          expectRealmList(nestedList[1]);
-
-          this.realm.write(() => {
-            nestedList.remove(1);
-          });
-          expect(nestedList.length).equals(1);
-          expect(nestedList[0]).equals("original");
-
-          this.realm.write(() => {
-            nestedList.remove(0);
-          });
-          expect(nestedList.length).equals(0);
-        });
-
-        it("removes top-level dictionary entries via `remove()`", function (this: RealmContext) {
-          const { mixed: dictionary } = this.realm.write(() => {
-            const realmObject = this.realm.create(MixedSchema.name, { mixed: "original" });
-            return this.realm.create<IMixedSchema>(MixedSchema.name, {
-              mixed: { string: "original", list: [], dictionary: {}, realmObject },
+            this.realm.write(() => {
+              dictionary.remove("realmObject");
             });
-          });
-          expectRealmDictionary(dictionary);
-          expectKeys(dictionary, ["string", "list", "dictionary", "realmObject"]);
+            expectKeys(dictionary, ["string", "list", "dictionary"]);
+            expect(dictionary.string).equals("original");
+            expectRealmList(dictionary.list);
+            expectRealmDictionary(dictionary.dictionary);
 
-          // Remove each entry one-by-one.
-
-          this.realm.write(() => {
-            dictionary.remove("realmObject");
-          });
-          expectKeys(dictionary, ["string", "list", "dictionary"]);
-          expect(dictionary.string).equals("original");
-          expectRealmList(dictionary.list);
-          expectRealmDictionary(dictionary.dictionary);
-
-          this.realm.write(() => {
-            dictionary.remove("dictionary");
-          });
-          expectKeys(dictionary, ["string", "list"]);
-          expect(dictionary.string).equals("original");
-          expectRealmList(dictionary.list);
-
-          this.realm.write(() => {
-            dictionary.remove("list");
-          });
-          expectKeys(dictionary, ["string"]);
-          expect(dictionary.string).equals("original");
-
-          this.realm.write(() => {
-            dictionary.remove("string");
-          });
-          expect(Object.keys(dictionary).length).equals(0);
-        });
-
-        it("removes nested dictionary entries via `remove()`", function (this: RealmContext) {
-          const { mixed: dictionary } = this.realm.write(() => {
-            const realmObject = this.realm.create(MixedSchema.name, { mixed: "original" });
-            return this.realm.create<IMixedSchema>(MixedSchema.name, {
-              mixed: { depth1: { string: "original", list: [], dictionary: {}, realmObject } },
+            this.realm.write(() => {
+              dictionary.remove("dictionary");
             });
-          });
-          expectRealmDictionary(dictionary);
-          const { depth1: nestedDictionary } = dictionary;
-          expectRealmDictionary(nestedDictionary);
-          expectKeys(nestedDictionary, ["string", "list", "dictionary", "realmObject"]);
+            expectKeys(dictionary, ["string", "list"]);
+            expect(dictionary.string).equals("original");
+            expectRealmList(dictionary.list);
 
-          // Remove each entry one-by-one.
+            this.realm.write(() => {
+              dictionary.remove("list");
+            });
+            expectKeys(dictionary, ["string"]);
+            expect(dictionary.string).equals("original");
 
-          this.realm.write(() => {
-            nestedDictionary.remove("realmObject");
+            this.realm.write(() => {
+              dictionary.remove("string");
+            });
+            expect(Object.keys(dictionary).length).equals(0);
           });
-          expectKeys(nestedDictionary, ["string", "list", "dictionary"]);
-          expect(nestedDictionary.string).equals("original");
-          expectRealmList(nestedDictionary.list);
-          expectRealmDictionary(nestedDictionary.dictionary);
 
-          this.realm.write(() => {
-            nestedDictionary.remove("dictionary");
-          });
-          expectKeys(nestedDictionary, ["string", "list"]);
-          expect(nestedDictionary.string).equals("original");
-          expectRealmList(nestedDictionary.list);
+          it("removes nested entry via `remove()`", function (this: RealmContext) {
+            const { mixed: dictionary } = this.realm.write(() => {
+              const realmObject = this.realm.create(MixedSchema.name, { mixed: "original" });
+              return this.realm.create<IMixedSchema>(MixedSchema.name, {
+                mixed: { depth1: { string: "original", list: [], dictionary: {}, realmObject } },
+              });
+            });
+            expectRealmDictionary(dictionary);
+            const { depth1: nestedDictionary } = dictionary;
+            expectRealmDictionary(nestedDictionary);
+            expectKeys(nestedDictionary, ["string", "list", "dictionary", "realmObject"]);
 
-          this.realm.write(() => {
-            nestedDictionary.remove("list");
-          });
-          expectKeys(nestedDictionary, ["string"]);
-          expect(nestedDictionary.string).equals("original");
+            // Remove each entry one-by-one.
 
-          this.realm.write(() => {
-            nestedDictionary.remove("string");
+            this.realm.write(() => {
+              nestedDictionary.remove("realmObject");
+            });
+            expectKeys(nestedDictionary, ["string", "list", "dictionary"]);
+            expect(nestedDictionary.string).equals("original");
+            expectRealmList(nestedDictionary.list);
+            expectRealmDictionary(nestedDictionary.dictionary);
+
+            this.realm.write(() => {
+              nestedDictionary.remove("dictionary");
+            });
+            expectKeys(nestedDictionary, ["string", "list"]);
+            expect(nestedDictionary.string).equals("original");
+            expectRealmList(nestedDictionary.list);
+
+            this.realm.write(() => {
+              nestedDictionary.remove("list");
+            });
+            expectKeys(nestedDictionary, ["string"]);
+            expect(nestedDictionary.string).equals("original");
+
+            this.realm.write(() => {
+              nestedDictionary.remove("string");
+            });
+            expect(Object.keys(nestedDictionary).length).equals(0);
           });
-          expect(Object.keys(nestedDictionary).length).equals(0);
         });
       });
 
       describe("JS collection methods", () => {
-        const unmanagedList: readonly unknown[] = [bool, double, string];
-        const unmanagedDictionary: Readonly<Record<string, unknown>> = { bool, double, string };
+        describe("Iterators", () => {
+          const unmanagedList: readonly unknown[] = [bool, double, string];
+          const unmanagedDictionary: Readonly<Record<string, unknown>> = { bool, double, string };
 
-        /**
-         * Expects {@link collection} to contain the managed versions of:
-         * - {@link unmanagedList} - At index 0 (if list), or lowest key (if dictionary).
-         * - {@link unmanagedDictionary} - At index 1 (if list), or highest key (if dictionary).
-         */
-        function expectIteratorValues(collection: Realm.List | Realm.Dictionary) {
-          const topIterator = collection.values();
+          /**
+           * Expects {@link collection} to contain the managed versions of:
+           * - {@link unmanagedList} - At index 0 (if list), or lowest key (if dictionary).
+           * - {@link unmanagedDictionary} - At index 1 (if list), or highest key (if dictionary).
+           */
+          function expectIteratorValues(collection: Realm.List | Realm.Dictionary) {
+            const topIterator = collection.values();
 
-          // Expect a list as first item.
-          const nestedList = topIterator.next().value;
-          expectRealmList(nestedList);
+            // Expect a list as first item.
+            const nestedList = topIterator.next().value;
+            expectRealmList(nestedList);
 
-          // Expect a dictionary as second item.
-          const nestedDictionary = topIterator.next().value;
-          expectRealmDictionary(nestedDictionary);
-          expect(topIterator.next().done).to.be.true;
+            // Expect a dictionary as second item.
+            const nestedDictionary = topIterator.next().value;
+            expectRealmDictionary(nestedDictionary);
+            expect(topIterator.next().done).to.be.true;
 
-          // Expect that the nested list iterator yields correct values.
-          let index = 0;
-          const nestedListIterator = nestedList.values();
-          for (const value of nestedListIterator) {
-            expect(value).equals(unmanagedList[index++]);
+            // Expect that the nested list iterator yields correct values.
+            let index = 0;
+            const nestedListIterator = nestedList.values();
+            for (const value of nestedListIterator) {
+              expect(value).equals(unmanagedList[index++]);
+            }
+            expect(nestedListIterator.next().done).to.be.true;
+
+            // Expect that the nested dictionary iterator yields correct values.
+            const nestedDictionaryIterator = nestedDictionary.values();
+            expect(nestedDictionaryIterator.next().value).equals(unmanagedDictionary.bool);
+            expect(nestedDictionaryIterator.next().value).equals(unmanagedDictionary.double);
+            expect(nestedDictionaryIterator.next().value).equals(unmanagedDictionary.string);
+            expect(nestedDictionaryIterator.next().done).to.be.true;
           }
-          expect(nestedListIterator.next().done).to.be.true;
 
-          // Expect that the nested dictionary iterator yields correct values.
-          const nestedDictionaryIterator = nestedDictionary.values();
-          expect(nestedDictionaryIterator.next().value).equals(unmanagedDictionary.bool);
-          expect(nestedDictionaryIterator.next().value).equals(unmanagedDictionary.double);
-          expect(nestedDictionaryIterator.next().value).equals(unmanagedDictionary.string);
-          expect(nestedDictionaryIterator.next().done).to.be.true;
-        }
-
-        it("values() - list with nested collections", function (this: RealmContext) {
-          const { mixed: list } = this.realm.write(() => {
-            return this.realm.create<IMixedSchema>(MixedSchema.name, {
-              mixed: [unmanagedList, unmanagedDictionary],
+          it("values() - list", function (this: RealmContext) {
+            const { mixed: list } = this.realm.write(() => {
+              return this.realm.create<IMixedSchema>(MixedSchema.name, {
+                mixed: [unmanagedList, unmanagedDictionary],
+              });
             });
+            expectRealmList(list);
+            expectIteratorValues(list);
           });
-          expectRealmList(list);
-          expectIteratorValues(list);
-        });
 
-        it("values() - dictionary with nested collections", function (this: RealmContext) {
-          const { mixed: dictionary } = this.realm.write(() => {
-            return this.realm.create<IMixedSchema>(MixedSchema.name, {
-              // Use `a_` and `b_` prefixes to get the same order once retrieved internally.
-              mixed: { a_list: unmanagedList, b_dictionary: unmanagedDictionary },
+          it("values() - dictionary", function (this: RealmContext) {
+            const { mixed: dictionary } = this.realm.write(() => {
+              return this.realm.create<IMixedSchema>(MixedSchema.name, {
+                // Use `a_` and `b_` prefixes to get the same order once retrieved internally.
+                mixed: { a_list: unmanagedList, b_dictionary: unmanagedDictionary },
+              });
             });
+            expectRealmDictionary(dictionary);
+            expectIteratorValues(dictionary);
           });
-          expectRealmDictionary(dictionary);
-          expectIteratorValues(dictionary);
-        });
 
-        /**
-         * Expects {@link collection} to contain the managed versions of:
-         * - {@link unmanagedList} - At index 0 (if list), or key `a_list` (if dictionary).
-         * - {@link unmanagedDictionary} - At index 1 (if list), or key `b_dictionary` (if dictionary).
-         */
-        function expectIteratorEntries(collection: Realm.List | Realm.Dictionary) {
-          const usesIndex = collection instanceof Realm.List;
-          const topIterator = collection.entries();
+          /**
+           * Expects {@link collection} to contain the managed versions of:
+           * - {@link unmanagedList} - At index 0 (if list), or key `a_list` (if dictionary).
+           * - {@link unmanagedDictionary} - At index 1 (if list), or key `b_dictionary` (if dictionary).
+           */
+          function expectIteratorEntries(collection: Realm.List | Realm.Dictionary) {
+            const usesIndex = collection instanceof Realm.List;
+            const topIterator = collection.entries();
 
-          // Expect a list as first item.
-          const [nestedListIndexOrKey, nestedList] = topIterator.next().value;
-          expect(nestedListIndexOrKey).equals(usesIndex ? 0 : "a_list");
-          expectRealmList(nestedList);
+            // Expect a list as first item.
+            const [listIndexOrKey, nestedList] = topIterator.next().value;
+            expect(listIndexOrKey).equals(usesIndex ? 0 : "a_list");
+            expectRealmList(nestedList);
 
-          // Expect a dictionary as second item.
-          const [nestedDictionaryIndexOrKey, nestedDictionary] = topIterator.next().value;
-          expect(nestedDictionaryIndexOrKey).equals(usesIndex ? 1 : "b_dictionary");
-          expectRealmDictionary(nestedDictionary);
-          expect(topIterator.next().done).to.be.true;
+            // Expect a dictionary as second item.
+            const [dictionaryIndexOrKey, nestedDictionary] = topIterator.next().value;
+            expect(dictionaryIndexOrKey).equals(usesIndex ? 1 : "b_dictionary");
+            expectRealmDictionary(nestedDictionary);
+            expect(topIterator.next().done).to.be.true;
 
-          // Expect that the nested list iterator yields correct entries.
-          let currentIndex = 0;
-          const nestedListIterator = nestedList.entries();
-          for (const [index, item] of nestedListIterator) {
-            expect(index).equals(currentIndex);
-            expect(item).equals(unmanagedList[currentIndex++]);
+            // Expect that the nested list iterator yields correct entries.
+            let currentIndex = 0;
+            const nestedListIterator = nestedList.entries();
+            for (const [index, item] of nestedListIterator) {
+              expect(index).equals(currentIndex);
+              expect(item).equals(unmanagedList[currentIndex++]);
+            }
+            expect(nestedListIterator.next().done).to.be.true;
+
+            // Expect that the nested dictionary iterator yields correct entries.
+            const nestedDictionaryIterator = nestedDictionary.entries();
+            expect(nestedDictionaryIterator.next().value).deep.equals(["bool", unmanagedDictionary.bool]);
+            expect(nestedDictionaryIterator.next().value).deep.equals(["double", unmanagedDictionary.double]);
+            expect(nestedDictionaryIterator.next().value).deep.equals(["string", unmanagedDictionary.string]);
+            expect(nestedDictionaryIterator.next().done).to.be.true;
           }
-          expect(nestedListIterator.next().done).to.be.true;
 
-          // Expect that the nested dictionary iterator yields correct entries.
-          const nestedDictionaryIterator = nestedDictionary.entries();
-          expect(nestedDictionaryIterator.next().value).deep.equals(["bool", unmanagedDictionary.bool]);
-          expect(nestedDictionaryIterator.next().value).deep.equals(["double", unmanagedDictionary.double]);
-          expect(nestedDictionaryIterator.next().value).deep.equals(["string", unmanagedDictionary.string]);
-          expect(nestedDictionaryIterator.next().done).to.be.true;
-        }
-
-        it("entries() - list with nested collections", function (this: RealmContext) {
-          const { mixed: list } = this.realm.write(() => {
-            return this.realm.create<IMixedSchema>(MixedSchema.name, {
-              mixed: [unmanagedList, unmanagedDictionary],
+          it("entries() - list", function (this: RealmContext) {
+            const { mixed: list } = this.realm.write(() => {
+              return this.realm.create<IMixedSchema>(MixedSchema.name, {
+                mixed: [unmanagedList, unmanagedDictionary],
+              });
             });
+            expectRealmList(list);
+            expectIteratorEntries(list);
           });
-          expectRealmList(list);
-          expectIteratorEntries(list);
-        });
 
-        it("entries() - dictionary with nested collections", function (this: RealmContext) {
-          const { mixed: dictionary } = this.realm.write(() => {
-            return this.realm.create<IMixedSchema>(MixedSchema.name, {
-              // Use `a_` and `b_` prefixes to get the same order once retrieved internally.
-              mixed: { a_list: unmanagedList, b_dictionary: unmanagedDictionary },
+          it("entries() - dictionary", function (this: RealmContext) {
+            const { mixed: dictionary } = this.realm.write(() => {
+              return this.realm.create<IMixedSchema>(MixedSchema.name, {
+                // Use `a_` and `b_` prefixes to get the same order once retrieved internally.
+                mixed: { a_list: unmanagedList, b_dictionary: unmanagedDictionary },
+              });
             });
+            expectRealmDictionary(dictionary);
+            expectIteratorEntries(dictionary);
           });
-          expectRealmDictionary(dictionary);
-          expectIteratorEntries(dictionary);
         });
       });
     });
