@@ -318,8 +318,7 @@ export class List<T = unknown>
  * @internal
  */
 export type ListHelpers<T = unknown> = TypeHelpers<T> & {
-  get: (list: binding.List, index: number) => T;
-  snapshotGet: (snapshot: binding.Results, index: number) => T;
+  get: (list: binding.List | binding.Results, index: number) => T;
   set: (list: binding.List, index: number, value: T) => void;
   insert: (list: binding.List, index: number, value: T) => void;
 };
@@ -343,7 +342,6 @@ function createListHelpersForMixed<T>({
 }: Pick<ListHelpersFactoryOptions<T>, "realm" | "typeHelpers">): ListHelpers<T> {
   return {
     get: (...args) => getMixed(realm, typeHelpers, ...args),
-    snapshotGet: (...args) => getMixed(realm, typeHelpers, ...args),
     set: (...args) => setMixed(realm, typeHelpers.toBinding, ...args),
     insert: (...args) => insertMixed(realm, typeHelpers.toBinding, ...args),
     ...typeHelpers,
@@ -358,7 +356,6 @@ function createListHelpersForKnownType<T>({
 }: Omit<ListHelpersFactoryOptions<T>, "isMixed">): ListHelpers<T> {
   return {
     get: createDefaultGetter({ fromBinding, isObjectItem }),
-    snapshotGet: createDefaultGetter({ fromBinding, isObjectItem }),
     set: (...args) => setKnownType(realm, toBinding, !!isEmbedded, ...args),
     insert: (...args) => insertKnownType(realm, toBinding, !!isEmbedded, ...args),
     fromBinding,

@@ -106,11 +106,11 @@ export class Results<T = unknown> extends OrderedCollection<T, [number, T], Resu
     const { classHelpers, type, results } = this;
     assert(type === "object" && classHelpers, "Expected a result of Objects");
     const { set } = classHelpers.properties.get(propertyName);
-    const { snapshotGet } = this[HELPERS];
+    const { get } = this[HELPERS];
     const snapshot = results.snapshot();
     const size = snapshot.size();
     for (let i = 0; i < size; i++) {
-      const obj = snapshotGet(snapshot, i);
+      const obj = get(snapshot, i);
       assert.instanceOf(obj, binding.Obj);
       set(obj, value);
     }
@@ -186,7 +186,6 @@ export class Results<T = unknown> extends OrderedCollection<T, [number, T], Resu
 export type ResultsHelpers<T = unknown> = TypeHelpers<T> & {
   get: (results: binding.Results, index: number) => T;
   set: (results: binding.Results, index: number, value: T) => never;
-  snapshotGet: (snapshot: binding.Results, index: number) => T;
 };
 
 type ResultsHelpersFactoryOptions<T> = {
@@ -201,7 +200,6 @@ export function createResultsHelpers<T>({
 }: ResultsHelpersFactoryOptions<T>): ResultsHelpers<T> {
   return {
     get: createDefaultGetter({ fromBinding: typeHelpers.fromBinding, isObjectItem }),
-    snapshotGet: createDefaultGetter({ fromBinding: typeHelpers.fromBinding, isObjectItem }),
     set: () => {
       throw new Error("Assigning into a Results is not supported.");
     },

@@ -140,8 +140,7 @@ export class RealmSet<T = unknown> extends OrderedCollection<T, [T, T], SetHelpe
  * @internal
  */
 export type SetHelpers<T = unknown> = TypeHelpers<T> & {
-  get: (set: binding.Set, index: number) => T;
-  snapshotGet: (snapshot: binding.Results, index: number) => T;
+  get: (set: binding.Set | binding.Results, index: number) => T;
   set: (set: binding.Set, index: number, value: T) => void;
 };
 
@@ -155,7 +154,6 @@ export function createSetHelpers<T>({ typeHelpers, isObjectItem }: SetHelpersFac
   const { fromBinding, toBinding } = typeHelpers;
   return {
     get: createDefaultGetter({ fromBinding, isObjectItem }),
-    snapshotGet: createDefaultGetter({ fromBinding, isObjectItem }),
     // Directly setting by "index" to a Set is a no-op.
     set: () => {},
     fromBinding,

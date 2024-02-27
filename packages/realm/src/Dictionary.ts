@@ -348,8 +348,8 @@ function createDictionaryHelpersForMixed<T>({
 }: Pick<DictionaryHelpersFactoryOptions<T>, "realm" | "typeHelpers">): DictionaryHelpers<T> {
   return {
     get: (...args) => getMixed(realm, typeHelpers, ...args),
-    snapshotGet: (...args) => snapshotGetMixed(realm, typeHelpers, ...args),
     set: (...args) => setMixed(realm, typeHelpers.toBinding, ...args),
+    snapshotGet: (...args) => snapshotGetMixed(realm, typeHelpers, ...args),
     ...typeHelpers,
   };
 }
@@ -360,8 +360,8 @@ function createDictionaryHelpersForKnownType<T>({
 }: Pick<DictionaryHelpersFactoryOptions<T>, "realm" | "typeHelpers">): DictionaryHelpers<T> {
   return {
     get: (...args) => getKnownType(fromBinding, ...args),
-    snapshotGet: (...args) => snapshotGetKnownType(fromBinding, ...args),
     set: (...args) => setKnownType(realm, toBinding, ...args),
+    snapshotGet: (...args) => snapshotGetKnownType(fromBinding, ...args),
     fromBinding,
     toBinding,
   };

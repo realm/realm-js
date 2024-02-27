@@ -253,9 +253,9 @@ export abstract class OrderedCollection<
    */
   *values(): Generator<T> {
     const snapshot = this.results.snapshot();
-    const { snapshotGet } = this[HELPERS];
+    const { get } = this[HELPERS];
     for (const i of this.keys()) {
-      yield snapshotGet(snapshot, i);
+      yield get(snapshot, i);
     }
   }
 
@@ -265,10 +265,10 @@ export abstract class OrderedCollection<
    */
   *entries(): Generator<EntryType> {
     const snapshot = this.results.snapshot();
-    const { snapshotGet } = this[HELPERS];
+    const { get } = this[HELPERS];
     const size = snapshot.size();
     for (let i = 0; i < size; i++) {
-      yield [i, snapshotGet(snapshot, i)] as EntryType;
+      yield [i, get(snapshot, i)] as EntryType;
     }
   }
 
