@@ -751,6 +751,21 @@ describe("normalizePropertySchema", () => {
       },
       { isPrimaryKey: true },
     );
+
+    itNormalizes(
+      {
+        type: "list",
+        objectType: "string",
+        indexed: true,
+      },
+      {
+        type: "list",
+        objectType: "string",
+        indexed: true,
+        optional: false,
+      },
+      { isPrimaryKey: false },
+    );
   });
 
   // ------------------------------------------------------------------------

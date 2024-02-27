@@ -245,10 +245,14 @@ classes:
       - feed_buffer
       - make_ssl_verify_callback
 
+  LogCategoryRef:
+    methods:
+      - set_default_level_threshold
+      - get_category
+
   Logger:
     methods:
       - set_default_logger
-      - set_default_level_threshold
 
   ConstTableRef:
     methods:
