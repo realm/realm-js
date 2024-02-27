@@ -1205,6 +1205,40 @@ describe("Mixed", () => {
       });
 
       describe("JS collection methods", () => {
+        describe("List", () => {
+          it("pop()", function (this: RealmContext) {
+            const { mixed: list } = this.realm.write(() => {
+              return this.realm.create<IMixedSchema>(MixedSchema.name, {
+                mixed: [[1, "string"], { key: "value" }],
+              });
+            });
+            expectRealmList(list);
+            expect(list.length).equals(2);
+
+            const nestedList = list[0];
+            expectRealmList(nestedList);
+            expect(nestedList.length).equals(2);
+
+            // Remove last item of nested list.
+            let removed = this.realm.write(() => nestedList.pop());
+            expect(removed).equals("string");
+            removed = this.realm.write(() => nestedList.pop());
+            expect(removed).equals(1);
+            expect(nestedList.length).equals(0);
+            removed = this.realm.write(() => nestedList.pop());
+            expect(removed).to.be.undefined;
+
+            // Remove last item of top-level list.
+            removed = this.realm.write(() => list.pop());
+            expectRealmDictionary(removed);
+            removed = this.realm.write(() => list.pop());
+            expectRealmList(removed);
+            expect(list.length).equals(0);
+            removed = this.realm.write(() => list.pop());
+            expect(removed).to.be.undefined;
+          });
+        });
+
         describe("Iterators", () => {
           const unmanagedList: readonly unknown[] = [bool, double, string];
           const unmanagedDictionary: Readonly<Record<string, unknown>> = { bool, double, string };
