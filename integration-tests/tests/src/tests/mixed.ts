@@ -1269,6 +1269,32 @@ describe("Mixed", () => {
             removed = this.realm.write(() => list.shift());
             expect(removed).to.be.undefined;
           });
+
+          it("unshift()", function (this: RealmContext) {
+            const { mixed: list } = this.realm.write(() => {
+              return this.realm.create<IMixedSchema>(MixedSchema.name, { mixed: [] });
+            });
+            expectRealmList(list);
+            expect(list.length).equals(0);
+
+            // Insert item into top-level list.
+            let newLength = this.realm.write(() => list.unshift({}));
+            expect(newLength).equals(1);
+            expectRealmDictionary(list[0]);
+            newLength = this.realm.write(() => list.unshift([]));
+            expect(newLength).equals(2);
+            const nestedList = list[0];
+            expectRealmList(nestedList);
+            expect(nestedList.length).equals(0);
+
+            // Insert item into nested list.
+            newLength = this.realm.write(() => nestedList.unshift("string"));
+            expect(newLength).equals(1);
+            expect(nestedList[0]).equals("string");
+            newLength = this.realm.write(() => nestedList.unshift(1));
+            expect(newLength).equals(2);
+            expect(nestedList[0]).equals(1);
+          });
         });
 
         describe("Iterators", () => {
