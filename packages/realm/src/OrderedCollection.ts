@@ -17,19 +17,19 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import {
+  COLLECTION_ACCESSOR as ACCESSOR,
   ClassHelpers,
   Collection,
   DefaultObject,
-  COLLECTION_HELPERS as HELPERS,
   IllegalConstructorError,
   JSONCacheMap,
-  ListHelpers,
+  ListAccessor,
   INTERNAL as OBJ_INTERNAL,
   Realm,
   RealmObject,
   Results,
-  ResultsHelpers,
-  SetHelpers,
+  ResultsAccessor,
+  SetAccessor,
   TypeAssertionError,
   TypeHelpers,
   assert,
@@ -45,11 +45,11 @@ type OrderedCollectionInternal = binding.List | binding.Results | binding.Set;
 type PropertyType = string;
 
 /**
- * Helpers for getting and setting items in the collection, as well
- * as converting the values to and from their binding representations.
+ * Accessor for getting and setting items in the binding collection, as
+ * well as converting the values to and from their binding representations.
  * @internal
  */
-export type OrderedCollectionHelpers<T = unknown> = ListHelpers<T> | ResultsHelpers<T> | SetHelpers<T>;
+export type OrderedCollectionAccessor<T = unknown> = ListAccessor<T> | ResultsAccessor<T> | SetAccessor<T>;
 
 /**
  * A sort descriptor is either a string containing one or more property names
@@ -129,9 +129,9 @@ const PROXY_HANDLER: ProxyHandler<OrderedCollection> = {
 export abstract class OrderedCollection<
     T = unknown,
     EntryType extends [unknown, unknown] = [number, T],
-    Helpers extends OrderedCollectionHelpers<T> = OrderedCollectionHelpers<T>,
+    Accessor extends OrderedCollectionAccessor<T> = OrderedCollectionAccessor<T>,
   >
-  extends Collection<number, T, EntryType, T, CollectionChangeCallback<T, EntryType>, Helpers>
+  extends Collection<number, T, EntryType, T, CollectionChangeCallback<T, EntryType>, Accessor>
   implements Omit<ReadonlyArray<T>, "entries">
 {
   /** @internal */ protected declare realm: Realm;
@@ -145,11 +145,11 @@ export abstract class OrderedCollection<
   /** @internal */ protected declare results: binding.Results;
 
   /** @internal */
-  constructor(realm: Realm, results: binding.Results, helpers: Helpers) {
+  constructor(realm: Realm, results: binding.Results, accessor: Accessor) {
     if (arguments.length === 0) {
       throw new IllegalConstructorError("OrderedCollection");
     }
-    super(helpers, (callback, keyPaths) => {
+    super(accessor, (callback, keyPaths) => {
       return results.addNotificationCallback(
         (changes) => {
           try {
@@ -263,7 +263,7 @@ export abstract class OrderedCollection<
    */
   *values(): Generator<T> {
     const snapshot = this.results.snapshot();
-    const { get } = this[HELPERS];
+    const { get } = this[ACCESSOR];
     for (const i of this.keys()) {
       yield get(snapshot, i);
     }
@@ -275,7 +275,7 @@ export abstract class OrderedCollection<
    */
   *entries(): Generator<EntryType> {
     const snapshot = this.results.snapshot();
-    const { get } = this[HELPERS];
+    const { get } = this[ACCESSOR];
     const size = snapshot.size();
     for (let i = 0; i < size; i++) {
       yield [i, get(snapshot, i)] as EntryType;
@@ -376,7 +376,7 @@ export abstract class OrderedCollection<
       assert.instanceOf(searchElement, RealmObject);
       return this.results.indexOfObj(searchElement[OBJ_INTERNAL]);
     } else {
-      return this.results.indexOf(this[HELPERS].toBinding(searchElement));
+      return this.results.indexOf(this[ACCESSOR].toBinding(searchElement));
     }
   }
   /**
@@ -793,7 +793,7 @@ export abstract class OrderedCollection<
     const bindingArgs = args.map((arg) => this.queryArgToBinding(arg));
     const newQuery = parent.query.table.query(queryString, bindingArgs, kpMapping);
     const results = binding.Helpers.resultsAppendQuery(parent, newQuery);
-    return new Results(realm, results, this[HELPERS] as ResultsHelpers<T>);
+    return new Results(realm, results, this[ACCESSOR] as ResultsAccessor<T>);
   }
 
   /** @internal */
@@ -880,7 +880,7 @@ export abstract class OrderedCollection<
       });
       // TODO: Call `parent.sort`, avoiding property name to column key conversion to speed up performance here.
       const results = parent.sortByNames(descriptors);
-      return new Results(realm, results, this[HELPERS] as ResultsHelpers<T>);
+      return new Results(realm, results, this[ACCESSOR] as ResultsAccessor<T>);
     } else if (typeof arg0 === "string") {
       return this.sorted([[arg0, arg1 === true]]);
     } else if (typeof arg0 === "boolean") {
@@ -905,7 +905,7 @@ export abstract class OrderedCollection<
    * @returns Results which will **not** live update.
    */
   snapshot(): Results<T> {
-    return new Results(this.realm, this.results.snapshot(), this[HELPERS] as ResultsHelpers<T>);
+    return new Results(this.realm, this.results.snapshot(), this[ACCESSOR] as ResultsAccessor<T>);
   }
 
   private getPropertyColumnKey(name: string | undefined): binding.ColKey {

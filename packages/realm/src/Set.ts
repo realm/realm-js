@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import {
-  COLLECTION_HELPERS as HELPERS,
+  COLLECTION_ACCESSOR as ACCESSOR,
   IllegalConstructorError,
   OrderedCollection,
   Realm,
@@ -41,16 +41,16 @@ import {
  * a user-supplied insertion order.
  * @see https://www.mongodb.com/docs/realm/sdk/react-native/model-data/data-types/sets/
  */
-export class RealmSet<T = unknown> extends OrderedCollection<T, [T, T], SetHelpers<T>> {
+export class RealmSet<T = unknown> extends OrderedCollection<T, [T, T], SetAccessor<T>> {
   /** @internal */
   public declare readonly internal: binding.Set;
 
   /** @internal */
-  constructor(realm: Realm, internal: binding.Set, helpers: SetHelpers<T>) {
+  constructor(realm: Realm, internal: binding.Set, accessor: SetAccessor<T>) {
     if (arguments.length === 0 || !(internal instanceof binding.Set)) {
       throw new IllegalConstructorError("Set");
     }
-    super(realm, internal.asResults(), helpers);
+    super(realm, internal.asResults(), accessor);
 
     Object.defineProperty(this, "internal", {
       enumerable: false,
@@ -62,12 +62,12 @@ export class RealmSet<T = unknown> extends OrderedCollection<T, [T, T], SetHelpe
 
   /** @internal */
   public get(index: number): T {
-    return this[HELPERS].get(this.internal, index);
+    return this[ACCESSOR].get(this.internal, index);
   }
 
   /** @internal */
   public set(index: number, value: T): void {
-    this[HELPERS].set(this.internal, index, value);
+    this[ACCESSOR].set(this.internal, index, value);
   }
 
   /**
@@ -93,7 +93,7 @@ export class RealmSet<T = unknown> extends OrderedCollection<T, [T, T], SetHelpe
    */
   delete(value: T): boolean {
     assert.inTransaction(this.realm);
-    const [, success] = this.internal.removeAny(this[HELPERS].toBinding(value));
+    const [, success] = this.internal.removeAny(this[ACCESSOR].toBinding(value));
     return success;
   }
 
@@ -107,7 +107,7 @@ export class RealmSet<T = unknown> extends OrderedCollection<T, [T, T], SetHelpe
    */
   add(value: T): this {
     assert.inTransaction(this.realm);
-    this.internal.insertAny(this[HELPERS].toBinding(value));
+    this.internal.insertAny(this[ACCESSOR].toBinding(value));
     return this;
   }
 
@@ -145,22 +145,22 @@ export class RealmSet<T = unknown> extends OrderedCollection<T, [T, T], SetHelpe
 }
 
 /**
- * Helpers for getting and setting Set items, as well as
- * converting the values to and from their binding representations.
+ * Accessor for getting and setting items in the binding collection, as
+ * well as converting the values to and from their binding representations.
  * @internal
  */
-export type SetHelpers<T = unknown> = TypeHelpers<T> & {
+export type SetAccessor<T = unknown> = TypeHelpers<T> & {
   get: (set: binding.Set | binding.Results, index: number) => T;
   set: (set: binding.Set, index: number, value: T) => void;
 };
 
-type SetHelpersFactoryOptions<T> = {
+type SetAccessorFactoryOptions<T> = {
   typeHelpers: TypeHelpers<T>;
   isObjectItem?: boolean;
 };
 
 /** @internal */
-export function createSetHelpers<T>({ typeHelpers, isObjectItem }: SetHelpersFactoryOptions<T>): SetHelpers<T> {
+export function createSetAccessor<T>({ typeHelpers, isObjectItem }: SetAccessorFactoryOptions<T>): SetAccessor<T> {
   const { fromBinding, toBinding } = typeHelpers;
   return {
     get: createDefaultGetter({ fromBinding, isObjectItem }),

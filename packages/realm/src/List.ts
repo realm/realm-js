@@ -17,9 +17,9 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import {
+  COLLECTION_ACCESSOR as ACCESSOR,
   AssertionError,
   Dictionary,
-  COLLECTION_HELPERS as HELPERS,
   IllegalConstructorError,
   ObjectSchema,
   OrderedCollection,
@@ -28,7 +28,7 @@ import {
   assert,
   binding,
   createDefaultGetter,
-  createDictionaryHelpers,
+  createDictionaryAccessor,
   insertIntoDictionaryInMixed,
   isJsOrRealmDictionary,
 } from "./internal";
@@ -43,7 +43,7 @@ type PartiallyWriteableArray<T> = Pick<Array<T>, "pop" | "push" | "shift" | "uns
  * properties of the List), and can only be modified inside a {@link Realm.write | write} transaction.
  */
 export class List<T = unknown>
-  extends OrderedCollection<T, [number, T], ListHelpers<T>>
+  extends OrderedCollection<T, [number, T], ListAccessor<T>>
   implements PartiallyWriteableArray<T>
 {
   /**
@@ -56,12 +56,12 @@ export class List<T = unknown>
   private declare isEmbedded: boolean;
 
   /** @internal */
-  constructor(realm: Realm, internal: binding.List, helpers: ListHelpers<T>) {
+  constructor(realm: Realm, internal: binding.List, accessor: ListAccessor<T>) {
     if (arguments.length === 0 || !(internal instanceof binding.List)) {
       throw new IllegalConstructorError("List");
     }
     const results = internal.asResults();
-    super(realm, results, helpers);
+    super(realm, results, accessor);
 
     // Getting the `objectSchema` off the internal will throw if base type isn't object
     const itemType = results.type & ~binding.PropertyType.Flags;
@@ -84,12 +84,12 @@ export class List<T = unknown>
 
   /** @internal */
   public get(index: number): T {
-    return this[HELPERS].get(this.internal, index);
+    return this[ACCESSOR].get(this.internal, index);
   }
 
   /** @internal */
   public set(index: number, value: T): void {
-    this[HELPERS].set(this.internal, index, value);
+    this[ACCESSOR].set(this.internal, index, value);
   }
 
   /**
@@ -124,7 +124,7 @@ export class List<T = unknown>
     const { internal } = this;
     const lastIndex = internal.size - 1;
     if (lastIndex >= 0) {
-      const result = this[HELPERS].fromBinding(internal.getAny(lastIndex));
+      const result = this[ACCESSOR].fromBinding(internal.getAny(lastIndex));
       internal.remove(lastIndex);
       return result as T;
     }
@@ -144,7 +144,7 @@ export class List<T = unknown>
     const start = internal.size;
     for (const [offset, item] of items.entries()) {
       const index = start + offset;
-      this[HELPERS].insert(internal, index, item);
+      this[ACCESSOR].insert(internal, index, item);
     }
     return internal.size;
   }
@@ -158,7 +158,7 @@ export class List<T = unknown>
     assert.inTransaction(this.realm);
     const { internal } = this;
     if (internal.size > 0) {
-      const result = this[HELPERS].fromBinding(internal.getAny(0)) as T;
+      const result = this[ACCESSOR].fromBinding(internal.getAny(0)) as T;
       internal.remove(0);
       return result;
     }
@@ -175,7 +175,7 @@ export class List<T = unknown>
   unshift(...items: T[]): number {
     assert.inTransaction(this.realm);
     const { isEmbedded, internal } = this;
-    const { toBinding } = this[HELPERS];
+    const { toBinding } = this[ACCESSOR];
     for (const [index, item] of items.entries()) {
       if (isEmbedded) {
         // Simply transforming to binding will insert the embedded object
@@ -232,7 +232,7 @@ export class List<T = unknown>
     assert.inTransaction(this.realm);
     assert.number(start, "start");
     const { isEmbedded, internal } = this;
-    const { fromBinding, toBinding } = this[HELPERS];
+    const { fromBinding, toBinding } = this[ACCESSOR];
     // If negative, it will begin that many elements from the end of the array.
     if (start < 0) {
       start = internal.size + start;
@@ -323,17 +323,17 @@ export class List<T = unknown>
 }
 
 /**
- * Helpers for getting, setting, and inserting list items, as well as
- * converting the values to and from their binding representations.
+ * Accessor for getting, setting, and inserting items in the binding collection,
+ * as well as converting the values to and from their binding representations.
  * @internal
  */
-export type ListHelpers<T = unknown> = TypeHelpers<T> & {
+export type ListAccessor<T = unknown> = TypeHelpers<T> & {
   get: (list: binding.List | binding.Results, index: number) => T;
   set: (list: binding.List, index: number, value: T) => void;
   insert: (list: binding.List, index: number, value: T) => void;
 };
 
-type ListHelpersFactoryOptions<T> = {
+type ListAccessorFactoryOptions<T> = {
   realm: Realm;
   typeHelpers: TypeHelpers<T>;
   isMixedItem?: boolean;
@@ -342,14 +342,14 @@ type ListHelpersFactoryOptions<T> = {
 };
 
 /** @internal */
-export function createListHelpers<T>(options: ListHelpersFactoryOptions<T>): ListHelpers<T> {
-  return options.isMixedItem ? createListHelpersForMixed<T>(options) : createListHelpersForKnownType<T>(options);
+export function createListAccessor<T>(options: ListAccessorFactoryOptions<T>): ListAccessor<T> {
+  return options.isMixedItem ? createListAccessorForMixed<T>(options) : createListAccessorForKnownType<T>(options);
 }
 
-function createListHelpersForMixed<T>({
+function createListAccessorForMixed<T>({
   realm,
   typeHelpers,
-}: Pick<ListHelpersFactoryOptions<T>, "realm" | "typeHelpers">): ListHelpers<T> {
+}: Pick<ListAccessorFactoryOptions<T>, "realm" | "typeHelpers">): ListAccessor<T> {
   return {
     get: (...args) => getMixed(realm, typeHelpers, ...args),
     set: (...args) => setMixed(realm, typeHelpers.toBinding, ...args),
@@ -358,12 +358,12 @@ function createListHelpersForMixed<T>({
   };
 }
 
-function createListHelpersForKnownType<T>({
+function createListAccessorForKnownType<T>({
   realm,
   typeHelpers: { fromBinding, toBinding },
   isObjectItem,
   isEmbedded,
-}: Omit<ListHelpersFactoryOptions<T>, "isMixed">): ListHelpers<T> {
+}: Omit<ListAccessorFactoryOptions<T>, "isMixed">): ListAccessor<T> {
   return {
     get: createDefaultGetter({ fromBinding, isObjectItem }),
     set: (...args) => setKnownType(realm, toBinding, !!isEmbedded, ...args),
@@ -381,12 +381,12 @@ function getMixed<T>(
 ): T {
   const value = list.getAny(index);
   if (value === binding.ListSentinel) {
-    const listHelpers = createListHelpers<T>({ realm, typeHelpers, isMixedItem: true });
-    return new List<T>(realm, list.getList(index), listHelpers) as T;
+    const accessor = createListAccessor<T>({ realm, typeHelpers, isMixedItem: true });
+    return new List<T>(realm, list.getList(index), accessor) as T;
   }
   if (value === binding.DictionarySentinel) {
-    const dictionaryHelpers = createDictionaryHelpers<T>({ realm, typeHelpers, isMixedItem: true });
-    return new Dictionary<T>(realm, list.getDictionary(index), dictionaryHelpers) as T;
+    const accessor = createDictionaryAccessor<T>({ realm, typeHelpers, isMixedItem: true });
+    return new Dictionary<T>(realm, list.getDictionary(index), accessor) as T;
   }
   return typeHelpers.fromBinding(value);
 }

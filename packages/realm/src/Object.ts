@@ -37,7 +37,7 @@ import {
   Unmanaged,
   assert,
   binding,
-  createResultsHelpers,
+  createResultsAccessor,
   flags,
   getTypeName,
 } from "./internal";
@@ -450,14 +450,14 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
         return wrapObject(value) as T;
       },
     };
-    const resultsHelpers = createResultsHelpers<T>({ typeHelpers, isObjectItem: true });
+    const resultsAccessor = createResultsAccessor<T>({ typeHelpers, isObjectItem: true });
 
     // Create the Result for the backlink view.
     const tableRef = binding.Helpers.getTable(this[REALM].internal, targetObjectSchema.tableKey);
     const tableView = this[INTERNAL].getBacklinkView(tableRef, targetProperty.columnKey);
     const results = binding.Results.fromTableView(this[REALM].internal, tableView);
 
-    return new Results<T>(this[REALM], results, resultsHelpers);
+    return new Results<T>(this[REALM], results, resultsAccessor);
   }
 
   /**

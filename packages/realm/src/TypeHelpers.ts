@@ -34,8 +34,8 @@ import {
   binding,
   boxToBindingGeospatial,
   circleToBindingGeospatial,
-  createDictionaryHelpers,
-  createListHelpers,
+  createDictionaryAccessor,
+  createListAccessor,
   isGeoBox,
   isGeoCircle,
   isGeoPolygon,
@@ -173,10 +173,10 @@ function mixedFromBinding(options: TypeOptions, value: binding.MixedArg): unknow
     return wrapObject(linkedObj);
   } else if (value instanceof binding.List) {
     const typeHelpers = getTypeHelpers(binding.PropertyType.Mixed, options);
-    return new List(realm, value, createListHelpers({ realm, typeHelpers, isMixedItem: true }));
+    return new List(realm, value, createListAccessor({ realm, typeHelpers, isMixedItem: true }));
   } else if (value instanceof binding.Dictionary) {
     const typeHelpers = getTypeHelpers(binding.PropertyType.Mixed, options);
-    return new Dictionary(realm, value, createDictionaryHelpers({ realm, typeHelpers, isMixedItem: true }));
+    return new Dictionary(realm, value, createDictionaryAccessor({ realm, typeHelpers, isMixedItem: true }));
   } else {
     return value;
   }
@@ -375,10 +375,9 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => Type
     return {
       fromBinding(value: unknown) {
         assert.instanceOf(value, binding.List);
-        const propertyHelpers = classHelpers.properties.get(name);
-        const collectionHelpers = propertyHelpers.collectionHelpers;
-        assert.object(collectionHelpers);
-        return new List(realm, value, collectionHelpers);
+        const accessor = classHelpers.properties.get(name).listAccessor;
+        assert.object(accessor);
+        return new List(realm, value, accessor);
       },
       toBinding() {
         throw new Error("Not supported");

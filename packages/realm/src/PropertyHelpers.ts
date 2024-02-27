@@ -20,7 +20,7 @@ import {
   ClassHelpers,
   Dictionary,
   List,
-  ListHelpers,
+  ListAccessor,
   Realm,
   RealmSet,
   Results,
@@ -29,10 +29,10 @@ import {
   TypeOptions,
   assert,
   binding,
-  createDictionaryHelpers,
-  createListHelpers,
-  createResultsHelpers,
-  createSetHelpers,
+  createDictionaryAccessor,
+  createListAccessor,
+  createResultsAccessor,
+  createSetAccessor,
   getTypeHelpers,
   insertIntoDictionaryInMixed,
   insertIntoListInMixed,
@@ -60,14 +60,14 @@ type PropertyOptions = {
 } & HelperOptions &
   binding.Property_Relaxed;
 
-type PropertyAccessors = {
+type PropertyAccessor = {
   get(obj: binding.Obj): unknown;
   set(obj: binding.Obj, value: unknown): unknown;
-  collectionHelpers?: ListHelpers;
+  listAccessor?: ListAccessor;
 };
 
 export type PropertyHelpers = TypeHelpers &
-  PropertyAccessors & {
+  PropertyAccessor & {
     type: binding.PropertyType;
     columnKey: binding.ColKey;
     embedded: boolean;
@@ -115,7 +115,7 @@ function embeddedSet({ typeHelpers: { toBinding }, columnKey }: PropertyOptions)
   };
 }
 
-type AccessorFactory = (options: PropertyOptions) => PropertyAccessors;
+type AccessorFactory = (options: PropertyOptions) => PropertyAccessor;
 
 const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>> = {
   [binding.PropertyType.Object](options) {
@@ -176,13 +176,13 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
       const targetProperty = persistedProperties.find((p) => p.name === linkOriginPropertyName);
       assert(targetProperty, `Expected a '${linkOriginPropertyName}' property on ${objectType}`);
       const tableRef = binding.Helpers.getTable(realmInternal, tableKey);
-      const resultsHelpers = createResultsHelpers({ typeHelpers: itemHelpers, isObjectItem: true });
+      const resultsAccessor = createResultsAccessor({ typeHelpers: itemHelpers, isObjectItem: true });
 
       return {
         get(obj: binding.Obj) {
           const tableView = obj.getBacklinkView(tableRef, targetProperty.columnKey);
           const results = binding.Results.fromTableView(realmInternal, tableView);
-          return new Results(realm, results, resultsHelpers);
+          return new Results(realm, results, resultsAccessor);
         },
         set() {
           throw new Error("Not supported");
@@ -190,7 +190,7 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
       };
     } else {
       const { toBinding: itemToBinding } = itemHelpers;
-      const listHelpers = createListHelpers({
+      const listAccessor = createListAccessor({
         realm,
         typeHelpers: itemHelpers,
         isObjectItem: itemType === binding.PropertyType.Object,
@@ -198,11 +198,11 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
       });
 
       return {
-        collectionHelpers: listHelpers,
+        listAccessor,
         get(obj: binding.Obj) {
           const internal = binding.List.make(realm.internal, obj, columnKey);
           assert.instanceOf(internal, binding.List);
-          return new List(realm, internal, listHelpers);
+          return new List(realm, internal, listAccessor);
         },
         set(obj, values) {
           assert.inTransaction(realm);
@@ -257,11 +257,11 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
       optional,
       objectSchemaName: undefined,
     });
-    const dictionaryHelpers = createDictionaryHelpers({ realm, typeHelpers: itemHelpers });
+    const dictionaryAccessor = createDictionaryAccessor({ realm, typeHelpers: itemHelpers });
     return {
       get(obj) {
         const internal = binding.Dictionary.make(realm.internal, obj, columnKey);
-        return new Dictionary(realm, internal, dictionaryHelpers);
+        return new Dictionary(realm, internal, dictionaryAccessor);
       },
       set(obj, value) {
         const internal = binding.Dictionary.make(realm.internal, obj, columnKey);
@@ -296,7 +296,7 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
       objectSchemaName: undefined,
     });
     assert.string(objectType);
-    const setHelpers = createSetHelpers({
+    const setAccessor = createSetAccessor({
       typeHelpers: itemHelpers,
       isObjectItem: itemType === binding.PropertyType.Object,
     });
@@ -304,7 +304,7 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
     return {
       get(obj) {
         const internal = binding.Set.make(realm.internal, obj, columnKey);
-        return new RealmSet(realm, internal, setHelpers);
+        return new RealmSet(realm, internal, setAccessor);
       },
       set(obj, value) {
         const internal = binding.Set.make(realm.internal, obj, columnKey);
@@ -320,8 +320,8 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
   [binding.PropertyType.Mixed](options) {
     const { realm, columnKey, typeHelpers } = options;
     const { fromBinding, toBinding } = typeHelpers;
-    const listHelpers = createListHelpers({ realm, typeHelpers, isMixedItem: true });
-    const dictionaryHelpers = createDictionaryHelpers({ realm, typeHelpers, isMixedItem: true });
+    const listAccessor = createListAccessor({ realm, typeHelpers, isMixedItem: true });
+    const dictionaryAccessor = createDictionaryAccessor({ realm, typeHelpers, isMixedItem: true });
 
     return {
       get(obj) {
@@ -329,11 +329,11 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
           const value = obj.getAny(columnKey);
           if (value === binding.ListSentinel) {
             const internal = binding.List.make(realm.internal, obj, columnKey);
-            return new List(realm, internal, listHelpers);
+            return new List(realm, internal, listAccessor);
           }
           if (value === binding.DictionarySentinel) {
             const internal = binding.Dictionary.make(realm.internal, obj, columnKey);
-            return new Dictionary(realm, internal, dictionaryHelpers);
+            return new Dictionary(realm, internal, dictionaryAccessor);
           }
           return fromBinding(value);
         } catch (err) {

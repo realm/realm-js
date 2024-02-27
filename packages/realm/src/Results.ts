@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import {
-  COLLECTION_HELPERS as HELPERS,
+  COLLECTION_ACCESSOR as ACCESSOR,
   IllegalConstructorError,
   OrderedCollection,
   Realm,
@@ -40,7 +40,7 @@ import {
  * will thus never be called).
  * @see https://www.mongodb.com/docs/realm/sdk/react-native/model-data/data-types/collections/
  */
-export class Results<T = unknown> extends OrderedCollection<T, [number, T], ResultsHelpers<T>> {
+export class Results<T = unknown> extends OrderedCollection<T, [number, T], ResultsAccessor<T>> {
   /**
    * The representation in the binding.
    * @internal
@@ -54,11 +54,11 @@ export class Results<T = unknown> extends OrderedCollection<T, [number, T], Resu
    * Create a `Results` wrapping a set of query `Results` from the binding.
    * @internal
    */
-  constructor(realm: Realm, internal: binding.Results, helpers: ResultsHelpers<T>) {
+  constructor(realm: Realm, internal: binding.Results, accessor: ResultsAccessor<T>) {
     if (arguments.length === 0 || !(internal instanceof binding.Results)) {
       throw new IllegalConstructorError("Results");
     }
-    super(realm, internal, helpers);
+    super(realm, internal, accessor);
 
     Object.defineProperty(this, "internal", {
       enumerable: false,
@@ -81,7 +81,7 @@ export class Results<T = unknown> extends OrderedCollection<T, [number, T], Resu
 
   /** @internal */
   public get(index: number): T {
-    return this[HELPERS].get(this.internal, index);
+    return this[ACCESSOR].get(this.internal, index);
   }
 
   /** @internal */
@@ -116,7 +116,7 @@ export class Results<T = unknown> extends OrderedCollection<T, [number, T], Resu
     const { classHelpers, type, results } = this;
     assert(type === "object" && classHelpers, "Expected a result of Objects");
     const { set } = classHelpers.properties.get(propertyName);
-    const { get } = this[HELPERS];
+    const { get } = this[ACCESSOR];
     const snapshot = results.snapshot();
     const size = snapshot.size();
     for (let i = 0; i < size; i++) {
@@ -189,24 +189,24 @@ export class Results<T = unknown> extends OrderedCollection<T, [number, T], Resu
 }
 
 /**
- * Helpers for getting results items, as well as converting
- * the values to and from their binding representations.
+ * Accessor for getting items from the binding collection, as well
+ * as converting the values to and from their binding representations.
  * @internal
  */
-export type ResultsHelpers<T = unknown> = TypeHelpers<T> & {
+export type ResultsAccessor<T = unknown> = TypeHelpers<T> & {
   get: (results: binding.Results, index: number) => T;
 };
 
-type ResultsHelpersFactoryOptions<T> = {
+type ResultsAccessorFactoryOptions<T> = {
   typeHelpers: TypeHelpers<T>;
   isObjectItem?: boolean;
 };
 
 /** @internal */
-export function createResultsHelpers<T>({
+export function createResultsAccessor<T>({
   typeHelpers,
   isObjectItem,
-}: ResultsHelpersFactoryOptions<T>): ResultsHelpers<T> {
+}: ResultsAccessorFactoryOptions<T>): ResultsAccessor<T> {
   return {
     get: createDefaultGetter({ fromBinding: typeHelpers.fromBinding, isObjectItem }),
     ...typeHelpers,

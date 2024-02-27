@@ -17,10 +17,10 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import {
+  COLLECTION_ACCESSOR as ACCESSOR,
   AssertionError,
   Collection,
   DefaultObject,
-  COLLECTION_HELPERS as HELPERS,
   IllegalConstructorError,
   JSONCacheMap,
   List,
@@ -29,7 +29,7 @@ import {
   TypeHelpers,
   assert,
   binding,
-  createListHelpers,
+  createListAccessor,
   insertIntoListInMixed,
   isJsOrRealmList,
 } from "./internal";
@@ -52,14 +52,14 @@ const PROXY_HANDLER: ProxyHandler<Dictionary> = {
   get(target, prop, receiver) {
     const value = Reflect.get(target, prop, receiver);
     if (typeof value === "undefined" && typeof prop === "string") {
-      return target[HELPERS].get(target[INTERNAL], prop);
+      return target[ACCESSOR].get(target[INTERNAL], prop);
     } else {
       return value;
     }
   },
   set(target, prop, value) {
     if (typeof prop === "string") {
-      target[HELPERS].set(target[INTERNAL], prop, value);
+      target[ACCESSOR].set(target[INTERNAL], prop, value);
       return true;
     } else {
       assert(typeof prop !== "symbol", "Symbols cannot be used as keys of a dictionary");
@@ -114,7 +114,7 @@ export class Dictionary<T = unknown> extends Collection<
   [string, T],
   [string, T],
   DictionaryChangeCallback<T>,
-  DictionaryHelpers<T>
+  DictionaryAccessor<T>
 > {
   /** @internal */
   private declare [REALM]: Realm;
@@ -129,11 +129,11 @@ export class Dictionary<T = unknown> extends Collection<
    * Create a `Results` wrapping a set of query `Results` from the binding.
    * @internal
    */
-  constructor(realm: Realm, internal: binding.Dictionary, helpers: DictionaryHelpers<T>) {
+  constructor(realm: Realm, internal: binding.Dictionary, accessor: DictionaryAccessor<T>) {
     if (arguments.length === 0 || !(internal instanceof binding.Dictionary)) {
       throw new IllegalConstructorError("Dictionary");
     }
-    super(helpers, (listener, keyPaths) => {
+    super(accessor, (listener, keyPaths) => {
       return this[INTERNAL].addKeyBasedNotificationCallback(
         ({ deletions, insertions, modifications }) => {
           try {
@@ -212,7 +212,7 @@ export class Dictionary<T = unknown> extends Collection<
     const snapshot = this[INTERNAL].values.snapshot();
     const size = snapshot.size();
 
-    const { snapshotGet } = this[HELPERS];
+    const { snapshotGet } = this[ACCESSOR];
     for (let i = 0; i < size; i++) {
       yield snapshotGet(snapshot, i);
     }
@@ -229,7 +229,7 @@ export class Dictionary<T = unknown> extends Collection<
     const size = keys.size();
     assert(size === snapshot.size(), "Expected keys and values to equal in size");
 
-    const { snapshotGet } = this[HELPERS];
+    const { snapshotGet } = this[ACCESSOR];
     for (let i = 0; i < size; i++) {
       const key = keys.getAny(i);
       const value = snapshotGet(snapshot, i);
@@ -277,7 +277,7 @@ export class Dictionary<T = unknown> extends Collection<
     assert(Object.getOwnPropertySymbols(elements).length === 0, "Symbols cannot be used as keys of a dictionary");
 
     const internal = this[INTERNAL];
-    const { set } = this[HELPERS];
+    const { set } = this[ACCESSOR];
     const entries = Object.entries(elements);
     for (const [key, value] of entries) {
       set(internal, key, value!);
@@ -319,33 +319,33 @@ export class Dictionary<T = unknown> extends Collection<
 }
 
 /**
- * Helpers for getting and setting dictionary entries, as well as
- * converting the values to and from their binding representations.
+ * Accessor for getting and setting items in the binding collection, as
+ * well as converting the values to and from their binding representations.
  * @internal
  */
-export type DictionaryHelpers<T = unknown> = TypeHelpers<T> & {
+export type DictionaryAccessor<T = unknown> = TypeHelpers<T> & {
   get: (dictionary: binding.Dictionary, key: string) => T;
   set: (dictionary: binding.Dictionary, key: string, value: T) => void;
   snapshotGet: (snapshot: binding.Results, index: number) => T;
 };
 
-type DictionaryHelpersFactoryOptions<T> = {
+type DictionaryAccessorFactoryOptions<T> = {
   realm: Realm;
   typeHelpers: TypeHelpers<T>;
   isMixedItem?: boolean;
 };
 
 /** @internal */
-export function createDictionaryHelpers<T>(options: DictionaryHelpersFactoryOptions<T>): DictionaryHelpers<T> {
+export function createDictionaryAccessor<T>(options: DictionaryAccessorFactoryOptions<T>): DictionaryAccessor<T> {
   return options.isMixedItem
-    ? createDictionaryHelpersForMixed<T>(options)
-    : createDictionaryHelpersForKnownType<T>(options);
+    ? createDictionaryAccessorForMixed<T>(options)
+    : createDictionaryAccessorForKnownType<T>(options);
 }
 
-function createDictionaryHelpersForMixed<T>({
+function createDictionaryAccessorForMixed<T>({
   realm,
   typeHelpers,
-}: Pick<DictionaryHelpersFactoryOptions<T>, "realm" | "typeHelpers">): DictionaryHelpers<T> {
+}: Pick<DictionaryAccessorFactoryOptions<T>, "realm" | "typeHelpers">): DictionaryAccessor<T> {
   return {
     get: (...args) => getMixed(realm, typeHelpers, ...args),
     set: (...args) => setMixed(realm, typeHelpers.toBinding, ...args),
@@ -354,10 +354,10 @@ function createDictionaryHelpersForMixed<T>({
   };
 }
 
-function createDictionaryHelpersForKnownType<T>({
+function createDictionaryAccessorForKnownType<T>({
   realm,
   typeHelpers: { fromBinding, toBinding },
-}: Pick<DictionaryHelpersFactoryOptions<T>, "realm" | "typeHelpers">): DictionaryHelpers<T> {
+}: Pick<DictionaryAccessorFactoryOptions<T>, "realm" | "typeHelpers">): DictionaryAccessor<T> {
   return {
     get: (...args) => getKnownType(fromBinding, ...args),
     set: (...args) => setKnownType(realm, toBinding, ...args),
@@ -382,12 +382,12 @@ function snapshotGetKnownType<T>(
 function getMixed<T>(realm: Realm, typeHelpers: TypeHelpers<T>, dictionary: binding.Dictionary, key: string): T {
   const value = dictionary.tryGetAny(key);
   if (value === binding.ListSentinel) {
-    const listHelpers = createListHelpers<T>({ realm, typeHelpers, isMixedItem: true });
-    return new List<T>(realm, dictionary.getList(key), listHelpers) as T;
+    const accessor = createListAccessor<T>({ realm, typeHelpers, isMixedItem: true });
+    return new List<T>(realm, dictionary.getList(key), accessor) as T;
   }
   if (value === binding.DictionarySentinel) {
-    const dictionaryHelpers = createDictionaryHelpers<T>({ realm, typeHelpers, isMixedItem: true });
-    return new Dictionary<T>(realm, dictionary.getDictionary(key), dictionaryHelpers) as T;
+    const accessor = createDictionaryAccessor<T>({ realm, typeHelpers, isMixedItem: true });
+    return new Dictionary<T>(realm, dictionary.getDictionary(key), accessor) as T;
   }
   return typeHelpers.fromBinding(value) as T;
 }
@@ -395,12 +395,12 @@ function getMixed<T>(realm: Realm, typeHelpers: TypeHelpers<T>, dictionary: bind
 function snapshotGetMixed<T>(realm: Realm, typeHelpers: TypeHelpers<T>, snapshot: binding.Results, index: number): T {
   const value = snapshot.getAny(index);
   if (value === binding.ListSentinel) {
-    const listHelpers = createListHelpers<T>({ realm, typeHelpers, isMixedItem: true });
-    return new List<T>(realm, snapshot.getList(index), listHelpers) as T;
+    const accessor = createListAccessor<T>({ realm, typeHelpers, isMixedItem: true });
+    return new List<T>(realm, snapshot.getList(index), accessor) as T;
   }
   if (value === binding.DictionarySentinel) {
-    const dictionaryHelpers = createDictionaryHelpers<T>({ realm, typeHelpers, isMixedItem: true });
-    return new Dictionary<T>(realm, snapshot.getDictionary(index), dictionaryHelpers) as T;
+    const accessor = createDictionaryAccessor<T>({ realm, typeHelpers, isMixedItem: true });
+    return new Dictionary<T>(realm, snapshot.getDictionary(index), accessor) as T;
   }
   return typeHelpers.fromBinding(value);
 }

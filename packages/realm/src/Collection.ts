@@ -16,20 +16,20 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import type { Dictionary, DictionaryHelpers, List, OrderedCollectionHelpers, RealmSet, Results } from "./internal";
+import type { Dictionary, DictionaryAccessor, List, OrderedCollectionAccessor, RealmSet, Results } from "./internal";
 import { CallbackAdder, IllegalConstructorError, Listeners, TypeAssertionError, assert, binding } from "./internal";
 
 /**
- * Collection helpers identifier.
+ * Collection accessor identifier.
  * @internal
  */
-export const COLLECTION_HELPERS = Symbol("Collection#helpers");
+export const COLLECTION_ACCESSOR = Symbol("Collection#accessor");
 
 /**
- * Helpers for getting and setting items in the collection, as well
- * as converting the values to and from their binding representations.
+ * Accessor for getting and setting items in the binding collection, as
+ * well as converting the values to and from their binding representations.
  */
-type CollectionHelpers<T = unknown> = OrderedCollectionHelpers<T> | DictionaryHelpers<T>;
+type CollectionAccessor<T = unknown> = OrderedCollectionAccessor<T> | DictionaryAccessor<T>;
 
 /**
  * Abstract base class containing methods shared by Realm {@link List}, {@link Dictionary}, {@link Results} and {@link RealmSet}.
@@ -46,22 +46,22 @@ export abstract class Collection<
   EntryType = [KeyType, ValueType],
   T = ValueType,
   ChangeCallbackType = unknown,
-  Helpers extends CollectionHelpers<ValueType> = CollectionHelpers<ValueType>,
+  Accessor extends CollectionAccessor<ValueType> = CollectionAccessor<ValueType>,
 > implements Iterable<T>
 {
   /**
-   * Helpers for getting items in the collection, as well as
-   * converting the values to and from their binding representations.
+   * Accessor for getting and setting items in the binding collection, as
+   * well as converting the values to and from their binding representations.
    * @internal
    */
-  protected readonly [COLLECTION_HELPERS]: Helpers;
+  protected readonly [COLLECTION_ACCESSOR]: Accessor;
 
   /** @internal */
   private listeners: Listeners<ChangeCallbackType, binding.NotificationToken, [string[] | undefined]>;
 
   /** @internal */
   constructor(
-    helpers: Helpers,
+    accessor: Accessor,
     addListener: CallbackAdder<ChangeCallbackType, binding.NotificationToken, [string[] | undefined]>,
   ) {
     if (arguments.length === 0) {
@@ -80,7 +80,7 @@ export abstract class Collection<
       writable: false,
     });
 
-    this[COLLECTION_HELPERS] = helpers;
+    this[COLLECTION_ACCESSOR] = accessor;
   }
 
   /**

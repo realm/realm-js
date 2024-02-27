@@ -184,6 +184,7 @@ import {
   WaitForSync,
   assert,
   binding,
+  createResultsAccessor,
   defaultLogger,
   defaultLoggerLevel,
   extendDebug,
@@ -205,7 +206,6 @@ import {
   validateConfiguration,
   validateObjectSchema,
   validateRealmSchema,
-  createResultsHelpers,
 } from "./internal";
 
 const debug = extendDebug("Realm");
@@ -1130,8 +1130,8 @@ export class Realm {
         return value[INTERNAL];
       },
     };
-    const resultsHelpers = createResultsHelpers<T>({ typeHelpers, isObjectItem: true });
-    return new Results<T>(this, results, resultsHelpers);
+    const resultsAccessor = createResultsAccessor<T>({ typeHelpers, isObjectItem: true });
+    return new Results<T>(this, results, resultsAccessor);
   }
 
   /**
