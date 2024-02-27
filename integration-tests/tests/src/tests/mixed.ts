@@ -1335,6 +1335,37 @@ describe("Mixed", () => {
             expectRealmList(list[0]);
             expectRealmDictionary(list[1]);
           });
+
+          it("indexOf()", function (this: RealmContext) {
+            const NOT_FOUND = -1;
+            const unmanagedList = [1, "string"];
+            const unmanagedDictionary = { key: "value" };
+
+            const { mixed: list } = this.realm.write(() => {
+              return this.realm.create<IMixedSchema>(MixedSchema.name, {
+                mixed: [unmanagedList, unmanagedDictionary],
+              });
+            });
+            expectRealmList(list);
+            expect(list.length).equals(2);
+
+            // Expect collections to behave as always being different references.
+            // Both the unmanaged and managed collections will yield "not found".
+
+            expect(list.indexOf(unmanagedList)).equals(NOT_FOUND);
+            expect(list.indexOf(unmanagedDictionary)).equals(NOT_FOUND);
+
+            const nestedList = list[0];
+            expectRealmList(nestedList);
+            expect(list.indexOf(nestedList)).equals(NOT_FOUND);
+
+            const nestedDictionary = list[1];
+            expectRealmDictionary(nestedDictionary);
+            expect(list.indexOf(nestedDictionary)).equals(NOT_FOUND);
+
+            expect(nestedList.indexOf(1)).equals(0);
+            expect(nestedList.indexOf("string")).equals(1);
+          });
         });
 
         describe("Iterators", () => {
