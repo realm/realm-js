@@ -82,6 +82,16 @@ export class List<T = unknown>
     });
   }
 
+  /** @internal */
+  public get(index: number): T {
+    return this[HELPERS].get(this.internal, index);
+  }
+
+  /** @internal */
+  public set(index: number, value: T): void {
+    this[HELPERS].set(this.internal, index, value);
+  }
+
   /**
    * Checks if this collection has not been deleted and is part of a valid Realm.
    * @returns `true` if the collection can be safely accessed.

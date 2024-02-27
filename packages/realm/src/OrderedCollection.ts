@@ -79,8 +79,7 @@ const PROXY_HANDLER: ProxyHandler<OrderedCollection> = {
       const index = Number.parseInt(prop, 10);
       // TODO: Consider catching an error from access out of bounds, instead of checking the length, to optimize for the hot path
       if (!Number.isNaN(index) && index >= 0 && index < target.length) {
-        // @ts-expect-error TODO
-        return target[HELPERS].get(target.internal, index);
+        return target.get(index);
       }
     }
   },
@@ -91,8 +90,7 @@ const PROXY_HANDLER: ProxyHandler<OrderedCollection> = {
         // Optimize for the hot-path by catching a potential out of bounds access from Core, rather
         // than checking the length upfront. Thus, our List differs from the behavior of a JS array.
         try {
-          // @ts-expect-error TODO
-          target[HELPERS].set(target.internal, index, value);
+          target.set(index, value);
         } catch (err) {
           const length = target.length;
           if ((index < 0 || index >= length) && !(target instanceof Results)) {
@@ -139,7 +137,7 @@ export abstract class OrderedCollection<
   /** @internal */ protected declare realm: Realm;
 
   /**
-   * The representation in the binding.
+   * The representation in the binding of the underlying collection.
    * @internal
    */
   public abstract readonly internal: OrderedCollectionInternal;
@@ -217,6 +215,18 @@ export abstract class OrderedCollection<
   protected declare classHelpers: ClassHelpers | null;
   /** @internal */
   private declare mixedToBinding: (value: unknown, options: { isQueryArg: boolean }) => binding.MixedArg;
+
+  /**
+   * Get an element of the collection.
+   * @internal
+   */
+  public abstract get(index: number): T;
+
+  /**
+   * Set an element in the collection.
+   * @internal
+   */
+  public abstract set(index: number, value: T): void;
 
   /**
    * The plain object representation for JSON serialization.

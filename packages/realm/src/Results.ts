@@ -79,6 +79,16 @@ export class Results<T = unknown> extends OrderedCollection<T, [number, T], Resu
     });
   }
 
+  /** @internal */
+  public get(index: number): T {
+    return this[HELPERS].get(this.internal, index);
+  }
+
+  /** @internal */
+  public set(): never {
+    throw new Error("Assigning into a Results is not supported.");
+  }
+
   get length(): number {
     return this.internal.size();
   }
@@ -179,13 +189,12 @@ export class Results<T = unknown> extends OrderedCollection<T, [number, T], Resu
 }
 
 /**
- * Helpers for getting and setting results items, as well as
- * converting the values to and from their binding representations.
+ * Helpers for getting results items, as well as converting
+ * the values to and from their binding representations.
  * @internal
  */
 export type ResultsHelpers<T = unknown> = TypeHelpers<T> & {
   get: (results: binding.Results, index: number) => T;
-  set: (results: binding.Results, index: number, value: T) => never;
 };
 
 type ResultsHelpersFactoryOptions<T> = {
@@ -200,9 +209,6 @@ export function createResultsHelpers<T>({
 }: ResultsHelpersFactoryOptions<T>): ResultsHelpers<T> {
   return {
     get: createDefaultGetter({ fromBinding: typeHelpers.fromBinding, isObjectItem }),
-    set: () => {
-      throw new Error("Assigning into a Results is not supported.");
-    },
     ...typeHelpers,
   };
 }

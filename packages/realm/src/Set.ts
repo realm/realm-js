@@ -60,6 +60,16 @@ export class RealmSet<T = unknown> extends OrderedCollection<T, [T, T], SetHelpe
     });
   }
 
+  /** @internal */
+  public get(index: number): T {
+    return this[HELPERS].get(this.internal, index);
+  }
+
+  /** @internal */
+  public set(index: number, value: T): void {
+    this[HELPERS].set(this.internal, index, value);
+  }
+
   /**
    * @returns The number of values in the Set.
    */
