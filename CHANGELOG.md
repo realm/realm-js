@@ -31,9 +31,6 @@
 * File format: generates Realms with format v23 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-<!-- * Either mention core version or upgrade -->
-<!-- * Using Realm Core vX.Y.Z -->
-<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
 * Fix Cocoapods to version 1.14.3 on Github Actions.
 * Migrated bingen from `util::Optional` to `std::optional`.
 * Upgrading `@realm/fetch` to the newly released v0.1.1 and no longer bundling it into the SDK package.
