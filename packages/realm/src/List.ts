@@ -124,9 +124,9 @@ export class List<T = unknown>
     const { internal } = this;
     const lastIndex = internal.size - 1;
     if (lastIndex >= 0) {
-      const result = this[ACCESSOR].fromBinding(internal.getAny(lastIndex));
+      const result = this.get(lastIndex);
       internal.remove(lastIndex);
-      return result as T;
+      return result;
     }
   }
 
@@ -158,7 +158,7 @@ export class List<T = unknown>
     assert.inTransaction(this.realm);
     const { internal } = this;
     if (internal.size > 0) {
-      const result = this[ACCESSOR].fromBinding(internal.getAny(0)) as T;
+      const result = this.get(0);
       internal.remove(0);
       return result;
     }
@@ -174,15 +174,10 @@ export class List<T = unknown>
    */
   unshift(...items: T[]): number {
     assert.inTransaction(this.realm);
-    const { isEmbedded, internal } = this;
-    const { toBinding } = this[ACCESSOR];
+    const { internal } = this;
+    const { insert } = this[ACCESSOR];
     for (const [index, item] of items.entries()) {
-      if (isEmbedded) {
-        // Simply transforming to binding will insert the embedded object
-        toBinding(item, { createObj: () => [internal.insertEmbedded(index), true] });
-      } else {
-        internal.insertAny(index, toBinding(item));
-      }
+      insert(internal, index, item);
     }
     return internal.size;
   }
@@ -231,8 +226,7 @@ export class List<T = unknown>
     // Comments in the code below is copied from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/splice
     assert.inTransaction(this.realm);
     assert.number(start, "start");
-    const { isEmbedded, internal } = this;
-    const { fromBinding, toBinding } = this[ACCESSOR];
+    const { internal } = this;
     // If negative, it will begin that many elements from the end of the array.
     if (start < 0) {
       start = internal.size + start;
@@ -248,21 +242,17 @@ export class List<T = unknown>
     // Get the elements that are about to be deleted
     const result: T[] = [];
     for (let i = start; i < end; i++) {
-      result.push(fromBinding(internal.getAny(i)) as T);
+      result.push(this.get(i));
     }
     // Remove the elements from the list (backwards to avoid skipping elements as they're being deleted)
     for (let i = end - 1; i >= start; i--) {
       internal.remove(i);
     }
     // Insert any new elements
+    const { insert } = this[ACCESSOR];
     for (const [offset, item] of items.entries()) {
       const index = start + offset;
-      if (isEmbedded) {
-        // Simply transforming to binding will insert the embedded object
-        toBinding(item, { createObj: () => [internal.insertEmbedded(index), true] });
-      } else {
-        internal.insertAny(index, toBinding(item));
-      }
+      insert(internal, index, item);
     }
     return result;
   }

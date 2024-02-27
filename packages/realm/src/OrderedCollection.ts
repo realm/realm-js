@@ -262,8 +262,8 @@ export abstract class OrderedCollection<
    * @returns An iterator with all values in the collection.
    */
   *values(): Generator<T> {
-    const snapshot = this.results.snapshot();
     const { get } = this[ACCESSOR];
+    const snapshot = this.results.snapshot();
     for (const i of this.keys()) {
       yield get(snapshot, i);
     }
@@ -274,8 +274,8 @@ export abstract class OrderedCollection<
    * @returns An iterator with all key/value pairs in the collection.
    */
   *entries(): Generator<EntryType> {
-    const snapshot = this.results.snapshot();
     const { get } = this[ACCESSOR];
+    const snapshot = this.results.snapshot();
     const size = snapshot.size();
     for (let i = 0; i < size; i++) {
       yield [i, get(snapshot, i)] as EntryType;
