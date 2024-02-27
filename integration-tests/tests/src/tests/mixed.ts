@@ -1295,6 +1295,46 @@ describe("Mixed", () => {
             expect(newLength).equals(2);
             expect(nestedList[0]).equals(1);
           });
+
+          it("splice()", function (this: RealmContext) {
+            const { mixed: list } = this.realm.write(() => {
+              return this.realm.create<IMixedSchema>(MixedSchema.name, {
+                mixed: [[1, "string"], { key: "value" }],
+              });
+            });
+            expectRealmList(list);
+            expect(list.length).equals(2);
+
+            const nestedList = list[0];
+            expectRealmList(nestedList);
+            expect(nestedList.length).equals(2);
+
+            // Remove all items from nested list.
+            let removed = this.realm.write(() => nestedList.splice(0));
+            expect(removed).deep.equals([1, "string"]);
+            expect(nestedList.length).equals(0);
+
+            // Insert items into nested list.
+            removed = this.realm.write(() => nestedList.splice(0, 0, 1, "string"));
+            expect(removed.length).equals(0);
+            expect(nestedList.length).equals(2);
+            expect(nestedList[0]).equals(1);
+            expect(nestedList[1]).equals("string");
+
+            // Remove all items from top-level list.
+            removed = this.realm.write(() => list.splice(0));
+            expect(removed.length).equals(2);
+            expectRealmList(removed[0]);
+            expectRealmDictionary(removed[1]);
+            expect(list.length).equals(0);
+
+            // Insert item into top-level list.
+            removed = this.realm.write(() => list.splice(0, 0, [1, "string"], { key: "value" }));
+            expect(removed.length).equals(0);
+            expect(list.length).equals(2);
+            expectRealmList(list[0]);
+            expectRealmDictionary(list[1]);
+          });
         });
 
         describe("Iterators", () => {
