@@ -115,14 +115,13 @@ export class Results<T = unknown> extends OrderedCollection<T, [number, T], Resu
     assert.string(propertyName);
     const { classHelpers, type, results } = this;
     assert(type === "object" && classHelpers, "Expected a result of Objects");
-    const { set } = classHelpers.properties.get(propertyName);
-    const { get } = this[ACCESSOR];
+    const { set: objectSet } = classHelpers.properties.get(propertyName);
     const snapshot = results.snapshot();
     const size = snapshot.size();
     for (let i = 0; i < size; i++) {
-      const obj = get(snapshot, i);
+      const obj = snapshot.getObj(i);
       assert.instanceOf(obj, binding.Obj);
-      set(obj, value);
+      objectSet(obj, value);
     }
   }
 
