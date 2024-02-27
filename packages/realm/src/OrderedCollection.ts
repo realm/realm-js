@@ -35,6 +35,8 @@ import {
   assert,
   binding,
   getTypeName,
+  isJsOrRealmDictionary,
+  isJsOrRealmList,
   mixedToBinding,
   unwind,
 } from "./internal";
@@ -372,9 +374,15 @@ export abstract class OrderedCollection<
    */
   indexOf(searchElement: T, fromIndex?: number): number {
     assert(typeof fromIndex === "undefined", "The second fromIndex argument is not yet supported");
+
     if (this.type === "object") {
       assert.instanceOf(searchElement, RealmObject);
       return this.results.indexOfObj(searchElement[OBJ_INTERNAL]);
+    } else if (isJsOrRealmList(searchElement) || isJsOrRealmDictionary(searchElement)) {
+      // Collections are always treated as not equal since their
+      // references will always be different for each access.
+      const NOT_FOUND = -1;
+      return NOT_FOUND;
     } else {
       return this.results.indexOf(this[ACCESSOR].toBinding(searchElement));
     }
