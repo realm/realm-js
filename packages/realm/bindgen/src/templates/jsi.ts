@@ -79,7 +79,17 @@ function pushRet<T, U extends T>(arr: T[], elem: U) {
 class JsiAddon extends CppClass {
   exports: string[] = [];
   classes: string[] = [];
-  injectables = ["Long", "ArrayBuffer", "Float", "UUID", "ObjectId", "Decimal128", "EJSON_parse", "EJSON_stringify"];
+  injectables = [
+    "Long",
+    "ArrayBuffer",
+    "Float",
+    "UUID",
+    "ObjectId",
+    "Decimal128",
+    "EJSON_parse",
+    "EJSON_stringify",
+    "Symbol_for",
+  ];
   mem_inits: CppMemInit[] = [];
 
   props = new Set<string>();
@@ -902,6 +912,16 @@ class JsiCppDecls extends CppDecls {
               `,
             )
             .join("\n")}
+
+          // We are returning sentinel values for lists and dictionaries in the
+          // form of Symbol singletons. This is due to not being able to construct
+          // the actual list or dictionary in the current context.
+          case realm::type_List:
+            return ${this.addon.accessCtor("Symbol_for")}.call(_env, "Realm.List");
+
+          case realm::type_Dictionary:
+            return ${this.addon.accessCtor("Symbol_for")}.call(_env, "Realm.Dictionary");
+
           // The remaining cases are never stored in a Mixed.
           ${spec.mixedInfo.unusedDataTypes.map((t) => `case DataType::Type::${t}: break;`).join("\n")}
           }

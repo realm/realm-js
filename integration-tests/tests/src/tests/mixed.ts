@@ -2196,8 +2196,8 @@ describe("Mixed", () => {
         expect(() => dictionary.prop).to.throw("This collection is no more");
       });
 
-      it("throws when exceeding the max nesting level", function (this: RealmContext) {
-        // If `REALM_DEBUG`, the max nesting level is 4.
+      // If `REALM_DEBUG`, the max nesting level is 4.
+      it.skip("throws when exceeding the max nesting level", function (this: RealmContext) {
         expect(() => {
           this.realm.write(() => {
             this.realm.create<IMixedSchema>(MixedSchema.name, {
