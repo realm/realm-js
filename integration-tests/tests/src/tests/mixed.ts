@@ -1237,6 +1237,38 @@ describe("Mixed", () => {
             removed = this.realm.write(() => list.pop());
             expect(removed).to.be.undefined;
           });
+
+          it("shift()", function (this: RealmContext) {
+            const { mixed: list } = this.realm.write(() => {
+              return this.realm.create<IMixedSchema>(MixedSchema.name, {
+                mixed: [[1, "string"], { key: "value" }],
+              });
+            });
+            expectRealmList(list);
+            expect(list.length).equals(2);
+
+            const nestedList = list[0];
+            expectRealmList(nestedList);
+            expect(nestedList.length).equals(2);
+
+            // Remove first item of nested list.
+            let removed = this.realm.write(() => nestedList.shift());
+            expect(removed).equals(1);
+            removed = this.realm.write(() => nestedList.shift());
+            expect(removed).equals("string");
+            expect(nestedList.length).equals(0);
+            removed = this.realm.write(() => nestedList.shift());
+            expect(removed).to.be.undefined;
+
+            // Remove first item of top-level list.
+            removed = this.realm.write(() => list.shift());
+            expectRealmList(removed);
+            removed = this.realm.write(() => list.shift());
+            expectRealmDictionary(removed);
+            expect(list.length).equals(0);
+            removed = this.realm.write(() => list.shift());
+            expect(removed).to.be.undefined;
+          });
         });
 
         describe("Iterators", () => {
