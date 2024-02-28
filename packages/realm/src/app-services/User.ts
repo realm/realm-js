@@ -238,7 +238,7 @@ export class User<
 
   /**
    * Use this to call functions defined by the Atlas App Services application, as this user.
-   * @returns A {@link FunctionsFactory} that can be used to call the app's functions.
+   * @returns A {@link UserFunctionsFactoryType} that can be used to call the app's functions.
    */
   get functions(): UserFunctionsFactoryType {
     return createFactory(this as User, undefined);

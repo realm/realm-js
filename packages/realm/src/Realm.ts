@@ -171,10 +171,18 @@ export class Realm {
 
   /**
    * Checks if the Realm already exists on disk.
-   * @param arg - The configuration for the Realm or the path to it.
+   * @param path - The path for a Realm.
+   * @throws An {@link Error} if anything in the provided {@link path} is invalid.
+   * @returns `true` if the Realm exists on the device, `false` if not.
+   */
+  public static exists(path: string): boolean;
+  /**
+   * Checks if the Realm already exists on disk.
+   * @param config - The configuration of a Realm.
    * @throws An {@link Error} if anything in the provided {@link config} is invalid.
    * @returns `true` if the Realm exists on the device, `false` if not.
    */
+  public static exists(config: Configuration): boolean;
   public static exists(arg: Configuration | string = {}): boolean {
     const config = typeof arg === "string" ? { path: arg } : arg;
     validateConfiguration(config);
@@ -183,14 +191,30 @@ export class Realm {
   }
 
   /**
+   * Open the default Realm asynchronously with a promise.
+   * @returns A promise that will be resolved with the Realm instance when it's available.
+   */
+  public static open(): ProgressRealmPromise;
+
+  /**
    * Open a Realm asynchronously with a promise. If the Realm is synced, it will be fully
    * synchronized before it is available.
-   * In the case of query-based sync, {@link Configuration.scheme | config.schema} is required. An exception will be
-   * thrown if {@link Configuration.scheme | config.schema} is not defined.
-   * @param arg - The configuration for the Realm or the path to it.
+   * @param path - The path for the Realm.
    * @returns A promise that will be resolved with the Realm instance when it's available.
-   * @throws An {@link Error} if anything in the provided {@link arg} is invalid.
    */
+  public static open(path: string): ProgressRealmPromise;
+
+  /**
+   * Open a Realm asynchronously with a promise. If the Realm is synced, it will be fully
+   * synchronized before it is available.
+   * In the case of query-based sync, {@link Configuration.schema} is required. An exception will be
+   * thrown if {@link Configuration.schema} is not defined.
+   * @param config - The configuration for the Realm.
+   * @returns A promise that will be resolved with the Realm instance when it's available.
+   * @throws An {@link Error} if anything in the provided {@link config} is invalid.
+   */
+  public static open(config: Configuration): ProgressRealmPromise;
+
   public static open(arg: Configuration | string = {}): ProgressRealmPromise {
     const config = typeof arg === "string" ? { path: arg } : arg;
     return new ProgressRealmPromise(config);
@@ -905,9 +929,6 @@ export class Realm {
    * @param callback - Function to be called when a change event occurs.
    * Each callback will only be called once per event, regardless of the number of times
    * it was added.
-   * @param callback.realm - The Realm in which the change event occurred.
-   * @param callback.name - The name of the event that occurred.
-   * @param callback.schema - The schema of the Realm file when the event occurred.
    * @throws An {@link Error} if an invalid event {@link eventName} is supplied, if Realm is closed or if {@link callback} is not a function.
    */
   addListener(eventName: RealmEventName, callback: RealmListenerCallback): void {
@@ -1162,33 +1183,43 @@ export namespace Realm {
   export import kmToRadians = internal.kmToRadians;
   export import miToRadians = internal.miToRadians;
 
+  export import AnyCollection = internal.AnyCollection;
+  export import AnyDictionary = internal.AnyDictionary;
+  export import AnyList = internal.AnyList;
+  export import AnyRealmObject = internal.AnyRealmObject;
+  export import AnyResults = internal.AnyResults;
+  export import AnyUser = internal.AnyUser;
+  export import ApiKey = internal.ApiKey;
   export import AppChangeCallback = internal.AppChangeCallback;
+  export import AssertionError = internal.AssertionError;
   export import AppConfiguration = internal.AppConfiguration;
   export import AppServicesFunction = internal.AppServicesFunction;
   export import BaseConfiguration = internal.BaseConfiguration;
   export import BaseObjectSchema = internal.BaseObjectSchema;
   export import BaseSyncConfiguration = internal.BaseSyncConfiguration;
+  export import CanonicalGeoPoint = internal.CanonicalGeoPoint;
+  export import CanonicalGeoPolygon = internal.CanonicalGeoPolygon;
   export import CanonicalObjectSchema = internal.CanonicalObjectSchema;
-  export import CanonicalPropertySchema = internal.CanonicalPropertySchema;
   export import CanonicalPropertiesTypes = internal.CanonicalPropertiesTypes;
-  export import ClientResetMode = internal.ClientResetMode;
-  export import ClientResetFallbackCallback = internal.ClientResetFallbackCallback;
-  export import ClientResetBeforeCallback = internal.ClientResetBeforeCallback;
+  export import CanonicalPropertySchema = internal.CanonicalPropertySchema;
   export import ClientResetAfterCallback = internal.ClientResetAfterCallback;
-  export import ClientResetManualConfiguration = internal.ClientResetManualConfiguration;
-  export import ClientResetDiscardUnsyncedChangesConfiguration = internal.ClientResetDiscardUnsyncedChangesConfiguration;
-  export import ClientResetRecoverUnsyncedChangesConfiguration = internal.ClientResetRecoverUnsyncedChangesConfiguration;
-  export import ClientResetRecoverOrDiscardUnsyncedChangesConfiguration = internal.ClientResetRecoverOrDiscardUnsyncedChangesConfiguration;
+  export import ClientResetBeforeCallback = internal.ClientResetBeforeCallback;
   export import ClientResetConfig = internal.ClientResetConfig;
+  export import ClientResetDiscardUnsyncedChangesConfiguration = internal.ClientResetDiscardUnsyncedChangesConfiguration;
+  export import ClientResetFallbackCallback = internal.ClientResetFallbackCallback;
+  export import ClientResetManualConfiguration = internal.ClientResetManualConfiguration;
+  export import ClientResetMode = internal.ClientResetMode;
+  export import ClientResetRecoverOrDiscardUnsyncedChangesConfiguration = internal.ClientResetRecoverOrDiscardUnsyncedChangesConfiguration;
+  export import ClientResetRecoverUnsyncedChangesConfiguration = internal.ClientResetRecoverUnsyncedChangesConfiguration;
+  export import Collection = internal.Collection;
   export import CollectionChangeCallback = internal.CollectionChangeCallback;
   export import CollectionChangeSet = internal.CollectionChangeSet;
   export import CollectionPropertyTypeName = internal.CollectionPropertyTypeName;
-  export import Collection = internal.Collection;
   export import CompensatingWriteError = internal.CompensatingWriteError;
   export import CompensatingWriteInfo = internal.CompensatingWriteInfo;
+  export import Configuration = internal.Configuration;
   export import ConfigurationWithoutSync = internal.ConfigurationWithoutSync;
   export import ConfigurationWithSync = internal.ConfigurationWithSync;
-  export import Configuration = internal.Configuration;
   export import ConnectionNotificationCallback = internal.ConnectionNotificationCallback;
   export import ConnectionState = internal.ConnectionState;
   export import Credentials = internal.Credentials;
@@ -1199,14 +1230,26 @@ export namespace Realm {
   export import DictionaryChangeSet = internal.DictionaryChangeSet;
   export import ErrorCallback = internal.ErrorCallback;
   export import FlexibleSyncConfiguration = internal.FlexibleSyncConfiguration;
+  export import GeoBox = internal.GeoBox;
+  export import GeoCircle = internal.GeoCircle;
+  export import GeoPoint = internal.GeoPoint;
+  export import GeoPolygon = internal.GeoPolygon;
+  export import GeoPosition = internal.GeoPosition;
   export import IndexDecorator = internal.IndexDecorator;
+  export import IndexedType = internal.IndexedType;
+  export import InitialSubscriptions = internal.InitialSubscriptions;
   export import List = internal.List;
   export import LocalAppConfiguration = internal.LocalAppConfiguration;
+  export import Logger = internal.Logger;
+  export import LoggerCallback = internal.LoggerCallback;
   export import MapToDecorator = internal.MapToDecorator;
-  export import MetadataMode = internal.MetadataMode;
   export import Metadata = internal.Metadata;
+  export import MetadataMode = internal.MetadataMode;
   export import MigrationCallback = internal.MigrationCallback;
+  export import MigrationOptions = internal.MigrationOptions;
   export import Mixed = internal.Types.Mixed;
+  export import MongoDB = internal.MongoDB;
+  export import MongoDBService = internal.MongoDBService;
   export import NumericLogLevel = internal.NumericLogLevel;
   export import ObjectChangeCallback = internal.ObjectChangeCallback;
   export import ObjectChangeSet = internal.ObjectChangeSet;
@@ -1222,6 +1265,7 @@ export namespace Realm {
   export import ProgressDirection = internal.ProgressDirection;
   export import ProgressMode = internal.ProgressMode;
   export import ProgressNotificationCallback = internal.ProgressNotificationCallback;
+  export import ProgressRealmPromise = internal.ProgressRealmPromise;
   export import PropertiesTypes = internal.PropertiesTypes;
   export import PropertySchema = internal.PropertySchema;
   export import PropertySchemaParseError = internal.PropertySchemaParseError;
@@ -1230,11 +1274,14 @@ export namespace Realm {
   export import PropertyTypeName = internal.PropertyTypeName;
   export import ProviderType = internal.ProviderType;
   export import ProxyType = internal.ProxyType;
+  export import RealmEvent = internal.RealmEvent;
   export import RealmEventName = internal.RealmEventName;
+  export import RealmListenerCallback = internal.RealmListenerCallback;
   export import RealmObjectConstructor = internal.RealmObjectConstructor;
   export import RelationshipPropertyTypeName = internal.RelationshipPropertyTypeName;
   export import Results = internal.Results;
   export import SchemaParseError = internal.SchemaParseError;
+  export import SecretApiKey = internal.SecretApiKey;
   export import SessionState = internal.SessionState;
   export import SessionStopPolicy = internal.SessionStopPolicy;
   export import Set = internal.RealmSet;
@@ -1245,18 +1292,17 @@ export namespace Realm {
   export import SubscriptionSetState = internal.SubscriptionSetState;
   export import SyncConfiguration = internal.SyncConfiguration;
   export import SyncError = internal.SyncError;
+  export import SyncProxyConfig = internal.SyncProxyConfig;
+  export import TypeAssertionError = internal.TypeAssertionError;
+  export import Unmanaged = internal.Unmanaged;
   export import UpdateMode = internal.UpdateMode;
-  export import UserChangeCallback = internal.UserChangeCallback;
-  export import UserState = internal.UserState;
   export import User = internal.User;
+  export import UserChangeCallback = internal.UserChangeCallback;
+  export import UserIdentity = internal.UserIdentity;
+  export import UserState = internal.UserState;
   export import WaitForSync = internal.WaitForSync;
-  export import GeoBox = internal.GeoBox;
-  export import GeoCircle = internal.GeoCircle;
-  export import GeoPoint = internal.GeoPoint;
-  export import GeoPolygon = internal.GeoPolygon;
-  export import CanonicalGeoPolygon = internal.CanonicalGeoPolygon;
-  export import CanonicalGeoPoint = internal.CanonicalGeoPoint;
-  export import GeoPosition = internal.GeoPosition;
+  export import WatchOptionsFilter = internal.WatchOptionsFilter;
+  export import WatchOptionsIds = internal.WatchOptionsIds;
 
   // Deprecated exports below
   /** @deprecated Will be removed in v13.0.0. Please use {@link internal.AppServicesFunction} */
@@ -1271,6 +1317,10 @@ export namespace Realm {
   export import ObjectClass = internal.RealmObjectConstructor;
   /** @deprecated Will be removed in v13.0.0. Please use {@link internal.PropertyTypeName} */
   export import PropertyType = internal.PropertyTypeName;
+  /** @deprecated Use the another {@link internal.ClientResetMode} than {@link internal.ClientResetMode.Manual}. */
+  export import ClientResetError = internal.ClientResetError;
+  /** @deprecated Use the another {@link internal.ClientResetMode} than {@link internal.ClientResetMode.Manual}. */
+  export import PushClient = internal.PushClient;
 }
 
 //Set default logger and log level.

@@ -389,6 +389,22 @@ export type ChangeEvent<T extends Document> =
   | DropDatabaseEvent
   | InvalidateEvent;
 
+export type WatchOptionsIds<T extends Document> = {
+  /**
+   * A list of document IDs for which change events you want to watch.
+   */
+  ids: T["_id"][];
+  filter?: never;
+};
+
+export type WatchOptionsFilter = {
+  ids?: never;
+  /**
+   * A filter for which change events you want to watch.
+   */
+  filter: Filter;
+};
+
 /**
  * A remote collection of documents in a MongoDB database.
  */
@@ -651,14 +667,12 @@ export class MongoDBCollection<T extends Document> {
    *
    * 1. Polyfills for `fetch` and `ReadableStream`: https://www.npmjs.com/package/react-native-polyfill-globals
    * 2. Babel plugin enabling async generator syntax: https://npmjs.com/package/@babel/plugin-proposal-async-generator-functions
-   * @param options.filter - A filter for which change events you want to watch.
-   * @param options.ids - A list of document IDs for which change events you want to watch.
    * @returns An async generator of change events.
    * @see https://docs.mongodb.com/manual/reference/change-events/
    */
   watch(): AsyncGenerator<ChangeEvent<T>>;
-  watch(options: { ids: T["_id"][]; filter?: never }): AsyncGenerator<ChangeEvent<T>>;
-  watch(options: { ids?: never; filter: Filter }): AsyncGenerator<ChangeEvent<T>>;
+  watch(options: WatchOptionsIds<T>): AsyncGenerator<ChangeEvent<T>>;
+  watch(options: WatchOptionsFilter): AsyncGenerator<ChangeEvent<T>>;
   async *watch({
     ids,
     filter,

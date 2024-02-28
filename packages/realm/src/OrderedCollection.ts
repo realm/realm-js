@@ -46,13 +46,32 @@ type PropertyType = string;
 export type SortDescriptor = string | [string, boolean];
 
 export type CollectionChangeSet = {
+  /**
+   * The indices in the collection where objects were inserted.
+   */
   insertions: number[];
+  /**
+   * The indices in the collection where objects were modified.
+   */
   deletions: number[];
+  /**
+   * The indices in the collection where objects were modified.
+   */
   newModifications: number[];
+  /**
+   * The indices in the collection where objects were deleted.
+   */
   oldModifications: number[];
 };
+
 export type CollectionChangeCallback<T = unknown, EntryType extends [unknown, unknown] = [unknown, unknown]> = (
+  /**
+   * The collection instance that changed,
+   */
   collection: OrderedCollection<T, EntryType>,
+  /**
+   * An object with information about the changes.
+   */
   changes: CollectionChangeSet,
 ) => void;
 

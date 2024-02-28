@@ -19,7 +19,7 @@
 import type { AnyFetch } from "@realm/fetch";
 import {
   AnyUser,
-  Configuration,
+  BaseConfiguration,
   Credentials,
   DefaultFunctionsFactory,
   DefaultObject,
@@ -66,7 +66,7 @@ export type Metadata = {
   /**
    * The 512-bit (64-byte) encryption key used to encrypt and decrypt meta data in Realm Apps.
    * This will not change the encryption key for individual Realms. This should still be set in
-   * {@link Configuration.encryptionKey} when opening the Realm.
+   * {@link BaseConfiguration.encryptionKey} when opening the Realm.
    * @since 12.2.0
    */
   encryptionKey?: ArrayBuffer;

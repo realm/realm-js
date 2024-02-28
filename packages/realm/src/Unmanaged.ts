@@ -16,9 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { Collection, Dictionary, List, RealmObject } from "./internal";
-import { AnyRealmObject } from "./Object";
+import type { AnyRealmObject, Collection, Dictionary, List, Realm } from "./internal";
 
 /* eslint-disable-next-line @typescript-eslint/no-explicit-any -- We define these once to avoid using "any" through the code */
 export type AnyCollection = Collection<any, any, any, any, any>;
