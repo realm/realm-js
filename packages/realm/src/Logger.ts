@@ -146,7 +146,7 @@ export enum LogCategory {
 /**
  * Type for `Realm.setLogLevel`
  */
-export type LogArgs = {
+export type LogOptions = {
   level: LogLevel;
   category?: LogCategory;
 };
