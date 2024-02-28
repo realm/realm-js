@@ -1,36 +1,44 @@
 ## vNext (TBD)
 
+NOTE: This version bumps the Realm file format to version 24. It is not possible to downgrade to earlier versions. Older files will automatically be upgraded to the new file format. Files created by Realm JavaScript prior to v6.0.0, might not be upgradeable. Only Realm Studio 15.0.0 or later will be able to open the new file format.
+
 ### Deprecations
 * None
 
 ### Enhancements
-* None
+* Updated bundled OpenSSL version to 3.2.0 ([realm/realm-core#7303](https://github.com/realm/realm-core/pull/7303))
+* Property keypath in RQL can be substituted with value given as argument. Use `$P<i>` in query string. ([realm/realm-core#7033](https://github.com/realm/realm-core/issues/7033))
+* You can now use query substitution for the `@type` argument. ([realm/realm-core#7289](https://github.com/realm/realm-core/issues/7289))
+* Storage of `Decimal128` properties has been optimized so that the individual values will take up 0 bits (if all nulls), 32 bits, 64 bits or 128 bits depending on what is needed. ([realm/realm-core#6111]https://github.com/realm/realm-core/pull/6111))
+* Querying a specific entry in a collection (in particular 'first and 'last') is supported. (PR [#4269](https://github.com/realm/realm-core/issues/4269))
+* Index on list of strings property now supported ([realm/realm-core#7142](https://github.com/realm/realm-core/pull/7142))
+* You can set the threshold levels for trace output on individual categories. ([realm/realm-core#7004](https://github.com/realm/realm-core/pull/7004))
+* Improved performance of RQL queries on a non-linked string property using `>`, `>=`, `<`, `<=` operators and fixed behavior that a null string should be evaluated as less than everything, previously nulls were not matched. ([realm/realm-core#3939](https://github.com/realm/realm-core/issues/3939))
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None
+* Align dictionaries to Lists and Sets when they get cleared. ([#6205](https://github.com/realm/realm-core/issues/6205), since v10.3.0-rc.1)
+* Fixed equality queries on a `Mixed` property with an index possibly returning the wrong result if values of different types happened to have the same StringIndex hash. ([realm/realm-core#6407](https://github.com/realm/realm-core/issues/6407) since v10.5.0-beta.1)
+* @count/@size not supported for mixed properties ([realm/realm-core#7280](https://github.com/realm/realm-core/issues/7280), since v10.0.0)
+* Fixed queries like `indexed_property == NONE {x}` which mistakenly matched on only `x` instead of not `x`. This only applies when an indexed property with equality (`==`, or `IN`) matches with `NONE` on a list of one item. If the constant list contained more than one value then it was working correctly. ([realm/realm-java#7862](https://github.com/realm/realm-java/issues/7862), since v10.20.0)
+* Uploading the changesets recovered during an automatic client reset recovery may lead to `Bad server version` errors and a new client reset. ([realm/realm-core#7279](https://github.com/realm/realm-core/issues/7279), since v12.5.0)
+* Fixed crash in full text index using prefix search with no matches ([realm/realm-core#7309](https://github.com/realm/realm-core/issues/7309), since v12.2.0)
+* Fix a race condition when backing up Realm files before a client reset which could have lead to overwriting an existing file. ([realm/realm-core#7341](https://github.com/realm/realm-core/pull/7341)).
 
 ### Compatibility
 * React Native >= v0.71.4
-* Realm Studio v14.0.0.
-* File format: generates Realms with format v23 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
+* Realm Studio v15.0.0.
+* File format: generates Realms with format v24 (reads and upgrades file format v10 or later).
 
 ### Internal
-<!-- * Either mention core version or upgrade -->
-<!-- * Using Realm Core vX.Y.Z -->
-<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
+* Upgraded Realm Core from v13.26.0 to v14.1.0. ([#6499](https://github.com/realm/realm-js/issues/6499))
 
 ## 12.6.2 (2024-03-04)
 
-### Fixed
 * Fixed binding abstraction to allow access of certain properties (`$$typeof` for now) prior to its injection. ([#6522](https://github.com/realm/realm-js/issues/6522), since v12.6.1)
 * Added a missing dependency on `path-browserify`. ([#6522](https://github.com/realm/realm-js/issues/6522), since v12.6.1)
 
-### Compatibility
-* React Native >= v0.71.4
-* Realm Studio v14.0.0.
-* File format: generates Realms with format v23 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
-
+### Internal
+* Using Realm Core v13.26.0.
 
 ## 12.6.1 (2024-02-26)
 

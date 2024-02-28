@@ -20,17 +20,136 @@ import { assert, binding } from "./internal";
 
 export type LogLevel = "all" | "trace" | "debug" | "detail" | "info" | "warn" | "error" | "fatal" | "off";
 
+/**
+ * Log levels used by Realm
+ */
 export enum NumericLogLevel {
+  /**
+   * Same as 'Trace' but with even more output.
+   */
   All = 0,
+  /**
+   * A version of 'Debug' that allows for very high volume
+   * output.
+   */
   Trace = 1,
+  /**
+   * Reveal information that can aid debugging, no longer paying
+   * attention to efficiency.
+   */
   Debug = 2,
+  /**
+   * Same as 'Info', but prioritize completeness over minimalism.
+   */
   Detail = 3,
+  /**
+   * Reveal information about what is going on, but in a
+   * minimalistic fashion to avoid general overhead from logging
+   * and to keep volume down.
+   */
   Info = 4,
+  /**
+   * Be silent unless when there is an error or a warning.
+   */
   Warn = 5,
+  /**
+   * Be silent unless when there is an error.
+   */
   Error = 6,
+  /**
+   * Be silent unless when an error is fatal.
+   */
   Fatal = 7,
+  /**
+   * Be silent.
+   */
   Off = 8,
 }
+
+/**
+ * The category to receive log messages for. The {@link LogLevel} will
+ * always be set for a specific category. Setting the log level on one
+ * category, will automatically set the log level for any subcategory.
+ * @note
+ * When debugging, you might not need log messages from everything. To narrow
+ * this scope, log events can be grouped by category.
+ */
+export enum LogCategory {
+  /**
+   * Include logs from all categories. Subcategories are {@link LogCategory.Storage},
+   * {@link LogCategory.Sync}, {@link LogCategory.App}, and {@link LogCategory.SDK}.
+   */
+  Realm = "Realm",
+  /**
+   * Log database mutations and query operations.
+   * Subcategories are {@link LogCategory.Transaction}, {@link LogCategory.Object},
+   * {@link LogCategory.Query}, and {@link LogCategory.Notification}.
+   */
+  Storage = "Realm.Storage",
+  /**
+   * Log when creating, advancing, and committing transactions.
+   */
+  Transaction = "Realm.Storage.Transaction",
+  /**
+   * Log query operations.
+   */
+  Query = "Realm.Storage.Query",
+  /**
+   * Log database mutations.
+   */
+  Object = "Realm.Storage.Object",
+  /**
+   * Log notifications of changes to the database.
+   */
+  Notification = "Realm.Storage.Notification",
+  /**
+   * Log activity related to Atlas Device Sync.
+   * Subcategories are {@link LogCategory.Client} and {@link LogCategory.Server}.
+   */
+  Sync = "Realm.Sync",
+  /**
+   * Log activity related to Atlas Device Sync client operations.
+   * Subcategories are {@link LogCategory.Session}, {@link LogCategory.Changeset},
+   * {@link LogCategory.Network}, and {@link LogCategory.Reset}.
+   */
+  Client = "Realm.Sync.Client",
+  /**
+   * Log connection level activity.
+   */
+  Session = "Realm.Sync.Client.Session",
+  /**
+   * Log when receiving, uploading, and integrating changesets.
+   */
+  Changeset = "Realm.Sync.Client.Changeset",
+  /**
+   * Log low level network activity.
+   */
+  Network = "Realm.Sync.Client.Network",
+  /**
+   * Log client reset operations.
+   */
+  Reset = "Realm.Sync.Client.Reset",
+  /**
+   * Log activity related to Atlas Device Sync server operations.
+   */
+  Server = "Realm.Sync.Server",
+  /**
+   * Log activity at the Atlas App level.
+   */
+  App = "Realm.App",
+  /**
+   * Log activity at the SDK level.
+   */
+  SDK = "Realm.SDK",
+}
+
+/**
+ * Type for `Realm.setLogLevel`
+ */
+export type LogArgs = {
+  level: LogLevel;
+  category?: LogCategory;
+};
 
 /**
  * A callback passed to `Realm.App.Sync.setLogger` when instrumenting the Atlas Device Sync client with a custom logger.
@@ -40,7 +159,30 @@ export enum NumericLogLevel {
  */
 export type Logger = (level: NumericLogLevel, message: string) => void;
 
-export type LoggerCallback = (level: LogLevel, message: string) => void;
+/**
+ * A callback passed to `Realm.setLogger`.
+ *
+ * @param level   - The level of the log entry.
+ * @param message - The message of the log entry.
+ * @since 12.0.0
+ * @deprecated Will be removed in v13.0.0
+ */
+export type LoggerCallback1 = (level: LogLevel, message: string) => void;
+export type LoggerCallbackArgs = {
+  category: LogCategory;
+  level: LogLevel;
+  message: string;
+};
+/**
+ * A callback passed to `Realm.setLogger`. Arguments are passed as a POJO.
+ *
+ * @param category   - The category (origin) of the log entry.
+ * @param level      - The level of the log entry.
+ * @param message    - The message of the log entry.
+ * @since
+ */
+export type LoggerCallback2 = (args: LoggerCallbackArgs) => void;
+export type LoggerCallback = LoggerCallback1 | LoggerCallback2;
 
 /** @internal */
 export function toBindingLoggerLevel(arg: LogLevel): binding.LoggerLevel {
