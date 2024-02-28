@@ -1459,8 +1459,7 @@ describe("Observable", () => {
           ]);
         });
 
-        // TODO: Enable when this issue is fixed: https://github.com/realm/realm-core/issues/7335
-        it.skip("fires when inserting, updating, and deleting in nested list", async function (this: CollectionsInMixedContext) {
+        it("fires when inserting, updating, and deleting in nested list", async function (this: CollectionsInMixedContext) {
           const list = this.objectWithList.mixed;
           expectRealmList(list);
 
@@ -1523,8 +1522,7 @@ describe("Observable", () => {
           ]);
         });
 
-        // TODO: Enable when this issue is fixed: https://github.com/realm/realm-core/issues/7335
-        it.skip("fires when inserting, updating, and deleting in nested dictionary", async function (this: CollectionsInMixedContext) {
+        it("fires when inserting, updating, and deleting in nested dictionary", async function (this: CollectionsInMixedContext) {
           const list = this.objectWithList.mixed;
           expectRealmList(list);
 
