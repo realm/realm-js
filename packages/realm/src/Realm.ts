@@ -159,6 +159,31 @@ export class Realm {
    * @param loggerCallback - The callback invoked by the logger. The default callback uses `console.log`, `console.warn` and `console.error`, depending on the level of the message.
    * @note The logger callback needs to be setup before opening the first Realm.
    * @since 12.0.0
+   * @deprecated Pass a callback taking a single object argument instead.
+   * @example
+   * Realm.setLogger((level, message) => {
+   *   console.log(`[${level}] ${message}`);
+   * });
+   */
+  static setLogger(loggerCallback: LoggerCallback1): void;
+
+  /**
+   * Sets the logger callback.
+   * @param loggerCallback - The callback invoked by the logger. The default callback uses `console.log`, `console.warn` and `console.error`, depending on the level of the message.
+   * @note The logger callback needs to be setup before opening the first Realm.
+   * @since 12.0.0
+   * @example
+   * Realm.setLogger(({ category, level, message }) => {
+   *   console.log(`[${category} - ${level}] ${message}`);
+   * });
+   */
+  static setLogger(loggerCallback: LoggerCallback2): void;
+
+  /**
+   * Sets the logger callback.
+   * @param loggerCallback - The callback invoked by the logger. The default callback uses `console.log`, `console.warn` and `console.error`, depending on the level of the message.
+   * @note The logger callback needs to be setup before opening the first Realm.
+   * @since 12.0.0
    * @example
    * Realm.setLogger(({ category, level, message }) => {
    *   console.log(`[${category} - ${level}] ${message}`);
