@@ -307,13 +307,12 @@ describe("Dictionary", () => {
       });
     });
 
-    // This is currently not supported
-    it.skip("can store dictionary values using string keys", function (this: RealmContext) {
+    it("can store dictionary values using string keys", function (this: RealmContext) {
       const item = this.realm.write(() => {
         const item = this.realm.create<Item>("Item", {});
         const item2 = this.realm.create<Item>("Item", {});
-        item2.dict.key1 = "Hello";
-        item.dict.key1 = item2.dict;
+        item2.dict.key1 = "hello";
+        item.dict.key1 = item2;
         return item;
       });
       // @ts-expect-error We expect a dictionary inside dictionary
