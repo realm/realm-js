@@ -221,12 +221,12 @@ export function fromBindingLoggerLevelToLogLevel(arg: binding.LoggerLevel): LogL
 }
 
 /** @internal */
-export const defaultLogger: LoggerCallback = function (logLevel: LogLevel, message: string) {
-  const formattedLogMessage = `[${logLevel}] ${message}`;
+export const defaultLogger: LoggerCallback2 = function ({ category, level, message }) {
+  const formattedLogMessage = `[${category} - ${level}] ${message}`;
   /* eslint-disable no-console */
-  if (logLevel === "error" || logLevel === "fatal") {
+  if (level === "error" || level === "fatal") {
     console.error(formattedLogMessage);
-  } else if (logLevel === "warn") {
+  } else if (level === "warn") {
     console.warn(formattedLogMessage);
   } else {
     console.log(formattedLogMessage);
