@@ -1305,21 +1305,21 @@ export namespace Realm {
   export import WatchOptionsIds = internal.WatchOptionsIds;
 
   // Deprecated exports below
-  /** @deprecated Will be removed in v13.0.0. Please use {@link internal.AppServicesFunction} */
+  /** @deprecated Will be removed in v13.0.0. Please use {@link internal.AppServicesFunction | AppServicesFunction} */
   export import RealmFunction = internal.AppServicesFunction;
-  /** @deprecated Will be removed in v13.0.0. Please use {@link internal.CanonicalPropertySchema} */
+  /** @deprecated Will be removed in v13.0.0. Please use {@link internal.CanonicalPropertySchema | CanonicalPropertySchema} */
   export import CanonicalObjectSchemaProperty = internal.CanonicalPropertySchema;
-  /** @deprecated Will be removed in v13.0.0. Please use {@link internal.ClientResetRecoverUnsyncedChangesConfiguration} */
+  /** @deprecated Will be removed in v13.0.0. Please use {@link internal.ClientResetRecoverUnsyncedChangesConfiguration | ClientResetRecoverUnsyncedChangesConfiguration} */
   export import ClientResetRecoveryConfiguration = internal.ClientResetRecoverUnsyncedChangesConfiguration;
-  /** @deprecated Will be removed in v13.0.0. Please use {@link internal.PropertySchema} */
+  /** @deprecated Will be removed in v13.0.0. Please use {@link internal.PropertySchema | PropertySchema} */
   export import ObjectSchemaProperty = internal.PropertySchema;
-  /** @deprecated Will be removed in v13.0.0. Please use {@link internal.RealmObjectConstructor} */
+  /** @deprecated Will be removed in v13.0.0. Please use {@link internal.RealmObjectConstructor | RealmObjectConstructor} */
   export import ObjectClass = internal.RealmObjectConstructor;
-  /** @deprecated Will be removed in v13.0.0. Please use {@link internal.PropertyTypeName} */
+  /** @deprecated Will be removed in v13.0.0. Please use {@link internal.PropertyTypeName | PropertyTypeName} */
   export import PropertyType = internal.PropertyTypeName;
-  /** @deprecated Use the another {@link internal.ClientResetMode} than {@link internal.ClientResetMode.Manual}. */
+  /** @deprecated Use the another {@link internal.ClientResetMode | ClientResetMode} than {@link internal.ClientResetMode.Manual | ClientResetMode.Manual}. */
   export import ClientResetError = internal.ClientResetError;
-  /** @deprecated Use the another {@link internal.ClientResetMode} than {@link internal.ClientResetMode.Manual}. */
+  /** @deprecated See https://www.mongodb.com/docs/atlas/app-services/reference/push-notifications/ */
   export import PushClient = internal.PushClient;
 }
 

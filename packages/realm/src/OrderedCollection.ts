@@ -51,22 +51,22 @@ export type CollectionChangeSet = {
    */
   insertions: number[];
   /**
-   * The indices in the collection where objects were modified.
+   * The indices in the collection where objects were deleted.
    */
   deletions: number[];
   /**
-   * The indices in the collection where objects were modified.
+   * The indices in the new state of the collection where objects were modified.
    */
   newModifications: number[];
   /**
-   * The indices in the collection where objects were deleted.
+   * The indices in the old state of the collection where objects were modified.
    */
   oldModifications: number[];
 };
 
 export type CollectionChangeCallback<T = unknown, EntryType extends [unknown, unknown] = [unknown, unknown]> = (
   /**
-   * The collection instance that changed,
+   * The collection instance that changed.
    */
   collection: OrderedCollection<T, EntryType>,
   /**

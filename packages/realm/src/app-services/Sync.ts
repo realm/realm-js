@@ -192,7 +192,7 @@ export namespace Sync {
   export import SubscriptionOptions = internal.SubscriptionOptions;
   export import SubscriptionSet = internal.SubscriptionSet;
   export import SubscriptionSetState = internal.SubscriptionSetState;
-  /** @deprecated Please use {@link internal.SubscriptionSetState} */
+  /** @deprecated Please use {@link internal.SubscriptionSetState | SubscriptionSetState} */
   export import SubscriptionsState = internal.SubscriptionSetState;
   export import Subscription = internal.Subscription;
   export import Session = internal.SyncSession;

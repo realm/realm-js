@@ -32,7 +32,8 @@ export type ObjectChangeSet<T> = {
 export type ObjectChangeCallback<T> = (
   /**
    * The object that changed.
-   */ object: RealmObject<T> & T,
+   */
+  object: RealmObject<T> & T,
   /**
    * A dictionary with information about the changes.
    */
