@@ -195,6 +195,7 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
         typeHelpers: itemHelpers,
         isObjectItem: itemType === binding.PropertyType.Object,
         isEmbedded: embedded,
+        isMixedItem: itemType === binding.PropertyType.Mixed,
       });
 
       return {
@@ -257,7 +258,8 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
       optional,
       objectSchemaName: undefined,
     });
-    const dictionaryAccessor = createDictionaryAccessor({ realm, typeHelpers: itemHelpers });
+    const isMixedItem = itemType === binding.PropertyType.Mixed;
+    const dictionaryAccessor = createDictionaryAccessor({ realm, typeHelpers: itemHelpers, isMixedItem });
     return {
       get(obj) {
         const internal = binding.Dictionary.make(realm.internal, obj, columnKey);
