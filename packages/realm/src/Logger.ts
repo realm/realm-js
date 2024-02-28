@@ -161,27 +161,29 @@ export type Logger = (level: NumericLogLevel, message: string) => void;
 
 /**
  * A callback passed to `Realm.setLogger`.
- *
  * @param level   - The level of the log entry.
  * @param message - The message of the log entry.
  * @since 12.0.0
  * @deprecated Will be removed in v13.0.0
  */
 export type LoggerCallback1 = (level: LogLevel, message: string) => void;
-export type LoggerCallbackArgs = {
+
+/**
+ * Represents an entry in the log.
+ */
+export type LogEntry = {
+  /** The category (origin) of the log entry. */
   category: LogCategory;
+  /** The level of the log entry. */
   level: LogLevel;
+  /** The message of the log entry. */
   message: string;
 };
 /**
- * A callback passed to `Realm.setLogger`. Arguments are passed as a POJO.
- *
- * @param category   - The category (origin) of the log entry.
- * @param level      - The level of the log entry.
- * @param message    - The message of the log entry.
- * @since
+ * A callback passed to `Realm.setLogger`. Arguments are passed as an object.
+ * @since 12.7.0
  */
-export type LoggerCallback2 = (args: LoggerCallbackArgs) => void;
+export type LoggerCallback2 = (entry: LogEntry) => void;
 export type LoggerCallback = LoggerCallback1 | LoggerCallback2;
 
 /** @internal */
