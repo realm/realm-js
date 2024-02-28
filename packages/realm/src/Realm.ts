@@ -134,32 +134,23 @@ export class Realm {
     const setLevel = (category: LogCategory, level: LogLevel) => {
       assert(Object.values(LogCategory).includes(category));
       const ref = binding.LogCategoryRef;
-      const c = ref.getCategory(category);
-      c.setDefaultLevelThreshold(toBindingLoggerLevel(level));
+      const categoryRef = ref.getCategory(category);
+      categoryRef.setDefaultLevelThreshold(toBindingLoggerLevel(level));
     };
 
-    // FIXME: don't use `arguments` but find a proper type
-    if (arguments.length === 1) {
-      // eslint-disable-next-line prefer-rest-params
-      const arg = arguments[0];
-      if (arg.level) {
-        const level = arg.level as LogLevel;
-        if (arg.category) {
-          const category = arg.category as LogCategory;
-          setLevel(category, level);
-        } else {
-          Object.values(LogCategory).forEach((category) => {
-            setLevel(category, level);
-          });
-        }
-      } else {
-        const level = arg as LogLevel;
-        Object.values(LogCategory).forEach((category) => {
-          setLevel(category, level);
-        });
+    if (typeof arg === "string") {
+      for (const category of Object.values(LogCategory)) {
+        setLevel(category, arg);
       }
     } else {
-      throw new Error(`Wrong number of arguments - expected 1, got ${arguments.length}`);
+      const { level, category } = arg;
+      if (category) {
+        setLevel(category, level);
+      } else {
+        for (const category of Object.values(LogCategory)) {
+          setLevel(category, level);
+        }
+      }
     }
   }
 
