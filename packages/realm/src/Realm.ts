@@ -29,9 +29,9 @@ import {
   INTERNAL,
   InitialSubscriptions,
   List,
-  LogArgs,
   LogCategory,
   LogLevel,
+  LogOptions,
   LoggerCallback,
   LoggerCallback1,
   LoggerCallback2,
@@ -111,18 +111,26 @@ export class Realm {
   private static internals = new Set<binding.WeakRef<binding.Realm>>();
 
   /**
-   * Sets the log level.
+   * Sets the log level across all levels.
    * @param level - The log level to be used by the logger. The default value is `info`.
    * @param category - The category/component to set the log level for. If omitted, log level is set for all known categories.
    * @note The log level can be changed during the lifetime of the application.
    * @since 12.0.0
    * @example
+   * Realm.setLogLevel("all");
+   */
+  static setLogLevel(level: LogLevel): void;
+
+  /**
+   * Sets the log level for a specific category.
+   * @note The log level can be changed during the lifetime of the application.
+   * @since 12.0.0
+   * @example
    * Realm.setLogLevel({ category: LogCategory.Realm, level: "all" });
    */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  static setLogLevel(_: LogLevel | LogArgs) {
-    // It is not possible to overload a static function: https://github.com/microsoft/TypeScript/issues/18945
+  static setLogLevel(options: LogOptions): void;
 
+  static setLogLevel(arg: LogLevel | LogOptions) {
     const setLevel = (category: LogCategory, level: LogLevel) => {
       assert(Object.values(LogCategory).includes(category));
       const ref = binding.LogCategoryRef;
