@@ -29,8 +29,12 @@ import {
   INTERNAL,
   InitialSubscriptions,
   List,
+  LogArgs,
+  LogCategory,
   LogLevel,
   LoggerCallback,
+  LoggerCallback1,
+  LoggerCallback2,
   MigrationCallback,
   ObjectSchema,
   ProgressRealmPromise,
@@ -109,24 +113,75 @@ export class Realm {
   /**
    * Sets the log level.
    * @param level - The log level to be used by the logger. The default value is `info`.
+   * @param category - The category/component to set the log level for. If omitted, log level is set for all known categories.
    * @note The log level can be changed during the lifetime of the application.
    * @since 12.0.0
+   * @example
+   * Realm.setLogLevel({ category: LogCategory.Realm, level: "all" });
    */
-  static setLogLevel(level: LogLevel) {
-    const bindingLoggerLevel = toBindingLoggerLevel(level);
-    binding.Logger.setDefaultLevelThreshold(bindingLoggerLevel);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  static setLogLevel(_: LogLevel | LogArgs) {
+    // It is not possible to overload a static function: https://github.com/microsoft/TypeScript/issues/18945
+
+    const setLevel = (category: LogCategory, level: LogLevel) => {
+      assert(Object.values(LogCategory).includes(category));
+      const ref = binding.LogCategoryRef;
+      const c = ref.getCategory(category);
+      c.setDefaultLevelThreshold(toBindingLoggerLevel(level));
+    };
+
+    // FIXME: don't use `arguments` but find a proper type
+    if (arguments.length === 1) {
+      // eslint-disable-next-line prefer-rest-params
+      const arg = arguments[0];
+      if (arg.level) {
+        const level = arg.level as LogLevel;
+        if (arg.category) {
+          const category = arg.category as LogCategory;
+          setLevel(category, level);
+        } else {
+          Object.values(LogCategory).forEach((category) => {
+            setLevel(category, level);
+          });
+        }
+      } else {
+        const level = arg as LogLevel;
+        Object.values(LogCategory).forEach((category) => {
+          setLevel(category, level);
+        });
+      }
+    } else {
+      throw new Error(`Wrong number of arguments - expected 1, got ${arguments.length}`);
+    }
   }
 
   /**
    * Sets the logger callback.
    * @param loggerCallback - The callback invoked by the logger. The default callback uses `console.log`, `console.warn` and `console.error`, depending on the level of the message.
-   * @note The logger callback needs to be setup before opening the first realm.
+   * @note The logger callback needs to be setup before opening the first Realm.
    * @since 12.0.0
+   * @example
+   * Realm.setLogger(({ category, level, message }) => {
+   *   console.log(`[${category} - ${level}] ${message}`);
+   * });
    */
   static setLogger(loggerCallback: LoggerCallback) {
-    const logger = binding.Helpers.makeLogger((level, message) => {
-      loggerCallback(fromBindingLoggerLevelToLogLevel(level), message);
-    });
+    let logger: binding.Logger;
+
+    // This is a hack to check which of the two logger callbacks which are used
+    // It only works as the two callback type have different number of arguments, and it will
+    // probably produce odd error messages if the logger is set by `setLogger((...args) => console.log(args))`.
+    if (loggerCallback.length === 2) {
+      const cb = loggerCallback as LoggerCallback1;
+      logger = binding.Helpers.makeLogger((_category, level, message) => {
+        cb(fromBindingLoggerLevelToLogLevel(level), message);
+      });
+    } else {
+      const cb = loggerCallback as LoggerCallback2;
+      logger = binding.Helpers.makeLogger((category, level, message) => {
+        cb({ category: category as LogCategory, level: fromBindingLoggerLevelToLogLevel(level), message });
+      });
+    }
     binding.Logger.setDefaultLogger(logger);
   }
 
