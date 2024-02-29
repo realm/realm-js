@@ -23,7 +23,7 @@ declare module "../app-services/App" {
     /**
      * Get the base URL.
      */
-    baseUrl: string;
+    get baseUrl(): string;
     /**
      * Switch the base URL.
      */
