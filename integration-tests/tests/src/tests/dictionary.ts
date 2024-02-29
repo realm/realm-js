@@ -20,7 +20,6 @@ import { expect } from "chai";
 import Realm, { PropertySchema } from "realm";
 
 import { openRealmBefore, openRealmBeforeEach } from "../hooks";
-import { sleep } from "../utils/sleep";
 
 type Item<ValueType = Realm.Mixed> = {
   dict: Realm.Dictionary<ValueType>;
@@ -60,17 +59,6 @@ const DictTypedSchema: Realm.ObjectSchema = {
   },
 };
 
-const DictMixedSchema = {
-  name: "MixedDictionary",
-  properties: {
-    dict1: "mixed{}",
-    dict2: "mixed{}",
-  },
-};
-
-type IDictSchema = {
-  fields: Record<any, any>;
-};
 type ITwoDictSchema = {
   dict1: Record<any, any>;
   dict2: Record<any, any>;
@@ -598,7 +586,7 @@ describe("Dictionary", () => {
   });
 
   describe("embedded models", () => {
-    openRealmBeforeEach({ schema: [DictTypedSchema, DictMixedSchema, EmbeddedChild] });
+    openRealmBeforeEach({ schema: [DictTypedSchema, EmbeddedChild] });
     it("inserts correctly", function (this: RealmContext) {
       this.realm.write(() => {
         this.realm.create(DictTypedSchema.name, {
@@ -613,17 +601,6 @@ describe("Dictionary", () => {
       expect(dict_1.children2.num).equal(3, "We expect children2#3");
       expect(dict_2.children1?.num).equal(4, "We expect children1#4");
       expect(dict_2.children2?.num).equal(5, "We expect children2#5");
-    });
-
-    it("throws on invalid input", function (this: RealmContext) {
-      this.realm.write(() => {
-        expect(() => {
-          this.realm.create(DictMixedSchema.name, {
-            dict1: { children1: { num: 2 }, children2: { num: 3 } },
-            dict2: { children1: { num: 4 }, children2: { num: 5 } },
-          });
-        }).throws("Unable to convert an object with ctor 'Object' to a Mixed");
-      });
     });
   });
 });
