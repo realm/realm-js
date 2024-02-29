@@ -258,8 +258,13 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
       optional,
       objectSchemaName: undefined,
     });
-    const isMixedItem = itemType === binding.PropertyType.Mixed;
-    const dictionaryAccessor = createDictionaryAccessor({ realm, typeHelpers: itemHelpers, isMixedItem });
+    const dictionaryAccessor = createDictionaryAccessor({
+      realm,
+      typeHelpers: itemHelpers,
+      isEmbedded: embedded,
+      isMixedItem: itemType === binding.PropertyType.Mixed,
+    });
+
     return {
       get(obj) {
         const internal = binding.Dictionary.make(realm.internal, obj, columnKey);
@@ -272,11 +277,7 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
         assert.object(value, `values of ${name}`);
         for (const [k, v] of Object.entries(value)) {
           try {
-            if (embedded) {
-              itemHelpers.toBinding(v, { createObj: () => [internal.insertEmbedded(k), true] });
-            } else {
-              internal.insertAny(k, itemHelpers.toBinding(v));
-            }
+            dictionaryAccessor.set(internal, k, v);
           } catch (err) {
             if (err instanceof TypeAssertionError) {
               err.rename(`${name}["${k}"]`);

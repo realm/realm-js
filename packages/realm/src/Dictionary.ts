@@ -332,6 +332,7 @@ export type DictionaryAccessor<T = unknown> = TypeHelpers<T> & {
 type DictionaryAccessorFactoryOptions<T> = {
   realm: Realm;
   typeHelpers: TypeHelpers<T>;
+  isEmbedded?: boolean;
   isMixedItem?: boolean;
 };
 
@@ -357,10 +358,11 @@ function createDictionaryAccessorForMixed<T>({
 function createDictionaryAccessorForKnownType<T>({
   realm,
   typeHelpers: { fromBinding, toBinding },
-}: Pick<DictionaryAccessorFactoryOptions<T>, "realm" | "typeHelpers">): DictionaryAccessor<T> {
+  isEmbedded,
+}: Omit<DictionaryAccessorFactoryOptions<T>, "isMixed">): DictionaryAccessor<T> {
   return {
     get: (...args) => getKnownType(fromBinding, ...args),
-    set: (...args) => setKnownType(realm, toBinding, ...args),
+    set: (...args) => setKnownType(realm, toBinding, !!isEmbedded, ...args),
     snapshotGet: (...args) => snapshotGetKnownType(fromBinding, ...args),
     fromBinding,
     toBinding,
@@ -408,12 +410,18 @@ function snapshotGetMixed<T>(realm: Realm, typeHelpers: TypeHelpers<T>, snapshot
 function setKnownType<T>(
   realm: Realm,
   toBinding: TypeHelpers<T>["toBinding"],
+  isEmbedded: boolean,
   dictionary: binding.Dictionary,
   key: string,
   value: T,
 ): void {
   assert.inTransaction(realm);
-  dictionary.insertAny(key, toBinding(value));
+
+  if (isEmbedded) {
+    toBinding(value, { createObj: () => [dictionary.insertEmbedded(key), true] });
+  } else {
+    dictionary.insertAny(key, toBinding(value));
+  }
 }
 
 function setMixed<T>(
