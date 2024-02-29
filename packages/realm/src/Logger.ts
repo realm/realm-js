@@ -187,6 +187,33 @@ export type LoggerCallback2 = (entry: LogEntry) => void;
 export type LoggerCallback = LoggerCallback1 | LoggerCallback2;
 
 /** @internal */
+export function toBindingLogger(logger: LoggerCallback) {
+  if (isLoggerWithLevel(logger)) {
+    return binding.Helpers.makeLogger((_, level, message) => {
+      logger(fromBindingLoggerLevelToLogLevel(level), message);
+    });
+  }
+  if (isLoggerWithOptions(logger)) {
+    return binding.Helpers.makeLogger((category, level, message) => {
+      logger({
+        category: category as LogCategory,
+        level: fromBindingLoggerLevelToLogLevel(level),
+        message,
+      });
+    });
+  }
+  throw new Error(`Unexpected logger passed.`);
+}
+
+function isLoggerWithLevel(logger: unknown): logger is LoggerCallback1 {
+  return typeof logger === "function" && logger.length === 2;
+}
+
+function isLoggerWithOptions(logger: unknown): logger is LoggerCallback2 {
+  return typeof logger === "function" && logger.length === 1;
+}
+
+/** @internal */
 export function toBindingLoggerLevel(arg: LogLevel): binding.LoggerLevel {
   const bindingLogLevel = inverseTranslationTable[arg];
   assert(bindingLogLevel !== undefined, `Unexpected log level: ${arg}`);

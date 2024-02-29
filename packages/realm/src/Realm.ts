@@ -56,12 +56,12 @@ import {
   defaultLoggerLevel,
   extendDebug,
   flags,
-  fromBindingLoggerLevelToLogLevel,
   fromBindingRealmSchema,
   fs,
   normalizeObjectSchema,
   normalizeRealmSchema,
   toArrayBuffer,
+  toBindingLogger,
   toBindingLoggerLevel,
   toBindingSchema,
   toBindingSyncConfig,
@@ -182,23 +182,7 @@ export class Realm {
    * });
    */
   static setLogger(loggerCallback: LoggerCallback) {
-    let logger: binding.Logger;
-
-    // This is a hack to check which of the two logger callbacks which are used
-    // It only works as the two callback type have different number of arguments, and it will
-    // probably produce odd error messages if the logger is set by `setLogger((...args) => console.log(args))`.
-    if (loggerCallback.length === 2) {
-      const cb = loggerCallback as LoggerCallback1;
-      logger = binding.Helpers.makeLogger((_category, level, message) => {
-        cb(fromBindingLoggerLevelToLogLevel(level), message);
-      });
-    } else {
-      const cb = loggerCallback as LoggerCallback2;
-      logger = binding.Helpers.makeLogger((category, level, message) => {
-        cb({ category: category as LogCategory, level: fromBindingLoggerLevelToLogLevel(level), message });
-      });
-    }
-    binding.Logger.setDefaultLogger(logger);
+    binding.Logger.setDefaultLogger(toBindingLogger(loggerCallback));
   }
 
   /**
