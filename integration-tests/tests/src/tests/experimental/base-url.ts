@@ -21,13 +21,15 @@ import { App } from "realm";
 import "realm/experimental/base-url";
 
 describe("Experimental", () => {
-  it("switches base URL", function (this: Mocha.Context) {
+  it("switches base URL", async function (this: Mocha.Context) {
     const app = new App("12345");
-    expect(app.baseUrl).equals("https://example");
+    expect(app.baseUrl).equals("https://realm.mongodb.com");
+
     // @ts-expect-error Assigning to read-only property.
     expect(() => (app.baseUrl = "new URL")).to.throw("Cannot assign the base URL, please use `switchBaseUrl()`");
-    expect(app.baseUrl).equals("https://example");
-    // With the dummy implementation it doesn't actually switch anything.
-    app.switchBaseUrl("something else");
+    expect(app.baseUrl).equals("https://realm.mongodb.com");
+
+    // Switching to a URL that will not work.
+    expect(app.switchBaseUrl("https://example")).to.be.rejectedWith("Error: request to https://example/");
   });
 });
