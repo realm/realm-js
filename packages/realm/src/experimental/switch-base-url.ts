@@ -21,11 +21,26 @@ import { App } from "../app-services/App";
 declare module "../app-services/App" {
   interface App {
     /**
-     * Switch the base URL of the App.
+     * Get the base URL.
+     */
+    baseUrl: string;
+    /**
+     * Switch the base URL.
      */
     switchBaseUrl(url: string): void;
   }
 }
+
+Object.defineProperty(App.prototype, "baseUrl", {
+  get() {
+    // TODO: Implementation
+    console.log(`(App ID: ${this.id}) Returning base URL..`);
+    return "https://example";
+  },
+  set() {
+    throw new Error("Cannot assign the base URL, please use `switchBaseUrl()`.");
+  },
+});
 
 App.prototype.switchBaseUrl = function (this: App) {
   // TODO: Implementation
