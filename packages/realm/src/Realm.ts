@@ -273,7 +273,7 @@ export class Realm {
    * Check if the Realm file format will be upgraded during opening the file.
    * @param arg - The configuration for the Realm or the path to it.
    * @returns `true` if the Realm file is using an older file format, otherwise `false`.
-   * @since 12.8.0
+   * @since 12.7.0
    */
   public static needsFileFormatUpgrade(arg: Configuration | string = {}): boolean {
     const config = typeof arg === "string" ? { path: arg } : arg;
