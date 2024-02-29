@@ -42,9 +42,9 @@
       "node": "./dist/platform/node/index.js",
       "react-native": "./index.react-native.js"
     },
-    "./experimental/switch-base-url": {
-      "types": "./dist/public-types/experimental/switch-base-url.d.ts",
-      "default": "./dist/experimental/switch-base-url.js"
+    "./experimental/base-url": {
+      "types": "./dist/public-types/experimental/base-url.d.ts",
+      "default": "./dist/experimental/base-url.js"
     },
     "./scripts/submit-analytics": "./scripts/submit-analytics.mjs",
     "./react-native.config.js": "./react-native.config.js",

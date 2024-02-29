@@ -22,7 +22,7 @@ import "./tests/credentials/email-password";
 import "./tests/credentials/function";
 import "./tests/credentials/jwt";
 
-import "./tests/experimental/switch-base-url";
+import "./tests/experimental/base-url";
 
 import "./tests/sync/app";
 import "./tests/sync/asymmetric";

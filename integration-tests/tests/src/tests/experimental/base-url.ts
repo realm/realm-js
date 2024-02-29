@@ -18,7 +18,7 @@
 
 import { expect } from "chai";
 import { App } from "realm";
-import "realm/experimental/switch-base-url";
+import "realm/experimental/base-url";
 
 describe("Experimental", () => {
   it("switches base URL", function (this: Mocha.Context) {
