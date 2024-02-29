@@ -96,7 +96,7 @@
     "@types/mocha": "^10.0.6",
     "chai": "4.3.6",
     "fs-extra": "^11.2.0",
-    "mocha": "^10.2.0"
+    "mocha": "^10.3.0"
   },
   "engines": {
     "node": ">=18"

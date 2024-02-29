@@ -354,7 +354,7 @@
     "cmake-js": "6.3.2",
     "command-line-args": "^5.2.1",
     "cross-env": "^7.0.3",
-    "mocha": "^10.1.0",
+    "mocha": "^10.3.0",
     "path-browserify": "^1.0.1",
     "prebuild": "^12.1.0",
     "react-native": "0.73.2",
