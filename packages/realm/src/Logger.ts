@@ -192,8 +192,7 @@ export function toBindingLogger(logger: LoggerCallback) {
     return binding.Helpers.makeLogger((_, level, message) => {
       logger(fromBindingLoggerLevelToLogLevel(level), message);
     });
-  }
-  if (isLoggerWithOptions(logger)) {
+  } else {
     return binding.Helpers.makeLogger((category, level, message) => {
       logger({
         category: category as LogCategory,
