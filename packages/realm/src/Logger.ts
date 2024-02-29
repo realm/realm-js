@@ -201,15 +201,10 @@ export function toBindingLogger(logger: LoggerCallback) {
       });
     });
   }
-  throw new Error(`Unexpected logger passed.`);
 }
 
-function isLoggerWithLevel(logger: unknown): logger is LoggerCallback1 {
-  return typeof logger === "function" && logger.length === 2;
-}
-
-function isLoggerWithOptions(logger: unknown): logger is LoggerCallback2 {
-  return typeof logger === "function" && logger.length === 1;
+function isLoggerWithLevel(logger: LoggerCallback): logger is LoggerCallback1 {
+  return logger.length === 2;
 }
 
 /** @internal */

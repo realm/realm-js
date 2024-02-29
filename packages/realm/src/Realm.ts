@@ -182,6 +182,7 @@ export class Realm {
    * });
    */
   static setLogger(loggerCallback: LoggerCallback) {
+    assert.function(loggerCallback);
     binding.Logger.setDefaultLogger(toBindingLogger(loggerCallback));
   }
 
