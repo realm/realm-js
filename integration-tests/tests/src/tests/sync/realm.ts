@@ -1999,7 +1999,7 @@ describe("Realmtest", () => {
       expect(() => {
         new Realm(config);
       }).throws(
-        "File format upgrade is needed and setting 'deleteRealmIfMigrationNeeded' to true will erase all objects. Only use 'deleteRealmIfMigrationNeeded' for non-production cases."
+        "File format upgrade is needed and setting 'deleteRealmIfMigrationNeeded' to true will erase all objects. Only use 'deleteRealmIfMigrationNeeded' for non-production cases.",
       );
     });
   });
