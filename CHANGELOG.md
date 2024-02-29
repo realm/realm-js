@@ -15,12 +15,13 @@ NOTE: This version bumps the Realm file format to version 24. It is not possible
 * Index on list of strings property now supported ([realm/realm-core#7142](https://github.com/realm/realm-core/pull/7142))
 * You can set the threshold levels for trace output on individual categories. ([realm/realm-core#7004](https://github.com/realm/realm-core/pull/7004))
 * Improved performance of RQL queries on a non-linked string property using `>`, `>=`, `<`, `<=` operators and fixed behavior that a null string should be evaluated as less than everything, previously nulls were not matched. ([realm/realm-core#3939](https://github.com/realm/realm-core/issues/3939))
+* Added static method `Realm.needsFileFormatUpgrade()` which returns `true` if the Realm will be upgraded when opening.
 
 ### Fixed
 * Align dictionaries to Lists and Sets when they get cleared. ([#6205](https://github.com/realm/realm-core/issues/6205), since v10.3.0-rc.1)
 * Fixed equality queries on a `Mixed` property with an index possibly returning the wrong result if values of different types happened to have the same StringIndex hash. ([realm/realm-core#6407](https://github.com/realm/realm-core/issues/6407) since v10.5.0-beta.1)
 * @count/@size not supported for mixed properties ([realm/realm-core#7280](https://github.com/realm/realm-core/issues/7280), since v10.0.0)
-* Fixed queries like `indexed_property == NONE {x}` which mistakenly matched on only `x` instead of not `x`. This only applies when an indexed property with equality (`==`, or `IN`) matches with `NONE` on a list of one item. If the constant list contained more than one value then it was working correctly. ([realm/realm-java#7862](https://github.com/realm/realm-java/issues/7862), since v10.20.0) 
+* Fixed queries like `indexed_property == NONE {x}` which mistakenly matched on only `x` instead of not `x`. This only applies when an indexed property with equality (`==`, or `IN`) matches with `NONE` on a list of one item. If the constant list contained more than one value then it was working correctly. ([realm/realm-java#7862](https://github.com/realm/realm-java/issues/7862), since v10.20.0)
 * Uploading the changesets recovered during an automatic client reset recovery may lead to `Bad server version` errors and a new client reset. ([realm/realm-core#7279](https://github.com/realm/realm-core/issues/7279), since v12.5.0)
 * Fixed crash in full text index using prefix search with no matches ([realm/realm-core#7309](https://github.com/realm/realm-core/issues/7309), since v12.2.0)
 * Fix a race condition when backing up Realm files before a client reset which could have lead to overwriting an existing file. ([realm/realm-core#7341](https://github.com/realm/realm-core/pull/7341)).

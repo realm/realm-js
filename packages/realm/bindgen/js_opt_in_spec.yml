@@ -244,6 +244,7 @@ classes:
       - get_results_description
       - feed_buffer
       - make_ssl_verify_callback
+      - needs_file_format_upgrade
 
   LogCategoryRef:
     methods:
