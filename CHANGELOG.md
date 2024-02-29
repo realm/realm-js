@@ -14,6 +14,7 @@ NOTE: This version bumps the Realm file format to version 24. It is not possible
 * Index on list of strings property now supported ([realm/realm-core#7142](https://github.com/realm/realm-core/pull/7142))
 * You can set the threshold levels for trace output on individual categories. ([realm/realm-core#7004](https://github.com/realm/realm-core/pull/7004))
 * Improved performance of RQL queries on a non-linked string property using `>`, `>=`, `<`, `<=` operators and fixed behavior that a null string should be evaluated as less than everything, previously nulls were not matched. ([realm/realm-core#3939](https://github.com/realm/realm-core/issues/3939))
+* Added static method `Realm.needsFileFormatUpgrade()` which returns `true` if the Realm will be upgraded when opening.
 
 ### Fixed
 * Align dictionaries to Lists and Sets when they get cleared. ([#6205](https://github.com/realm/realm-core/issues/6205), since v10.3.0-rc.1)

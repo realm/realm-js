@@ -270,6 +270,19 @@ export class Realm {
   }
 
   /**
+   * Check if the Realm file format will be upgraded during opening the file.
+   * @param arg - The configuration for the Realm or the path to it.
+   * @returns `true` if the Realm file is using an older file format, otherwise `false`.
+   * @since 12.8.0
+   */
+  public static needsFileFormatUpgrade(arg: Configuration | string = {}): boolean {
+    const config = typeof arg === "string" ? { path: arg } : arg;
+    validateConfiguration(config);
+    const { bindingConfig } = Realm.transformConfig(config);
+    return binding.Helpers.needsFileFormatUpgrade(bindingConfig);
+  }
+
+  /**
    * Open the default Realm asynchronously with a promise.
    * @returns A promise that will be resolved with the Realm instance when it's available.
    */
@@ -587,6 +600,10 @@ export class Realm {
       const { bindingConfig, schemaExtras } = Realm.transformConfig(config);
       debug("open", bindingConfig);
       this.schemaExtras = schemaExtras;
+
+      if (config.deleteRealmIfMigrationNeeded && Realm.needsFileFormatUpgrade(config)) {
+        throw `File format upgrade is needed and setting 'deleteRealmIfMigrationNeeded' to true will erase all objects. Only use 'deleteRealmIfMigrationNeeded' for non-production cases.`;
+      }
 
       fs.ensureDirectoryForFile(bindingConfig.path);
       this.internal = internalConfig.internal ?? binding.Realm.getSharedRealm(bindingConfig);
