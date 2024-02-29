@@ -20,6 +20,7 @@ import Realm from "realm";
 
 import { AppConfig, AppImporter, Credentials } from "@realm/app-importer";
 import { mongodbServiceType } from "../utils/ExtendedAppConfigBuilder";
+import { printWarningBox } from "../utils/print-warning-box";
 
 const REALM_LOG_LEVELS = ["all", "trace", "debug", "detail", "info", "warn", "error", "fatal", "off"];
 
@@ -46,23 +47,18 @@ export type AppConfigurationRelaxed = {
   baseFilePath?: string;
 };
 
-function getCredentials(): Credentials {
-  if (typeof publicKey === "string" && typeof privateKey === "string") {
-    return {
-      kind: "api-key",
-      publicKey,
-      privateKey,
-    };
-  } else {
-    return {
-      kind: "username-password",
-      username,
-      password,
-    };
-  }
-}
-
-const credentials = getCredentials();
+const credentials: Credentials =
+  typeof publicKey === "string" && typeof privateKey === "string"
+    ? {
+        kind: "api-key",
+        publicKey,
+        privateKey,
+      }
+    : {
+        kind: "username-password",
+        username,
+        password,
+      };
 
 const importer = new AppImporter({
   baseUrl,
@@ -77,17 +73,6 @@ function isConnectionRefused(err: unknown) {
     "code" in err.cause &&
     err.cause.code === "ECONNREFUSED"
   );
-}
-
-function printWarningBox(...lines: string[]) {
-  const contentWidth = Math.max(...lines.map((line) => line.length));
-  const bar = "━".repeat(contentWidth + 2);
-  console.warn(`┏${bar}┓`);
-  for (const line of lines) {
-    const padding = " ".repeat(contentWidth - line.length);
-    console.warn(`┃ ${line}${padding} ┃`);
-  }
-  console.warn(`┗${bar}┛`);
 }
 
 /** Ensure we'll only ever install a single after hook with this warning */
