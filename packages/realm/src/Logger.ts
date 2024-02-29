@@ -144,10 +144,18 @@ export enum LogCategory {
 }
 
 /**
- * Type for `Realm.setLogLevel`
+ * Log options to use when setting the log level.
  */
 export type LogOptions = {
+  /**
+   * The log level to be used by the logger.
+   * @default "info"
+   */
   level: LogLevel;
+  /**
+   * The category to set the log level for. If omitted, the log level
+   * is set for all categories ({@link LogCategory.Realm}).
+   */
   category?: LogCategory;
 };
 
@@ -172,13 +180,20 @@ export type LoggerCallback1 = (level: LogLevel, message: string) => void;
  * Represents an entry in the log.
  */
 export type LogEntry = {
-  /** The category (origin) of the log entry. */
+  /**
+   * The category (origin) of the log entry.
+   */
   category: LogCategory;
-  /** The level of the log entry. */
+  /**
+   * The level of the log entry.
+   */
   level: LogLevel;
-  /** The message of the log entry. */
+  /**
+   * The message of the log entry.
+   */
   message: string;
 };
+
 /**
  * A callback passed to `Realm.setLogger`. Arguments are passed as an object.
  * @since 12.7.0

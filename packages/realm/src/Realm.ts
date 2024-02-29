@@ -123,8 +123,6 @@ export class Realm {
   /**
    * Sets the log level for a specific category.
    * @param options - The log options to use.
-   * @param options.level - The log level to be used by the logger. The default value is `info`.
-   * @param options.category - The category/component to set the log level for. If omitted, log level is set for all categories.
    * @note The log level can be changed during the lifetime of the application.
    * @since 12.7.0
    * @example
