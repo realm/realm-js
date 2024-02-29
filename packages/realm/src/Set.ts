@@ -106,8 +106,7 @@ export class RealmSet<T = unknown> extends OrderedCollection<T, [T, T], SetAcces
    * @returns The Set itself, after adding the new value.
    */
   add(value: T): this {
-    assert.inTransaction(this.realm);
-    this.internal.insertAny(this[ACCESSOR].toBinding(value));
+    this[ACCESSOR].insert(this.internal, value);
     return this;
   }
 
@@ -152,21 +151,33 @@ export class RealmSet<T = unknown> extends OrderedCollection<T, [T, T], SetAcces
 export type SetAccessor<T = unknown> = TypeHelpers<T> & {
   get: (set: binding.Set | binding.Results, index: number) => T;
   set: (set: binding.Set, index: number, value: T) => void;
+  insert: (set: binding.Set, value: T) => void;
 };
 
 type SetAccessorFactoryOptions<T> = {
+  realm: Realm;
   typeHelpers: TypeHelpers<T>;
   isObjectItem?: boolean;
 };
 
 /** @internal */
-export function createSetAccessor<T>({ typeHelpers, isObjectItem }: SetAccessorFactoryOptions<T>): SetAccessor<T> {
+export function createSetAccessor<T>({
+  realm,
+  typeHelpers,
+  isObjectItem,
+}: SetAccessorFactoryOptions<T>): SetAccessor<T> {
   const { fromBinding, toBinding } = typeHelpers;
   return {
     get: createDefaultGetter({ fromBinding, isObjectItem }),
     // Directly setting by "index" to a Set is a no-op.
     set: () => {},
+    insert: (...args) => insertKnownType(realm, toBinding, ...args),
     fromBinding,
     toBinding,
   };
+}
+
+function insertKnownType<T>(realm: Realm, toBinding: TypeHelpers<T>["toBinding"], set: binding.Set, value: T): void {
+  assert.inTransaction(realm);
+  set.insertAny(toBinding(value));
 }

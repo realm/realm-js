@@ -207,6 +207,9 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
         },
         set(obj, values) {
           assert.inTransaction(realm);
+
+          // TODO: Update
+
           // Implements https://github.com/realm/realm-core/blob/v12.0.0/src/realm/object-store/list.hpp#L258-L286
           assert.iterable(values);
           const bindingValues = [];
@@ -271,6 +274,8 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
         return new Dictionary(realm, internal, dictionaryAccessor);
       },
       set(obj, value) {
+        assert.inTransaction(realm);
+
         const internal = binding.Dictionary.make(realm.internal, obj, columnKey);
         // Clear the dictionary before adding new values
         internal.removeAll();
@@ -300,6 +305,7 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
     });
     assert.string(objectType);
     const setAccessor = createSetAccessor({
+      realm,
       typeHelpers: itemHelpers,
       isObjectItem: itemType === binding.PropertyType.Object,
     });
@@ -310,12 +316,14 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
         return new RealmSet(realm, internal, setAccessor);
       },
       set(obj, value) {
+        assert.inTransaction(realm);
+
         const internal = binding.Set.make(realm.internal, obj, columnKey);
         // Clear the set before adding new values
         internal.removeAll();
         assert.array(value, "values");
         for (const v of value) {
-          internal.insertAny(itemHelpers.toBinding(v));
+          setAccessor.insert(internal, v);
         }
       },
     };
