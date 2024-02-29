@@ -23,7 +23,7 @@ import { buildAppConfig } from "../../utils/build-app-config";
 describe("Logging", () => {
   importAppBefore(buildAppConfig("with-pbs").anonAuth().flexibleSync());
   afterEach(() => Realm.clearTestState());
-  // Skipped because reusing a single app across tests break this
+
   it("can set custom logging function", async function (this: AppContext) {
     const credentials = Realm.Credentials.anonymous();
 
