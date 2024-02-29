@@ -56,12 +56,12 @@ import {
   defaultLoggerLevel,
   extendDebug,
   flags,
-  fromBindingLoggerLevelToLogLevel,
   fromBindingRealmSchema,
   fs,
   normalizeObjectSchema,
   normalizeRealmSchema,
   toArrayBuffer,
+  toBindingLogger,
   toBindingLoggerLevel,
   toBindingSchema,
   toBindingSyncConfig,
@@ -113,7 +113,6 @@ export class Realm {
   /**
    * Sets the log level across all levels.
    * @param level - The log level to be used by the logger. The default value is `info`.
-   * @param category - The category/component to set the log level for. If omitted, log level is set for all known categories.
    * @note The log level can be changed during the lifetime of the application.
    * @since 12.0.0
    * @example
@@ -123,34 +122,25 @@ export class Realm {
 
   /**
    * Sets the log level for a specific category.
+   * @param options - The log options to use.
    * @note The log level can be changed during the lifetime of the application.
-   * @since 12.0.0
+   * @since 12.7.0
    * @example
    * Realm.setLogLevel({ category: LogCategory.Realm, level: "all" });
    */
   static setLogLevel(options: LogOptions): void;
 
   static setLogLevel(arg: LogLevel | LogOptions) {
-    const setLevel = (category: LogCategory, level: LogLevel) => {
-      assert(Object.values(LogCategory).includes(category));
-      const ref = binding.LogCategoryRef;
-      const categoryRef = ref.getCategory(category);
+    const setLevel = (level: LogLevel, category = LogCategory.Realm) => {
+      assert(Object.values(LogCategory).includes(category), `Unexpected log category: '${category}'`);
+      const categoryRef = binding.LogCategoryRef.getCategory(category);
       categoryRef.setDefaultLevelThreshold(toBindingLoggerLevel(level));
     };
 
     if (typeof arg === "string") {
-      for (const category of Object.values(LogCategory)) {
-        setLevel(category, arg);
-      }
+      setLevel(arg);
     } else {
-      const { level, category } = arg;
-      if (category) {
-        setLevel(category, level);
-      } else {
-        for (const category of Object.values(LogCategory)) {
-          setLevel(category, level);
-        }
-      }
+      setLevel(arg.level, arg.category);
     }
   }
 
@@ -190,23 +180,8 @@ export class Realm {
    * });
    */
   static setLogger(loggerCallback: LoggerCallback) {
-    let logger: binding.Logger;
-
-    // This is a hack to check which of the two logger callbacks which are used
-    // It only works as the two callback type have different number of arguments, and it will
-    // probably produce odd error messages if the logger is set by `setLogger((...args) => console.log(args))`.
-    if (loggerCallback.length === 2) {
-      const cb = loggerCallback as LoggerCallback1;
-      logger = binding.Helpers.makeLogger((_category, level, message) => {
-        cb(fromBindingLoggerLevelToLogLevel(level), message);
-      });
-    } else {
-      const cb = loggerCallback as LoggerCallback2;
-      logger = binding.Helpers.makeLogger((category, level, message) => {
-        cb({ category: category as LogCategory, level: fromBindingLoggerLevelToLogLevel(level), message });
-      });
-    }
-    binding.Logger.setDefaultLogger(logger);
+    assert.function(loggerCallback);
+    binding.Logger.setDefaultLogger(toBindingLogger(loggerCallback));
   }
 
   /**
