@@ -22,10 +22,12 @@ declare module "../app-services/App" {
   interface App {
     /**
      * Get the base URL.
+     * @experimental This feature is experimental and may be changed or removed.
      */
     get baseUrl(): string;
     /**
      * Switch the base URL.
+     * @experimental This feature is experimental and may be changed or removed.
      */
     switchBaseUrl(url: string): void;
   }
