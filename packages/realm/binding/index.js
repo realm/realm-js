@@ -23,9 +23,10 @@ const IGNORED_PROPS = new Set([
   "$$typeof",
 ]);
 
-const injected = {};
+let injected = false;
+const binding = {};
 
-module.exports.binding = new Proxy(injected, {
+module.exports.binding = new Proxy(binding, {
   get(target, prop, receiver) {
     if (injected || IGNORED_PROPS.has(prop)) {
       return Reflect.get(target, prop, receiver);
@@ -43,5 +44,6 @@ module.exports.binding = new Proxy(injected, {
 });
 
 exports.inject = (value) => {
-  Object.assign(injected, value);
+  Object.assign(binding, value);
+  injected = true;
 };
