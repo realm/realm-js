@@ -18,28 +18,30 @@
 
 /* eslint-env commonjs */
 
-let injected = null;
+const IGNORED_PROPS = new Set([
+  // See https://github.com/realm/realm-js/issues/6522
+  "$$typeof",
+]);
 
-module.exports.binding = new Proxy(
-  {},
-  {
-    get(_, prop, receiver) {
-      if (injected) {
-        return Reflect.get(injected, prop, receiver);
-      } else {
-        throw new Error(`Getting '${prop.toString()}' from binding before it was injected`);
-      }
-    },
-    set(_, prop, value) {
-      if (injected) {
-        return Reflect.set(injected, prop, value, injected);
-      } else {
-        throw new Error(`Setting '${prop.toString()}' on binding before it was injected`);
-      }
-    },
+const injected = {};
+
+module.exports.binding = new Proxy(injected, {
+  get(target, prop, receiver) {
+    if (injected || IGNORED_PROPS.has(prop)) {
+      return Reflect.get(target, prop, receiver);
+    } else {
+      throw new Error(`Getting '${prop.toString()}' from binding before it was injected`);
+    }
   },
-);
+  set(target, prop, value, receiver) {
+    if (injected || IGNORED_PROPS.has(prop)) {
+      return Reflect.set(target, prop, value, receiver);
+    } else {
+      throw new Error(`Setting '${prop.toString()}' on binding before it was injected`);
+    }
+  },
+});
 
 exports.inject = (value) => {
-  injected = value;
+  Object.assign(injected, value);
 };
