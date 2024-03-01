@@ -7,8 +7,8 @@
 * None
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None
+* Fixed binding abstraction to allow access of certain properties (`$$typeof` for now) prior to its injection. ([#6522](https://github.com/realm/realm-js/issues/6522), since v12.6.1)
+* Added a missing dependency on `path-browserify`. ([#6522](https://github.com/realm/realm-js/issues/6522), since v12.6.1)
 
 ### Compatibility
 * React Native >= v0.71.4
@@ -16,9 +16,6 @@
 * File format: generates Realms with format v23 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-<!-- * Either mention core version or upgrade -->
-<!-- * Using Realm Core vX.Y.Z -->
-<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
 
 ## 12.6.1 (2024-02-26)
 
