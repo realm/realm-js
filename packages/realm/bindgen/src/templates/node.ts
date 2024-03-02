@@ -76,7 +76,7 @@ function pushRet<T, U extends T>(arr: T[], elem: U) {
 class NodeAddon extends CppClass {
   exports: Record<string, string> = {};
   classes: string[] = [];
-  injectables = ["Float", "UUID", "ObjectId", "Decimal128", "EJSON_parse", "EJSON_stringify", "Symbol_for"];
+  injectables = ["Float", "UUID", "ObjectId", "Decimal128", "EJSON_parse", "EJSON_stringify"];
 
   constructor() {
     super("RealmAddon");
