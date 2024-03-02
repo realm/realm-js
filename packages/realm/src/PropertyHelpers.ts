@@ -338,15 +338,18 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
       get(obj) {
         try {
           const value = obj.getAny(columnKey);
-          if (value === binding.ListSentinel) {
-            const internal = binding.List.make(realm.internal, obj, columnKey);
-            return new List(realm, internal, listAccessor);
+          switch (value) {
+            case binding.ListSentinel: {
+              const internal = binding.List.make(realm.internal, obj, columnKey);
+              return new List(realm, internal, listAccessor);
+            }
+            case binding.DictionarySentinel: {
+              const internal = binding.Dictionary.make(realm.internal, obj, columnKey);
+              return new Dictionary(realm, internal, dictionaryAccessor);
+            }
+            default:
+              return fromBinding(value);
           }
-          if (value === binding.DictionarySentinel) {
-            const internal = binding.Dictionary.make(realm.internal, obj, columnKey);
-            return new Dictionary(realm, internal, dictionaryAccessor);
-          }
-          return fromBinding(value);
         } catch (err) {
           assert.isValid(obj);
           throw err;

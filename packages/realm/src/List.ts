@@ -370,15 +370,18 @@ function getMixed<T>(
   index: number,
 ): T {
   const value = list.getAny(index);
-  if (value === binding.ListSentinel) {
-    const accessor = createListAccessor<T>({ realm, typeHelpers, isMixedItem: true });
-    return new List<T>(realm, list.getList(index), accessor) as T;
+  switch (value) {
+    case binding.ListSentinel: {
+      const accessor = createListAccessor<T>({ realm, typeHelpers, isMixedItem: true });
+      return new List<T>(realm, list.getList(index), accessor) as T;
+    }
+    case binding.DictionarySentinel: {
+      const accessor = createDictionaryAccessor<T>({ realm, typeHelpers, isMixedItem: true });
+      return new Dictionary<T>(realm, list.getDictionary(index), accessor) as T;
+    }
+    default:
+      return typeHelpers.fromBinding(value);
   }
-  if (value === binding.DictionarySentinel) {
-    const accessor = createDictionaryAccessor<T>({ realm, typeHelpers, isMixedItem: true });
-    return new Dictionary<T>(realm, list.getDictionary(index), accessor) as T;
-  }
-  return typeHelpers.fromBinding(value);
 }
 
 function setKnownType<T>(

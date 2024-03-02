@@ -383,28 +383,34 @@ function snapshotGetKnownType<T>(
 
 function getMixed<T>(realm: Realm, typeHelpers: TypeHelpers<T>, dictionary: binding.Dictionary, key: string): T {
   const value = dictionary.tryGetAny(key);
-  if (value === binding.ListSentinel) {
-    const accessor = createListAccessor<T>({ realm, typeHelpers, isMixedItem: true });
-    return new List<T>(realm, dictionary.getList(key), accessor) as T;
+  switch (value) {
+    case binding.ListSentinel: {
+      const accessor = createListAccessor<T>({ realm, typeHelpers, isMixedItem: true });
+      return new List<T>(realm, dictionary.getList(key), accessor) as T;
+    }
+    case binding.DictionarySentinel: {
+      const accessor = createDictionaryAccessor<T>({ realm, typeHelpers, isMixedItem: true });
+      return new Dictionary<T>(realm, dictionary.getDictionary(key), accessor) as T;
+    }
+    default:
+      return typeHelpers.fromBinding(value) as T;
   }
-  if (value === binding.DictionarySentinel) {
-    const accessor = createDictionaryAccessor<T>({ realm, typeHelpers, isMixedItem: true });
-    return new Dictionary<T>(realm, dictionary.getDictionary(key), accessor) as T;
-  }
-  return typeHelpers.fromBinding(value) as T;
 }
 
 function snapshotGetMixed<T>(realm: Realm, typeHelpers: TypeHelpers<T>, snapshot: binding.Results, index: number): T {
   const value = snapshot.getAny(index);
-  if (value === binding.ListSentinel) {
-    const accessor = createListAccessor<T>({ realm, typeHelpers, isMixedItem: true });
-    return new List<T>(realm, snapshot.getList(index), accessor) as T;
+  switch (value) {
+    case binding.ListSentinel: {
+      const accessor = createListAccessor<T>({ realm, typeHelpers, isMixedItem: true });
+      return new List<T>(realm, snapshot.getList(index), accessor) as T;
+    }
+    case binding.DictionarySentinel: {
+      const accessor = createDictionaryAccessor<T>({ realm, typeHelpers, isMixedItem: true });
+      return new Dictionary<T>(realm, snapshot.getDictionary(index), accessor) as T;
+    }
+    default:
+      return typeHelpers.fromBinding(value);
   }
-  if (value === binding.DictionarySentinel) {
-    const accessor = createDictionaryAccessor<T>({ realm, typeHelpers, isMixedItem: true });
-    return new Dictionary<T>(realm, snapshot.getDictionary(index), accessor) as T;
-  }
-  return typeHelpers.fromBinding(value);
 }
 
 function setKnownType<T>(
