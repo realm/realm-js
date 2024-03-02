@@ -430,7 +430,8 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
   linkingObjects<T = DefaultObject>(objectType: string, propertyName: string): Results<RealmObject<T> & T>;
   linkingObjects<T extends AnyRealmObject>(objectType: Constructor<T>, propertyName: string): Results<T>;
   linkingObjects<T extends AnyRealmObject>(objectType: string | Constructor<T>, propertyName: string): Results<T> {
-    const targetClassHelpers = this[REALM].getClassHelpers(objectType);
+    const realm = this[REALM];
+    const targetClassHelpers = realm.getClassHelpers(objectType);
     const { objectSchema: targetObjectSchema, properties, wrapObject } = targetClassHelpers;
     const targetProperty = properties.get(propertyName);
     const originObjectSchema = this.objectSchema();
@@ -450,14 +451,14 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
         return wrapObject(value) as T;
       },
     };
-    const resultsAccessor = createResultsAccessor<T>({ typeHelpers, isObjectItem: true });
+    const accessor = createResultsAccessor<T>({ realm, typeHelpers, itemType: binding.PropertyType.Object });
 
     // Create the Result for the backlink view.
-    const tableRef = binding.Helpers.getTable(this[REALM].internal, targetObjectSchema.tableKey);
+    const tableRef = binding.Helpers.getTable(realm.internal, targetObjectSchema.tableKey);
     const tableView = this[INTERNAL].getBacklinkView(tableRef, targetProperty.columnKey);
-    const results = binding.Results.fromTableView(this[REALM].internal, tableView);
+    const results = binding.Results.fromTableView(realm.internal, tableView);
 
-    return new Results<T>(this[REALM], results, resultsAccessor);
+    return new Results<T>(realm, results, accessor);
   }
 
   /**

@@ -373,6 +373,7 @@ classes:
       - is_valid
       - get_any
       - as_results
+      - snapshot
 
   List:
     methods:

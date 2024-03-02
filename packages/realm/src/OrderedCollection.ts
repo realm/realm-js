@@ -34,10 +34,12 @@ import {
   TypeHelpers,
   assert,
   binding,
+  createResultsAccessor,
   getTypeName,
   isJsOrRealmDictionary,
   isJsOrRealmList,
   mixedToBinding,
+  toItemType,
   unwind,
 } from "./internal";
 
@@ -264,10 +266,9 @@ export abstract class OrderedCollection<
    * @returns An iterator with all values in the collection.
    */
   *values(): Generator<T> {
-    const { get } = this[ACCESSOR];
-    const snapshot = this.results.snapshot();
+    const snapshot = this.snapshot();
     for (const i of this.keys()) {
-      yield get(snapshot, i);
+      yield snapshot[i];
     }
   }
 
@@ -276,11 +277,10 @@ export abstract class OrderedCollection<
    * @returns An iterator with all key/value pairs in the collection.
    */
   *entries(): Generator<EntryType> {
-    const { get } = this[ACCESSOR];
-    const snapshot = this.results.snapshot();
-    const size = snapshot.size();
+    const snapshot = this.snapshot();
+    const size = snapshot.length;
     for (let i = 0; i < size; i++) {
-      yield [i, get(snapshot, i)] as EntryType;
+      yield [i, snapshot[i]] as EntryType;
     }
   }
 
@@ -305,7 +305,7 @@ export abstract class OrderedCollection<
    * @returns The name of the type of values.
    */
   get type(): PropertyType {
-    return getTypeName(this.results.type & ~binding.PropertyType.Flags, undefined);
+    return getTypeName(toItemType(this.results.type), undefined);
   }
 
   /**
@@ -801,7 +801,11 @@ export abstract class OrderedCollection<
     const bindingArgs = args.map((arg) => this.queryArgToBinding(arg));
     const newQuery = parent.query.table.query(queryString, bindingArgs, kpMapping);
     const results = binding.Helpers.resultsAppendQuery(parent, newQuery);
-    return new Results(realm, results, this[ACCESSOR] as ResultsAccessor<T>);
+
+    const itemType = toItemType(results.type);
+    const { fromBinding, toBinding } = this[ACCESSOR];
+    const accessor = createResultsAccessor({ realm, typeHelpers: { fromBinding, toBinding }, itemType });
+    return new Results(realm, results, accessor);
   }
 
   /** @internal */
@@ -888,7 +892,10 @@ export abstract class OrderedCollection<
       });
       // TODO: Call `parent.sort`, avoiding property name to column key conversion to speed up performance here.
       const results = parent.sortByNames(descriptors);
-      return new Results(realm, results, this[ACCESSOR] as ResultsAccessor<T>);
+      const itemType = toItemType(results.type);
+      const { fromBinding, toBinding } = this[ACCESSOR];
+      const accessor = createResultsAccessor({ realm, typeHelpers: { fromBinding, toBinding }, itemType });
+      return new Results(realm, results, accessor);
     } else if (typeof arg0 === "string") {
       return this.sorted([[arg0, arg1 === true]]);
     } else if (typeof arg0 === "boolean") {
@@ -913,7 +920,12 @@ export abstract class OrderedCollection<
    * @returns Results which will **not** live update.
    */
   snapshot(): Results<T> {
-    return new Results(this.realm, this.results.snapshot(), this[ACCESSOR] as ResultsAccessor<T>);
+    const { realm, internal } = this;
+    const snapshot = internal.snapshot();
+    const itemType = toItemType(snapshot.type);
+    const { fromBinding, toBinding } = this[ACCESSOR];
+    const accessor = createResultsAccessor({ realm, typeHelpers: { fromBinding, toBinding }, itemType });
+    return new Results(realm, snapshot, accessor);
   }
 
   private getPropertyColumnKey(name: string | undefined): binding.ColKey {
@@ -936,14 +948,15 @@ type Getter<CollectionType, T> = (collection: CollectionType, index: number) => 
 
 type GetterFactoryOptions<T> = {
   fromBinding: TypeHelpers<T>["fromBinding"];
-  isObjectItem?: boolean;
+  itemType: binding.PropertyType;
 };
 
 /** @internal */
 export function createDefaultGetter<CollectionType extends OrderedCollectionInternal, T>({
   fromBinding,
-  isObjectItem,
+  itemType,
 }: GetterFactoryOptions<T>): Getter<CollectionType, T> {
+  const isObjectItem = itemType === binding.PropertyType.Object || itemType === binding.PropertyType.LinkingObjects;
   return isObjectItem ? (...args) => getObject(fromBinding, ...args) : (...args) => getKnownType(fromBinding, ...args);
 }
 

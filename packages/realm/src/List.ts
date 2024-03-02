@@ -31,6 +31,7 @@ import {
   createDictionaryAccessor,
   insertIntoDictionaryInMixed,
   isJsOrRealmDictionary,
+  toItemType,
 } from "./internal";
 
 type PartiallyWriteableArray<T> = Pick<Array<T>, "pop" | "push" | "shift" | "unshift" | "splice">;
@@ -64,9 +65,9 @@ export class List<T = unknown>
     super(realm, results, accessor);
 
     // Getting the `objectSchema` off the internal will throw if base type isn't object
-    const itemType = results.type & ~binding.PropertyType.Flags;
     const isEmbedded =
-      itemType === binding.PropertyType.Object && internal.objectSchema.tableType === binding.TableType.Embedded;
+      toItemType(results.type) === binding.PropertyType.Object &&
+      internal.objectSchema.tableType === binding.TableType.Embedded;
 
     Object.defineProperty(this, "internal", {
       enumerable: false,
@@ -318,7 +319,7 @@ export class List<T = unknown>
  * @internal
  */
 export type ListAccessor<T = unknown> = TypeHelpers<T> & {
-  get: (list: binding.List | binding.Results, index: number) => T;
+  get: (list: binding.List, index: number) => T;
   set: (list: binding.List, index: number, value: T) => void;
   insert: (list: binding.List, index: number, value: T) => void;
 };
@@ -326,14 +327,15 @@ export type ListAccessor<T = unknown> = TypeHelpers<T> & {
 type ListAccessorFactoryOptions<T> = {
   realm: Realm;
   typeHelpers: TypeHelpers<T>;
-  isMixedItem?: boolean;
-  isObjectItem?: boolean;
+  itemType: binding.PropertyType;
   isEmbedded?: boolean;
 };
 
 /** @internal */
 export function createListAccessor<T>(options: ListAccessorFactoryOptions<T>): ListAccessor<T> {
-  return options.isMixedItem ? createListAccessorForMixed<T>(options) : createListAccessorForKnownType<T>(options);
+  return options.itemType === binding.PropertyType.Mixed
+    ? createListAccessorForMixed<T>(options)
+    : createListAccessorForKnownType<T>(options);
 }
 
 function createListAccessorForMixed<T>({
@@ -351,11 +353,11 @@ function createListAccessorForMixed<T>({
 function createListAccessorForKnownType<T>({
   realm,
   typeHelpers: { fromBinding, toBinding },
-  isObjectItem,
+  itemType,
   isEmbedded,
 }: Omit<ListAccessorFactoryOptions<T>, "isMixed">): ListAccessor<T> {
   return {
-    get: createDefaultGetter({ fromBinding, isObjectItem }),
+    get: createDefaultGetter({ fromBinding, itemType }),
     set: (...args) => setKnownType(realm, toBinding, !!isEmbedded, ...args),
     insert: (...args) => insertKnownType(realm, toBinding, !!isEmbedded, ...args),
     fromBinding,
@@ -363,20 +365,15 @@ function createListAccessorForKnownType<T>({
   };
 }
 
-function getMixed<T>(
-  realm: Realm,
-  typeHelpers: TypeHelpers<T>,
-  list: binding.List | binding.Results,
-  index: number,
-): T {
+function getMixed<T>(realm: Realm, typeHelpers: TypeHelpers<T>, list: binding.List, index: number): T {
   const value = list.getAny(index);
   switch (value) {
     case binding.ListSentinel: {
-      const accessor = createListAccessor<T>({ realm, typeHelpers, isMixedItem: true });
+      const accessor = createListAccessor<T>({ realm, typeHelpers, itemType: binding.PropertyType.Mixed });
       return new List<T>(realm, list.getList(index), accessor) as T;
     }
     case binding.DictionarySentinel: {
-      const accessor = createDictionaryAccessor<T>({ realm, typeHelpers, isMixedItem: true });
+      const accessor = createDictionaryAccessor<T>({ realm, typeHelpers, itemType: binding.PropertyType.Mixed });
       return new Dictionary<T>(realm, list.getDictionary(index), accessor) as T;
     }
     default:

@@ -38,6 +38,7 @@ import {
   insertIntoListInMixed,
   isJsOrRealmDictionary,
   isJsOrRealmList,
+  toItemType,
 } from "./internal";
 
 type PropertyContext = binding.Property & {
@@ -154,7 +155,7 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
     optional,
   }) {
     const realmInternal = realm.internal;
-    const itemType = type & ~binding.PropertyType.Flags;
+    const itemType = toItemType(type);
     const itemHelpers = getTypeHelpers(itemType, {
       realm,
       name: `element of ${name}`,
@@ -176,7 +177,7 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
       const targetProperty = persistedProperties.find((p) => p.name === linkOriginPropertyName);
       assert(targetProperty, `Expected a '${linkOriginPropertyName}' property on ${objectType}`);
       const tableRef = binding.Helpers.getTable(realmInternal, tableKey);
-      const resultsAccessor = createResultsAccessor({ typeHelpers: itemHelpers, isObjectItem: true });
+      const resultsAccessor = createResultsAccessor({ realm, typeHelpers: itemHelpers, itemType });
 
       return {
         get(obj: binding.Obj) {
@@ -190,13 +191,7 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
       };
     } else {
       const { toBinding: itemToBinding } = itemHelpers;
-      const listAccessor = createListAccessor({
-        realm,
-        typeHelpers: itemHelpers,
-        isObjectItem: itemType === binding.PropertyType.Object,
-        isEmbedded: embedded,
-        isMixedItem: itemType === binding.PropertyType.Mixed,
-      });
+      const listAccessor = createListAccessor({ realm, typeHelpers: itemHelpers, itemType, isEmbedded: embedded });
 
       return {
         listAccessor,
@@ -252,7 +247,7 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
     }
   },
   [binding.PropertyType.Dictionary]({ columnKey, realm, name, type, optional, objectType, getClassHelpers, embedded }) {
-    const itemType = type & ~binding.PropertyType.Flags;
+    const itemType = toItemType(type);
     const itemHelpers = getTypeHelpers(itemType, {
       realm,
       name: `value in ${name}`,
@@ -264,8 +259,8 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
     const dictionaryAccessor = createDictionaryAccessor({
       realm,
       typeHelpers: itemHelpers,
+      itemType,
       isEmbedded: embedded,
-      isMixedItem: itemType === binding.PropertyType.Mixed,
     });
 
     return {
@@ -294,7 +289,7 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
     };
   },
   [binding.PropertyType.Set]({ columnKey, realm, name, type, optional, objectType, getClassHelpers }) {
-    const itemType = type & ~binding.PropertyType.Flags;
+    const itemType = toItemType(type);
     const itemHelpers = getTypeHelpers(itemType, {
       realm,
       name: `value in ${name}`,
@@ -304,11 +299,7 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
       objectSchemaName: undefined,
     });
     assert.string(objectType);
-    const setAccessor = createSetAccessor({
-      realm,
-      typeHelpers: itemHelpers,
-      isObjectItem: itemType === binding.PropertyType.Object,
-    });
+    const setAccessor = createSetAccessor({ realm, typeHelpers: itemHelpers, itemType });
 
     return {
       get(obj) {
@@ -331,8 +322,8 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
   [binding.PropertyType.Mixed](options) {
     const { realm, columnKey, typeHelpers } = options;
     const { fromBinding, toBinding } = typeHelpers;
-    const listAccessor = createListAccessor({ realm, typeHelpers, isMixedItem: true });
-    const dictionaryAccessor = createDictionaryAccessor({ realm, typeHelpers, isMixedItem: true });
+    const listAccessor = createListAccessor({ realm, typeHelpers, itemType: binding.PropertyType.Mixed });
+    const dictionaryAccessor = createDictionaryAccessor({ realm, typeHelpers, itemType: binding.PropertyType.Mixed });
 
     return {
       get(obj) {
@@ -412,12 +403,12 @@ export function createPropertyHelpers(property: PropertyContext, options: Helper
       typeHelpers: getTypeHelpers(collectionType, typeOptions),
     });
   } else {
-    const baseType = property.type & ~binding.PropertyType.Flags;
-    return getPropertyHelpers(baseType, {
+    const itemType = toItemType(property.type);
+    return getPropertyHelpers(itemType, {
       ...property,
       ...options,
       ...typeOptions,
-      typeHelpers: getTypeHelpers(baseType, typeOptions),
+      typeHelpers: getTypeHelpers(itemType, typeOptions),
     });
   }
 }

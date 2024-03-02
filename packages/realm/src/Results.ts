@@ -18,7 +18,9 @@
 
 import {
   COLLECTION_ACCESSOR as ACCESSOR,
+  Dictionary,
   IllegalConstructorError,
+  List,
   OrderedCollection,
   Realm,
   SubscriptionOptions,
@@ -29,6 +31,8 @@ import {
   assert,
   binding,
   createDefaultGetter,
+  createDictionaryAccessor,
+  createListAccessor,
 } from "./internal";
 
 /**
@@ -197,19 +201,52 @@ export type ResultsAccessor<T = unknown> = TypeHelpers<T> & {
 };
 
 type ResultsAccessorFactoryOptions<T> = {
+  realm: Realm;
   typeHelpers: TypeHelpers<T>;
-  isObjectItem?: boolean;
+  itemType: binding.PropertyType;
 };
 
 /** @internal */
-export function createResultsAccessor<T>({
+export function createResultsAccessor<T>(options: ResultsAccessorFactoryOptions<T>): ResultsAccessor<T> {
+  return options.itemType === binding.PropertyType.Mixed
+    ? createResultsAccessorForMixed(options)
+    : createResultsAccessorForKnownType(options);
+}
+
+function createResultsAccessorForMixed<T>({
+  realm,
   typeHelpers,
-  isObjectItem,
-}: ResultsAccessorFactoryOptions<T>): ResultsAccessor<T> {
+}: Omit<ResultsAccessorFactoryOptions<T>, "itemType">): ResultsAccessor<T> {
   return {
-    get: createDefaultGetter({ fromBinding: typeHelpers.fromBinding, isObjectItem }),
+    get: (...args) => getMixed(realm, typeHelpers, ...args),
     ...typeHelpers,
   };
+}
+
+function createResultsAccessorForKnownType<T>({
+  typeHelpers,
+  itemType,
+}: Omit<ResultsAccessorFactoryOptions<T>, "realm">): ResultsAccessor<T> {
+  return {
+    get: createDefaultGetter({ fromBinding: typeHelpers.fromBinding, itemType }),
+    ...typeHelpers,
+  };
+}
+
+function getMixed<T>(realm: Realm, typeHelpers: TypeHelpers<T>, results: binding.Results, index: number): T {
+  const value = results.getAny(index);
+  switch (value) {
+    case binding.ListSentinel: {
+      const accessor = createListAccessor<T>({ realm, typeHelpers, itemType: binding.PropertyType.Mixed });
+      return new List<T>(realm, results.getList(index), accessor) as T;
+    }
+    case binding.DictionarySentinel: {
+      const accessor = createDictionaryAccessor<T>({ realm, typeHelpers, itemType: binding.PropertyType.Mixed });
+      return new Dictionary<T>(realm, results.getDictionary(index), accessor) as T;
+    }
+    default:
+      return typeHelpers.fromBinding(value);
+  }
 }
 
 /* eslint-disable-next-line @typescript-eslint/no-explicit-any -- Useful for APIs taking any `Results` */

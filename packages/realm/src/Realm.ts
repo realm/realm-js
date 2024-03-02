@@ -1112,15 +1112,16 @@ export class Realm {
   objects<T = DefaultObject>(type: string): Results<RealmObject<T> & T>;
   objects<T extends AnyRealmObject = RealmObject & DefaultObject>(type: Constructor<T>): Results<T>;
   objects<T extends AnyRealmObject>(type: string | Constructor<T>): Results<T> {
-    const { objectSchema, wrapObject } = this.classes.getHelpers(type);
+    const { internal, classes } = this;
+    const { objectSchema, wrapObject } = classes.getHelpers(type);
     if (isEmbedded(objectSchema)) {
       throw new Error("You cannot query an embedded object.");
     } else if (isAsymmetric(objectSchema)) {
       throw new Error("You cannot query an asymmetric object.");
     }
 
-    const table = binding.Helpers.getTable(this.internal, objectSchema.tableKey);
-    const results = binding.Results.fromTable(this.internal, table);
+    const table = binding.Helpers.getTable(internal, objectSchema.tableKey);
+    const results = binding.Results.fromTable(internal, table);
     const typeHelpers: TypeHelpers<T> = {
       fromBinding(value) {
         return wrapObject(value as binding.Obj) as T;
@@ -1130,8 +1131,8 @@ export class Realm {
         return value[INTERNAL];
       },
     };
-    const resultsAccessor = createResultsAccessor<T>({ typeHelpers, isObjectItem: true });
-    return new Results<T>(this, results, resultsAccessor);
+    const accessor = createResultsAccessor<T>({ realm: this, typeHelpers, itemType: binding.PropertyType.Object });
+    return new Results<T>(this, results, accessor);
   }
 
   /**

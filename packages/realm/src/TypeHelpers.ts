@@ -172,11 +172,13 @@ function mixedFromBinding(options: TypeOptions, value: binding.MixedArg): unknow
     const { wrapObject } = getClassHelpers(value.tableKey);
     return wrapObject(linkedObj);
   } else if (value instanceof binding.List) {
-    const typeHelpers = getTypeHelpers(binding.PropertyType.Mixed, options);
-    return new List(realm, value, createListAccessor({ realm, typeHelpers, isMixedItem: true }));
+    const mixedType = binding.PropertyType.Mixed;
+    const typeHelpers = getTypeHelpers(mixedType, options);
+    return new List(realm, value, createListAccessor({ realm, typeHelpers, itemType: mixedType }));
   } else if (value instanceof binding.Dictionary) {
-    const typeHelpers = getTypeHelpers(binding.PropertyType.Mixed, options);
-    return new Dictionary(realm, value, createDictionaryAccessor({ realm, typeHelpers, isMixedItem: true }));
+    const mixedType = binding.PropertyType.Mixed;
+    const typeHelpers = getTypeHelpers(mixedType, options);
+    return new Dictionary(realm, value, createDictionaryAccessor({ realm, typeHelpers, itemType: mixedType }));
   } else {
     return value;
   }
@@ -414,6 +416,11 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => Type
     throw new Error("Not directly mappable");
   },
 };
+
+/** @internal */
+export function toItemType(type: binding.PropertyType) {
+  return type & ~binding.PropertyType.Flags;
+}
 
 export function getTypeHelpers(type: binding.PropertyType, options: TypeOptions): TypeHelpers {
   const helpers = TYPES_MAPPING[type];

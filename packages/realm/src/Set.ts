@@ -149,7 +149,7 @@ export class RealmSet<T = unknown> extends OrderedCollection<T, [T, T], SetAcces
  * @internal
  */
 export type SetAccessor<T = unknown> = TypeHelpers<T> & {
-  get: (set: binding.Set | binding.Results, index: number) => T;
+  get: (set: binding.Set, index: number) => T;
   set: (set: binding.Set, index: number, value: T) => void;
   insert: (set: binding.Set, value: T) => void;
 };
@@ -157,24 +157,55 @@ export type SetAccessor<T = unknown> = TypeHelpers<T> & {
 type SetAccessorFactoryOptions<T> = {
   realm: Realm;
   typeHelpers: TypeHelpers<T>;
-  isObjectItem?: boolean;
+  itemType: binding.PropertyType;
 };
 
 /** @internal */
-export function createSetAccessor<T>({
+export function createSetAccessor<T>(options: SetAccessorFactoryOptions<T>): SetAccessor<T> {
+  return options.itemType === binding.PropertyType.Mixed
+    ? createSetAccessorForMixed<T>(options)
+    : createSetAccessorForKnownType<T>(options);
+}
+
+function createSetAccessorForMixed<T>({
   realm,
-  typeHelpers,
-  isObjectItem,
-}: SetAccessorFactoryOptions<T>): SetAccessor<T> {
-  const { fromBinding, toBinding } = typeHelpers;
+  typeHelpers: { fromBinding, toBinding },
+}: Omit<SetAccessorFactoryOptions<T>, "itemType">): SetAccessor<T> {
   return {
-    get: createDefaultGetter({ fromBinding, isObjectItem }),
+    get: (...args) => getMixed(fromBinding, ...args),
+    // Directly setting by "index" to a Set is a no-op.
+    set: () => {},
+    insert: (...args) => insertMixed(realm, toBinding, ...args),
+    fromBinding,
+    toBinding,
+  };
+}
+
+function createSetAccessorForKnownType<T>({
+  realm,
+  typeHelpers: { fromBinding, toBinding },
+  itemType,
+}: SetAccessorFactoryOptions<T>): SetAccessor<T> {
+  return {
+    get: createDefaultGetter({ fromBinding, itemType }),
     // Directly setting by "index" to a Set is a no-op.
     set: () => {},
     insert: (...args) => insertKnownType(realm, toBinding, ...args),
     fromBinding,
     toBinding,
   };
+}
+
+function getMixed<T>(fromBinding: TypeHelpers<T>["fromBinding"], set: binding.Set, index: number): T {
+  // Core will not return collections within a Set.
+  return fromBinding(set.getAny(index));
+}
+
+function insertMixed<T>(realm: Realm, toBinding: TypeHelpers<T>["toBinding"], set: binding.Set, value: T): void {
+  // Collections within a Set are not supported, but `toBinding()` will throw the appropriate
+  // error in that case. By not guarding for that here, we optimize for the valid cases.
+  assert.inTransaction(realm);
+  set.insertAny(toBinding(value));
 }
 
 function insertKnownType<T>(realm: Realm, toBinding: TypeHelpers<T>["toBinding"], set: binding.Set, value: T): void {

@@ -26,12 +26,15 @@ import {
   List,
   Realm,
   RealmObject,
+  Results,
   TypeHelpers,
   assert,
   binding,
   createListAccessor,
+  createResultsAccessor,
   insertIntoListInMixed,
   isJsOrRealmList,
+  toItemType,
 } from "./internal";
 
 /* eslint-disable jsdoc/multiline-blocks -- We need this to have @ts-expect-error located correctly in the .d.ts bundle */
@@ -209,12 +212,16 @@ export class Dictionary<T = unknown> extends Collection<
    * @since 10.5.0
    * @ts-expect-error We're exposing methods in the end-users namespace of values */
   *values(): Generator<T> {
+    const realm = this[REALM];
     const snapshot = this[INTERNAL].values.snapshot();
-    const size = snapshot.size();
+    const itemType = toItemType(snapshot.type);
+    const { fromBinding, toBinding } = this[ACCESSOR];
+    const accessor = createResultsAccessor({ realm, typeHelpers: { fromBinding, toBinding }, itemType });
+    const results = new Results<T>(realm, snapshot, accessor);
+    const size = results.length;
 
-    const { snapshotGet } = this[ACCESSOR];
     for (let i = 0; i < size; i++) {
-      yield snapshotGet(snapshot, i);
+      yield results[i];
     }
   }
 
@@ -229,10 +236,15 @@ export class Dictionary<T = unknown> extends Collection<
     const size = keys.size();
     assert(size === snapshot.size(), "Expected keys and values to equal in size");
 
-    const { snapshotGet } = this[ACCESSOR];
+    const realm = this[REALM];
+    const itemType = toItemType(snapshot.type);
+    const { fromBinding, toBinding } = this[ACCESSOR];
+    const accessor = createResultsAccessor({ realm, typeHelpers: { fromBinding, toBinding }, itemType });
+    const results = new Results<T>(realm, snapshot, accessor);
+
     for (let i = 0; i < size; i++) {
       const key = keys.getAny(i);
-      const value = snapshotGet(snapshot, i);
+      const value = results[i];
       yield [key, value] as [string, T];
     }
   }
@@ -273,14 +285,10 @@ export class Dictionary<T = unknown> extends Collection<
    */
   set(elementsOrKey: string | { [key: string]: T }, value?: T): this {
     assert.inTransaction(this[REALM]);
-    const elements = typeof elementsOrKey === "object" ? elementsOrKey : { [elementsOrKey]: value };
-    assert(Object.getOwnPropertySymbols(elements).length === 0, "Symbols cannot be used as keys of a dictionary");
 
-    const internal = this[INTERNAL];
-    const { set } = this[ACCESSOR];
-    const entries = Object.entries(elements);
-    for (const [key, value] of entries) {
-      set(internal, key, value!);
+    const elements = typeof elementsOrKey === "object" ? elementsOrKey : { [elementsOrKey]: value as T };
+    for (const [key, value] of Object.entries(elements)) {
+      this[key] = value;
     }
     return this;
   }
@@ -326,19 +334,18 @@ export class Dictionary<T = unknown> extends Collection<
 export type DictionaryAccessor<T = unknown> = TypeHelpers<T> & {
   get: (dictionary: binding.Dictionary, key: string) => T;
   set: (dictionary: binding.Dictionary, key: string, value: T) => void;
-  snapshotGet: (snapshot: binding.Results, index: number) => T;
 };
 
 type DictionaryAccessorFactoryOptions<T> = {
   realm: Realm;
   typeHelpers: TypeHelpers<T>;
+  itemType: binding.PropertyType;
   isEmbedded?: boolean;
-  isMixedItem?: boolean;
 };
 
 /** @internal */
 export function createDictionaryAccessor<T>(options: DictionaryAccessorFactoryOptions<T>): DictionaryAccessor<T> {
-  return options.isMixedItem
+  return options.itemType === binding.PropertyType.Mixed
     ? createDictionaryAccessorForMixed<T>(options)
     : createDictionaryAccessorForKnownType<T>(options);
 }
@@ -350,7 +357,6 @@ function createDictionaryAccessorForMixed<T>({
   return {
     get: (...args) => getMixed(realm, typeHelpers, ...args),
     set: (...args) => setMixed(realm, typeHelpers.toBinding, ...args),
-    snapshotGet: (...args) => snapshotGetMixed(realm, typeHelpers, ...args),
     ...typeHelpers,
   };
 }
@@ -359,11 +365,10 @@ function createDictionaryAccessorForKnownType<T>({
   realm,
   typeHelpers: { fromBinding, toBinding },
   isEmbedded,
-}: Omit<DictionaryAccessorFactoryOptions<T>, "isMixed">): DictionaryAccessor<T> {
+}: Omit<DictionaryAccessorFactoryOptions<T>, "itemType">): DictionaryAccessor<T> {
   return {
     get: (...args) => getKnownType(fromBinding, ...args),
     set: (...args) => setKnownType(realm, toBinding, !!isEmbedded, ...args),
-    snapshotGet: (...args) => snapshotGetKnownType(fromBinding, ...args),
     fromBinding,
     toBinding,
   };
@@ -373,43 +378,19 @@ function getKnownType<T>(fromBinding: TypeHelpers<T>["fromBinding"], dictionary:
   return fromBinding(dictionary.tryGetAny(key));
 }
 
-function snapshotGetKnownType<T>(
-  fromBinding: TypeHelpers<T>["fromBinding"],
-  snapshot: binding.Results,
-  index: number,
-): T {
-  return fromBinding(snapshot.getAny(index));
-}
-
 function getMixed<T>(realm: Realm, typeHelpers: TypeHelpers<T>, dictionary: binding.Dictionary, key: string): T {
   const value = dictionary.tryGetAny(key);
   switch (value) {
     case binding.ListSentinel: {
-      const accessor = createListAccessor<T>({ realm, typeHelpers, isMixedItem: true });
+      const accessor = createListAccessor<T>({ realm, typeHelpers, itemType: binding.PropertyType.Mixed });
       return new List<T>(realm, dictionary.getList(key), accessor) as T;
     }
     case binding.DictionarySentinel: {
-      const accessor = createDictionaryAccessor<T>({ realm, typeHelpers, isMixedItem: true });
+      const accessor = createDictionaryAccessor<T>({ realm, typeHelpers, itemType: binding.PropertyType.Mixed });
       return new Dictionary<T>(realm, dictionary.getDictionary(key), accessor) as T;
     }
     default:
       return typeHelpers.fromBinding(value) as T;
-  }
-}
-
-function snapshotGetMixed<T>(realm: Realm, typeHelpers: TypeHelpers<T>, snapshot: binding.Results, index: number): T {
-  const value = snapshot.getAny(index);
-  switch (value) {
-    case binding.ListSentinel: {
-      const accessor = createListAccessor<T>({ realm, typeHelpers, isMixedItem: true });
-      return new List<T>(realm, snapshot.getList(index), accessor) as T;
-    }
-    case binding.DictionarySentinel: {
-      const accessor = createDictionaryAccessor<T>({ realm, typeHelpers, isMixedItem: true });
-      return new Dictionary<T>(realm, snapshot.getDictionary(index), accessor) as T;
-    }
-    default:
-      return typeHelpers.fromBinding(value);
   }
 }
 
