@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import "./expo-go-detection";
 import "./binding";
 import "./fs";
 import "./device-info";
