@@ -575,10 +575,11 @@ export class Realm {
       const { bindingConfig, schemaExtras } = Realm.transformConfig(config);
       debug("open", bindingConfig);
 
-      assert(
-        !!config.deleteRealmIfMigrationNeeded && binding.Helpers.needsFileFormatUpgrade(bindingConfig),
-        "File format upgrade is needed and setting 'deleteRealmIfMigrationNeeded' to true will erase all objects. Only use 'deleteRealmIfMigrationNeeded' for non-production cases.",
-      );
+      if (!!config.deleteRealmIfMigrationNeeded && binding.Helpers.needsFileFormatUpgrade(bindingConfig)) {
+        throw new Error(
+          "File format upgrade is needed and setting 'deleteRealmIfMigrationNeeded' to true will erase all objects. Only use 'deleteRealmIfMigrationNeeded' for non-production cases.",
+        );
+      }
 
       this.schemaExtras = schemaExtras;
       fs.ensureDirectoryForFile(bindingConfig.path);
