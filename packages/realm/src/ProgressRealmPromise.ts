@@ -103,7 +103,10 @@ export class ProgressRealmPromise implements Promise<Realm> {
         const { bindingConfig } = Realm.transformConfig(config);
 
         // Check if file will be deteled for the wrong reasons
-        if (bindingConfig.schemaMode === config.deleteRealmIfMigrationNeeded && binding.Helpers.needsFileFormatUpgrade(bindingConfig)) {
+        if (
+          bindingConfig.schemaMode === binding.SchemaMode.SoftResetFile &&
+            binding.Helpers.needsFileFormatUpgrade(bindingConfig)
+        ) {
           throw new Error(
             "File format upgrade is needed and setting 'deleteRealmIfMigrationNeeded' to true will erase all objects. Only use 'deleteRealmIfMigrationNeeded' for non-production cases.",
           );
