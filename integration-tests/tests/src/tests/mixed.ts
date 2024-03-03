@@ -1149,6 +1149,98 @@ describe("Mixed", () => {
             });
             expectListOfDictionariesOfAllTypes(nestedList);
           });
+
+          it("updates itself to a new list", function (this: RealmContext) {
+            const created = this.realm.write(() => {
+              return this.realm.create<IMixedSchema>(MixedSchema.name, { mixed: ["original1", "original2"] });
+            });
+            let list = created.mixed;
+            expectRealmList(list);
+            expect(list.length).equals(2);
+            expect(list[0]).equals("original1");
+            expect(list[1]).equals("original2");
+
+            this.realm.write(() => {
+              created.mixed = ["updated"];
+            });
+            list = created.mixed;
+            expectRealmList(list);
+            expect(list.length).equals(1);
+            expect(list[0]).equals("updated");
+          });
+
+          it("updates nested list to a new list", function (this: RealmContext) {
+            const { mixed: list } = this.realm.write(() => {
+              return this.realm.create<IMixedSchema>(MixedSchema.name, {
+                mixed: [["original1", "original2"]],
+              });
+            });
+            expectRealmList(list);
+            expect(list.length).equals(1);
+
+            let nestedList = list[0];
+            expectRealmList(nestedList);
+            expect(nestedList.length).equals(2);
+            expect(nestedList[0]).equals("original1");
+            expect(nestedList[1]).equals("original2");
+
+            this.realm.write(() => {
+              list[0] = ["updated"];
+            });
+            nestedList = list[0];
+            expectRealmList(nestedList);
+            expect(nestedList.length).equals(1);
+            expect(nestedList[0]).equals("updated");
+          });
+
+          // TODO: Solve the "removeAll()" case for self-assignment.
+          it.skip("self assigns", function (this: RealmContext) {
+            const created = this.realm.write(() => {
+              return this.realm.create<IMixedSchema>(MixedSchema.name, { mixed: ["original1", "original2"] });
+            });
+            let list = created.mixed;
+            expectRealmList(list);
+            expect(list.length).equals(2);
+            expect(list[0]).equals("original1");
+            expect(list[1]).equals("original2");
+
+            this.realm.write(() => {
+              /* eslint-disable-next-line no-self-assign */
+              created.mixed = created.mixed;
+            });
+            list = created.mixed;
+            expectRealmList(list);
+            expect(list.length).equals(2);
+            expect(list[0]).equals("original1");
+            expect(list[1]).equals("original2");
+          });
+
+          // TODO: Solve the "removeAll()" case for self-assignment.
+          it.skip("self assigns nested list", function (this: RealmContext) {
+            const { mixed: list } = this.realm.write(() => {
+              return this.realm.create<IMixedSchema>(MixedSchema.name, {
+                mixed: [["original1", "original2"]],
+              });
+            });
+            expectRealmList(list);
+            expect(list.length).equals(1);
+
+            let nestedList = list[0];
+            expectRealmList(nestedList);
+            expect(nestedList.length).equals(2);
+            expect(nestedList[0]).equals("original1");
+            expect(nestedList[1]).equals("original2");
+
+            this.realm.write(() => {
+              /* eslint-disable-next-line no-self-assign */
+              list[0] = list[0];
+            });
+            nestedList = list[0];
+            expectRealmList(nestedList);
+            expect(nestedList.length).equals(2);
+            expect(nestedList[0]).equals("original1");
+            expect(nestedList[1]).equals("original2");
+          });
         });
 
         describe("Dictionary", () => {
@@ -1226,6 +1318,102 @@ describe("Mixed", () => {
             expectKeys(nestedDictionary, ["depth2"]);
             expectRealmDictionary(nestedDictionary.depth2);
             expectDictionaryOfAllTypes(nestedDictionary.depth2.depth3);
+          });
+
+          it("updates itself to a new dictionary", function (this: RealmContext) {
+            const created = this.realm.write(() => {
+              return this.realm.create<IMixedSchema>(MixedSchema.name, {
+                mixed: { key1: "original1", key2: "original2" },
+              });
+            });
+            let dictionary = created.mixed;
+            expectRealmDictionary(dictionary);
+            expectKeys(dictionary, ["key1", "key2"]);
+            expect(dictionary.key1).equals("original1");
+            expect(dictionary.key2).equals("original2");
+
+            this.realm.write(() => {
+              created.mixed = { newKey: "updated" };
+            });
+            dictionary = created.mixed;
+            expectRealmDictionary(dictionary);
+            expectKeys(dictionary, ["newKey"]);
+            expect(dictionary.newKey).equals("updated");
+          });
+
+          it("updates nested dictionary to a new dictionary", function (this: RealmContext) {
+            const { mixed: dictionary } = this.realm.write(() => {
+              return this.realm.create<IMixedSchema>(MixedSchema.name, {
+                mixed: { nestedDictionary: { key1: "original1", key2: "original2" } },
+              });
+            });
+            expectRealmDictionary(dictionary);
+            expectKeys(dictionary, ["nestedDictionary"]);
+
+            let nestedDictionary = dictionary.nestedDictionary;
+            expectRealmDictionary(nestedDictionary);
+            expectKeys(nestedDictionary, ["key1", "key2"]);
+            expect(nestedDictionary.key1).equals("original1");
+            expect(nestedDictionary.key2).equals("original2");
+
+            this.realm.write(() => {
+              dictionary.nestedDictionary = { newKey: "updated" };
+            });
+            nestedDictionary = dictionary.nestedDictionary;
+            expectRealmDictionary(nestedDictionary);
+            expectKeys(nestedDictionary, ["newKey"]);
+            expect(nestedDictionary.newKey).equals("updated");
+          });
+
+          // TODO: Solve the "removeAll()" case for self-assignment.
+          it.skip("self assigns", function (this: RealmContext) {
+            const created = this.realm.write(() => {
+              return this.realm.create<IMixedSchema>(MixedSchema.name, {
+                mixed: { key1: "original1", key2: "original2" },
+              });
+            });
+            let dictionary = created.mixed;
+            expectRealmDictionary(dictionary);
+            expectKeys(dictionary, ["key1", "key2"]);
+            expect(dictionary.key1).equals("original1");
+            expect(dictionary.key2).equals("original2");
+
+            this.realm.write(() => {
+              /* eslint-disable-next-line no-self-assign */
+              created.mixed = created.mixed;
+            });
+            dictionary = created.mixed;
+            expectRealmDictionary(dictionary);
+            expectKeys(dictionary, ["key1", "key2"]);
+            expect(dictionary.key1).equals("original1");
+            expect(dictionary.key2).equals("original2");
+          });
+
+          // TODO: Solve the "removeAll()" case for self-assignment.
+          it.skip("self assigns nested dictionary", function (this: RealmContext) {
+            const { mixed: dictionary } = this.realm.write(() => {
+              return this.realm.create<IMixedSchema>(MixedSchema.name, {
+                mixed: { nestedDictionary: { key1: "original1", key2: "original2" } },
+              });
+            });
+            expectRealmDictionary(dictionary);
+            expectKeys(dictionary, ["nestedDictionary"]);
+
+            let nestedDictionary = dictionary.nestedDictionary;
+            expectRealmDictionary(nestedDictionary);
+            expectKeys(nestedDictionary, ["key1", "key2"]);
+            expect(nestedDictionary.key1).equals("original1");
+            expect(nestedDictionary.key2).equals("original2");
+
+            this.realm.write(() => {
+              /* eslint-disable-next-line no-self-assign */
+              dictionary.nestedDictionary = dictionary.nestedDictionary;
+            });
+            nestedDictionary = dictionary.nestedDictionary;
+            expectRealmDictionary(nestedDictionary);
+            expectKeys(nestedDictionary, ["key1", "key2"]);
+            expect(nestedDictionary.key1).equals("original1");
+            expect(nestedDictionary.key2).equals("original2");
           });
         });
       });

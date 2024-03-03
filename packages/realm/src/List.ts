@@ -457,6 +457,8 @@ export function insertIntoListOfMixed(
   internal: binding.List,
   toBinding: TypeHelpers["toBinding"],
 ) {
+  internal.removeAll();
+
   let index = 0;
   for (const item of list) {
     if (isJsOrRealmList(item)) {

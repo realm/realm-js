@@ -438,6 +438,8 @@ export function insertIntoDictionaryOfMixed(
   internal: binding.Dictionary,
   toBinding: TypeHelpers["toBinding"],
 ) {
+  internal.removeAll();
+
   for (const key in dictionary) {
     const value = dictionary[key];
     if (isJsOrRealmList(value)) {
