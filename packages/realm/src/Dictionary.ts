@@ -285,8 +285,9 @@ export class Dictionary<T = unknown> extends Collection<
    */
   set(elementsOrKey: string | { [key: string]: T }, value?: T): this {
     assert.inTransaction(this[REALM]);
-
     const elements = typeof elementsOrKey === "object" ? elementsOrKey : { [elementsOrKey]: value as T };
+    assert(Object.getOwnPropertySymbols(elements).length === 0, "Symbols cannot be used as keys of a dictionary");
+
     for (const [key, value] of Object.entries(elements)) {
       this[key] = value;
     }
