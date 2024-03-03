@@ -1793,7 +1793,8 @@ describe("Mixed", () => {
           expect(filtered.length).equals(0);
 
           filtered = objects.filtered(`mixed['${nonExistentKey}'] == $0`, valueToMatch);
-          expect(filtered.length).equals(0);
+          // Core treats missing keys as `null` in queries.
+          expect(filtered.length).equals(valueToMatch === null ? expectedFilteredCount : 0);
 
           filtered = objects.filtered(`mixed.${key} == $0`, valueToMatch);
           expect(filtered.length).equals(expectedFilteredCount);
@@ -1802,7 +1803,8 @@ describe("Mixed", () => {
           expect(filtered.length).equals(0);
 
           filtered = objects.filtered(`mixed.${nonExistentKey} == $0`, valueToMatch);
-          expect(filtered.length).equals(0);
+          // Core treats missing keys as `null` in queries.
+          expect(filtered.length).equals(valueToMatch === null ? expectedFilteredCount : 0);
 
           // Objects with a dictionary value that matches the `valueToMatch` at ANY key.
 
@@ -1933,7 +1935,8 @@ describe("Mixed", () => {
           expect(filtered.length).equals(0);
 
           filtered = objects.filtered(`mixed['depth1']['depth2']['${nonExistentKey}'] == $0`, valueToMatch);
-          expect(filtered.length).equals(0);
+          // Core treats missing keys as `null` in queries.
+          expect(filtered.length).equals(valueToMatch === null ? expectedFilteredCount : 0);
 
           filtered = objects.filtered(`mixed.depth1.depth2.${key} == $0`, valueToMatch);
           expect(filtered.length).equals(expectedFilteredCount);
@@ -1942,7 +1945,8 @@ describe("Mixed", () => {
           expect(filtered.length).equals(0);
 
           filtered = objects.filtered(`mixed.depth1.depth2.${nonExistentKey} == $0`, valueToMatch);
-          expect(filtered.length).equals(0);
+          // Core treats missing keys as `null` in queries.
+          expect(filtered.length).equals(valueToMatch === null ? expectedFilteredCount : 0);
 
           // Objects with a nested dictionary value that matches the `valueToMatch` at ANY key.
 
