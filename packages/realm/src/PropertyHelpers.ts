@@ -34,8 +34,8 @@ import {
   createResultsAccessor,
   createSetAccessor,
   getTypeHelpers,
-  insertIntoDictionaryInMixed,
-  insertIntoListInMixed,
+  insertIntoDictionaryOfMixed,
+  insertIntoListOfMixed,
   isJsOrRealmDictionary,
   isJsOrRealmList,
   toItemType,
@@ -352,12 +352,12 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
         if (isJsOrRealmList(value)) {
           obj.setCollection(columnKey, binding.CollectionType.List);
           const internal = binding.List.make(realm.internal, obj, columnKey);
-          insertIntoListInMixed(value, internal, toBinding);
+          insertIntoListOfMixed(value, internal, toBinding);
         } else if (isJsOrRealmDictionary(value)) {
           obj.setCollection(columnKey, binding.CollectionType.Dictionary);
           const internal = binding.Dictionary.make(realm.internal, obj, columnKey);
           internal.removeAll();
-          insertIntoDictionaryInMixed(value, internal, toBinding);
+          insertIntoDictionaryOfMixed(value, internal, toBinding);
         } else {
           defaultSet(options)(obj, value);
         }

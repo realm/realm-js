@@ -29,7 +29,7 @@ import {
   binding,
   createDefaultGetter,
   createDictionaryAccessor,
-  insertIntoDictionaryInMixed,
+  insertIntoDictionaryOfMixed,
   isJsOrRealmDictionary,
   toItemType,
 } from "./internal";
@@ -404,10 +404,10 @@ function setMixed<T>(
 
   if (isJsOrRealmList(value)) {
     list.setCollection(index, binding.CollectionType.List);
-    insertIntoListInMixed(value, list.getList(index), toBinding);
+    insertIntoListOfMixed(value, list.getList(index), toBinding);
   } else if (isJsOrRealmDictionary(value)) {
     list.setCollection(index, binding.CollectionType.Dictionary);
-    insertIntoDictionaryInMixed(value, list.getDictionary(index), toBinding);
+    insertIntoDictionaryOfMixed(value, list.getDictionary(index), toBinding);
   } else {
     list.setAny(index, toBinding(value));
   }
@@ -442,17 +442,17 @@ function insertMixed<T>(
 
   if (isJsOrRealmList(value)) {
     list.insertCollection(index, binding.CollectionType.List);
-    insertIntoListInMixed(value, list.getList(index), toBinding);
+    insertIntoListOfMixed(value, list.getList(index), toBinding);
   } else if (isJsOrRealmDictionary(value)) {
     list.insertCollection(index, binding.CollectionType.Dictionary);
-    insertIntoDictionaryInMixed(value, list.getDictionary(index), toBinding);
+    insertIntoDictionaryOfMixed(value, list.getDictionary(index), toBinding);
   } else {
     list.insertAny(index, toBinding(value));
   }
 }
 
 /** @internal */
-export function insertIntoListInMixed(
+export function insertIntoListOfMixed(
   list: List | unknown[],
   internal: binding.List,
   toBinding: TypeHelpers["toBinding"],
@@ -461,10 +461,10 @@ export function insertIntoListInMixed(
   for (const item of list) {
     if (isJsOrRealmList(item)) {
       internal.insertCollection(index, binding.CollectionType.List);
-      insertIntoListInMixed(item, internal.getList(index), toBinding);
+      insertIntoListOfMixed(item, internal.getList(index), toBinding);
     } else if (isJsOrRealmDictionary(item)) {
       internal.insertCollection(index, binding.CollectionType.Dictionary);
-      insertIntoDictionaryInMixed(item, internal.getDictionary(index), toBinding);
+      insertIntoDictionaryOfMixed(item, internal.getDictionary(index), toBinding);
     } else {
       internal.insertAny(index, toBinding(item));
     }

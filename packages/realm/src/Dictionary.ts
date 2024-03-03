@@ -32,7 +32,7 @@ import {
   binding,
   createListAccessor,
   createResultsAccessor,
-  insertIntoListInMixed,
+  insertIntoListOfMixed,
   isJsOrRealmList,
   toItemType,
 } from "./internal";
@@ -422,17 +422,17 @@ function setMixed<T>(
 
   if (isJsOrRealmList(value)) {
     dictionary.insertCollection(key, binding.CollectionType.List);
-    insertIntoListInMixed(value, dictionary.getList(key), toBinding);
+    insertIntoListOfMixed(value, dictionary.getList(key), toBinding);
   } else if (isJsOrRealmDictionary(value)) {
     dictionary.insertCollection(key, binding.CollectionType.Dictionary);
-    insertIntoDictionaryInMixed(value, dictionary.getDictionary(key), toBinding);
+    insertIntoDictionaryOfMixed(value, dictionary.getDictionary(key), toBinding);
   } else {
     dictionary.insertAny(key, toBinding(value));
   }
 }
 
 /** @internal */
-export function insertIntoDictionaryInMixed(
+export function insertIntoDictionaryOfMixed(
   dictionary: Dictionary | Record<string, unknown>,
   internal: binding.Dictionary,
   toBinding: TypeHelpers["toBinding"],
@@ -441,10 +441,10 @@ export function insertIntoDictionaryInMixed(
     const value = dictionary[key];
     if (isJsOrRealmList(value)) {
       internal.insertCollection(key, binding.CollectionType.List);
-      insertIntoListInMixed(value, internal.getList(key), toBinding);
+      insertIntoListOfMixed(value, internal.getList(key), toBinding);
     } else if (isJsOrRealmDictionary(value)) {
       internal.insertCollection(key, binding.CollectionType.Dictionary);
-      insertIntoDictionaryInMixed(value, internal.getDictionary(key), toBinding);
+      insertIntoDictionaryOfMixed(value, internal.getDictionary(key), toBinding);
     } else {
       internal.insertAny(key, toBinding(value));
     }
