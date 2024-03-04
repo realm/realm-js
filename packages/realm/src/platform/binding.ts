@@ -25,6 +25,6 @@ export { binding };
 
 /** @internal */
 export function injectAndPatch(value: typeof binding) {
-  inject(value);
   applyPatch(value);
+  inject(value);
 }

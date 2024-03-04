@@ -331,6 +331,7 @@
     "bson": "^4.7.2",
     "debug": "^4.3.4",
     "node-machine-id": "^1.1.12",
+    "path-browserify": "^1.0.1",
     "prebuild-install": "^7.1.1"
   },
   "peerDependencies": {
@@ -355,7 +356,6 @@
     "command-line-args": "^5.2.1",
     "cross-env": "^7.0.3",
     "mocha": "^10.1.0",
-    "path-browserify": "^1.0.1",
     "prebuild": "^12.1.0",
     "react-native": "0.73.2",
     "typedoc-plugin-rename-defaults": "^0.7.0"
