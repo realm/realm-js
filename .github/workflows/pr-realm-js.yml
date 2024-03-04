@@ -30,7 +30,7 @@ jobs:
         with:
           submodules: "recursive"
       - name: Setup node version
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
@@ -82,7 +82,7 @@ jobs:
           submodules: "recursive"
 
       - name: Setup node version
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
@@ -283,7 +283,7 @@ jobs:
           submodules: "recursive"
 
       - name: Setup node version
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
