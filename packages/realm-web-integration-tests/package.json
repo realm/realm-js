@@ -36,7 +36,7 @@
     "jwt-encode": "^1.0.1",
     "mocha-remote-cli": "^1.8.0",
     "mocha-remote-server": "^1.8.0",
-    "puppeteer": "^21.11.0",
+    "puppeteer": "^22.3.0",
     "realm-web": "*",
     "webpack": "^5.90.0",
     "webpack-dev-server": "^4.15.1"
