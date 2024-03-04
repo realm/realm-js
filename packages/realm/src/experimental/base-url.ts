@@ -27,10 +27,10 @@ declare module "../app-services/App" {
     get baseUrl(): string;
 
     /**
-     * Switch the base URL.
+     * Update the base URL.
      * @experimental This feature is experimental and may be changed or removed.
      */
-    switchBaseUrl(url: string): Promise<void>;
+    updateBaseUrl(url: string): Promise<void>;
   }
 }
 
@@ -39,10 +39,10 @@ Object.defineProperty(App.prototype, "baseUrl", {
     return this.internal.getBaseUrl();
   },
   set() {
-    throw new Error("Cannot assign the base URL, please use `switchBaseUrl()`.");
+    throw new Error("Cannot assign the base URL, please use `updateBaseUrl()`.");
   },
 });
 
-App.prototype.switchBaseUrl = async function (this: App, url: string) {
+App.prototype.updateBaseUrl = async function (this: App, url: string) {
   await this.internal.updateBaseUrl(url);
 };
