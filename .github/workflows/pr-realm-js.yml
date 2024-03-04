@@ -94,7 +94,7 @@ jobs:
 
       - name: Restore NPM cache
         id: npm-cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{ steps.npm-cache-dir.outputs.dir }}
           key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
@@ -295,7 +295,7 @@ jobs:
 
       - name: Restore NPM cache
         id: npm-cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{ steps.npm-cache-dir.outputs.dir }}
           key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
@@ -307,7 +307,7 @@ jobs:
 
       - name: Restore React Native cache
         if: ${{ matrix.variant.environment == 'react-native' }}
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: '**/Pods'
           key: ${{ runner.os }}-${{matrix.variant.environment}}-${{ hashFiles('**/Podfile.lock', './src/**', './vendor/**') }}
@@ -404,7 +404,7 @@ jobs:
 
       - name: Setup Java Gradle cache for android test app
         if: ${{ matrix.variant.os == 'android' }}
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ~/.gradle/caches
@@ -415,7 +415,7 @@ jobs:
 
       - name: Setup Android Emulator cache
         if: ${{ matrix.variant.os == 'android' }}
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         id: avd-cache
         with:
           path: |
