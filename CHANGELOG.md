@@ -1,10 +1,4 @@
-## vNext (TBD)
-
-### Deprecations
-* None
-
-### Enhancements
-* None
+## 12.6.2 (2024-03-04)
 
 ### Fixed
 * Fixed binding abstraction to allow access of certain properties (`$$typeof` for now) prior to its injection. ([#6522](https://github.com/realm/realm-js/issues/6522), since v12.6.1)
@@ -15,7 +9,6 @@
 * Realm Studio v14.0.0.
 * File format: generates Realms with format v23 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
-### Internal
 
 ## 12.6.1 (2024-02-26)
 
