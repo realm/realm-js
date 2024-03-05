@@ -28,6 +28,7 @@ import {
   DefaultObject,
   INTERNAL,
   InitialSubscriptions,
+  LOG_CATEGORIES,
   List,
   LogCategory,
   LogLevel,
@@ -126,12 +127,12 @@ export class Realm {
    * @note The log level can be changed during the lifetime of the application.
    * @since 12.7.0
    * @example
-   * Realm.setLogLevel({ category: LogCategory.Realm, level: "all" });
+   * Realm.setLogLevel({ category: "Realm", level: "all" });
    */
   static setLogLevel(options: LogOptions): void;
   static setLogLevel(arg: LogLevel | LogOptions) {
-    const setLevel = (level: LogLevel, category = LogCategory.Realm) => {
-      assert(Object.values(LogCategory).includes(category), `Unexpected log category: '${category}'`);
+    const setLevel = (level: LogLevel, category = "Realm") => {
+      assert(LOG_CATEGORIES.includes(category as LogCategory), `Unexpected log category: '${category}'`);
       const categoryRef = binding.LogCategoryRef.getCategory(category);
       categoryRef.setDefaultLevelThreshold(toBindingLoggerLevel(level));
     };
