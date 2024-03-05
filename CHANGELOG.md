@@ -4,7 +4,7 @@
 * None
 
 ### Enhancements
-* None
+* Added detection and better instructions when imported from the Expo Go app. ([#6523](https://github.com/realm/realm-js/pull/6523))
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
