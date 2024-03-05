@@ -102,16 +102,6 @@ export class ProgressRealmPromise implements Promise<Realm> {
       } else if (openBehavior === OpenRealmBehaviorType.DownloadBeforeOpen) {
         const { bindingConfig } = Realm.transformConfig(config);
 
-        // Check if file will be deteled for the wrong reasons
-        if (
-          bindingConfig.schemaMode === binding.SchemaMode.SoftResetFile &&
-          binding.Helpers.needsFileFormatUpgrade(bindingConfig)
-        ) {
-          throw new Error(
-            "File format upgrade is needed and setting 'deleteRealmIfMigrationNeeded' to true will erase all objects. Only use 'deleteRealmIfMigrationNeeded' for non-production cases.",
-          );
-        }
-
         // Construct an async open task
         this.task = binding.Realm.getSynchronizedRealm(bindingConfig);
         // If the promise handle gets rejected, we should cancel the open task

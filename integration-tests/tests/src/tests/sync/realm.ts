@@ -1986,30 +1986,6 @@ describe("Realmtest", () => {
         new Realm({ path: "bundled.realm", disableFormatUpgrade: true });
       }).throws("Database upgrade required but prohibited.");
     });
-
-    it("checking is a bundled realm needs a file format upgrade", () => {
-      const config = { path: "bundled.realm" };
-      if (Realm.exists(config)) {
-        Realm.deleteFile(config);
-      }
-
-      Realm.copyBundledRealmFiles();
-      expect(Realm.needsFileFormatUpgrade(config)).to.be.true;
-    });
-
-    it("deleteRealmIfMigrationNeeded is not possible if file format can be upgraded", () => {
-      const config = { path: "bundle.realm", deleteRealmIfMigrationNeeded: true };
-      if (Realm.exists(config)) {
-        Realm.deleteFile(config);
-      }
-
-      Realm.copyBundledRealmFiles();
-      expect(() => {
-        new Realm(config);
-      }).throws(
-        "File format upgrade is needed and setting 'deleteRealmIfMigrationNeeded' to true will erase all objects. Only use 'deleteRealmIfMigrationNeeded' for non-production cases.",
-      );
-    });
   });
 
   describe("isEmpty property", () => {
