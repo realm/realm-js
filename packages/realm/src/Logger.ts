@@ -66,6 +66,24 @@ export enum NumericLogLevel {
   Off = 8,
 }
 
+export const LOG_CATEGORIES = [
+  "Realm",
+  "Realm.Storage",
+  "Realm.Storage.Transaction",
+  "Realm.Storage.Query",
+  "Realm.Storage.Object",
+  "Realm.Storage.Notification",
+  "Realm.Sync",
+  "Realm.Sync.Client",
+  "Realm.Sync.Client.Session",
+  "Realm.Sync.Client.Changeset",
+  "Realm.Sync.Client.Network",
+  "Realm.Sync.Client.Reset",
+  "Realm.Sync.Server",
+  "Realm.App",
+  "Realm.SDK",
+] as const;
+
 /**
  * The category to receive log messages for. The {@link LogLevel} will
  * always be set for a specific category. Setting the log level on one
@@ -119,25 +137,6 @@ export enum NumericLogLevel {
  * `"Realm.SDK"`
  * : Log activity at the SDK level.
  */
-
-export const LOG_CATEGORIES = [
-  "Realm",
-  "Realm.Storage",
-  "Realm.Storage.Transaction",
-  "Realm.Storage.Query",
-  "Realm.Storage.Object",
-  "Realm.Storage.Notification",
-  "Realm.Sync",
-  "Realm.Sync.Client",
-  "Realm.Sync.Client.Session",
-  "Realm.Sync.Client.Changeset",
-  "Realm.Sync.Client.Network",
-  "Realm.Sync.Client.Reset",
-  "Realm.Sync.Server",
-  "Realm.App",
-  "Realm.SDK",
-] as const;
-
 export type LogCategory = (typeof LOG_CATEGORIES)[number];
 
 /**
