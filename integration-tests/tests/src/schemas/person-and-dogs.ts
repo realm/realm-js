@@ -76,3 +76,31 @@ export class Dog extends Realm.Object<Dog> {
 
   static schema: Realm.ObjectSchema = DogSchema;
 }
+
+export interface IPersonWithEmbedded {
+  name: string;
+  age: number;
+  address?: IEmbeddedAddress;
+}
+
+export const PersonWithEmbeddedSchema: Realm.ObjectSchema = {
+  name: "PersonWithEmbedded",
+  primaryKey: "name",
+  properties: {
+    age: "int",
+    name: "string",
+    address: "EmbeddedAddress?",
+  },
+};
+
+export interface IEmbeddedAddress {
+  street: string;
+}
+
+export const EmbeddedAddressSchema: Realm.ObjectSchema = {
+  name: "EmbeddedAddress",
+  embedded: true,
+  properties: {
+    street: "string",
+  },
+};
