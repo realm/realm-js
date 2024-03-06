@@ -1,6 +1,7 @@
 ## vNext (TBD)
 
-NOTE: This version bumps the Realm file format to version 24. It is not possible to downgrade to earlier versions. Older files will automatically be upgraded to the new file format. Files created by Realm JavaScript prior to v6.0.0, might not be upgradeable. Only Realm Studio 15.0.0 or later will be able to open the new file format.
+> [!NOTE]
+> This version bumps the Realm file format to version 24. It is not possible to downgrade to earlier versions. Older files will automatically be upgraded to the new file format. Files created by Realm JavaScript prior to v6.0.0, might not be upgradeable. **Only Realm Studio 15.0.0 or later** will be able to open the new file format.
 
 ### Deprecations
 * None
@@ -17,13 +18,13 @@ NOTE: This version bumps the Realm file format to version 24. It is not possible
 * Added support for using aggregate operations on Mixed properties in queries. ([realm/realm-core#7398](https://github.com/realm/realm-core/pull/7398))
 
 ### Fixed
-* Align dictionaries to Lists and Sets when they get cleared. ([#6205](https://github.com/realm/realm-core/issues/6205), since v10.3.0-rc.1)
+* Aligned Dictionaries to Lists and Sets when they get cleared. ([#6205](https://github.com/realm/realm-core/issues/6205), since v10.3.0-rc.1)
 * Fixed equality queries on a `Mixed` property with an index possibly returning the wrong result if values of different types happened to have the same StringIndex hash. ([realm/realm-core#6407](https://github.com/realm/realm-core/issues/6407), since v10.5.0-beta.1)
-* `@count`/`@size` not supported for `Mixed` properties. ([realm/realm-core#7280](https://github.com/realm/realm-core/issues/7280), since v10.0.0)
+* `@count`/`@size` is now supported for `Mixed` properties. ([realm/realm-core#7280](https://github.com/realm/realm-core/issues/7280), since v10.0.0)
 * Fixed queries like `indexed_property == NONE {x}` which mistakenly matched on only `x` instead of not `x`. This only applies when an indexed property with equality (`==`, or `IN`) matches with `NONE` on a list of one item. If the constant list contained more than one value then it was working correctly. ([realm/realm-java#7862](https://github.com/realm/realm-java/issues/7862), since v10.20.0)
 * Uploading the changesets recovered during an automatic client reset recovery may lead to `Bad server version` errors and a new client reset. ([realm/realm-core#7279](https://github.com/realm/realm-core/issues/7279), since v12.5.0)
 * Fixed crash in full text index using prefix search with no matches ([realm/realm-core#7309](https://github.com/realm/realm-core/issues/7309), since v12.2.0)
-* Fix a race condition when backing up Realm files before a client reset which could have lead to overwriting an existing file. ([realm/realm-core#7341](https://github.com/realm/realm-core/pull/7341)).
+* Fixed a race condition when backing up Realm files before a client reset which could have lead to overwriting an existing file. ([realm/realm-core#7341](https://github.com/realm/realm-core/pull/7341)).
 
 ### Compatibility
 * React Native >= v0.71.4

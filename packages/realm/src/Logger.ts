@@ -168,7 +168,7 @@ export type LogOptions = {
 export type Logger = (level: NumericLogLevel, message: string) => void;
 
 /**
- * A callback passed to `Realm.setLogger`.
+ * A callback to be used as the logger.
  * @param level   - The level of the log entry.
  * @param message - The message of the log entry.
  * @since 12.0.0
@@ -195,10 +195,14 @@ export type LogEntry = {
 };
 
 /**
- * A callback passed to `Realm.setLogger`. Arguments are passed as an object.
+ * A callback to be used as the logger.
  * @since 12.7.0
  */
 export type LoggerCallback2 = (entry: LogEntry) => void;
+/**
+ * A callback to be used as the logger.
+ * @since 12.7.0
+ */
 export type LoggerCallback = LoggerCallback1 | LoggerCallback2;
 
 /** @internal */

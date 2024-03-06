@@ -129,7 +129,6 @@ export class Realm {
    * Realm.setLogLevel({ category: LogCategory.Realm, level: "all" });
    */
   static setLogLevel(options: LogOptions): void;
-
   static setLogLevel(arg: LogLevel | LogOptions) {
     const setLevel = (level: LogLevel, category = LogCategory.Realm) => {
       assert(Object.values(LogCategory).includes(category), `Unexpected log category: '${category}'`);
@@ -147,7 +146,7 @@ export class Realm {
   /**
    * Sets the logger callback.
    * @param loggerCallback - The callback invoked by the logger. The default callback uses `console.log`, `console.warn` and `console.error`, depending on the level of the message.
-   * @note The logger callback needs to be setup before opening the first Realm.
+   * @note The logger callback needs to be set up before opening the first Realm.
    * @since 12.0.0
    * @deprecated Pass a callback taking a single object argument instead.
    * @example
@@ -156,11 +155,10 @@ export class Realm {
    * });
    */
   static setLogger(loggerCallback: LoggerCallback1): void;
-
   /**
    * Sets the logger callback.
    * @param loggerCallback - The callback invoked by the logger. The default callback uses `console.log`, `console.warn` and `console.error`, depending on the level of the message.
-   * @note The logger callback needs to be setup before opening the first Realm.
+   * @note The logger callback needs to be set up before opening the first Realm.
    * @since 12.0.0
    * @example
    * Realm.setLogger(({ category, level, message }) => {
@@ -168,11 +166,10 @@ export class Realm {
    * });
    */
   static setLogger(loggerCallback: LoggerCallback2): void;
-
   /**
    * Sets the logger callback.
    * @param loggerCallback - The callback invoked by the logger. The default callback uses `console.log`, `console.warn` and `console.error`, depending on the level of the message.
-   * @note The logger callback needs to be setup before opening the first Realm.
+   * @note The logger callback needs to be set up before opening the first Realm.
    * @since 12.0.0
    * @example
    * Realm.setLogger(({ category, level, message }) => {
