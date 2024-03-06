@@ -23,14 +23,12 @@ import { CachedObject, createCachedObject } from "./cachedObject";
 import {
   AnyRealmObject,
   CollectionCallback,
+  RealmClassType,
   getObjectForPrimaryKey,
   getObjects,
   isClassModelConstructor,
 } from "./helpers";
 import { UseRealmHook } from "./useRealm";
-
-/* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-type RealmClassType<T = any> = { new (...args: any): T };
 
 export type ObjectHookOptions<T> = {
   type: string;
@@ -38,12 +36,25 @@ export type ObjectHookOptions<T> = {
   keyPaths?: string | string[];
 };
 
-export type ObjectHookClassBasedOptions<T> = {
+export type ObjectHookClassBasedOptions<T extends AnyRealmObject> = {
   type: RealmClassType<T>;
   primaryKey: T[keyof T];
   keyPaths?: string | string[];
 };
 
+/**
+ * Returns a {@link Realm.Object} from a given type and value of primary key.
+ * The hook will update on any changes to the properties on the returned object
+ * and return null if it either doesn't exists or has been deleted.
+ * @example
+ * ```
+ * const object = useObject(ObjectClass, objectId);
+ * ```
+ * @param type - The object type, depicted by a string or a class extending {@link Realm.Object}
+ * @param primaryKey - The primary key of the desired object which will be retrieved using {@link Realm.objectForPrimaryKey}
+ * @param keyPaths - Indicates a lower bound on the changes relevant for the hook. This is a lower bound, since if multiple hooks add listeners (each with their own `keyPaths`) the union of these key-paths will determine the changes that are considered relevant for all listeners registered on the object. In other words: A listener might fire and cause a re-render more than the key-paths specify, if other listeners with different key-paths are present.
+ * @returns either the desired {@link Realm.Object} or `null` in the case of it being deleted or not existing.
+ */
 export type UseObjectHook = {
   <T>(options: ObjectHookOptions<T>): (T & Realm.Object<T>) | null;
   <T extends AnyRealmObject>(options: ObjectHookClassBasedOptions<T>): T | null;

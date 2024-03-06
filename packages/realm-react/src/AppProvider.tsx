@@ -53,7 +53,7 @@ const AuthOperationProvider: React.FC<AuthOperationProps> = ({ children }) => {
  * can be used to create a Realm.App instance:
  * https://www.mongodb.com/docs/realm-sdks/js/latest/Realm.App.html#~AppConfiguration
  */
-type AppProviderProps = Realm.AppConfiguration & {
+export type AppProviderProps = Realm.AppConfiguration & {
   /**
    * A ref to the App instance. This is useful if you need to access the App
    * instance outside of a component that uses the App hooks.

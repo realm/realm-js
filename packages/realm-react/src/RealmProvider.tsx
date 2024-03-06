@@ -22,11 +22,11 @@ import { isEqual } from "lodash";
 
 import { UserContext } from "./UserProvider";
 
-type PartialRealmConfiguration = Omit<Partial<Realm.Configuration>, "sync"> & {
+export type PartialRealmConfiguration = Omit<Partial<Realm.Configuration>, "sync"> & {
   sync?: Partial<Realm.SyncConfiguration>;
 };
 
-type ProviderProps = PartialRealmConfiguration & {
+export type RealmProviderProps = PartialRealmConfiguration & {
   /**
    * The fallback component to render if the Realm is not opened.
    */
@@ -45,6 +45,33 @@ type ProviderProps = PartialRealmConfiguration & {
 };
 
 /**
+ * The Provider component that is required to wrap any component using
+ * the Realm hooks.
+ * @example
+ * ```
+ * const AppRoot = () => {
+ *   const syncConfig = {
+ *     flexible: true,
+ *     user: currentUser
+ *   };
+ *
+ *   return (
+ *     <RealmProvider schema={[Task, User]} path={"data.realm"} sync={syncConfig}>
+ *       <App/>
+ *     </RealmProvider>
+ *   )
+ * }
+ * ```
+ * @param props - The {@link Realm.Configuration} for this Realm defaults to
+ * the config passed to `createRealmProvider`, but individual config keys can
+ * be overridden when creating a `<RealmProvider>` by passing them as props.
+ * For example, to override the `path` config value, use a prop named `path`
+ * e.g., `path="newPath.realm"`
+ * an attribute of the same key.
+ */
+export type RealmProvider = React.FC<RealmProviderProps>;
+
+/**
  * Generates a `RealmProvider` given a {@link Realm.Configuration} and {@link React.Context}.
  * @param realmConfig - The configuration of the Realm to be instantiated
  * @param RealmContext - The context that will contain the Realm instance
@@ -53,7 +80,7 @@ type ProviderProps = PartialRealmConfiguration & {
 export function createRealmProvider(
   realmConfig: Realm.Configuration,
   RealmContext: React.Context<Realm | null>,
-): React.FC<ProviderProps> {
+): RealmProvider {
   /**
    * Returns a Context Provider component that is required to wrap any component using
    * the Realm hooks.

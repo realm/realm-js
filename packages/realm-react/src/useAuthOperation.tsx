@@ -21,13 +21,12 @@ import { useCallback } from "react";
 import { AuthError, AuthOperationName, OperationState } from "./types";
 import { useAuthResult } from "./AppProvider";
 
-export function useAuthOperation<Args extends unknown[]>({
-  operation,
-  operationName,
-}: {
+type UseAuthOperationOptions<Args extends unknown[]> = {
   operation: (...args: Args) => Promise<unknown>;
   operationName: AuthOperationName;
-}) {
+};
+
+export function useAuthOperation<Args extends unknown[]>({ operation, operationName }: UseAuthOperationOptions<Args>) {
   const [result, setResult] = useAuthResult();
 
   return useCallback<(...args: Args) => void>(
