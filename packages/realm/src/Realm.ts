@@ -28,9 +28,14 @@ import {
   DefaultObject,
   INTERNAL,
   InitialSubscriptions,
+  LOG_CATEGORIES,
   List,
+  LogCategory,
   LogLevel,
+  LogOptions,
   LoggerCallback,
+  LoggerCallback1,
+  LoggerCallback2,
   MigrationCallback,
   ObjectSchema,
   ProgressRealmPromise,
@@ -52,12 +57,12 @@ import {
   defaultLoggerLevel,
   extendDebug,
   flags,
-  fromBindingLoggerLevelToLogLevel,
   fromBindingRealmSchema,
   fs,
   normalizeObjectSchema,
   normalizeRealmSchema,
   toArrayBuffer,
+  toBindingLogger,
   toBindingLoggerLevel,
   toBindingSchema,
   toBindingSyncConfig,
@@ -107,27 +112,66 @@ export class Realm {
   private static internals = new Set<binding.WeakRef<binding.Realm>>();
 
   /**
-   * Sets the log level.
+   * Sets the log level across all levels.
    * @param level - The log level to be used by the logger. The default value is `info`.
    * @note The log level can be changed during the lifetime of the application.
    * @since 12.0.0
+   * @example
+   * Realm.setLogLevel("all");
    */
-  static setLogLevel(level: LogLevel) {
-    const bindingLoggerLevel = toBindingLoggerLevel(level);
-    binding.Logger.setDefaultLevelThreshold(bindingLoggerLevel);
+  static setLogLevel(level: LogLevel): void;
+
+  /**
+   * Sets the log level for a specific category.
+   * @param options - The log options to use.
+   * @note The log level can be changed during the lifetime of the application.
+   * @since 12.7.0
+   * @example
+   * Realm.setLogLevel({ category: "Realm", level: "all" });
+   */
+  static setLogLevel(options: LogOptions): void;
+  static setLogLevel(arg: LogLevel | LogOptions) {
+    const setLevel = (level: LogLevel, category = "Realm") => {
+      assert(LOG_CATEGORIES.includes(category as LogCategory), `Unexpected log category: '${category}'`);
+      const categoryRef = binding.LogCategoryRef.getCategory(category);
+      categoryRef.setDefaultLevelThreshold(toBindingLoggerLevel(level));
+    };
+
+    if (typeof arg === "string") {
+      setLevel(arg);
+    } else {
+      setLevel(arg.level, arg.category);
+    }
   }
 
   /**
    * Sets the logger callback.
    * @param loggerCallback - The callback invoked by the logger. The default callback uses `console.log`, `console.warn` and `console.error`, depending on the level of the message.
-   * @note The logger callback needs to be setup before opening the first realm.
+   * @note The logger callback needs to be set up before opening the first Realm.
    * @since 12.0.0
+   * @example
+   * Realm.setLogger(({ category, level, message }) => {
+   *   console.log(`[${category} - ${level}] ${message}`);
+   * });
    */
+  static setLogger(loggerCallback: LoggerCallback2): void;
+
+  /**
+   * Sets the logger callback.
+   * @param loggerCallback - The callback invoked by the logger. The default callback uses `console.log`, `console.warn` and `console.error`, depending on the level of the message.
+   * @note The logger callback needs to be set up before opening the first Realm.
+   * @since 12.0.0
+   * @deprecated Pass a callback taking a single object argument instead.
+   * @example
+   * Realm.setLogger((level, message) => {
+   *   console.log(`[${level}] ${message}`);
+   * });
+   */
+  static setLogger(loggerCallback: LoggerCallback1): void;
+
   static setLogger(loggerCallback: LoggerCallback) {
-    const logger = binding.Helpers.makeLogger((level, message) => {
-      loggerCallback(fromBindingLoggerLevelToLogLevel(level), message);
-    });
-    binding.Logger.setDefaultLogger(logger);
+    assert.function(loggerCallback);
+    binding.Logger.setDefaultLogger(toBindingLogger(loggerCallback));
   }
 
   /**
@@ -507,8 +551,8 @@ export class Realm {
       validateConfiguration(config);
       const { bindingConfig, schemaExtras } = Realm.transformConfig(config);
       debug("open", bindingConfig);
-      this.schemaExtras = schemaExtras;
 
+      this.schemaExtras = schemaExtras;
       fs.ensureDirectoryForFile(bindingConfig.path);
       this.internal = internalConfig.internal ?? binding.Realm.getSharedRealm(bindingConfig);
       if (flags.ALLOW_CLEAR_TEST_STATE) {
@@ -1240,6 +1284,7 @@ export namespace Realm {
   export import InitialSubscriptions = internal.InitialSubscriptions;
   export import List = internal.List;
   export import LocalAppConfiguration = internal.LocalAppConfiguration;
+  export import LogEntry = internal.LogEntry;
   export import Logger = internal.Logger;
   export import LoggerCallback = internal.LoggerCallback;
   export import MapToDecorator = internal.MapToDecorator;
