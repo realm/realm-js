@@ -28,6 +28,7 @@ import {
   DefaultObject,
   INTERNAL,
   InitialSubscriptions,
+  LOG_CATEGORIES,
   List,
   LogCategory,
   LogLevel,
@@ -126,12 +127,12 @@ export class Realm {
    * @note The log level can be changed during the lifetime of the application.
    * @since 12.7.0
    * @example
-   * Realm.setLogLevel({ category: LogCategory.Realm, level: "all" });
+   * Realm.setLogLevel({ category: "Realm", level: "all" });
    */
   static setLogLevel(options: LogOptions): void;
   static setLogLevel(arg: LogLevel | LogOptions) {
-    const setLevel = (level: LogLevel, category = LogCategory.Realm) => {
-      assert(Object.values(LogCategory).includes(category), `Unexpected log category: '${category}'`);
+    const setLevel = (level: LogLevel, category = "Realm") => {
+      assert(LOG_CATEGORIES.includes(category as LogCategory), `Unexpected log category: '${category}'`);
       const categoryRef = binding.LogCategoryRef.getCategory(category);
       categoryRef.setDefaultLevelThreshold(toBindingLoggerLevel(level));
     };
@@ -148,6 +149,18 @@ export class Realm {
    * @param loggerCallback - The callback invoked by the logger. The default callback uses `console.log`, `console.warn` and `console.error`, depending on the level of the message.
    * @note The logger callback needs to be set up before opening the first Realm.
    * @since 12.0.0
+   * @example
+   * Realm.setLogger(({ category, level, message }) => {
+   *   console.log(`[${category} - ${level}] ${message}`);
+   * });
+   */
+  static setLogger(loggerCallback: LoggerCallback2): void;
+
+  /**
+   * Sets the logger callback.
+   * @param loggerCallback - The callback invoked by the logger. The default callback uses `console.log`, `console.warn` and `console.error`, depending on the level of the message.
+   * @note The logger callback needs to be set up before opening the first Realm.
+   * @since 12.0.0
    * @deprecated Pass a callback taking a single object argument instead.
    * @example
    * Realm.setLogger((level, message) => {
@@ -155,27 +168,7 @@ export class Realm {
    * });
    */
   static setLogger(loggerCallback: LoggerCallback1): void;
-  /**
-   * Sets the logger callback.
-   * @param loggerCallback - The callback invoked by the logger. The default callback uses `console.log`, `console.warn` and `console.error`, depending on the level of the message.
-   * @note The logger callback needs to be set up before opening the first Realm.
-   * @since 12.0.0
-   * @example
-   * Realm.setLogger(({ category, level, message }) => {
-   *   console.log(`[${category} - ${level}] ${message}`);
-   * });
-   */
-  static setLogger(loggerCallback: LoggerCallback2): void;
-  /**
-   * Sets the logger callback.
-   * @param loggerCallback - The callback invoked by the logger. The default callback uses `console.log`, `console.warn` and `console.error`, depending on the level of the message.
-   * @note The logger callback needs to be set up before opening the first Realm.
-   * @since 12.0.0
-   * @example
-   * Realm.setLogger(({ category, level, message }) => {
-   *   console.log(`[${category} - ${level}] ${message}`);
-   * });
-   */
+
   static setLogger(loggerCallback: LoggerCallback) {
     assert.function(loggerCallback);
     binding.Logger.setDefaultLogger(toBindingLogger(loggerCallback));
@@ -1291,6 +1284,7 @@ export namespace Realm {
   export import InitialSubscriptions = internal.InitialSubscriptions;
   export import List = internal.List;
   export import LocalAppConfiguration = internal.LocalAppConfiguration;
+  export import LogEntry = internal.LogEntry;
   export import Logger = internal.Logger;
   export import LoggerCallback = internal.LoggerCallback;
   export import MapToDecorator = internal.MapToDecorator;

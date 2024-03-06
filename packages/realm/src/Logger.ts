@@ -66,6 +66,24 @@ export enum NumericLogLevel {
   Off = 8,
 }
 
+export const LOG_CATEGORIES = [
+  "Realm",
+  "Realm.Storage",
+  "Realm.Storage.Transaction",
+  "Realm.Storage.Query",
+  "Realm.Storage.Object",
+  "Realm.Storage.Notification",
+  "Realm.Sync",
+  "Realm.Sync.Client",
+  "Realm.Sync.Client.Session",
+  "Realm.Sync.Client.Changeset",
+  "Realm.Sync.Client.Network",
+  "Realm.Sync.Client.Reset",
+  "Realm.Sync.Server",
+  "Realm.App",
+  "Realm.SDK",
+] as const;
+
 /**
  * The category to receive log messages for. The {@link LogLevel} will
  * always be set for a specific category. Setting the log level on one
@@ -73,75 +91,53 @@ export enum NumericLogLevel {
  * @note
  * When debugging, you might not need log messages from everything. To narrow
  * this scope, log events can be grouped by category.
+ *
+ * `"Realm"`
+ * : Include logs from all categories.
+ *
+ * `"Realm.Storage"`
+ * : Database mutations and query operations.
+ *
+ * `"Realm.Storage.Transaction"`
+ * : Creating, advancing, and committing transactions.
+ *
+ * `"Realm.Storage.Query"`
+ * : Query operations.
+ *
+ * `"Realm.Storage.Object"`
+ * : Database mutations.
+ *
+ * `"Realm.Storage.Notification"`
+ * : Notifications of changes to the database.
+ *
+ * `"Realm.Sync"`
+ * : Activity related to Atlas Device Sync.
+ *
+ * `"Realm.Sync.Client"`
+ * : Activity related to Atlas Device Sync client operations.
+ *
+ * `"Realm.Sync.Client.Session"`
+ * : Connection level activity.
+ *
+ * `"Realm.Sync.Client.Changeset"`
+ * : Receiving, uploading, and integrating changesets.
+ *
+ * `"Realm.Sync.Client.Network"`
+ * : Low level network activity.
+ *
+ * `"Realm.Sync.Client.Reset"`
+ * : Client reset operations.
+ *
+ * `"Realm.Sync.Server"`
+ * : Activity related to Atlas Device Sync server operations.
+ *
+ * `"Realm.App"`
+ * : Log activity at the Atlas App level.
+ *
+ * `"Realm.SDK"`
+ * : Log activity at the SDK level.
  */
-export enum LogCategory {
-  /**
-   * Include logs from all categories. Subcategories are {@link LogCategory.Storage},
-   * {@link LogCategory.Sync}, {@link LogCategory.App}, and {@link LogCategory.SDK}.
-   */
-  Realm = "Realm",
-  /**
-   * Log database mutations and query operations.
-   * Subcategories are {@link LogCategory.Transaction}, {@link LogCategory.Object},
-   * {@link LogCategory.Query}, and {@link LogCategory.Notification}.
-   */
-  Storage = "Realm.Storage",
-  /**
-   * Log when creating, advancing, and committing transactions.
-   */
-  Transaction = "Realm.Storage.Transaction",
-  /**
-   * Log query operations.
-   */
-  Query = "Realm.Storage.Query",
-  /**
-   * Log database mutations.
-   */
-  Object = "Realm.Storage.Object",
-  /**
-   * Log notifications of changes to the database.
-   */
-  Notification = "Realm.Storage.Notification",
-  /**
-   * Log activity related to Atlas Device Sync.
-   * Subcategories are {@link LogCategory.Client} and {@link LogCategory.Server}.
-   */
-  Sync = "Realm.Sync",
-  /**
-   * Log activity related to Atlas Device Sync client operations.
-   * Subcategories are {@link LogCategory.Session}, {@link LogCategory.Changeset},
-   * {@link LogCategory.Network}, and {@link LogCategory.Reset}.
-   */
-  Client = "Realm.Sync.Client",
-  /**
-   * Log connection level activity.
-   */
-  Session = "Realm.Sync.Client.Session",
-  /**
-   * Log when receiving, uploading, and integrating changesets.
-   */
-  Changeset = "Realm.Sync.Client.Changeset",
-  /**
-   * Log low level network activity.
-   */
-  Network = "Realm.Sync.Client.Network",
-  /**
-   * Log client reset operations.
-   */
-  Reset = "Realm.Sync.Client.Reset",
-  /**
-   * Log activity related to Atlas Device Sync server operations.
-   */
-  Server = "Realm.Sync.Server",
-  /**
-   * Log activity at the Atlas App level.
-   */
-  App = "Realm.App",
-  /**
-   * Log activity at the SDK level.
-   */
-  SDK = "Realm.SDK",
-}
+export type LogCategory = (typeof LOG_CATEGORIES)[number];
 
 /**
  * Log options to use when setting the log level.
@@ -154,7 +150,7 @@ export type LogOptions = {
   level: LogLevel;
   /**
    * The category to set the log level for. If omitted, the log level
-   * is set for all categories ({@link LogCategory.Realm}).
+   * is set for all categories (`"Realm"`).
    */
   category?: LogCategory;
 };
