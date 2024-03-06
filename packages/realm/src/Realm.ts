@@ -1284,6 +1284,7 @@ export namespace Realm {
   export import InitialSubscriptions = internal.InitialSubscriptions;
   export import List = internal.List;
   export import LocalAppConfiguration = internal.LocalAppConfiguration;
+  export import LogEntry = internal.LogEntry;
   export import Logger = internal.Logger;
   export import LoggerCallback = internal.LoggerCallback;
   export import MapToDecorator = internal.MapToDecorator;
