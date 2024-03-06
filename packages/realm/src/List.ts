@@ -457,6 +457,7 @@ export function insertIntoListOfMixed(
   internal: binding.List,
   toBinding: TypeHelpers["toBinding"],
 ) {
+  // TODO: Solve the "removeAll()" case for self-assignment.
   internal.removeAll();
 
   let index = 0;

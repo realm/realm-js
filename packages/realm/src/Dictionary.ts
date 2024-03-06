@@ -438,6 +438,7 @@ export function insertIntoDictionaryOfMixed(
   internal: binding.Dictionary,
   toBinding: TypeHelpers["toBinding"],
 ) {
+  // TODO: Solve the "removeAll()" case for self-assignment.
   internal.removeAll();
 
   for (const key in dictionary) {

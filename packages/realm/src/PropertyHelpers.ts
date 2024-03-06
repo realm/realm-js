@@ -190,7 +190,6 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
         },
       };
     } else {
-      const { toBinding: itemToBinding } = itemHelpers;
       const listAccessor = createListAccessor({ realm, typeHelpers: itemHelpers, itemType, isEmbedded: embedded });
 
       return {
@@ -202,45 +201,20 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
         },
         set(obj, values) {
           assert.inTransaction(realm);
-
-          // TODO: Update
-
-          // Implements https://github.com/realm/realm-core/blob/v12.0.0/src/realm/object-store/list.hpp#L258-L286
           assert.iterable(values);
-          const bindingValues = [];
-          const internal = binding.List.make(realm.internal, obj, columnKey);
 
-          // In case of embedded objects, they're added as they're transformed
-          // So we need to ensure an empty list before
-          if (embedded) {
-            internal.removeAll();
-          }
-          // Transform all values to mixed before inserting into the list
-          {
-            let index = 0;
+          const internal = binding.List.make(realm.internal, obj, columnKey);
+          internal.removeAll();
+          let index = 0;
+          try {
             for (const value of values) {
-              try {
-                if (embedded) {
-                  itemToBinding(value, { createObj: () => [internal.insertEmbedded(index), true] });
-                } else {
-                  bindingValues.push(itemToBinding(value));
-                }
-              } catch (err) {
-                if (err instanceof TypeAssertionError) {
-                  err.rename(`${name}[${index}]`);
-                }
-                throw err;
-              }
-              index++;
+              listAccessor.insert(internal, index++, value);
             }
-          }
-          // Move values into the internal list - embedded objects are added as they're transformed
-          if (!embedded) {
-            internal.removeAll();
-            let index = 0;
-            for (const value of bindingValues) {
-              internal.insertAny(index++, value);
+          } catch (err) {
+            if (err instanceof TypeAssertionError) {
+              err.rename(`${name}[${index - 1}]`);
             }
+            throw err;
           }
         },
       };
@@ -274,7 +248,7 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
         const internal = binding.Dictionary.make(realm.internal, obj, columnKey);
         // Clear the dictionary before adding new values
         internal.removeAll();
-        assert.object(value, `values of ${name}`);
+        assert.object(value, `values of ${name}`, { allowArrays: false });
         for (const [k, v] of Object.entries(value)) {
           try {
             dictionaryAccessor.set(internal, k, v);
@@ -356,7 +330,6 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
         } else if (isJsOrRealmDictionary(value)) {
           obj.setCollection(columnKey, binding.CollectionType.Dictionary);
           const internal = binding.Dictionary.make(realm.internal, obj, columnKey);
-          internal.removeAll();
           insertIntoDictionaryOfMixed(value, internal, toBinding);
         } else {
           defaultSet(options)(obj, value);

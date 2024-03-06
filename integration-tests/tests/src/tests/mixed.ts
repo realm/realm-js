@@ -563,31 +563,50 @@ describe("Mixed", () => {
       describe("Create and access", () => {
         describe("List", () => {
           it("has all primitive types (input: JS Array)", function (this: RealmContext) {
-            const { mixed: list } = this.realm.write(() => {
+            const { list1, list2 } = this.realm.write(() => {
               const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
-              return this.realm.create<IMixedSchema>(MixedSchema.name, {
-                mixed: [...primitiveTypesList, realmObject],
-              });
+              const unmanagedList = [...primitiveTypesList, realmObject];
+
+              const list1 = this.realm.create<IMixedSchema>(MixedSchema.name, {
+                mixed: unmanagedList,
+              }).mixed;
+              const list2 = this.realm.create<ICollectionsOfMixed>(CollectionsOfMixedSchema.name, {
+                list: unmanagedList,
+              }).list;
+
+              return { list1, list2 };
             });
 
             expect(this.realm.objects(MixedSchema.name).length).equals(2);
-            expectListOfAllTypes(list);
+            expect(this.realm.objects(CollectionsOfMixedSchema.name).length).equals(1);
+            expectListOfAllTypes(list1);
+            expectListOfAllTypes(list2);
           });
 
           it("has all primitive types (input: Realm List)", function (this: RealmContext) {
-            const { mixed: list } = this.realm.write(() => {
+            const { list1, list2 } = this.realm.write(() => {
               const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
+              const unmanagedList = [...primitiveTypesList, realmObject];
+
               // Create an object with a Realm List property type (i.e. not a Mixed type).
-              const realmObjectWithList = this.realm.create<ICollectionsOfMixed>(CollectionsOfMixedSchema.name, {
-                list: [...primitiveTypesList, realmObject],
-              });
-              expectRealmList(realmObjectWithList.list);
+              const listToInsert = this.realm.create<ICollectionsOfMixed>(CollectionsOfMixedSchema.name, {
+                list: unmanagedList,
+              }).list;
+              expectRealmList(listToInsert);
+
               // Use the Realm List as the value for the Mixed property on a different object.
-              return this.realm.create<IMixedSchema>(MixedSchema.name, { mixed: realmObjectWithList.list });
+              const list1 = this.realm.create<IMixedSchema>(MixedSchema.name, { mixed: listToInsert }).mixed;
+              const list2 = this.realm.create<ICollectionsOfMixed>(CollectionsOfMixedSchema.name, {
+                list: listToInsert,
+              }).list;
+
+              return { list1, list2 };
             });
 
             expect(this.realm.objects(MixedSchema.name).length).equals(2);
-            expectListOfAllTypes(list);
+            expect(this.realm.objects(CollectionsOfMixedSchema.name).length).equals(2);
+            expectListOfAllTypes(list1);
+            expectListOfAllTypes(list2);
           });
 
           it("has all primitive types (input: Default value)", function (this: RealmContext) {
@@ -601,118 +620,192 @@ describe("Mixed", () => {
           });
 
           it("has nested lists of all primitive types", function (this: RealmContext) {
-            const { mixed: list } = this.realm.write(() => {
+            const { list1, list2 } = this.realm.write(() => {
               const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
-              return this.realm.create<IMixedSchema>(MixedSchema.name, {
-                mixed: [[[...primitiveTypesList, realmObject]]],
-              });
+              const unmanagedList = [[[...primitiveTypesList, realmObject]]];
+
+              const list1 = this.realm.create<IMixedSchema>(MixedSchema.name, { mixed: unmanagedList }).mixed;
+              const list2 = this.realm.create<ICollectionsOfMixed>(CollectionsOfMixedSchema.name, {
+                list: unmanagedList,
+              }).list;
+
+              return { list1, list2 };
             });
 
             expect(this.realm.objects(MixedSchema.name).length).equals(2);
-            expectListOfListsOfAllTypes(list);
+            expect(this.realm.objects(CollectionsOfMixedSchema.name).length).equals(1);
+            expectListOfListsOfAllTypes(list1);
+            expectListOfListsOfAllTypes(list2);
           });
 
           it("has nested dictionaries of all primitive types", function (this: RealmContext) {
-            const { mixed: list } = this.realm.write(() => {
+            const { list1, list2 } = this.realm.write(() => {
               const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
-              return this.realm.create<IMixedSchema>(MixedSchema.name, {
-                mixed: [{ depth2: { ...primitiveTypesDictionary, realmObject } }],
-              });
+              const unmanagedList = [{ depth2: { ...primitiveTypesDictionary, realmObject } }];
+
+              const list1 = this.realm.create<IMixedSchema>(MixedSchema.name, { mixed: unmanagedList }).mixed;
+              const list2 = this.realm.create<ICollectionsOfMixed>(CollectionsOfMixedSchema.name, {
+                list: unmanagedList,
+              }).list;
+
+              return { list1, list2 };
             });
 
             expect(this.realm.objects(MixedSchema.name).length).equals(2);
-            expectListOfDictionariesOfAllTypes(list);
+            expect(this.realm.objects(CollectionsOfMixedSchema.name).length).equals(1);
+            expectListOfDictionariesOfAllTypes(list1);
+            expectListOfDictionariesOfAllTypes(list2);
           });
 
           it("has mix of nested collections of all types", function (this: RealmContext) {
-            const { mixed: list } = this.realm.write(() => {
-              return this.realm.create<IMixedSchema>(MixedSchema.name, {
-                mixed: buildListOfCollectionsOfAllTypes({ depth: 4 }),
-              });
+            const { list1, list2 } = this.realm.write(() => {
+              const unmanagedList = buildListOfCollectionsOfAllTypes({ depth: 4 });
+
+              const list1 = this.realm.create<IMixedSchema>(MixedSchema.name, { mixed: unmanagedList }).mixed;
+              const list2 = this.realm.create<ICollectionsOfMixed>(CollectionsOfMixedSchema.name, {
+                list: unmanagedList,
+              }).list;
+
+              return { list1, list2 };
             });
 
             expect(this.realm.objects(MixedSchema.name).length).equals(1);
-            expectListOfAllTypes(list);
+            expect(this.realm.objects(CollectionsOfMixedSchema.name).length).equals(1);
+            expectListOfAllTypes(list1);
+            expectListOfAllTypes(list2);
           });
 
           it("inserts all primitive types via `push()`", function (this: RealmContext) {
-            const { mixed: list } = this.realm.write(() => {
-              return this.realm.create<IMixedSchema>(MixedSchema.name, { mixed: [] });
+            const { list1, list2 } = this.realm.write(() => {
+              const list1 = this.realm.create<IMixedSchema>(MixedSchema.name, { mixed: [] }).mixed;
+              const list2 = this.realm.create<ICollectionsOfMixed>(CollectionsOfMixedSchema.name, { list: [] }).list;
+
+              return { list1, list2 };
             });
-            expectRealmList(list);
-            expect(list.length).equals(0);
+            expectRealmList(list1);
+            expectRealmList(list2);
+            expect(list1.length).equals(0);
+            expect(list2.length).equals(0);
 
             this.realm.write(() => {
-              list.push(...primitiveTypesList);
-              list.push(this.realm.create(MixedSchema.name, unmanagedRealmObject));
+              const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
+              list1.push(...primitiveTypesList, realmObject);
+              list2.push(...primitiveTypesList, realmObject);
             });
-            expectListOfAllTypes(list);
+            expectListOfAllTypes(list1);
+            expectListOfAllTypes(list2);
           });
 
           it("inserts nested lists of all primitive types via `push()`", function (this: RealmContext) {
-            const { list, realmObject } = this.realm.write(() => {
-              const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
-              const { mixed: list } = this.realm.create<IMixedSchema>(MixedSchema.name, { mixed: [] });
-              return { list, realmObject };
+            const { list1, list2 } = this.realm.write(() => {
+              const list1 = this.realm.create<IMixedSchema>(MixedSchema.name, { mixed: [] }).mixed;
+              const list2 = this.realm.create<ICollectionsOfMixed>(CollectionsOfMixedSchema.name, { list: [] }).list;
+
+              return { list1, list2 };
             });
-            expectRealmList(list);
-            expect(list.length).equals(0);
+            expectRealmList(list1);
+            expectRealmList(list2);
+            expect(list1.length).equals(0);
+            expect(list2.length).equals(0);
 
             this.realm.write(() => {
-              list.push([[...primitiveTypesList, realmObject]]);
+              const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
+              const unmanagedList = [[...primitiveTypesList, realmObject]];
+
+              list1.push(unmanagedList);
+              list2.push(unmanagedList);
             });
-            expectListOfListsOfAllTypes(list);
+            expectListOfListsOfAllTypes(list1);
+            expectListOfListsOfAllTypes(list2);
           });
 
           it("inserts nested dictionaries of all primitive types via `push()`", function (this: RealmContext) {
-            const { list, realmObject } = this.realm.write(() => {
-              const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
-              const { mixed: list } = this.realm.create<IMixedSchema>(MixedSchema.name, { mixed: [] });
-              return { list, realmObject };
+            const { list1, list2 } = this.realm.write(() => {
+              const list1 = this.realm.create<IMixedSchema>(MixedSchema.name, { mixed: [] }).mixed;
+              const list2 = this.realm.create<ICollectionsOfMixed>(CollectionsOfMixedSchema.name, { list: [] }).list;
+
+              return { list1, list2 };
             });
-            expectRealmList(list);
-            expect(list.length).equals(0);
+            expectRealmList(list1);
+            expectRealmList(list2);
+            expect(list1.length).equals(0);
+            expect(list2.length).equals(0);
 
             this.realm.write(() => {
-              list.push({ depth2: { ...primitiveTypesDictionary, realmObject } });
+              const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
+              const unmanagedDictionary = { depth2: { ...primitiveTypesDictionary, realmObject } };
+
+              list1.push(unmanagedDictionary);
+              list2.push(unmanagedDictionary);
             });
-            expectListOfDictionariesOfAllTypes(list);
+            expectListOfDictionariesOfAllTypes(list1);
+            expectListOfDictionariesOfAllTypes(list2);
           });
 
           it("inserts mix of nested collections of all types via `push()`", function (this: RealmContext) {
-            const { mixed: list } = this.realm.write(() => {
-              return this.realm.create<IMixedSchema>(MixedSchema.name, { mixed: [] });
+            const { list1, list2 } = this.realm.write(() => {
+              const list1 = this.realm.create<IMixedSchema>(MixedSchema.name, { mixed: [] }).mixed;
+              const list2 = this.realm.create<ICollectionsOfMixed>(CollectionsOfMixedSchema.name, { list: [] }).list;
+
+              return { list1, list2 };
             });
-            expectRealmList(list);
-            expect(list.length).equals(0);
+            expectRealmList(list1);
+            expectRealmList(list2);
+            expect(list1.length).equals(0);
+            expect(list2.length).equals(0);
 
             const unmanagedList = buildListOfCollectionsOfAllTypes({ depth: 4 });
             this.realm.write(() => {
               for (const item of unmanagedList) {
-                list.push(item);
+                list1.push(item);
+                list2.push(item);
               }
             });
-            expectListOfAllTypes(list);
+            expectListOfAllTypes(list1);
+            expectListOfAllTypes(list2);
           });
 
           it("returns different reference for each access", function (this: RealmContext) {
             const unmanagedList: unknown[] = [];
-            const created = this.realm.write(() => {
-              return this.realm.create<IMixedSchema>(MixedSchema.name, { mixed: unmanagedList });
-            });
-            expectRealmList(created.mixed);
-            // @ts-expect-error Testing different types.
-            expect(created.mixed === unmanagedList).to.be.false;
-            expect(created.mixed === created.mixed).to.be.false;
-            expect(Object.is(created.mixed, created.mixed)).to.be.false;
+            const { created1, created2 } = this.realm.write(() => {
+              const created1 = this.realm.create<IMixedSchema>(MixedSchema.name, { mixed: unmanagedList });
+              const created2 = this.realm.create<ICollectionsOfMixed>(CollectionsOfMixedSchema.name, {
+                list: unmanagedList,
+              });
 
-            const { mixed: list } = this.realm.write(() => {
-              return this.realm.create<IMixedSchema>(MixedSchema.name, { mixed: [unmanagedList] });
+              return { created1, created2 };
             });
-            expectRealmList(list);
-            expect(list[0] === unmanagedList).to.be.false;
-            expect(list[0] === list[0]).to.be.false;
-            expect(Object.is(list[0], list[0])).to.be.false;
+            expectRealmList(created1.mixed);
+            expectRealmList(created2.list);
+
+            // @ts-expect-error Testing different types.
+            expect(created1.mixed === unmanagedList).to.be.false;
+            expect(created1.mixed === created1.mixed).to.be.false;
+            expect(Object.is(created1.mixed, created1.mixed)).to.be.false;
+
+            // @ts-expect-error Testing different types.
+            expect(created2.list === unmanagedList).to.be.false;
+            expect(created2.list === created2.list).to.be.false;
+            expect(Object.is(created2.list, created2.list)).to.be.false;
+
+            const { list1, list2 } = this.realm.write(() => {
+              const list1 = this.realm.create<IMixedSchema>(MixedSchema.name, { mixed: [unmanagedList] }).mixed;
+              const list2 = this.realm.create<ICollectionsOfMixed>(CollectionsOfMixedSchema.name, {
+                list: [unmanagedList],
+              }).list;
+
+              return { list1, list2 };
+            });
+            expectRealmList(list1);
+            expectRealmList(list2);
+
+            expect(list1[0] === unmanagedList).to.be.false;
+            expect(list1[0] === list1[0]).to.be.false;
+            expect(Object.is(list1[0], list1[0])).to.be.false;
+
+            expect(list2[0] === unmanagedList).to.be.false;
+            expect(list2[0] === list2[0]).to.be.false;
+            expect(Object.is(list2[0], list2[0])).to.be.false;
           });
         });
 
@@ -876,12 +969,13 @@ describe("Mixed", () => {
           it("has nested dictionaries of all primitive types", function (this: RealmContext) {
             const { dictionary1, dictionary2 } = this.realm.write(() => {
               const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
+              const unmanagedDictionary = { depth1: { depth2: { ...primitiveTypesDictionary, realmObject } } };
 
               const dictionary1 = this.realm.create<IMixedSchema>(MixedSchema.name, {
-                mixed: { depth1: { depth2: { ...primitiveTypesDictionary, realmObject } } },
+                mixed: unmanagedDictionary,
               }).mixed;
               const dictionary2 = this.realm.create<ICollectionsOfMixed>(CollectionsOfMixedSchema.name, {
-                dictionary: { depth1: { depth2: { ...primitiveTypesDictionary, realmObject } } },
+                dictionary: unmanagedDictionary,
               }).dictionary;
 
               return { dictionary1, dictionary2 };
@@ -896,6 +990,7 @@ describe("Mixed", () => {
           it("has mix of nested collections of all types", function (this: RealmContext) {
             const { dictionary1, dictionary2 } = this.realm.write(() => {
               const unmanagedDictionary = buildDictionaryOfCollectionsOfAllTypes({ depth: 4 });
+
               const dictionary1 = this.realm.create<IMixedSchema>(MixedSchema.name, {
                 mixed: unmanagedDictionary,
               }).mixed;
@@ -956,8 +1051,10 @@ describe("Mixed", () => {
 
             this.realm.write(() => {
               const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
-              dictionary1.depth1 = [[...primitiveTypesList, realmObject]];
-              dictionary2.depth1 = [[...primitiveTypesList, realmObject]];
+              const unmanagedList = [[...primitiveTypesList, realmObject]];
+
+              dictionary1.depth1 = unmanagedList;
+              dictionary2.depth1 = unmanagedList;
             });
             expectDictionaryOfListsOfAllTypes(dictionary1);
             expectDictionaryOfListsOfAllTypes(dictionary2);
@@ -979,8 +1076,10 @@ describe("Mixed", () => {
 
             this.realm.write(() => {
               const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
-              dictionary1.depth1 = { depth2: { ...primitiveTypesDictionary, realmObject } };
-              dictionary2.depth1 = { depth2: { ...primitiveTypesDictionary, realmObject } };
+              const unmanagedDictionary = { depth2: { ...primitiveTypesDictionary, realmObject } };
+
+              dictionary1.depth1 = unmanagedDictionary;
+              dictionary2.depth1 = unmanagedDictionary;
             });
             expectDictionaryOfDictionariesOfAllTypes(dictionary1);
             expectDictionaryOfDictionariesOfAllTypes(dictionary2);
