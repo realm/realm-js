@@ -202,13 +202,34 @@ function getMixed<T>(fromBinding: TypeHelpers<T>["fromBinding"], set: binding.Se
 }
 
 function insertMixed<T>(realm: Realm, toBinding: TypeHelpers<T>["toBinding"], set: binding.Set, value: T): void {
-  // Collections within a Set are not supported, but `toBinding()` will throw the appropriate
-  // error in that case. By not guarding for that here, we optimize for the valid cases.
   assert.inTransaction(realm);
-  set.insertAny(toBinding(value));
+
+  try {
+    set.insertAny(toBinding(value));
+  } catch (err) {
+    // Optimize for the valid cases by not guarding for the unsupported nested collections upfront.
+    throw transformError(err);
+  }
 }
 
 function insertKnownType<T>(realm: Realm, toBinding: TypeHelpers<T>["toBinding"], set: binding.Set, value: T): void {
   assert.inTransaction(realm);
-  set.insertAny(toBinding(value));
+
+  try {
+    set.insertAny(toBinding(value));
+  } catch (err) {
+    // Optimize for the valid cases by not guarding for the unsupported nested collections upfront.
+    throw transformError(err);
+  }
+}
+
+function transformError(err: unknown) {
+  const message = err?.message;
+  if (message?.includes("'Array' to a Mixed") || message?.includes("'List' to a Mixed")) {
+    return new Error("Lists within a Set are not supported.");
+  }
+  if (message?.includes("'Object' to a Mixed") || message?.includes("'Dictionary' to a Mixed")) {
+    return new Error("Dictionaries within a Set are not supported.");
+  }
+  return err;
 }

@@ -2386,39 +2386,69 @@ describe("Mixed", () => {
     });
 
     describe("Invalid operations", () => {
-      it("throws when creating a set (input: JS Set)", function (this: RealmContext) {
-        this.realm.write(() => {
-          expect(() => this.realm.create(MixedSchema.name, { mixed: new Set() })).to.throw(
-            "Using a Set as a Mixed value is not supported",
-          );
-        });
+      it("throws when creating a Mixed with a set", function (this: RealmContext) {
+        expect(() => {
+          this.realm.write(() => {
+            this.realm.create(MixedSchema.name, { mixed: new Set() });
+          });
+        }).to.throw("Using a Set as a Mixed value is not supported");
+        expect(this.realm.objects(MixedSchema.name).length).equals(0);
 
-        const objects = this.realm.objects(MixedSchema.name);
-        // TODO: Length should equal 0 when this PR is merged: https://github.com/realm/realm-js/pull/6356
-        // expect(objects.length).equals(0);
-        expect(objects.length).equals(1);
+        expect(() => {
+          this.realm.write(() => {
+            const { set } = this.realm.create(CollectionsOfMixedSchema.name, { set: [] });
+            expect(set).instanceOf(Realm.Set);
+            this.realm.create(MixedSchema.name, { mixed: set });
+          });
+        }).to.throw("Using a RealmSet as a Mixed value is not supported");
+        expect(this.realm.objects(MixedSchema.name).length).equals(0);
       });
 
-      it("throws when creating a set (input: Realm Set)", function (this: RealmContext) {
-        this.realm.write(() => {
-          const { set } = this.realm.create(CollectionsOfMixedSchema.name, { set: [int] });
-          expect(set).instanceOf(Realm.Set);
-          expect(() => this.realm.create(MixedSchema.name, { mixed: set })).to.throw(
-            "Using a RealmSet as a Mixed value is not supported",
-          );
-        });
+      it("throws when creating a set with a list", function (this: RealmContext) {
+        expect(() => {
+          this.realm.write(() => {
+            const unmanagedList: unknown[] = [];
+            this.realm.create(CollectionsOfMixedSchema.name, { set: [unmanagedList] });
+          });
+        }).to.throw("Lists within a Set are not supported");
+        expect(this.realm.objects(CollectionsOfMixedSchema.name).length).equals(0);
 
-        const objects = this.realm.objects(MixedSchema.name);
-        // TODO: Length should equal 0 when this PR is merged: https://github.com/realm/realm-js/pull/6356
-        // expect(objects.length).equals(0);
-        expect(objects.length).equals(1);
+        expect(() => {
+          this.realm.write(() => {
+            const { list } = this.realm.create<ICollectionsOfMixed>(CollectionsOfMixedSchema.name, { list: [] });
+            expectRealmList(list);
+            this.realm.create(CollectionsOfMixedSchema.name, { set: [list] });
+          });
+        }).to.throw("Lists within a Set are not supported");
+        expect(this.realm.objects(CollectionsOfMixedSchema.name).length).equals(0);
+      });
+
+      it("throws when creating a set with a dictionary", function (this: RealmContext) {
+        expect(() => {
+          this.realm.write(() => {
+            const unmanagedDictionary: Record<string, unknown> = {};
+            this.realm.create(CollectionsOfMixedSchema.name, { set: [unmanagedDictionary] });
+          });
+        }).to.throw("Dictionaries within a Set are not supported");
+        expect(this.realm.objects(CollectionsOfMixedSchema.name).length).equals(0);
+
+        expect(() => {
+          this.realm.write(() => {
+            const { dictionary } = this.realm.create<ICollectionsOfMixed>(CollectionsOfMixedSchema.name, {
+              dictionary: {},
+            });
+            expectRealmDictionary(dictionary);
+            this.realm.create(CollectionsOfMixedSchema.name, { set: [dictionary] });
+          });
+        }).to.throw("Dictionaries within a Set are not supported");
+        expect(this.realm.objects(CollectionsOfMixedSchema.name).length).equals(0);
       });
 
       it("throws when updating a list item to a set", function (this: RealmContext) {
         const { set, list } = this.realm.write(() => {
-          const realmObjectWithSet = this.realm.create(CollectionsOfMixedSchema.name, { set: [int] });
-          const realmObjectWithMixed = this.realm.create<IMixedSchema>(MixedSchema.name, { mixed: ["original"] });
-          return { set: realmObjectWithSet.set, list: realmObjectWithMixed.mixed };
+          const set = this.realm.create(CollectionsOfMixedSchema.name, { set: [] }).set;
+          const list = this.realm.create<IMixedSchema>(MixedSchema.name, { mixed: ["original"] }).mixed;
+          return { set, list };
         });
         expectRealmList(list);
         expect(list[0]).equals("original");
@@ -2432,11 +2462,11 @@ describe("Mixed", () => {
 
       it("throws when updating a dictionary entry to a set", function (this: RealmContext) {
         const { set, dictionary } = this.realm.write(() => {
-          const realmObjectWithSet = this.realm.create(CollectionsOfMixedSchema.name, { set: [int] });
-          const realmObjectWithMixed = this.realm.create<IMixedSchema>(MixedSchema.name, {
+          const set = this.realm.create(CollectionsOfMixedSchema.name, { set: [int] }).set;
+          const dictionary = this.realm.create<IMixedSchema>(MixedSchema.name, {
             mixed: { key: "original" },
-          });
-          return { set: realmObjectWithSet.set, dictionary: realmObjectWithMixed.mixed };
+          }).mixed;
+          return { set, dictionary };
         });
         expectRealmDictionary(dictionary);
         expect(dictionary.key).equals("original");
