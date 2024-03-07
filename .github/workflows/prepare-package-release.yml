@@ -86,4 +86,4 @@ jobs:
           title: Prepare for ${{env.VERSION_PREFIX}}${{ steps.update-changelog.outputs.new-version }}
           body: An automated PR for next release.
           commit-message: "[${{env.VERSION_PREFIX}}${{ steps.update-changelog.outputs.new-version }}] Bump version"
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.REALM_CI_PAT }}
