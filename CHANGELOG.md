@@ -33,6 +33,7 @@
 
 ### Internal
 * Upgraded Realm Core from v13.26.0 to v14.1.0. ([#6499](https://github.com/realm/realm-js/issues/6499))
+* Switched to Xcode 15.2 and CocoaPods v1.15.2 on GHA. ([#6538](https://github.com/realm/realm-js/issues/6538))
 
 ## 12.6.2 (2024-03-04)
 
