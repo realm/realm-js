@@ -96,11 +96,11 @@ const PROXY_HANDLER: ProxyHandler<OrderedCollection> = {
         try {
           target.set(index, value);
         } catch (err) {
-          const length = target.length;
-          if ((index < 0 || index >= length) && !(target instanceof Results)) {
-            throw new Error(`Cannot set element at index ${index} out of bounds (length ${length}).`);
+          // Let the custom errors from Results take precedence over out of bounds errors. This will
+          // let users know that they cannot modify Results, rather than erroring on incorrect index.
+          if (index < 0 && !(target instanceof Results)) {
+            throw new Error(`Cannot set item at negative index ${index}.`);
           }
-          // For `Results`, use its custom error.
           throw err;
         }
         return true;

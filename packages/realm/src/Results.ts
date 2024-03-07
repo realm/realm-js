@@ -90,7 +90,7 @@ export class Results<T = unknown> extends OrderedCollection<T, [number, T], Resu
 
   /** @internal */
   public set(): never {
-    throw new Error("Assigning into a Results is not supported.");
+    throw new Error("Modifying a Results collection is not supported.");
   }
 
   get length(): number {

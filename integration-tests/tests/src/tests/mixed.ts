@@ -2776,19 +2776,50 @@ describe("Mixed", () => {
           this.realm.write(() => {
             list[0] = "primitive";
           });
-        }).to.throw("Cannot set element at index 0 out of bounds (length 0)");
+        }).to.throw("Requested index 0 calling set() on list 'MixedClass.mixed' when empty");
 
         expect(() => {
           this.realm.write(() => {
             list[0] = [];
           });
-        }).to.throw("Cannot set element at index 0 out of bounds (length 0)");
+        }).to.throw("Requested index 0 calling set_collection() on list 'MixedClass.mixed' when empty");
 
         expect(() => {
           this.realm.write(() => {
             list[0] = {};
           });
-        }).to.throw("Cannot set element at index 0 out of bounds (length 0)");
+        }).to.throw("Requested index 0 calling set_collection() on list 'MixedClass.mixed' when empty");
+      });
+
+      it("throws when setting a nested list item out of bounds", function (this: RealmContext) {
+        const { mixed: list } = this.realm.write(() => {
+          // Create a list containing an empty list as the Mixed value.
+          return this.realm.create<IMixedSchema>(MixedSchema.name, { mixed: [[]] });
+        });
+        expectRealmList(list);
+        expect(list.length).equals(1);
+
+        const nestedList = list[0];
+        expectRealmList(nestedList);
+        expect(nestedList.length).equals(0);
+
+        expect(() => {
+          this.realm.write(() => {
+            nestedList[0] = "primitive";
+          });
+        }).to.throw("Requested index 0 calling set() on list 'MixedClass.mixed' when empty");
+
+        expect(() => {
+          this.realm.write(() => {
+            nestedList[0] = [];
+          });
+        }).to.throw("Requested index 0 calling set_collection() on list 'MixedClass.mixed' when empty");
+
+        expect(() => {
+          this.realm.write(() => {
+            nestedList[0] = {};
+          });
+        }).to.throw("Requested index 0 calling set_collection() on list 'MixedClass.mixed' when empty");
       });
 
       it("throws when assigning to list snapshot (Results)", function (this: RealmContext) {
@@ -2806,7 +2837,7 @@ describe("Mixed", () => {
           this.realm.write(() => {
             results[0] = "updated";
           });
-        }).to.throw("Assigning into a Results is not supported");
+        }).to.throw("Modifying a Results collection is not supported");
         expect(results.length).equals(1);
         expect(results[0]).equals("original");
       });

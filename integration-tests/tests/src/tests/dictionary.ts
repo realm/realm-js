@@ -303,8 +303,9 @@ describe("Dictionary", () => {
         item.dict.key1 = item2;
         return item;
       });
-      // @ts-expect-error We expect a dictionary inside dictionary
-      expect(item.dict.key1.dict.key1).equals("hello");
+      const innerObject = item.dict.key1 as Realm.Object<Item> & Item;
+      expect(innerObject).instanceOf(Realm.Object);
+      expect(innerObject.dict).deep.equals({ key1: "hello" });
     });
 
     it("can store a reference to itself using string keys", function (this: RealmContext) {
