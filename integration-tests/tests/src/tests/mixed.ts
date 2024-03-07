@@ -374,20 +374,23 @@ describe("Mixed", () => {
       expect(value).instanceOf(Realm.Dictionary);
     }
 
+    function expectRealmResults(value: unknown): asserts value is Realm.Results<unknown> {
+      expect(value).instanceOf(Realm.Results);
+    }
+
     /**
-     * Expects the provided value to be a {@link Realm.List} containing:
+     * Expects the provided value to contain:
      * - All values in {@link primitiveTypesList}.
      * - Optionally the managed object of {@link unmanagedRealmObject}.
      * - If the provided value is not a leaf list, additionally:
      *   - A nested list with the same criteria.
      *   - A nested dictionary with the same criteria.
      */
-    function expectListOfAllTypes(list: unknown): asserts list is Realm.List<unknown> {
-      expectRealmList(list);
-      expect(list.length).greaterThanOrEqual(primitiveTypesList.length);
+    function expectOrderedCollectionOfAllTypes(collection: Realm.List | Realm.Results) {
+      expect(collection.length).greaterThanOrEqual(primitiveTypesList.length);
 
       let index = 0;
-      for (const item of list) {
+      for (const item of collection) {
         if (item instanceof Realm.Object) {
           // @ts-expect-error Expecting `mixed` to exist.
           expect(item.mixed).equals(unmanagedRealmObject.mixed);
@@ -402,6 +405,24 @@ describe("Mixed", () => {
         }
         index++;
       }
+    }
+
+    /**
+     * Expects the provided value to be a {@link Realm.List} containing
+     * items with the same criteria as {@link expectOrderedCollectionOfAllTypes}.
+     */
+    function expectListOfAllTypes(list: unknown): asserts list is Realm.List<unknown> {
+      expectRealmList(list);
+      expectOrderedCollectionOfAllTypes(list);
+    }
+
+    /**
+     * Expects the provided value to be a {@link Realm.Results} containing
+     * items with the same criteria as {@link expectOrderedCollectionOfAllTypes}.
+     */
+    function expectResultsOfAllTypes(results: unknown): asserts results is Realm.Results<unknown> {
+      expectRealmResults(results);
+      expectOrderedCollectionOfAllTypes(results);
     }
 
     /**
@@ -1175,6 +1196,95 @@ describe("Mixed", () => {
             expect(dictionary2.key === unmanagedDictionary).to.be.false;
             expect(dictionary2.key === dictionary2.key).to.be.false;
             expect(Object.is(dictionary2.key, dictionary2.key)).to.be.false;
+          });
+        });
+
+        describe("Results", () => {
+          describe("from List", () => {
+            describe("snapshot()", () => {
+              it("has all primitive types", function (this: RealmContext) {
+                const { mixed: list } = this.realm.write(() => {
+                  const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
+                  const unmanagedList = [...primitiveTypesList, realmObject];
+                  return this.realm.create<IMixedSchema>(MixedSchema.name, { mixed: unmanagedList });
+                });
+                expectRealmList(list);
+                expectResultsOfAllTypes(list.snapshot());
+              });
+
+              it("has mix of nested collections of all types", function (this: RealmContext) {
+                const { mixed: list } = this.realm.write(() => {
+                  const unmanagedList = buildListOfCollectionsOfAllTypes({ depth: 4 });
+                  return this.realm.create<IMixedSchema>(MixedSchema.name, { mixed: unmanagedList });
+                });
+                expectRealmList(list);
+                expectResultsOfAllTypes(list.snapshot());
+              });
+            });
+
+            describe("objects().filtered()", () => {
+              it("has all primitive types", function (this: RealmContext) {
+                this.realm.write(() => {
+                  const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
+                  const unmanagedList = [...primitiveTypesList, realmObject];
+                  this.realm.create<IMixedSchema>(MixedSchema.name, { mixed: unmanagedList });
+                });
+
+                const results = this.realm.objects<IMixedSchema>(MixedSchema.name);
+                expectRealmResults(results);
+                expect(results.length).equals(2);
+
+                const list = results[1].mixed;
+                expectListOfAllTypes(list);
+              });
+
+              it("has mix of nested collections of all types", function (this: RealmContext) {
+                this.realm.write(() => {
+                  const unmanagedList = buildListOfCollectionsOfAllTypes({ depth: 4 });
+                  this.realm.create<IMixedSchema>(MixedSchema.name, { mixed: unmanagedList });
+                });
+
+                const results = this.realm.objects<IMixedSchema>(MixedSchema.name);
+                expectRealmResults(results);
+                expect(results.length).equals(1);
+
+                const list = results[0].mixed;
+                expectListOfAllTypes(list);
+              });
+            });
+          });
+
+          describe("from Dictionary", () => {
+            describe("objects().filtered()", () => {
+              it("has all primitive types", function (this: RealmContext) {
+                this.realm.write(() => {
+                  const realmObject = this.realm.create(MixedSchema.name, unmanagedRealmObject);
+                  const unmanagedDictionary = { ...primitiveTypesDictionary, realmObject };
+                  this.realm.create<IMixedSchema>(MixedSchema.name, { mixed: unmanagedDictionary });
+                });
+
+                const results = this.realm.objects<IMixedSchema>(MixedSchema.name);
+                expectRealmResults(results);
+                expect(results.length).equals(2);
+
+                const dictionary = results[1].mixed;
+                expectDictionaryOfAllTypes(dictionary);
+              });
+
+              it("has mix of nested collections of all types", function (this: RealmContext) {
+                this.realm.write(() => {
+                  const unmanagedDictionary = buildDictionaryOfCollectionsOfAllTypes({ depth: 4 });
+                  this.realm.create<IMixedSchema>(MixedSchema.name, { mixed: unmanagedDictionary });
+                });
+
+                const results = this.realm.objects<IMixedSchema>(MixedSchema.name);
+                expectRealmResults(results);
+                expect(results.length).equals(1);
+
+                const dictionary = results[0].mixed;
+                expectDictionaryOfAllTypes(dictionary);
+              });
+            });
           });
         });
       });
@@ -2679,6 +2789,26 @@ describe("Mixed", () => {
             list[0] = {};
           });
         }).to.throw("Cannot set element at index 0 out of bounds (length 0)");
+      });
+
+      it("throws when assigning to list snapshot (Results)", function (this: RealmContext) {
+        const { mixed: list } = this.realm.write(() => {
+          return this.realm.create<IMixedSchema>(MixedSchema.name, { mixed: ["original"] });
+        });
+        expectRealmList(list);
+
+        const results = list.snapshot();
+        expectRealmResults(results);
+        expect(results.length).equals(1);
+        expect(results[0]).equals("original");
+
+        expect(() => {
+          this.realm.write(() => {
+            results[0] = "updated";
+          });
+        }).to.throw("Assigning into a Results is not supported");
+        expect(results.length).equals(1);
+        expect(results[0]).equals("original");
       });
 
       it("invalidates the list when removed", function (this: RealmContext) {
