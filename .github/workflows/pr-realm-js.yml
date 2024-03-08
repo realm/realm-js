@@ -268,6 +268,8 @@ jobs:
       # Pin the Xcode version
       DEVELOPER_DIR: /Applications/Xcode_15.2.app
       IOS_DEVICE_NAME: iPhone 14
+      CODE_SIGN_IDENTITY: ""
+      CODE_SIGNING_REQUIRED: NO
     runs-on: ${{ matrix.variant.runner }}
     strategy:
       fail-fast: false
