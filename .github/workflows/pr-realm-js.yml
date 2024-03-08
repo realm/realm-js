@@ -404,6 +404,8 @@ jobs:
         if: ${{ matrix.variant.os == 'ios' }}
         env:
           MOCHA_REMOTE_CONTEXT: ${{ steps.mocha-env.outputs.context }}
+          CODE_SIGN_IDENTITY: ""
+          CODE_SIGNING_REQUIRED: NO
         timeout-minutes: 75
         run: npm run ${{ matrix.variant.target}} --prefix integration-tests/environments/${{ matrix.variant.environment }}
 
