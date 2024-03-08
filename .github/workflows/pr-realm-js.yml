@@ -59,6 +59,9 @@ jobs:
     env:
       REALM_DISABLE_ANALYTICS: 1
       NDK_VERSION: 25.1.8937393
+      CODE_SIGN_IDENTITY: ""
+      CODE_SIGNING_REQUIRED: NO
+
     strategy:
       fail-fast: false
       matrix:
