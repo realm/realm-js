@@ -66,20 +66,83 @@ jobs:
       fail-fast: false
       matrix:
         variant:
-          - { os: linux, runner: ubuntu-latest, arch: x64, artifact-path: packages/realm/prebuilds, test-node: true, test-electron: true }
+          - {
+              os: linux,
+              runner: ubuntu-latest,
+              arch: x64,
+              artifact-path: packages/realm/prebuilds,
+              test-node: true,
+              test-electron: true,
+            }
           - { os: linux, runner: ubuntu-latest, arch: arm, artifact-path: packages/realm/prebuilds }
           - { os: linux, runner: ubuntu-latest, arch: arm64, artifact-path: packages/realm/prebuilds }
-          - { os: windows, runner: windows-latest, arch: x64, artifact-path: packages/realm/prebuilds, test-node: true, test-electron: true }
+          - {
+              os: windows,
+              runner: windows-latest,
+              arch: x64,
+              artifact-path: packages/realm/prebuilds,
+              test-node: true,
+              test-electron: true,
+            }
           - { os: windows, runner: windows-2019, arch: ia32, artifact-path: packages/realm/prebuilds }
-          - { os: android, runner: ubuntu-latest, arch: x86_64, artifact-path: packages/realm/react-native/android/src/main/jniLibs }
-          - { os: android, runner: ubuntu-latest, arch: armeabi-v7a, artifact-path: packages/realm/react-native/android/src/main/jniLibs }
-          - { os: android, runner: ubuntu-latest, arch: arm64-v8a, artifact-path: packages/realm/react-native/android/src/main/jniLibs }
-          - { os: android, runner: ubuntu-latest, arch: x86, artifact-path: packages/realm/react-native/android/src/main/jniLibs }
-          - { os: darwin, runner: macos-latest, arch: x64, artifact-path: packages/realm/prebuilds, test-node: true, test-electron: true }
-          - { os: darwin, runner: macos-latest, arch: arm64, artifact-path: packages/realm/prebuilds, test-node: true, test-electron: true }
-          - { os: ios, runner: macos-latest-xlarge, arch: simulator, artifact-path: packages/realm/react-native/ios/realm-js-ios.xcframework }
-          - { os: ios, runner: macos-latest-xlarge, arch: catalyst, artifact-path: packages/realm/react-native/ios/realm-js-ios.xcframework }
-          - { os: ios, runner: macos-latest-xlarge, arch: ios, artifact-path: packages/realm/react-native/ios/realm-js-ios.xcframework }
+          - {
+              os: android,
+              runner: ubuntu-latest,
+              arch: x86_64,
+              artifact-path: packages/realm/react-native/android/src/main/jniLibs,
+            }
+          - {
+              os: android,
+              runner: ubuntu-latest,
+              arch: armeabi-v7a,
+              artifact-path: packages/realm/react-native/android/src/main/jniLibs,
+            }
+          - {
+              os: android,
+              runner: ubuntu-latest,
+              arch: arm64-v8a,
+              artifact-path: packages/realm/react-native/android/src/main/jniLibs,
+            }
+          - {
+              os: android,
+              runner: ubuntu-latest,
+              arch: x86,
+              artifact-path: packages/realm/react-native/android/src/main/jniLibs,
+            }
+          - {
+              os: darwin,
+              runner: macos-latest,
+              arch: x64,
+              artifact-path: packages/realm/prebuilds,
+              test-node: true,
+              test-electron: true,
+            }
+          - {
+              os: darwin,
+              runner: macos-latest,
+              arch: arm64,
+              artifact-path: packages/realm/prebuilds,
+              test-node: true,
+              test-electron: true,
+            }
+          - {
+              os: ios,
+              runner: macos-latest-xlarge,
+              arch: simulator,
+              artifact-path: packages/realm/react-native/ios/realm-js-ios.xcframework,
+            }
+          - {
+              os: ios,
+              runner: macos-latest-xlarge,
+              arch: catalyst,
+              artifact-path: packages/realm/react-native/ios/realm-js-ios.xcframework,
+            }
+          - {
+              os: ios,
+              runner: macos-latest-xlarge,
+              arch: ios,
+              artifact-path: packages/realm/react-native/ios/realm-js-ios.xcframework,
+            }
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -129,8 +192,8 @@ jobs:
         if: ${{ matrix.variant.os == 'android' }}
         uses: actions/setup-java@v3
         with:
-          distribution: 'zulu' # See 'Supported distributions' for available options
-          java-version: '11'
+          distribution: "zulu" # See 'Supported distributions' for available options
+          java-version: "11"
 
       - name: Setup Android SDK
         if: ${{ matrix.variant.os == 'android' }}
@@ -153,7 +216,7 @@ jobs:
         uses: hendrikmuhs/ccache-action@v1
         with:
           key: ${{ runner.os }}-${{ matrix.variant.os }}-${{ matrix.variant.arch }}
-          max-size: '2.0G'
+          max-size: "2.0G"
 
       - name: Prepend ccache executables to the PATH
         if: ${{ runner.os != 'Windows' }}
@@ -270,6 +333,7 @@ jobs:
       IOS_DEVICE_NAME: iPhone 14
       CODE_SIGN_IDENTITY: ""
       CODE_SIGNING_REQUIRED: NO
+      AD_HOC_CODE_SIGNING_ALLOWED: YES
     runs-on: ${{ matrix.variant.runner }}
     strategy:
       fail-fast: false
@@ -321,7 +385,7 @@ jobs:
         if: ${{ matrix.variant.environment == 'react-native-test-app' }}
         uses: actions/cache@v4
         with:
-          path: '**/Pods'
+          path: "**/Pods"
           key: ${{ runner.os }}-${{matrix.variant.environment}}-${{ hashFiles('**/Podfile.lock', './src/**', './vendor/**') }}
           restore-keys: |
             ${{ runner.os }}-${{matrix.variant.environment}}-
@@ -342,7 +406,7 @@ jobs:
         if: ${{ matrix.variant.environment == 'react-native-test-app' }}
         with:
           key: ${{ runner.os }}-${{ matrix.variant.os }}-${{ matrix.variant.arch }}
-          max-size: '2.0G'
+          max-size: "2.0G"
 
       # in CI file timestamps change with every run so instead rely on file content hashing
       # https://reactnative.dev/docs/build-speed#using-this-approach-on-a-ci
@@ -423,6 +487,7 @@ jobs:
           MOCHA_REMOTE_CONTEXT: ${{ steps.mocha-env.outputs.context }}
           CODE_SIGN_IDENTITY: ""
           CODE_SIGNING_REQUIRED: NO
+          AD_HOC_CODE_SIGNING_ALLOWED: YES
         timeout-minutes: 75
         run: npm run ${{ matrix.variant.target}} --prefix integration-tests/environments/${{ matrix.variant.environment }}
 
@@ -450,8 +515,8 @@ jobs:
       - uses: actions/setup-java@v3
         if: ${{ matrix.variant.os == 'android' }}
         with:
-          distribution: 'zulu' # See 'Supported distributions' for available options
-          java-version: '17'
+          distribution: "zulu" # See 'Supported distributions' for available options
+          java-version: "17"
 
       - name: Run ${{matrix.variant.target}} (${{ matrix.variant.os}} / ${{ matrix.variant.environment }})
         if: ${{ matrix.variant.os == 'android' }}
