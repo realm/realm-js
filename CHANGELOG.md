@@ -8,8 +8,8 @@
 
 ### Enhancements
 * Updated bundled OpenSSL version to 3.2.0. ([realm/realm-core#7303](https://github.com/realm/realm-core/pull/7303))
-* Improved performance of object notifiers with complex schemas by as much as 20%. ([realm/realm-core#7424](https://github.com/realm/realm-core/pull/7424))
-* Improved performance with very large number of notifiers as much as 75%. ([realm/realm-core#7424](https://github.com/realm/realm-core/pull/7424))
+* Improved performance of object notifiers with complex schemas by ~20%. ([realm/realm-core#7424](https://github.com/realm/realm-core/pull/7424))
+* Improved performance with very large number of notifiers by ~75%. ([realm/realm-core#7424](https://github.com/realm/realm-core/pull/7424))
 * Property keypath in RQL can be substituted with value given as argument. Use `$P<i>` in query string. ([realm/realm-core#7033](https://github.com/realm/realm-core/issues/7033))
 * You can now use query substitution for the `@type` argument. ([realm/realm-core#7289](https://github.com/realm/realm-core/issues/7289))
 * Storage of `Decimal128` properties has been optimized so that the individual values will take up 0 bits (if all nulls), 32 bits, 64 bits or 128 bits depending on what is needed. ([realm/realm-core#6111]https://github.com/realm/realm-core/pull/6111))
