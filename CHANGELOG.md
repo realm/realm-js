@@ -8,6 +8,8 @@
 
 ### Enhancements
 * Updated bundled OpenSSL version to 3.2.0. ([realm/realm-core#7303](https://github.com/realm/realm-core/pull/7303))
+* Improved performance of object notifiers with complex schemas by as much as 20%. ([realm/realm-core#7424](https://github.com/realm/realm-core/pull/7424))
+* Improved performance with very large number of notifiers as much as 75%. ([realm/realm-core#7424](https://github.com/realm/realm-core/pull/7424))
 * Property keypath in RQL can be substituted with value given as argument. Use `$P<i>` in query string. ([realm/realm-core#7033](https://github.com/realm/realm-core/issues/7033))
 * You can now use query substitution for the `@type` argument. ([realm/realm-core#7289](https://github.com/realm/realm-core/issues/7289))
 * Storage of `Decimal128` properties has been optimized so that the individual values will take up 0 bits (if all nulls), 32 bits, 64 bits or 128 bits depending on what is needed. ([realm/realm-core#6111]https://github.com/realm/realm-core/pull/6111))
@@ -24,7 +26,10 @@
 * Fixed queries like `indexed_property == NONE {x}` which mistakenly matched on only `x` instead of not `x`. This only applies when an indexed property with equality (`==`, or `IN`) matches with `NONE` on a list of one item. If the constant list contained more than one value then it was working correctly. ([realm/realm-java#7862](https://github.com/realm/realm-java/issues/7862), since v10.20.0)
 * Uploading the changesets recovered during an automatic client reset recovery may lead to `Bad server version` errors and a new client reset. ([realm/realm-core#7279](https://github.com/realm/realm-core/issues/7279), since v12.5.0)
 * Fixed crash in full text index using prefix search with no matches ([realm/realm-core#7309](https://github.com/realm/realm-core/issues/7309), since v12.2.0)
-* Fixed a race condition when backing up Realm files before a client reset which could have lead to overwriting an existing file. ([realm/realm-core#7341](https://github.com/realm/realm-core/pull/7341)).
+* Fixed a race condition when backing up Realm files before a client reset which could have lead to overwriting an existing file. ([realm/realm-core#7341](https://github.com/realm/realm-core/pull/7341))
+* Fixed a bug when removing items from a list that could result in invalidated links becoming visible which could cause crashes or exceptions when accessing those list items later on. This affects synced Realms where another client had previously removed a list with over 1000 items in it, and then further local removals from the same list caused the list to have fewer than 1000 items. ([#7414](https://github.com/realm/realm-core/pull/7414), since v10.0.0)
+* 
+
 
 ### Compatibility
 * React Native >= v0.71.4
@@ -32,7 +37,7 @@
 * File format: generates Realms with format v24 (reads and upgrades file format v10 or later).
 
 ### Internal
-* Upgraded Realm Core from v13.26.0 to v14.1.0. ([#6499](https://github.com/realm/realm-js/issues/6499))
+* Upgraded Realm Core from v13.26.0 to v14.2.0. ([#6499](https://github.com/realm/realm-js/issues/6499) and [#6541](https://github.com/realm/realm-js/issues/6541))
 
 ## 12.6.2 (2024-03-04)
 
