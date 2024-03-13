@@ -50,7 +50,7 @@ You can either choose to set up your App via a CLI (this has fewer steps and is 
 
 To import and deploy changes from your local directory to App Services you can use the command line interface:
 
-1. [Set up Realm CLI](https://www.mongodb.com/docs/atlas/app-services/cli/).
+1. [Set up App Services CLI](https://www.mongodb.com/docs/atlas/app-services/cli/).
 2. In the provided [backend directory](./backend/) (the App Services App), update the following:
     * Cluster Name
       * Update the `"clusterName"` in [data_sources/mongodb-atlas/config.json](./backend/data_sources/mongodb-atlas/config.json) to the name of your cluster.
@@ -59,7 +59,7 @@ To import and deploy changes from your local directory to App Services you can u
       * There is no `"app_id"` defined in [realm_config.json](./backend/realm_config.json) since we will create a brand new App. **If** you for some reason are updating an existing app, add an `"app_id"` field and its value.
 3. [Push and deploy](https://www.mongodb.com/docs/atlas/app-services/cli/realm-cli-push/#std-label-realm-cli-push) the local directory to App Services:
 ```sh
-realm-cli push --local <path to backend directory>
+app-services-cli push --local <path to backend directory>
 ```
 4. Once pushed, verify that your App shows up in the App Services UI.
 5. 🥳 You can now go ahead and [install dependencies and run the Node app](#install-dependencies).
