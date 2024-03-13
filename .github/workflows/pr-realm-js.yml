@@ -488,7 +488,7 @@ jobs:
           CODE_SIGN_IDENTITY: ""
           CODE_SIGNING_REQUIRED: NO
           AD_HOC_CODE_SIGNING_ALLOWED: YES
-        timeout-minutes: 75
+        timeout-minutes: 90
         run: npm run ${{ matrix.variant.target}} --prefix integration-tests/environments/${{ matrix.variant.environment }}
 
       - name: Setup Java Gradle cache for android test app
