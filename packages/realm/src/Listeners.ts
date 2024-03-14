@@ -32,7 +32,7 @@ export type ListenersOptions<CallbackType, TokenType, Args extends unknown[]> = 
 
 /** @internal */
 export class Listeners<CallbackType, TokenType, Args extends unknown[] = []> {
-  constructor(private options: ListenersOptions<CallbackType, TokenType, Args>) {}
+  constructor(private readonly options: ListenersOptions<CallbackType, TokenType, Args>) {}
   /**
    * Mapping of registered listener callbacks onto the their token in the bindings ObjectNotifier.
    */
