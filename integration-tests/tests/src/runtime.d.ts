@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2020 Realm Inc.
+// Copyright 2024 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,29 +16,17 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-console.log("Loading Realm Integration Tests");
+declare function setImmediate(cb: () => void): void;
 
-import { flags } from "realm";
+/** Rough typing of setTimeout to avoid type errors */
+declare type Timer = number;
+declare function setTimeout(cb: (args: any[]) => void, timeout: number): Timer;
+declare function clearTimeout(timer: Timer): void;
 
-// TODO: Refactor tests to disable this
-flags.ALLOW_VALUES_ARRAYS = true;
-// We need this to call Realm.clearTestState()
-flags.ALLOW_CLEAR_TEST_STATE = true;
+interface Console {
+  error(message?: unknown, ...optionalParams: unknown[]): void;
+  log(message?: unknown, ...optionalParams: unknown[]): void;
+  warn(message?: unknown, ...optionalParams: unknown[]): void;
+}
 
-import "./setup-globals";
-
-afterEach(() => {
-  // Trigger garbage collection after every test, if exposed by the environment.
-  if (typeof gc === "function") {
-    gc();
-  }
-});
-
-import "./utils/chai-plugin.test";
-import "./utils/listener-stub.test";
-import "./utils/promise-handle.test";
-import "./utils/sequence.test";
-import "./mocha-internals.test";
-
-import "./tests";
-import "./performance-tests";
+declare const console: Console;

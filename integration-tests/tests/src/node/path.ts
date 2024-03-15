@@ -68,7 +68,7 @@ describe("app configuration of root directory (flexible sync)", async function (
 
   it("directory and file created where expected", async function () {
     expect(existsSync(tmpdir)).to.be.true; // importAppBefore will create `tmpdir`
-    const config = {
+    const config: Realm.Configuration = {
       schema: [FlexibleSchema],
       sync: {
         // @ts-expect-error Using an internal API
@@ -76,7 +76,7 @@ describe("app configuration of root directory (flexible sync)", async function (
         flexible: true,
         user: this.user,
       },
-    } as Realm.Configuration;
+    };
     const realm = new Realm(config);
     expect(existsSync(tmpdir)).to.be.true;
     expect(realm.path.startsWith(tmpdir));

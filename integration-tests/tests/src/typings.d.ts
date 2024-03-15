@@ -27,8 +27,6 @@ interface path {
   resolve: (...paths: string[]) => string;
 }
 
-type Require = (id: string) => unknown;
-
 type KnownEnvironment = {
   /** Set the number of milliseconds to use for tests that require a long timeout. */
   longTimeout?: number;
@@ -113,23 +111,11 @@ type KnownEnvironment = {
 
 type Environment = KnownEnvironment & Record<string, unknown>;
 
-interface Global extends NodeJS.Global {
-  title: string;
-  fs: fs;
-  path: path;
-  environment: Environment;
-  require: Require;
-  /**
-   * The environment might expose a method to suggest a garbage collection.
-   */
-  gc?: () => void;
-}
-
-declare const global: Global;
+declare const title: string;
 declare const fs: fs;
 declare const path: path;
-declare const require: Require;
 declare const environment: Environment;
+declare const gc: undefined | (() => void);
 
 // Extend the mocha test function with the skipIf that we patch in from index.ts
 declare namespace Mocha {
@@ -188,21 +174,6 @@ declare namespace Chai {
   }
 }
 
-/** Calls the callback on the next tick of the event loop */
-declare function setImmediate(cb: () => void): void;
-
-/** Rough typing of setTimeout to avoid type errors */
-declare type Timer = number;
-declare function setTimeout(cb: (args: any[]) => void, timeout: number): Timer;
-declare function clearTimeout(timer: Timer): void;
-
-interface Console {
-  error(message?: unknown, ...optionalParams: unknown[]): void;
-  log(message?: unknown, ...optionalParams: unknown[]): void;
-  warn(message?: unknown, ...optionalParams: unknown[]): void;
-}
-
-declare const console: Console;
 // allow import of json files
 declare module "*.json" {
   const value: unknown;
