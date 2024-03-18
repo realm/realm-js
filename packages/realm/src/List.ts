@@ -318,10 +318,11 @@ export class List<T = unknown>
  * as well as converting the values to and from their binding representations.
  * @internal
  */
-export type ListAccessor<T = unknown> = TypeHelpers<T> & {
+export type ListAccessor<T = unknown> = {
   get: (list: binding.List, index: number) => T;
   set: (list: binding.List, index: number, value: T) => void;
   insert: (list: binding.List, index: number, value: T) => void;
+  helpers: TypeHelpers<T>;
 };
 
 type ListAccessorFactoryOptions<T> = {
@@ -346,22 +347,22 @@ function createListAccessorForMixed<T>({
     get: (...args) => getMixed(realm, typeHelpers, ...args),
     set: (...args) => setMixed(realm, typeHelpers.toBinding, ...args),
     insert: (...args) => insertMixed(realm, typeHelpers.toBinding, ...args),
-    ...typeHelpers,
+    helpers: typeHelpers,
   };
 }
 
 function createListAccessorForKnownType<T>({
   realm,
-  typeHelpers: { fromBinding, toBinding },
+  typeHelpers,
   itemType,
   isEmbedded,
 }: Omit<ListAccessorFactoryOptions<T>, "isMixed">): ListAccessor<T> {
+  const { fromBinding, toBinding } = typeHelpers;
   return {
     get: createDefaultGetter({ fromBinding, itemType }),
     set: (...args) => setKnownType(realm, toBinding, !!isEmbedded, ...args),
     insert: (...args) => insertKnownType(realm, toBinding, !!isEmbedded, ...args),
-    fromBinding,
-    toBinding,
+    helpers: typeHelpers,
   };
 }
 

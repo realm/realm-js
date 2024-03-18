@@ -215,7 +215,7 @@ export class Dictionary<T = unknown> extends Collection<
     const realm = this[REALM];
     const snapshot = this[INTERNAL].values.snapshot();
     const itemType = toItemType(snapshot.type);
-    const { fromBinding, toBinding } = this[ACCESSOR];
+    const { fromBinding, toBinding } = this[ACCESSOR].helpers;
     const accessor = createResultsAccessor({ realm, typeHelpers: { fromBinding, toBinding }, itemType });
     const results = new Results<T>(realm, snapshot, accessor);
     const size = results.length;
@@ -238,7 +238,7 @@ export class Dictionary<T = unknown> extends Collection<
 
     const realm = this[REALM];
     const itemType = toItemType(snapshot.type);
-    const { fromBinding, toBinding } = this[ACCESSOR];
+    const { fromBinding, toBinding } = this[ACCESSOR].helpers;
     const accessor = createResultsAccessor({ realm, typeHelpers: { fromBinding, toBinding }, itemType });
     const results = new Results<T>(realm, snapshot, accessor);
 
@@ -332,9 +332,10 @@ export class Dictionary<T = unknown> extends Collection<
  * well as converting the values to and from their binding representations.
  * @internal
  */
-export type DictionaryAccessor<T = unknown> = TypeHelpers<T> & {
+export type DictionaryAccessor<T = unknown> = {
   get: (dictionary: binding.Dictionary, key: string) => T;
   set: (dictionary: binding.Dictionary, key: string, value: T) => void;
+  helpers: TypeHelpers<T>;
 };
 
 type DictionaryAccessorFactoryOptions<T> = {
@@ -358,20 +359,20 @@ function createDictionaryAccessorForMixed<T>({
   return {
     get: (...args) => getMixed(realm, typeHelpers, ...args),
     set: (...args) => setMixed(realm, typeHelpers.toBinding, ...args),
-    ...typeHelpers,
+    helpers: typeHelpers,
   };
 }
 
 function createDictionaryAccessorForKnownType<T>({
   realm,
-  typeHelpers: { fromBinding, toBinding },
+  typeHelpers,
   isEmbedded,
 }: Omit<DictionaryAccessorFactoryOptions<T>, "itemType">): DictionaryAccessor<T> {
+  const { fromBinding, toBinding } = typeHelpers;
   return {
     get: (...args) => getKnownType(fromBinding, ...args),
     set: (...args) => setKnownType(realm, toBinding, !!isEmbedded, ...args),
-    fromBinding,
-    toBinding,
+    helpers: typeHelpers,
   };
 }
 

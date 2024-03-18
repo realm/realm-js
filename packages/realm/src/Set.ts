@@ -93,7 +93,7 @@ export class RealmSet<T = unknown> extends OrderedCollection<T, [T, T], SetAcces
    */
   delete(value: T): boolean {
     assert.inTransaction(this.realm);
-    const [, success] = this.internal.removeAny(this[ACCESSOR].toBinding(value));
+    const [, success] = this.internal.removeAny(this[ACCESSOR].helpers.toBinding(value));
     return success;
   }
 
@@ -148,10 +148,11 @@ export class RealmSet<T = unknown> extends OrderedCollection<T, [T, T], SetAcces
  * well as converting the values to and from their binding representations.
  * @internal
  */
-export type SetAccessor<T = unknown> = TypeHelpers<T> & {
+export type SetAccessor<T = unknown> = {
   get: (set: binding.Set, index: number) => T;
   set: (set: binding.Set, index: number, value: T) => void;
   insert: (set: binding.Set, value: T) => void;
+  helpers: TypeHelpers<T>;
 };
 
 type SetAccessorFactoryOptions<T> = {
@@ -169,30 +170,30 @@ export function createSetAccessor<T>(options: SetAccessorFactoryOptions<T>): Set
 
 function createSetAccessorForMixed<T>({
   realm,
-  typeHelpers: { fromBinding, toBinding },
+  typeHelpers,
 }: Omit<SetAccessorFactoryOptions<T>, "itemType">): SetAccessor<T> {
+  const { fromBinding, toBinding } = typeHelpers;
   return {
     get: (...args) => getMixed(fromBinding, ...args),
     // Directly setting by "index" to a Set is a no-op.
     set: () => {},
     insert: (...args) => insertMixed(realm, toBinding, ...args),
-    fromBinding,
-    toBinding,
+    helpers: typeHelpers,
   };
 }
 
 function createSetAccessorForKnownType<T>({
   realm,
-  typeHelpers: { fromBinding, toBinding },
+  typeHelpers,
   itemType,
 }: SetAccessorFactoryOptions<T>): SetAccessor<T> {
+  const { fromBinding, toBinding } = typeHelpers;
   return {
     get: createDefaultGetter({ fromBinding, itemType }),
     // Directly setting by "index" to a Set is a no-op.
     set: () => {},
     insert: (...args) => insertKnownType(realm, toBinding, ...args),
-    fromBinding,
-    toBinding,
+    helpers: typeHelpers,
   };
 }
 
@@ -224,7 +225,7 @@ function insertKnownType<T>(realm: Realm, toBinding: TypeHelpers<T>["toBinding"]
 }
 
 function transformError(err: unknown) {
-  const message = err?.message;
+  const message = err instanceof Error ? err.message : "";
   if (message?.includes("'Array' to a Mixed") || message?.includes("'List' to a Mixed")) {
     return new Error("Lists within a Set are not supported.");
   }

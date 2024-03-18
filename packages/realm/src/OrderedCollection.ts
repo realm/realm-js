@@ -384,7 +384,7 @@ export abstract class OrderedCollection<
       const NOT_FOUND = -1;
       return NOT_FOUND;
     } else {
-      return this.results.indexOf(this[ACCESSOR].toBinding(searchElement));
+      return this.results.indexOf(this[ACCESSOR].helpers.toBinding(searchElement));
     }
   }
   /**
@@ -803,7 +803,7 @@ export abstract class OrderedCollection<
     const results = binding.Helpers.resultsAppendQuery(parent, newQuery);
 
     const itemType = toItemType(results.type);
-    const { fromBinding, toBinding } = this[ACCESSOR];
+    const { fromBinding, toBinding } = this[ACCESSOR].helpers;
     const accessor = createResultsAccessor({ realm, typeHelpers: { fromBinding, toBinding }, itemType });
     return new Results(realm, results, accessor);
   }
@@ -893,7 +893,7 @@ export abstract class OrderedCollection<
       // TODO: Call `parent.sort`, avoiding property name to column key conversion to speed up performance here.
       const results = parent.sortByNames(descriptors);
       const itemType = toItemType(results.type);
-      const { fromBinding, toBinding } = this[ACCESSOR];
+      const { fromBinding, toBinding } = this[ACCESSOR].helpers;
       const accessor = createResultsAccessor({ realm, typeHelpers: { fromBinding, toBinding }, itemType });
       return new Results(realm, results, accessor);
     } else if (typeof arg0 === "string") {
@@ -923,7 +923,7 @@ export abstract class OrderedCollection<
     const { realm, internal } = this;
     const snapshot = internal.snapshot();
     const itemType = toItemType(snapshot.type);
-    const { fromBinding, toBinding } = this[ACCESSOR];
+    const { fromBinding, toBinding } = this[ACCESSOR].helpers;
     const accessor = createResultsAccessor({ realm, typeHelpers: { fromBinding, toBinding }, itemType });
     return new Results(realm, snapshot, accessor);
   }

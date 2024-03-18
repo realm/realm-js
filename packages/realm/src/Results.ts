@@ -196,8 +196,9 @@ export class Results<T = unknown> extends OrderedCollection<T, [number, T], Resu
  * as converting the values to and from their binding representations.
  * @internal
  */
-export type ResultsAccessor<T = unknown> = TypeHelpers<T> & {
+export type ResultsAccessor<T = unknown> = {
   get: (results: binding.Results, index: number) => T;
+  helpers: TypeHelpers<T>;
 };
 
 type ResultsAccessorFactoryOptions<T> = {
@@ -219,7 +220,7 @@ function createResultsAccessorForMixed<T>({
 }: Omit<ResultsAccessorFactoryOptions<T>, "itemType">): ResultsAccessor<T> {
   return {
     get: (...args) => getMixed(realm, typeHelpers, ...args),
-    ...typeHelpers,
+    helpers: typeHelpers,
   };
 }
 
@@ -229,7 +230,7 @@ function createResultsAccessorForKnownType<T>({
 }: Omit<ResultsAccessorFactoryOptions<T>, "realm">): ResultsAccessor<T> {
   return {
     get: createDefaultGetter({ fromBinding: typeHelpers.fromBinding, itemType }),
-    ...typeHelpers,
+    helpers: typeHelpers,
   };
 }
 
