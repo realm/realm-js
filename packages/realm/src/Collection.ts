@@ -28,6 +28,7 @@ export const COLLECTION_ACCESSOR = Symbol("Collection#accessor");
 /**
  * Accessor for getting and setting items in the binding collection, as
  * well as converting the values to and from their binding representations.
+ * @internal
  */
 type CollectionAccessor<T = unknown> = OrderedCollectionAccessor<T> | DictionaryAccessor<T>;
 
@@ -46,6 +47,7 @@ export abstract class Collection<
   EntryType = [KeyType, ValueType],
   T = ValueType,
   ChangeCallbackType = unknown,
+  /** @internal */
   Accessor extends CollectionAccessor<ValueType> = CollectionAccessor<ValueType>,
 > implements Iterable<T>
 {

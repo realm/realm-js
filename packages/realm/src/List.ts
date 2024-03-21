@@ -44,7 +44,12 @@ type PartiallyWriteableArray<T> = Pick<Array<T>, "pop" | "push" | "shift" | "uns
  * properties of the List), and can only be modified inside a {@link Realm.write | write} transaction.
  */
 export class List<T = unknown>
-  extends OrderedCollection<T, [number, T], ListAccessor<T>>
+  extends OrderedCollection<
+    T,
+    [number, T],
+    /** @internal */
+    ListAccessor<T>
+  >
   implements PartiallyWriteableArray<T>
 {
   /**

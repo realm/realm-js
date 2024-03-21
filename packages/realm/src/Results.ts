@@ -44,7 +44,12 @@ import {
  * will thus never be called).
  * @see https://www.mongodb.com/docs/realm/sdk/react-native/model-data/data-types/collections/
  */
-export class Results<T = unknown> extends OrderedCollection<T, [number, T], ResultsAccessor<T>> {
+export class Results<T = unknown> extends OrderedCollection<
+  T,
+  [number, T],
+  /** @internal */
+  ResultsAccessor<T>
+> {
   /**
    * The representation in the binding.
    * @internal

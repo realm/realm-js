@@ -133,9 +133,18 @@ const PROXY_HANDLER: ProxyHandler<OrderedCollection> = {
 export abstract class OrderedCollection<
     T = unknown,
     EntryType extends [unknown, unknown] = [number, T],
+    /** @internal */
     Accessor extends OrderedCollectionAccessor<T> = OrderedCollectionAccessor<T>,
   >
-  extends Collection<number, T, EntryType, T, CollectionChangeCallback<T, EntryType>, Accessor>
+  extends Collection<
+    number,
+    T,
+    EntryType,
+    T,
+    CollectionChangeCallback<T, EntryType>,
+    /** @internal */
+    Accessor
+  >
   implements Omit<ReadonlyArray<T>, "entries">
 {
   /** @internal */ protected declare realm: Realm;

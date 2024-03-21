@@ -41,7 +41,12 @@ import {
  * a user-supplied insertion order.
  * @see https://www.mongodb.com/docs/realm/sdk/react-native/model-data/data-types/sets/
  */
-export class RealmSet<T = unknown> extends OrderedCollection<T, [T, T], SetAccessor<T>> {
+export class RealmSet<T = unknown> extends OrderedCollection<
+  T,
+  [T, T],
+  /** @internal */
+  SetAccessor<T>
+> {
   /** @internal */
   public declare readonly internal: binding.Set;
 

@@ -117,6 +117,7 @@ export class Dictionary<T = unknown> extends Collection<
   [string, T],
   [string, T],
   DictionaryChangeCallback<T>,
+  /** @internal */
   DictionaryAccessor<T>
 > {
   /** @internal */
