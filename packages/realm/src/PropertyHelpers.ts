@@ -183,7 +183,7 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
         get(obj: binding.Obj) {
           const tableView = obj.getBacklinkView(tableRef, targetProperty.columnKey);
           const results = binding.Results.fromTableView(realmInternal, tableView);
-          return new Results(realm, results, resultsAccessor);
+          return new Results(realm, results, resultsAccessor, itemHelpers);
         },
         set() {
           throw new Error("Not supported");
@@ -197,7 +197,7 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
         get(obj: binding.Obj) {
           const internal = binding.List.make(realm.internal, obj, columnKey);
           assert.instanceOf(internal, binding.List);
-          return new List(realm, internal, listAccessor);
+          return new List(realm, internal, listAccessor, itemHelpers);
         },
         set(obj, values) {
           assert.inTransaction(realm);
@@ -240,7 +240,7 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
     return {
       get(obj) {
         const internal = binding.Dictionary.make(realm.internal, obj, columnKey);
-        return new Dictionary(realm, internal, dictionaryAccessor);
+        return new Dictionary(realm, internal, dictionaryAccessor, itemHelpers);
       },
       set(obj, value) {
         assert.inTransaction(realm);
@@ -278,7 +278,7 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
     return {
       get(obj) {
         const internal = binding.Set.make(realm.internal, obj, columnKey);
-        return new RealmSet(realm, internal, setAccessor);
+        return new RealmSet(realm, internal, setAccessor, itemHelpers);
       },
       set(obj, value) {
         assert.inTransaction(realm);
@@ -306,11 +306,11 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
           switch (value) {
             case binding.ListSentinel: {
               const internal = binding.List.make(realm.internal, obj, columnKey);
-              return new List(realm, internal, listAccessor);
+              return new List(realm, internal, listAccessor, typeHelpers);
             }
             case binding.DictionarySentinel: {
               const internal = binding.Dictionary.make(realm.internal, obj, columnKey);
-              return new Dictionary(realm, internal, dictionaryAccessor);
+              return new Dictionary(realm, internal, dictionaryAccessor, typeHelpers);
             }
             default:
               return fromBinding(value);

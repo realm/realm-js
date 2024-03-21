@@ -16,7 +16,15 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import type { Dictionary, DictionaryAccessor, List, OrderedCollectionAccessor, RealmSet, Results } from "./internal";
+import type {
+  Dictionary,
+  DictionaryAccessor,
+  List,
+  OrderedCollectionAccessor,
+  RealmSet,
+  Results,
+  TypeHelpers,
+} from "./internal";
 import { CallbackAdder, IllegalConstructorError, Listeners, TypeAssertionError, assert, binding } from "./internal";
 
 /**
@@ -24,6 +32,12 @@ import { CallbackAdder, IllegalConstructorError, Listeners, TypeAssertionError, 
  * @internal
  */
 export const COLLECTION_ACCESSOR = Symbol("Collection#accessor");
+
+/**
+ * Collection type helpers identifier.
+ * @internal
+ */
+export const COLLECTION_TYPE_HELPERS = Symbol("Collection#typeHelpers");
 
 /**
  * Accessor for getting and setting items in the binding collection, as
@@ -52,11 +66,16 @@ export abstract class Collection<
 > implements Iterable<T>
 {
   /**
-   * Accessor for getting and setting items in the binding collection, as
-   * well as converting the values to and from their binding representations.
+   * Accessor for getting and setting items in the binding collection.
    * @internal
    */
   protected readonly [COLLECTION_ACCESSOR]: Accessor;
+
+  /**
+   * Accessor converting converting the values to and from their binding representations.
+   * @internal
+   */
+  protected readonly [COLLECTION_TYPE_HELPERS]: TypeHelpers<ValueType>;
 
   /** @internal */
   private listeners: Listeners<ChangeCallbackType, binding.NotificationToken, [string[] | undefined]>;
@@ -64,6 +83,7 @@ export abstract class Collection<
   /** @internal */
   constructor(
     accessor: Accessor,
+    typeHelpers: TypeHelpers<ValueType>,
     addListener: CallbackAdder<ChangeCallbackType, binding.NotificationToken, [string[] | undefined]>,
   ) {
     if (arguments.length === 0) {
@@ -83,6 +103,7 @@ export abstract class Collection<
     });
 
     this[COLLECTION_ACCESSOR] = accessor;
+    this[COLLECTION_TYPE_HELPERS] = typeHelpers;
   }
 
   /**

@@ -21,6 +21,7 @@ import {
   IllegalConstructorError,
   OrderedCollection,
   Realm,
+  COLLECTION_TYPE_HELPERS as TYPE_HELPERS,
   TypeHelpers,
   assert,
   binding,
@@ -51,11 +52,11 @@ export class RealmSet<T = unknown> extends OrderedCollection<
   public declare readonly internal: binding.Set;
 
   /** @internal */
-  constructor(realm: Realm, internal: binding.Set, accessor: SetAccessor<T>) {
+  constructor(realm: Realm, internal: binding.Set, accessor: SetAccessor<T>, typeHelpers: TypeHelpers<T>) {
     if (arguments.length === 0 || !(internal instanceof binding.Set)) {
       throw new IllegalConstructorError("Set");
     }
-    super(realm, internal.asResults(), accessor);
+    super(realm, internal.asResults(), accessor, typeHelpers);
 
     Object.defineProperty(this, "internal", {
       enumerable: false,
@@ -98,7 +99,7 @@ export class RealmSet<T = unknown> extends OrderedCollection<
    */
   delete(value: T): boolean {
     assert.inTransaction(this.realm);
-    const [, success] = this.internal.removeAny(this[ACCESSOR].helpers.toBinding(value));
+    const [, success] = this.internal.removeAny(this[TYPE_HELPERS].toBinding(value));
     return success;
   }
 
@@ -157,7 +158,6 @@ export type SetAccessor<T = unknown> = {
   get: (set: binding.Set, index: number) => T;
   set: (set: binding.Set, index: number, value: T) => void;
   insert: (set: binding.Set, value: T) => void;
-  helpers: TypeHelpers<T>;
 };
 
 type SetAccessorFactoryOptions<T> = {
@@ -195,7 +195,6 @@ function createSetAccessorForMixed<T>({
         throw transformError(err);
       }
     },
-    helpers: typeHelpers,
   };
 }
 
@@ -219,7 +218,6 @@ function createSetAccessorForKnownType<T>({
         throw transformError(err);
       }
     },
-    helpers: typeHelpers,
   };
 }
 

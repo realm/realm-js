@@ -174,11 +174,16 @@ function mixedFromBinding(options: TypeOptions, value: binding.MixedArg): unknow
   } else if (value instanceof binding.List) {
     const mixedType = binding.PropertyType.Mixed;
     const typeHelpers = getTypeHelpers(mixedType, options);
-    return new List(realm, value, createListAccessor({ realm, typeHelpers, itemType: mixedType }));
+    return new List(realm, value, createListAccessor({ realm, typeHelpers, itemType: mixedType }), typeHelpers);
   } else if (value instanceof binding.Dictionary) {
     const mixedType = binding.PropertyType.Mixed;
     const typeHelpers = getTypeHelpers(mixedType, options);
-    return new Dictionary(realm, value, createDictionaryAccessor({ realm, typeHelpers, itemType: mixedType }));
+    return new Dictionary(
+      realm,
+      value,
+      createDictionaryAccessor({ realm, typeHelpers, itemType: mixedType }),
+      typeHelpers,
+    );
   } else {
     return value;
   }
@@ -377,9 +382,10 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => Type
     return {
       fromBinding(value: unknown) {
         assert.instanceOf(value, binding.List);
-        const accessor = classHelpers.properties.get(name).listAccessor;
-        assert.object(accessor);
-        return new List(realm, value, accessor);
+        const propertyHelpers = classHelpers.properties.get(name);
+        const { listAccessor } = propertyHelpers;
+        assert.object(listAccessor);
+        return new List(realm, value, listAccessor, propertyHelpers);
       },
       toBinding() {
         throw new Error("Not supported");

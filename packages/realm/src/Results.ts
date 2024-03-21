@@ -63,11 +63,11 @@ export class Results<T = unknown> extends OrderedCollection<
    * Create a `Results` wrapping a set of query `Results` from the binding.
    * @internal
    */
-  constructor(realm: Realm, internal: binding.Results, accessor: ResultsAccessor<T>) {
+  constructor(realm: Realm, internal: binding.Results, accessor: ResultsAccessor<T>, typeHelpers: TypeHelpers<T>) {
     if (arguments.length === 0 || !(internal instanceof binding.Results)) {
       throw new IllegalConstructorError("Results");
     }
-    super(realm, internal, accessor);
+    super(realm, internal, accessor, typeHelpers);
 
     Object.defineProperty(this, "internal", {
       enumerable: false,
@@ -203,7 +203,6 @@ export class Results<T = unknown> extends OrderedCollection<
  */
 export type ResultsAccessor<T = unknown> = {
   get: (results: binding.Results, index: number) => T;
-  helpers: TypeHelpers<T>;
 };
 
 type ResultsAccessorFactoryOptions<T> = {
@@ -229,17 +228,16 @@ function createResultsAccessorForMixed<T>({
       switch (value) {
         case binding.ListSentinel: {
           const accessor = createListAccessor<T>({ realm, typeHelpers, itemType: binding.PropertyType.Mixed });
-          return new List<T>(realm, results.getList(index), accessor) as T;
+          return new List<T>(realm, results.getList(index), accessor, typeHelpers) as T;
         }
         case binding.DictionarySentinel: {
           const accessor = createDictionaryAccessor<T>({ realm, typeHelpers, itemType: binding.PropertyType.Mixed });
-          return new Dictionary<T>(realm, results.getDictionary(index), accessor) as T;
+          return new Dictionary<T>(realm, results.getDictionary(index), accessor, typeHelpers) as T;
         }
         default:
           return typeHelpers.fromBinding(value);
       }
     },
-    helpers: typeHelpers,
   };
 }
 
@@ -249,7 +247,6 @@ function createResultsAccessorForKnownType<T>({
 }: Omit<ResultsAccessorFactoryOptions<T>, "realm">): ResultsAccessor<T> {
   return {
     get: createDefaultGetter({ fromBinding: typeHelpers.fromBinding, itemType }),
-    helpers: typeHelpers,
   };
 }
 

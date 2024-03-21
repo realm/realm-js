@@ -27,6 +27,7 @@ import {
   Realm,
   RealmObject,
   Results,
+  COLLECTION_TYPE_HELPERS as TYPE_HELPERS,
   TypeHelpers,
   assert,
   binding,
@@ -133,11 +134,16 @@ export class Dictionary<T = unknown> extends Collection<
    * Create a `Results` wrapping a set of query `Results` from the binding.
    * @internal
    */
-  constructor(realm: Realm, internal: binding.Dictionary, accessor: DictionaryAccessor<T>) {
+  constructor(
+    realm: Realm,
+    internal: binding.Dictionary,
+    accessor: DictionaryAccessor<T>,
+    typeHelpers: TypeHelpers<T>,
+  ) {
     if (arguments.length === 0 || !(internal instanceof binding.Dictionary)) {
       throw new IllegalConstructorError("Dictionary");
     }
-    super(accessor, (listener, keyPaths) => {
+    super(accessor, typeHelpers, (listener, keyPaths) => {
       return this[INTERNAL].addKeyBasedNotificationCallback(
         ({ deletions, insertions, modifications }) => {
           try {
@@ -216,9 +222,9 @@ export class Dictionary<T = unknown> extends Collection<
     const realm = this[REALM];
     const snapshot = this[INTERNAL].values.snapshot();
     const itemType = toItemType(snapshot.type);
-    const { fromBinding, toBinding } = this[ACCESSOR].helpers;
-    const accessor = createResultsAccessor({ realm, typeHelpers: { fromBinding, toBinding }, itemType });
-    const results = new Results<T>(realm, snapshot, accessor);
+    const typeHelpers = this[TYPE_HELPERS];
+    const accessor = createResultsAccessor({ realm, typeHelpers, itemType });
+    const results = new Results<T>(realm, snapshot, accessor, typeHelpers);
     const size = results.length;
 
     for (let i = 0; i < size; i++) {
@@ -239,9 +245,9 @@ export class Dictionary<T = unknown> extends Collection<
 
     const realm = this[REALM];
     const itemType = toItemType(snapshot.type);
-    const { fromBinding, toBinding } = this[ACCESSOR].helpers;
-    const accessor = createResultsAccessor({ realm, typeHelpers: { fromBinding, toBinding }, itemType });
-    const results = new Results<T>(realm, snapshot, accessor);
+    const typeHelpers = this[TYPE_HELPERS];
+    const accessor = createResultsAccessor({ realm, typeHelpers, itemType });
+    const results = new Results<T>(realm, snapshot, accessor, typeHelpers);
 
     for (let i = 0; i < size; i++) {
       const key = keys.getAny(i);
@@ -336,7 +342,6 @@ export class Dictionary<T = unknown> extends Collection<
 export type DictionaryAccessor<T = unknown> = {
   get: (dictionary: binding.Dictionary, key: string) => T;
   set: (dictionary: binding.Dictionary, key: string, value: T) => void;
-  helpers: TypeHelpers<T>;
 };
 
 type DictionaryAccessorFactoryOptions<T> = {
@@ -357,21 +362,21 @@ function createDictionaryAccessorForMixed<T>({
   realm,
   typeHelpers,
 }: Pick<DictionaryAccessorFactoryOptions<T>, "realm" | "typeHelpers">): DictionaryAccessor<T> {
-  const { toBinding } = typeHelpers;
+  const { toBinding, fromBinding } = typeHelpers;
   return {
     get(dictionary, key) {
       const value = dictionary.tryGetAny(key);
       switch (value) {
         case binding.ListSentinel: {
-          const accessor = createListAccessor<T>({ realm, typeHelpers, itemType: binding.PropertyType.Mixed });
-          return new List<T>(realm, dictionary.getList(key), accessor) as T;
+          const accessor = createListAccessor<T>({ realm, itemType: binding.PropertyType.Mixed, typeHelpers });
+          return new List<T>(realm, dictionary.getList(key), accessor, typeHelpers) as T;
         }
         case binding.DictionarySentinel: {
-          const accessor = createDictionaryAccessor<T>({ realm, typeHelpers, itemType: binding.PropertyType.Mixed });
-          return new Dictionary<T>(realm, dictionary.getDictionary(key), accessor) as T;
+          const accessor = createDictionaryAccessor<T>({ realm, itemType: binding.PropertyType.Mixed, typeHelpers });
+          return new Dictionary<T>(realm, dictionary.getDictionary(key), accessor, typeHelpers) as T;
         }
         default:
-          return typeHelpers.fromBinding(value) as T;
+          return fromBinding(value) as T;
       }
     },
     set(dictionary, key, value) {
@@ -387,7 +392,6 @@ function createDictionaryAccessorForMixed<T>({
         dictionary.insertAny(key, toBinding(value));
       }
     },
-    helpers: typeHelpers,
   };
 }
 
@@ -410,7 +414,6 @@ function createDictionaryAccessorForKnownType<T>({
         dictionary.insertAny(key, toBinding(value));
       }
     },
-    helpers: typeHelpers,
   };
 }
 

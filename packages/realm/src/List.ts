@@ -62,12 +62,12 @@ export class List<T = unknown>
   private declare isEmbedded: boolean;
 
   /** @internal */
-  constructor(realm: Realm, internal: binding.List, accessor: ListAccessor<T>) {
+  constructor(realm: Realm, internal: binding.List, accessor: ListAccessor<T>, typeHelpers: TypeHelpers<T>) {
     if (arguments.length === 0 || !(internal instanceof binding.List)) {
       throw new IllegalConstructorError("List");
     }
     const results = internal.asResults();
-    super(realm, results, accessor);
+    super(realm, results, accessor, typeHelpers);
 
     // Getting the `objectSchema` off the internal will throw if base type isn't object
     const isEmbedded =
@@ -327,7 +327,6 @@ export type ListAccessor<T = unknown> = {
   get: (list: binding.List, index: number) => T;
   set: (list: binding.List, index: number, value: T) => void;
   insert: (list: binding.List, index: number, value: T) => void;
-  helpers: TypeHelpers<T>;
 };
 
 type ListAccessorFactoryOptions<T> = {
@@ -355,11 +354,11 @@ function createListAccessorForMixed<T>({
       switch (value) {
         case binding.ListSentinel: {
           const accessor = createListAccessor<T>({ realm, typeHelpers, itemType: binding.PropertyType.Mixed });
-          return new List<T>(realm, list.getList(index), accessor) as T;
+          return new List<T>(realm, list.getList(index), accessor, typeHelpers) as T;
         }
         case binding.DictionarySentinel: {
           const accessor = createDictionaryAccessor<T>({ realm, typeHelpers, itemType: binding.PropertyType.Mixed });
-          return new Dictionary<T>(realm, list.getDictionary(index), accessor) as T;
+          return new Dictionary<T>(realm, list.getDictionary(index), accessor, typeHelpers) as T;
         }
         default:
           return typeHelpers.fromBinding(value);
@@ -391,7 +390,6 @@ function createListAccessorForMixed<T>({
         list.insertAny(index, toBinding(value));
       }
     },
-    helpers: typeHelpers,
   };
 }
 
@@ -420,7 +418,6 @@ function createListAccessorForKnownType<T>({
         list.insertAny(index, toBinding(value));
       }
     },
-    helpers: typeHelpers,
   };
 }
 
