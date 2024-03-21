@@ -21,6 +21,7 @@ import {
   IllegalConstructorError,
   OrderedCollection,
   Realm,
+  COLLECTION_TYPE_HELPERS as TYPE_HELPERS,
   TypeHelpers,
   assert,
   binding,
@@ -41,16 +42,21 @@ import {
  * a user-supplied insertion order.
  * @see https://www.mongodb.com/docs/realm/sdk/react-native/model-data/data-types/sets/
  */
-export class RealmSet<T = unknown> extends OrderedCollection<T, [T, T], SetAccessor<T>> {
+export class RealmSet<T = unknown> extends OrderedCollection<
+  T,
+  [T, T],
+  /** @internal */
+  SetAccessor<T>
+> {
   /** @internal */
   public declare readonly internal: binding.Set;
 
   /** @internal */
-  constructor(realm: Realm, internal: binding.Set, accessor: SetAccessor<T>) {
+  constructor(realm: Realm, internal: binding.Set, accessor: SetAccessor<T>, typeHelpers: TypeHelpers<T>) {
     if (arguments.length === 0 || !(internal instanceof binding.Set)) {
       throw new IllegalConstructorError("Set");
     }
-    super(realm, internal.asResults(), accessor);
+    super(realm, internal.asResults(), accessor, typeHelpers);
 
     Object.defineProperty(this, "internal", {
       enumerable: false,
@@ -93,7 +99,7 @@ export class RealmSet<T = unknown> extends OrderedCollection<T, [T, T], SetAcces
    */
   delete(value: T): boolean {
     assert.inTransaction(this.realm);
-    const [, success] = this.internal.removeAny(this[ACCESSOR].helpers.toBinding(value));
+    const [, success] = this.internal.removeAny(this[TYPE_HELPERS].toBinding(value));
     return success;
   }
 
@@ -152,7 +158,6 @@ export type SetAccessor<T = unknown> = {
   get: (set: binding.Set, index: number) => T;
   set: (set: binding.Set, index: number, value: T) => void;
   insert: (set: binding.Set, value: T) => void;
-  helpers: TypeHelpers<T>;
 };
 
 type SetAccessorFactoryOptions<T> = {
@@ -174,11 +179,22 @@ function createSetAccessorForMixed<T>({
 }: Omit<SetAccessorFactoryOptions<T>, "itemType">): SetAccessor<T> {
   const { fromBinding, toBinding } = typeHelpers;
   return {
-    get: (...args) => getMixed(fromBinding, ...args),
+    get(set, index) {
+      // Core will not return collections within a Set.
+      return fromBinding(set.getAny(index));
+    },
     // Directly setting by "index" to a Set is a no-op.
     set: () => {},
-    insert: (...args) => insertMixed(realm, toBinding, ...args),
-    helpers: typeHelpers,
+    insert(set, value) {
+      assert.inTransaction(realm);
+
+      try {
+        set.insertAny(toBinding(value));
+      } catch (err) {
+        // Optimize for the valid cases by not guarding for the unsupported nested collections upfront.
+        throw transformError(err);
+      }
+    },
   };
 }
 
@@ -192,36 +208,17 @@ function createSetAccessorForKnownType<T>({
     get: createDefaultGetter({ fromBinding, itemType }),
     // Directly setting by "index" to a Set is a no-op.
     set: () => {},
-    insert: (...args) => insertKnownType(realm, toBinding, ...args),
-    helpers: typeHelpers,
+    insert(set, value) {
+      assert.inTransaction(realm);
+
+      try {
+        set.insertAny(toBinding(value));
+      } catch (err) {
+        // Optimize for the valid cases by not guarding for the unsupported nested collections upfront.
+        throw transformError(err);
+      }
+    },
   };
-}
-
-function getMixed<T>(fromBinding: TypeHelpers<T>["fromBinding"], set: binding.Set, index: number): T {
-  // Core will not return collections within a Set.
-  return fromBinding(set.getAny(index));
-}
-
-function insertMixed<T>(realm: Realm, toBinding: TypeHelpers<T>["toBinding"], set: binding.Set, value: T): void {
-  assert.inTransaction(realm);
-
-  try {
-    set.insertAny(toBinding(value));
-  } catch (err) {
-    // Optimize for the valid cases by not guarding for the unsupported nested collections upfront.
-    throw transformError(err);
-  }
-}
-
-function insertKnownType<T>(realm: Realm, toBinding: TypeHelpers<T>["toBinding"], set: binding.Set, value: T): void {
-  assert.inTransaction(realm);
-
-  try {
-    set.insertAny(toBinding(value));
-  } catch (err) {
-    // Optimize for the valid cases by not guarding for the unsupported nested collections upfront.
-    throw transformError(err);
-  }
 }
 
 function transformError(err: unknown) {

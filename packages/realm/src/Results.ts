@@ -44,7 +44,12 @@ import {
  * will thus never be called).
  * @see https://www.mongodb.com/docs/realm/sdk/react-native/model-data/data-types/collections/
  */
-export class Results<T = unknown> extends OrderedCollection<T, [number, T], ResultsAccessor<T>> {
+export class Results<T = unknown> extends OrderedCollection<
+  T,
+  [number, T],
+  /** @internal */
+  ResultsAccessor<T>
+> {
   /**
    * The representation in the binding.
    * @internal
@@ -58,11 +63,11 @@ export class Results<T = unknown> extends OrderedCollection<T, [number, T], Resu
    * Create a `Results` wrapping a set of query `Results` from the binding.
    * @internal
    */
-  constructor(realm: Realm, internal: binding.Results, accessor: ResultsAccessor<T>) {
+  constructor(realm: Realm, internal: binding.Results, accessor: ResultsAccessor<T>, typeHelpers: TypeHelpers<T>) {
     if (arguments.length === 0 || !(internal instanceof binding.Results)) {
       throw new IllegalConstructorError("Results");
     }
-    super(realm, internal, accessor);
+    super(realm, internal, accessor, typeHelpers);
 
     Object.defineProperty(this, "internal", {
       enumerable: false,
@@ -198,7 +203,6 @@ export class Results<T = unknown> extends OrderedCollection<T, [number, T], Resu
  */
 export type ResultsAccessor<T = unknown> = {
   get: (results: binding.Results, index: number) => T;
-  helpers: TypeHelpers<T>;
 };
 
 type ResultsAccessorFactoryOptions<T> = {
@@ -219,8 +223,21 @@ function createResultsAccessorForMixed<T>({
   typeHelpers,
 }: Omit<ResultsAccessorFactoryOptions<T>, "itemType">): ResultsAccessor<T> {
   return {
-    get: (...args) => getMixed(realm, typeHelpers, ...args),
-    helpers: typeHelpers,
+    get(results, index) {
+      const value = results.getAny(index);
+      switch (value) {
+        case binding.ListSentinel: {
+          const accessor = createListAccessor<T>({ realm, typeHelpers, itemType: binding.PropertyType.Mixed });
+          return new List<T>(realm, results.getList(index), accessor, typeHelpers) as T;
+        }
+        case binding.DictionarySentinel: {
+          const accessor = createDictionaryAccessor<T>({ realm, typeHelpers, itemType: binding.PropertyType.Mixed });
+          return new Dictionary<T>(realm, results.getDictionary(index), accessor, typeHelpers) as T;
+        }
+        default:
+          return typeHelpers.fromBinding(value);
+      }
+    },
   };
 }
 
@@ -230,24 +247,7 @@ function createResultsAccessorForKnownType<T>({
 }: Omit<ResultsAccessorFactoryOptions<T>, "realm">): ResultsAccessor<T> {
   return {
     get: createDefaultGetter({ fromBinding: typeHelpers.fromBinding, itemType }),
-    helpers: typeHelpers,
   };
-}
-
-function getMixed<T>(realm: Realm, typeHelpers: TypeHelpers<T>, results: binding.Results, index: number): T {
-  const value = results.getAny(index);
-  switch (value) {
-    case binding.ListSentinel: {
-      const accessor = createListAccessor<T>({ realm, typeHelpers, itemType: binding.PropertyType.Mixed });
-      return new List<T>(realm, results.getList(index), accessor) as T;
-    }
-    case binding.DictionarySentinel: {
-      const accessor = createDictionaryAccessor<T>({ realm, typeHelpers, itemType: binding.PropertyType.Mixed });
-      return new Dictionary<T>(realm, results.getDictionary(index), accessor) as T;
-    }
-    default:
-      return typeHelpers.fromBinding(value);
-  }
 }
 
 /* eslint-disable-next-line @typescript-eslint/no-explicit-any -- Useful for APIs taking any `Results` */

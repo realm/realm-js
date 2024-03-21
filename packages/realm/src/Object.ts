@@ -458,7 +458,7 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
     const tableView = this[INTERNAL].getBacklinkView(tableRef, targetProperty.columnKey);
     const results = binding.Results.fromTableView(realm.internal, tableView);
 
-    return new Results<T>(realm, results, accessor);
+    return new Results<T>(realm, results, accessor, typeHelpers);
   }
 
   /**

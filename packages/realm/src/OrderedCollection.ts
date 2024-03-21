@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import {
-  COLLECTION_ACCESSOR as ACCESSOR,
   ClassHelpers,
   Collection,
   DefaultObject,
@@ -30,6 +29,7 @@ import {
   Results,
   ResultsAccessor,
   SetAccessor,
+  COLLECTION_TYPE_HELPERS as TYPE_HELPERS,
   TypeAssertionError,
   TypeHelpers,
   assert,
@@ -133,9 +133,18 @@ const PROXY_HANDLER: ProxyHandler<OrderedCollection> = {
 export abstract class OrderedCollection<
     T = unknown,
     EntryType extends [unknown, unknown] = [number, T],
+    /** @internal */
     Accessor extends OrderedCollectionAccessor<T> = OrderedCollectionAccessor<T>,
   >
-  extends Collection<number, T, EntryType, T, CollectionChangeCallback<T, EntryType>, Accessor>
+  extends Collection<
+    number,
+    T,
+    EntryType,
+    T,
+    CollectionChangeCallback<T, EntryType>,
+    /** @internal */
+    Accessor
+  >
   implements Omit<ReadonlyArray<T>, "entries">
 {
   /** @internal */ protected declare realm: Realm;
@@ -149,11 +158,11 @@ export abstract class OrderedCollection<
   /** @internal */ protected declare results: binding.Results;
 
   /** @internal */
-  constructor(realm: Realm, results: binding.Results, accessor: Accessor) {
+  constructor(realm: Realm, results: binding.Results, accessor: Accessor, typeHelpers: TypeHelpers<T>) {
     if (arguments.length === 0) {
       throw new IllegalConstructorError("OrderedCollection");
     }
-    super(accessor, (callback, keyPaths) => {
+    super(accessor, typeHelpers, (callback, keyPaths) => {
       return results.addNotificationCallback(
         (changes) => {
           try {
@@ -384,7 +393,7 @@ export abstract class OrderedCollection<
       const NOT_FOUND = -1;
       return NOT_FOUND;
     } else {
-      return this.results.indexOf(this[ACCESSOR].helpers.toBinding(searchElement));
+      return this.results.indexOf(this[TYPE_HELPERS].toBinding(searchElement));
     }
   }
   /**
@@ -803,9 +812,9 @@ export abstract class OrderedCollection<
     const results = binding.Helpers.resultsAppendQuery(parent, newQuery);
 
     const itemType = toItemType(results.type);
-    const { fromBinding, toBinding } = this[ACCESSOR].helpers;
-    const accessor = createResultsAccessor({ realm, typeHelpers: { fromBinding, toBinding }, itemType });
-    return new Results(realm, results, accessor);
+    const typeHelpers = this[TYPE_HELPERS];
+    const accessor = createResultsAccessor({ realm, typeHelpers, itemType });
+    return new Results(realm, results, accessor, typeHelpers);
   }
 
   /** @internal */
@@ -893,9 +902,9 @@ export abstract class OrderedCollection<
       // TODO: Call `parent.sort`, avoiding property name to column key conversion to speed up performance here.
       const results = parent.sortByNames(descriptors);
       const itemType = toItemType(results.type);
-      const { fromBinding, toBinding } = this[ACCESSOR].helpers;
-      const accessor = createResultsAccessor({ realm, typeHelpers: { fromBinding, toBinding }, itemType });
-      return new Results(realm, results, accessor);
+      const typeHelpers = this[TYPE_HELPERS];
+      const accessor = createResultsAccessor({ realm, typeHelpers, itemType });
+      return new Results(realm, results, accessor, typeHelpers);
     } else if (typeof arg0 === "string") {
       return this.sorted([[arg0, arg1 === true]]);
     } else if (typeof arg0 === "boolean") {
@@ -923,9 +932,9 @@ export abstract class OrderedCollection<
     const { realm, internal } = this;
     const snapshot = internal.snapshot();
     const itemType = toItemType(snapshot.type);
-    const { fromBinding, toBinding } = this[ACCESSOR].helpers;
-    const accessor = createResultsAccessor({ realm, typeHelpers: { fromBinding, toBinding }, itemType });
-    return new Results(realm, snapshot, accessor);
+    const typeHelpers = this[TYPE_HELPERS];
+    const accessor = createResultsAccessor({ realm, typeHelpers, itemType });
+    return new Results(realm, snapshot, accessor, typeHelpers);
   }
 
   private getPropertyColumnKey(name: string | undefined): binding.ColKey {

@@ -103,10 +103,10 @@ import {
   LogArgs,
   LogCategory,
   LogLevel,
-  LoggerCallbackArgs,
   LoggerCallback,
   LoggerCallback1,
   LoggerCallback2,
+  LoggerCallbackArgs,
   MapToDecorator,
   Metadata,
   MetadataMode,
@@ -1132,7 +1132,7 @@ export class Realm {
       },
     };
     const accessor = createResultsAccessor<T>({ realm: this, typeHelpers, itemType: binding.PropertyType.Object });
-    return new Results<T>(this, results, accessor);
+    return new Results<T>(this, results, accessor, typeHelpers);
   }
 
   /**
