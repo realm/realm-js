@@ -179,10 +179,22 @@ function createSetAccessorForMixed<T>({
 }: Omit<SetAccessorFactoryOptions<T>, "itemType">): SetAccessor<T> {
   const { fromBinding, toBinding } = typeHelpers;
   return {
-    get: (...args) => getMixed(fromBinding, ...args),
+    get(set, index) {
+      // Core will not return collections within a Set.
+      return fromBinding(set.getAny(index));
+    },
     // Directly setting by "index" to a Set is a no-op.
     set: () => {},
-    insert: (...args) => insertMixed(realm, toBinding, ...args),
+    insert(set, value) {
+      assert.inTransaction(realm);
+
+      try {
+        set.insertAny(toBinding(value));
+      } catch (err) {
+        // Optimize for the valid cases by not guarding for the unsupported nested collections upfront.
+        throw transformError(err);
+      }
+    },
     helpers: typeHelpers,
   };
 }
@@ -197,36 +209,18 @@ function createSetAccessorForKnownType<T>({
     get: createDefaultGetter({ fromBinding, itemType }),
     // Directly setting by "index" to a Set is a no-op.
     set: () => {},
-    insert: (...args) => insertKnownType(realm, toBinding, ...args),
+    insert(set, value) {
+      assert.inTransaction(realm);
+
+      try {
+        set.insertAny(toBinding(value));
+      } catch (err) {
+        // Optimize for the valid cases by not guarding for the unsupported nested collections upfront.
+        throw transformError(err);
+      }
+    },
     helpers: typeHelpers,
   };
-}
-
-function getMixed<T>(fromBinding: TypeHelpers<T>["fromBinding"], set: binding.Set, index: number): T {
-  // Core will not return collections within a Set.
-  return fromBinding(set.getAny(index));
-}
-
-function insertMixed<T>(realm: Realm, toBinding: TypeHelpers<T>["toBinding"], set: binding.Set, value: T): void {
-  assert.inTransaction(realm);
-
-  try {
-    set.insertAny(toBinding(value));
-  } catch (err) {
-    // Optimize for the valid cases by not guarding for the unsupported nested collections upfront.
-    throw transformError(err);
-  }
-}
-
-function insertKnownType<T>(realm: Realm, toBinding: TypeHelpers<T>["toBinding"], set: binding.Set, value: T): void {
-  assert.inTransaction(realm);
-
-  try {
-    set.insertAny(toBinding(value));
-  } catch (err) {
-    // Optimize for the valid cases by not guarding for the unsupported nested collections upfront.
-    throw transformError(err);
-  }
 }
 
 function transformError(err: unknown) {

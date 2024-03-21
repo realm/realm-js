@@ -224,7 +224,21 @@ function createResultsAccessorForMixed<T>({
   typeHelpers,
 }: Omit<ResultsAccessorFactoryOptions<T>, "itemType">): ResultsAccessor<T> {
   return {
-    get: (...args) => getMixed(realm, typeHelpers, ...args),
+    get(results, index) {
+      const value = results.getAny(index);
+      switch (value) {
+        case binding.ListSentinel: {
+          const accessor = createListAccessor<T>({ realm, typeHelpers, itemType: binding.PropertyType.Mixed });
+          return new List<T>(realm, results.getList(index), accessor) as T;
+        }
+        case binding.DictionarySentinel: {
+          const accessor = createDictionaryAccessor<T>({ realm, typeHelpers, itemType: binding.PropertyType.Mixed });
+          return new Dictionary<T>(realm, results.getDictionary(index), accessor) as T;
+        }
+        default:
+          return typeHelpers.fromBinding(value);
+      }
+    },
     helpers: typeHelpers,
   };
 }
@@ -237,22 +251,6 @@ function createResultsAccessorForKnownType<T>({
     get: createDefaultGetter({ fromBinding: typeHelpers.fromBinding, itemType }),
     helpers: typeHelpers,
   };
-}
-
-function getMixed<T>(realm: Realm, typeHelpers: TypeHelpers<T>, results: binding.Results, index: number): T {
-  const value = results.getAny(index);
-  switch (value) {
-    case binding.ListSentinel: {
-      const accessor = createListAccessor<T>({ realm, typeHelpers, itemType: binding.PropertyType.Mixed });
-      return new List<T>(realm, results.getList(index), accessor) as T;
-    }
-    case binding.DictionarySentinel: {
-      const accessor = createDictionaryAccessor<T>({ realm, typeHelpers, itemType: binding.PropertyType.Mixed });
-      return new Dictionary<T>(realm, results.getDictionary(index), accessor) as T;
-    }
-    default:
-      return typeHelpers.fromBinding(value);
-  }
 }
 
 /* eslint-disable-next-line @typescript-eslint/no-explicit-any -- Useful for APIs taking any `Results` */

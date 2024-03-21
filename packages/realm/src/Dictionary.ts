@@ -357,9 +357,36 @@ function createDictionaryAccessorForMixed<T>({
   realm,
   typeHelpers,
 }: Pick<DictionaryAccessorFactoryOptions<T>, "realm" | "typeHelpers">): DictionaryAccessor<T> {
+  const { toBinding } = typeHelpers;
   return {
-    get: (...args) => getMixed(realm, typeHelpers, ...args),
-    set: (...args) => setMixed(realm, typeHelpers.toBinding, ...args),
+    get(dictionary, key) {
+      const value = dictionary.tryGetAny(key);
+      switch (value) {
+        case binding.ListSentinel: {
+          const accessor = createListAccessor<T>({ realm, typeHelpers, itemType: binding.PropertyType.Mixed });
+          return new List<T>(realm, dictionary.getList(key), accessor) as T;
+        }
+        case binding.DictionarySentinel: {
+          const accessor = createDictionaryAccessor<T>({ realm, typeHelpers, itemType: binding.PropertyType.Mixed });
+          return new Dictionary<T>(realm, dictionary.getDictionary(key), accessor) as T;
+        }
+        default:
+          return typeHelpers.fromBinding(value) as T;
+      }
+    },
+    set(dictionary, key, value) {
+      assert.inTransaction(realm);
+
+      if (isJsOrRealmList(value)) {
+        dictionary.insertCollection(key, binding.CollectionType.List);
+        insertIntoListOfMixed(value, dictionary.getList(key), toBinding);
+      } else if (isJsOrRealmDictionary(value)) {
+        dictionary.insertCollection(key, binding.CollectionType.Dictionary);
+        insertIntoDictionaryOfMixed(value, dictionary.getDictionary(key), toBinding);
+      } else {
+        dictionary.insertAny(key, toBinding(value));
+      }
+    },
     helpers: typeHelpers,
   };
 }
@@ -371,67 +398,20 @@ function createDictionaryAccessorForKnownType<T>({
 }: Omit<DictionaryAccessorFactoryOptions<T>, "itemType">): DictionaryAccessor<T> {
   const { fromBinding, toBinding } = typeHelpers;
   return {
-    get: (...args) => getKnownType(fromBinding, ...args),
-    set: (...args) => setKnownType(realm, toBinding, !!isEmbedded, ...args),
+    get(dictionary, key) {
+      return fromBinding(dictionary.tryGetAny(key));
+    },
+    set(dictionary, key, value) {
+      assert.inTransaction(realm);
+
+      if (isEmbedded) {
+        toBinding(value, { createObj: () => [dictionary.insertEmbedded(key), true] });
+      } else {
+        dictionary.insertAny(key, toBinding(value));
+      }
+    },
     helpers: typeHelpers,
   };
-}
-
-function getKnownType<T>(fromBinding: TypeHelpers<T>["fromBinding"], dictionary: binding.Dictionary, key: string): T {
-  return fromBinding(dictionary.tryGetAny(key));
-}
-
-function getMixed<T>(realm: Realm, typeHelpers: TypeHelpers<T>, dictionary: binding.Dictionary, key: string): T {
-  const value = dictionary.tryGetAny(key);
-  switch (value) {
-    case binding.ListSentinel: {
-      const accessor = createListAccessor<T>({ realm, typeHelpers, itemType: binding.PropertyType.Mixed });
-      return new List<T>(realm, dictionary.getList(key), accessor) as T;
-    }
-    case binding.DictionarySentinel: {
-      const accessor = createDictionaryAccessor<T>({ realm, typeHelpers, itemType: binding.PropertyType.Mixed });
-      return new Dictionary<T>(realm, dictionary.getDictionary(key), accessor) as T;
-    }
-    default:
-      return typeHelpers.fromBinding(value) as T;
-  }
-}
-
-function setKnownType<T>(
-  realm: Realm,
-  toBinding: TypeHelpers<T>["toBinding"],
-  isEmbedded: boolean,
-  dictionary: binding.Dictionary,
-  key: string,
-  value: T,
-): void {
-  assert.inTransaction(realm);
-
-  if (isEmbedded) {
-    toBinding(value, { createObj: () => [dictionary.insertEmbedded(key), true] });
-  } else {
-    dictionary.insertAny(key, toBinding(value));
-  }
-}
-
-function setMixed<T>(
-  realm: Realm,
-  toBinding: TypeHelpers<T>["toBinding"],
-  dictionary: binding.Dictionary,
-  key: string,
-  value: T,
-): void {
-  assert.inTransaction(realm);
-
-  if (isJsOrRealmList(value)) {
-    dictionary.insertCollection(key, binding.CollectionType.List);
-    insertIntoListOfMixed(value, dictionary.getList(key), toBinding);
-  } else if (isJsOrRealmDictionary(value)) {
-    dictionary.insertCollection(key, binding.CollectionType.Dictionary);
-    insertIntoDictionaryOfMixed(value, dictionary.getDictionary(key), toBinding);
-  } else {
-    dictionary.insertAny(key, toBinding(value));
-  }
 }
 
 /** @internal */
