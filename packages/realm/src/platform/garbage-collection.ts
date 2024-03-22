@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2022 Realm Inc.
+// Copyright 2024 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,12 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import "./binding";
-import "./fs";
-import "./device-info";
-import "./sync-proxy-config";
-import "./custom-inspect";
-import "./garbage-collection";
+type ShutdownType = { collect: () => void };
 
-import { Realm } from "../../Realm";
-export = Realm;
+export const garbageCollection: ShutdownType = {
+  collect() {},
+};
+
+export function inject(value: ShutdownType) {
+  Object.freeze(Object.assign(garbageCollection, value));
+}
