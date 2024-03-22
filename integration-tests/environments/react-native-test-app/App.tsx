@@ -1,118 +1,102 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
+////////////////////////////////////////////////////////////////////////////
+//
+// Copyright 2024 Realm Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+////////////////////////////////////////////////////////////////////////////
+import React from "react";
+import { StyleSheet, View, SafeAreaView, StatusBar, Platform } from "react-native";
 
-import React from 'react';
-import type {PropsWithChildren} from 'react';
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
+import { MochaRemoteProvider, ConnectionText, StatusEmoji, StatusText, CustomContext } from "mocha-remote-react-native";
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+// Registering an error handler that always throw unhandled exceptions
+// This is to enable the remote-mocha-cli to exit on uncaught errors
+const originalHandler = ErrorUtils.getGlobalHandler();
+ErrorUtils.setGlobalHandler((err, isFatal) => {
+  // Calling the original handler to show the error visually too
+  originalHandler(err, isFatal);
+  throw err;
+});
 
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
-
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
+function loadTests(context: CustomContext) {
+  /* eslint-env mocha */
+  // Quick sanity check that "realm" is loadable at all
+  require("realm");
+  /* eslint-disable-next-line no-restricted-globals */
+  Object.assign(globalThis, {
+    fs: require("react-native-fs"),
+    path: require("path-browserify"),
+    environment: {
+      // Default to the host machine when running on Android
+      baseUrl: Platform.OS === "android" ? "http://10.0.2.2:9090" : undefined,
+      ...context,
+      // TODO: Incorporate this into the Mocha context instead
+      reactNative: Platform.OS,
+      android: Platform.OS === "android",
+      ios: Platform.OS === "ios",
+    },
+  });
+  // Make the tests reinitializable, to allow test running on changes to the "realm" package
+  // Probing the existance of `getModules` as this only exists in debug mode
+  // if ("getModules" in require) {
+  //   const modules = require.getModules();
+  //   for (const [, m] of Object.entries(modules)) {
+  //     if (m.verboseName.startsWith("../../tests/")) {
+  //       m.isInitialized = false;
+  //     }
+  //   }
+  // }
+  // Require in the integration tests
+  require("@realm/integration-tests");
 }
 
-function App(): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
-
+export default function App() {
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
+    <MochaRemoteProvider tests={loadTests}>
+      <StatusBar hidden />
+      <SafeAreaView style={styles.container}>
+        <ConnectionText style={styles.connectionText} />
+        <View style={styles.statusContainer}>
+          <StatusEmoji style={styles.statusEmoji} />
+          <StatusText style={styles.statusText} />
         </View>
-      </ScrollView>
-    </SafeAreaView>
+      </SafeAreaView>
+    </MochaRemoteProvider>
   );
 }
 
 const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
+  container: {
+    flex: 1,
+    backgroundColor: "#fff",
   },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
+  statusContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
   },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
+  statusEmoji: {
+    fontSize: 30,
+    margin: 30,
+    textAlign: "center",
   },
-  highlight: {
-    fontWeight: '700',
+  statusText: {
+    fontSize: 20,
+    margin: 20,
+    textAlign: "center",
+  },
+  connectionText: {
+    textAlign: "center",
   },
 });
-
-export default App;

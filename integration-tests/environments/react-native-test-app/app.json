@@ -1,10 +1,12 @@
 {
   "name": "RealmTests",
   "displayName": "RealmTests",
+  "singleApp": "realm-tests",
   "components": [
     {
       "appKey": "RealmTests",
-      "displayName": "RealmTests"
+      "displayName": "RealmTests",
+      "slug": "realm-tests"
     }
   ],
   "resources": {

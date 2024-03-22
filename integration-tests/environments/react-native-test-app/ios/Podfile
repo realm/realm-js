@@ -2,4 +2,8 @@ require_relative '../../../../node_modules/react-native-test-app/test_app'
 
 workspace 'RealmTests.xcworkspace'
 
-use_test_app!
+options = {
+  :hermes_enabled => ENV['USE_HERMES'] && ENV['USE_HERMES'] == '0' ? false : true,
+}
+
+use_test_app! options
