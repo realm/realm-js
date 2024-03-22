@@ -197,8 +197,7 @@ export class Results<T = unknown> extends OrderedCollection<
 }
 
 /**
- * Accessor for getting items from the binding collection, as well
- * as converting the values to and from their binding representations.
+ * Accessor for getting items from the binding collection.
  * @internal
  */
 export type ResultsAccessor<T = unknown> = {

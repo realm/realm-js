@@ -40,8 +40,7 @@ export const COLLECTION_ACCESSOR = Symbol("Collection#accessor");
 export const COLLECTION_TYPE_HELPERS = Symbol("Collection#typeHelpers");
 
 /**
- * Accessor for getting and setting items in the binding collection, as
- * well as converting the values to and from their binding representations.
+ * Accessor for getting and setting items in the binding collection.
  * @internal
  */
 type CollectionAccessor<T = unknown> = OrderedCollectionAccessor<T> | DictionaryAccessor<T>;
@@ -72,7 +71,7 @@ export abstract class Collection<
   protected readonly [COLLECTION_ACCESSOR]: Accessor;
 
   /**
-   * Accessor converting converting the values to and from their binding representations.
+   * Helper for converting the values to and from their binding representations.
    * @internal
    */
   protected readonly [COLLECTION_TYPE_HELPERS]: TypeHelpers<ValueType>;

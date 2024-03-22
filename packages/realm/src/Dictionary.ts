@@ -334,8 +334,7 @@ export class Dictionary<T = unknown> extends Collection<
 }
 
 /**
- * Accessor for getting and setting items in the binding collection, as
- * well as converting the values to and from their binding representations.
+ * Accessor for getting and setting items in the binding collection.
  * @internal
  */
 export type DictionaryAccessor<T = unknown> = {

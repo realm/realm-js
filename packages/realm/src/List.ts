@@ -319,8 +319,7 @@ export class List<T = unknown>
 }
 
 /**
- * Accessor for getting, setting, and inserting items in the binding collection,
- * as well as converting the values to and from their binding representations.
+ * Accessor for getting, setting, and inserting items in the binding collection.
  * @internal
  */
 export type ListAccessor<T = unknown> = {

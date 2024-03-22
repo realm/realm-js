@@ -150,8 +150,7 @@ export class RealmSet<T = unknown> extends OrderedCollection<
 }
 
 /**
- * Accessor for getting and setting items in the binding collection, as
- * well as converting the values to and from their binding representations.
+ * Accessor for getting and setting items in the binding collection.
  * @internal
  */
 export type SetAccessor<T = unknown> = {
