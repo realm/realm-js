@@ -1402,6 +1402,20 @@ describe("Mixed", () => {
             expect(nestedList[0]).equals("updated");
           });
 
+          it("does not become invalidated when updated to a new list", function (this: RealmContext) {
+            const created = this.realm.write(() => {
+              return this.realm.create<IMixedSchema>(MixedSchema.name, { mixed: ["original"] });
+            });
+            const list = created.mixed;
+            expectRealmList(list);
+
+            this.realm.write(() => {
+              created.mixed = ["updated"];
+            });
+            // Accessing `list` should not throw.
+            expect(list[0]).equals("updated");
+          });
+
           // TODO: Solve the "removeAll()" case for self-assignment.
           it.skip("self assigns", function (this: RealmContext) {
             const created = this.realm.write(() => {
@@ -1572,6 +1586,20 @@ describe("Mixed", () => {
             expectRealmDictionary(nestedDictionary);
             expectKeys(nestedDictionary, ["newKey"]);
             expect(nestedDictionary.newKey).equals("updated");
+          });
+
+          it("does not become invalidated when updated to a new dictionary", function (this: RealmContext) {
+            const created = this.realm.write(() => {
+              return this.realm.create<IMixedSchema>(MixedSchema.name, { mixed: { key: "original" } });
+            });
+            const dictionary = created.mixed;
+            expectRealmDictionary(dictionary);
+
+            this.realm.write(() => {
+              created.mixed = { newKey: "updated" };
+            });
+            // Accessing `dictionary` should not throw.
+            expect(dictionary.newKey).equals("updated");
           });
 
           // TODO: Solve the "removeAll()" case for self-assignment.
@@ -2858,7 +2886,7 @@ describe("Mixed", () => {
 
       it("invalidates the dictionary when removed", function (this: RealmContext) {
         const created = this.realm.write(() => {
-          return this.realm.create<IMixedSchema>(MixedSchema.name, { mixed: { prop: 1 } });
+          return this.realm.create<IMixedSchema>(MixedSchema.name, { mixed: { key: "original" } });
         });
         const dictionary = created.mixed;
         expectRealmDictionary(dictionary);
@@ -2867,7 +2895,7 @@ describe("Mixed", () => {
           created.mixed = null;
         });
         expect(created.mixed).to.be.null;
-        expect(() => dictionary.prop).to.throw("This collection is no more");
+        expect(() => dictionary.key).to.throw("This collection is no more");
       });
 
       // If `REALM_DEBUG`, the max nesting level is 4.
