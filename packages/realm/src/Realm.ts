@@ -1201,7 +1201,6 @@ function isEmbedded(objectSchema: binding.ObjectSchema): boolean {
 import * as internal from "./internal";
 // Needed to avoid complaints about a self-reference
 import RealmItself = Realm;
-import { shutdown } from ".";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace Realm {
