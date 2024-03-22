@@ -1917,43 +1917,46 @@ describe("Observable", () => {
         ]);
       });
 
-      it("fires when inserting, updating, and deleting in nested dictionary", async function (this: CollectionsInMixedContext) {
-        const dictionary = this.objectWithDictionary.mixed;
-        expectRealmDictionary(dictionary);
+      for (const keyPath of [undefined, "mixed"]) {
+        const namePostfix = keyPath ? "(using key-path)" : "";
+        it(`fires when inserting, updating, and deleting in nested dictionary ${namePostfix}`, async function (this: CollectionsInMixedContext) {
+          const dictionary = this.objectWithDictionary.mixed;
+          expectRealmDictionary(dictionary);
 
-        await expectObjectNotifications(this.objectWithDictionary, undefined, [
-          EMPTY_OBJECT_CHANGESET,
-          // Insert nested dictionary.
-          () => {
-            this.realm.write(() => {
-              dictionary.nestedDictionary = {};
-            });
-            expectRealmDictionary(dictionary.nestedDictionary);
-          },
-          { deleted: false, changedProperties: ["mixed"] },
-          // Insert item into nested dictionary.
-          () => {
-            this.realm.write(() => {
-              dictionary.nestedDictionary.amy = "Amy";
-            });
-          },
-          { deleted: false, changedProperties: ["mixed"] },
-          // Update item in nested dictionary.
-          () => {
-            this.realm.write(() => {
-              dictionary.nestedDictionary.amy = "Updated Amy";
-            });
-          },
-          { deleted: false, changedProperties: ["mixed"] },
-          // Delete item from nested dictionary.
-          () => {
-            this.realm.write(() => {
-              dictionary.nestedDictionary.remove("amy");
-            });
-          },
-          { deleted: false, changedProperties: ["mixed"] },
-        ]);
-      });
+          await expectObjectNotifications(this.objectWithDictionary, keyPath, [
+            EMPTY_OBJECT_CHANGESET,
+            // Insert nested dictionary.
+            () => {
+              this.realm.write(() => {
+                dictionary.nestedDictionary = {};
+              });
+              expectRealmDictionary(dictionary.nestedDictionary);
+            },
+            { deleted: false, changedProperties: ["mixed"] },
+            // Insert item into nested dictionary.
+            () => {
+              this.realm.write(() => {
+                dictionary.nestedDictionary.amy = "Amy";
+              });
+            },
+            { deleted: false, changedProperties: ["mixed"] },
+            // Update item in nested dictionary.
+            () => {
+              this.realm.write(() => {
+                dictionary.nestedDictionary.amy = "Updated Amy";
+              });
+            },
+            { deleted: false, changedProperties: ["mixed"] },
+            // Delete item from nested dictionary.
+            () => {
+              this.realm.write(() => {
+                dictionary.nestedDictionary.remove("amy");
+              });
+            },
+            { deleted: false, changedProperties: ["mixed"] },
+          ]);
+        });
+      }
     });
   });
 });
