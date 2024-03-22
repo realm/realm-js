@@ -26,3 +26,5 @@ export { fs } from "./platform/file-system";
 export { network } from "./platform/network";
 /** @internal */
 export { syncProxyConfig } from "./platform/sync-proxy-config";
+/** @internal */
+export { garbageCollection } from "./platform/garbage-collection";

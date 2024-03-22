@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2022 Realm Inc.
+// Copyright 2024 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,12 +16,17 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import "./binding";
-import "./fs";
-import "./device-info";
-import "./sync-proxy-config";
-import "./custom-inspect";
-import "./garbage-collection";
+import v8 from "node:v8";
+import vm from "node:vm";
 
-import { Realm } from "../../Realm";
-export = Realm;
+import { inject } from "../garbage-collection";
+
+inject({
+  collect() {
+    // Ensure we have the gc function available
+    v8.setFlagsFromString("--expose_gc");
+    const gc = vm.runInNewContext("gc");
+    // Garbage collect
+    process.nextTick(gc);
+  },
+});
