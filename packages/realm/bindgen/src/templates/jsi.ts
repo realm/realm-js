@@ -336,6 +336,9 @@ function convertPrimFromJsi(addon: JsiAddon, type: string, expr: string): string
     case "uint64_t":
       return `bigIntToU64(_env, jsi::Value(_env, ${expr}))`;
 
+    case "std::chrono::milliseconds":
+      return `std::chrono::milliseconds(bigIntToU64(_env, jsi::Value(_env, ${expr})))`;
+
     case "std::string":
       return `(${expr}).asString(_env).utf8(_env)`;
 
@@ -1068,6 +1071,7 @@ export function generate({ rawSpec, spec, file: makeFile }: TemplateContext): vo
 
   out(`
       #include <jsi/jsi.h>
+      #include <chrono>
       #include <realm_js_jsi_helpers.h>
 
       namespace realm::js {
