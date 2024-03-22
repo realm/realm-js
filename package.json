@@ -68,7 +68,6 @@
     "integration-tests/tests",
     "integration-tests/environments/node",
     "integration-tests/environments/electron",
-    "integration-tests/environments/react-native",
     "integration-tests/environments/react-native-test-app",
     "integration-tests/baas-test-server"
   ],
