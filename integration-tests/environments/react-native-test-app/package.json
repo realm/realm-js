@@ -9,12 +9,26 @@
     "ios": "react-native run-ios",
     "lint": "eslint .",
     "start": "react-native start",
+    "test:android": "wireit",
     "test:ios": "wireit",
+    "test:ci:android": "wireit",
+    "test:ci:ios": "wireit",
     "pod-install:simulator": "wireit",
     "metro": "react-native start --reset-cache",
     "runner": "node harness/runner.js"
   },
   "wireit": {
+    "test:android": {
+      "command": "mocha-remote --reporter @realm/mocha-reporter -- concurrently --kill-others-on-fail npm:metro npm:runner",
+      "dependencies": [
+        "pod-install:simulator",
+        "../../../packages/realm:build:ts",
+        "../../../packages/mocha-reporter:bundle"
+      ],
+      "env": {
+        "PLATFORM": "android"
+      }
+    },
     "test:ios": {
       "command": "mocha-remote --reporter @realm/mocha-reporter -- concurrently --kill-others-on-fail npm:metro npm:runner",
       "dependencies": [
@@ -23,8 +37,22 @@
         "../../../packages/mocha-reporter:bundle"
       ],
       "env": {
-        "PLATFORM": "ios",
-        "WATCH": "false"
+        "PLATFORM": "ios"
+      }
+    },
+    "test:ci:android": {
+      "command": "mocha-remote -- concurrently --kill-others-on-fail npm:metro npm:runner",
+      "env": {
+        "PLATFORM": "android"
+      }
+    },
+    "test:ci:ios": {
+      "command": "mocha-remote -- concurrently --kill-others-on-fail npm:metro npm:runner",
+      "dependencies": [
+        "pod-install:ci"
+      ],
+      "env": {
+        "PLATFORM": "ios"
       }
     },
     "pod-install:simulator": {
@@ -44,6 +72,19 @@
         "ios/Pods",
         "ios/Podfile.lock"
       ],
+      "env": {
+        "USE_HERMES": {
+          "external": true,
+          "default": "1"
+        },
+        "RCT_NEW_ARCH_ENABLED": {
+          "external": true,
+          "default": "1"
+        }
+      }
+    },
+    "pod-install:ci": {
+      "command": "pod-install",
       "env": {
         "USE_HERMES": {
           "external": true,
