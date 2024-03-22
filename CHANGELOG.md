@@ -40,7 +40,7 @@
 * File format: generates Realms with format v24 (reads and upgrades file format v10 or later).
 
 ### Internal
-* Upgraded Realm Core from v13.26.0 to v14.4.0. ([#6499](https://github.com/realm/realm-js/issues/6499), [#6541](https://github.com/realm/realm-js/issues/6541), and [#6568](https://github.com/realm/realm-js/issues/6568))
+* Upgraded Realm Core from v13.26.0 to v14.4.1. ([#6499](https://github.com/realm/realm-js/issues/6499), [#6541](https://github.com/realm/realm-js/issues/6541), [#6568](https://github.com/realm/realm-js/issues/6568), and [#6572](https://github.com/realm/realm-js/issues/6572))
 
 ## 12.6.2 (2024-03-04)
 
