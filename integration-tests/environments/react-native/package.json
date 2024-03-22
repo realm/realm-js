@@ -194,7 +194,7 @@
     "@realm/app-importer": "*",
     "@realm/integration-tests": "*",
     "mocha-junit-reporter": "^2.0.0",
-    "mocha-remote-client": "^1.8.0",
+    "mocha-remote-client": "^1.11.1",
     "path-browserify": "^1.0.1",
     "react": "18.2.0",
     "react-native": "0.73.2",
@@ -220,7 +220,7 @@
     "@types/react-test-renderer": "^18.0.0",
     "concurrently": "^8.2.2",
     "mocha-github-actions-reporter": "^0.3.1",
-    "mocha-remote-cli": "^1.8.0",
+    "mocha-remote-cli": "^1.11.1",
     "pod-install": "^0.2.0",
     "react-test-renderer": "18.2.0"
   },
