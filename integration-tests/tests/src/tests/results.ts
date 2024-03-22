@@ -186,15 +186,15 @@ describe("Results", () => {
       expect(() => {
         //@ts-expect-error Should be an invalid write to read-only object.
         objects[-1] = { doubleCol: 0 };
-      }).throws("Index -1 cannot be less than zero.");
+      }).throws("Modifying a Results collection is not supported");
       expect(() => {
         //@ts-expect-error Should be an invalid write to read-only object.
         objects[0] = { doubleCol: 0 };
-      }).throws("Assigning into a Results is not supported");
+      }).throws("Modifying a Results collection is not supported");
       expect(() => {
         //@ts-expect-error Should be an invalid write to read-only object.
         objects[1] = { doubleCol: 0 };
-      }).throws("Assigning into a Results is not supported");
+      }).throws("Modifying a Results collection is not supported");
       expect(() => {
         objects.length = 0;
       }).throws("Cannot assign to read only property 'length'");

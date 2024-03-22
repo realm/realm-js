@@ -124,6 +124,24 @@ export type GeoBox = {
 };
 
 /** @internal */
+export function isGeoCircle(value: object): value is GeoCircle {
+  return "center" in value && "distance" in value && typeof value.distance === "number";
+}
+
+/** @internal */
+export function isGeoBox(value: object): value is GeoBox {
+  return "bottomLeft" in value && "topRight" in value;
+}
+
+/** @internal */
+export function isGeoPolygon(value: object): value is GeoPolygon {
+  return (
+    ("type" in value && value.type === "Polygon" && "coordinates" in value && Array.isArray(value.coordinates)) ||
+    ("outerRing" in value && Array.isArray(value.outerRing))
+  );
+}
+
+/** @internal */
 export function circleToBindingGeospatial(circle: GeoCircle): binding.Geospatial {
   return binding.Geospatial.makeFromCircle({
     center: toBindingGeoPoint(circle.center),

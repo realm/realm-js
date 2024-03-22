@@ -20,24 +20,40 @@ import {
   ClassHelpers,
   Collection,
   DefaultObject,
-  INTERNAL,
   IllegalConstructorError,
   JSONCacheMap,
+  ListAccessor,
+  INTERNAL as OBJ_INTERNAL,
   Realm,
   RealmObject,
   Results,
+  ResultsAccessor,
+  SetAccessor,
+  COLLECTION_TYPE_HELPERS as TYPE_HELPERS,
   TypeAssertionError,
   TypeHelpers,
   assert,
   binding,
+  createResultsAccessor,
   getTypeName,
+  isJsOrRealmDictionary,
+  isJsOrRealmList,
   mixedToBinding,
+  toItemType,
   unwind,
 } from "./internal";
 
 const DEFAULT_COLUMN_KEY = binding.Int64.numToInt(0) as unknown as binding.ColKey;
 
+type OrderedCollectionInternal = binding.List | binding.Results | binding.Set;
 type PropertyType = string;
+
+/**
+ * Accessor for getting and setting items in the binding collection, as
+ * well as converting the values to and from their binding representations.
+ * @internal
+ */
+export type OrderedCollectionAccessor<T = unknown> = ListAccessor<T> | ResultsAccessor<T> | SetAccessor<T>;
 
 /**
  * A sort descriptor is either a string containing one or more property names
@@ -51,15 +67,11 @@ export type CollectionChangeSet = {
   newModifications: number[];
   oldModifications: number[];
 };
+
 export type CollectionChangeCallback<T = unknown, EntryType extends [unknown, unknown] = [unknown, unknown]> = (
   collection: OrderedCollection<T, EntryType>,
   changes: CollectionChangeSet,
 ) => void;
-
-/** @internal */
-export type OrderedCollectionHelpers = TypeHelpers & {
-  get(results: binding.Results, index: number): unknown;
-};
 
 const DEFAULT_PROPERTY_DESCRIPTOR: PropertyDescriptor = { configurable: true, enumerable: true, writable: true };
 const PROXY_HANDLER: ProxyHandler<OrderedCollection> = {
@@ -78,13 +90,19 @@ const PROXY_HANDLER: ProxyHandler<OrderedCollection> = {
   set(target, prop, value, receiver) {
     if (typeof prop === "string") {
       const index = Number.parseInt(prop, 10);
-      // TODO: Consider catching an error from access out of bounds, instead of checking the length, to optimize for the hot path
-      // TODO: Do we expect an upper bound check on the index when setting?
       if (Number.isInteger(index)) {
-        if (index < 0) {
-          throw new Error(`Index ${index} cannot be less than zero.`);
+        // Optimize for the hot-path by catching a potential out of bounds access from Core, rather
+        // than checking the length upfront. Thus, our List differs from the behavior of a JS array.
+        try {
+          target.set(index, value);
+        } catch (err) {
+          // Let the custom errors from Results take precedence over out of bounds errors. This will
+          // let users know that they cannot modify Results, rather than erroring on incorrect index.
+          if (index < 0 && !(target instanceof Results)) {
+            throw new Error(`Cannot set item at negative index ${index}.`);
+          }
+          throw err;
         }
-        target.set(index, value);
         return true;
       }
     }
@@ -112,19 +130,39 @@ const PROXY_HANDLER: ProxyHandler<OrderedCollection> = {
  * subscripting, enumerating with `for-of` and so on.
  * @see {@link https://mdn.io/Array | Array}
  */
-export abstract class OrderedCollection<T = unknown, EntryType extends [unknown, unknown] = [number, T]>
-  extends Collection<number, T, EntryType, T, CollectionChangeCallback<T, EntryType>>
+export abstract class OrderedCollection<
+    T = unknown,
+    EntryType extends [unknown, unknown] = [number, T],
+    /** @internal */
+    Accessor extends OrderedCollectionAccessor<T> = OrderedCollectionAccessor<T>,
+  >
+  extends Collection<
+    number,
+    T,
+    EntryType,
+    T,
+    CollectionChangeCallback<T, EntryType>,
+    /** @internal */
+    Accessor
+  >
   implements Omit<ReadonlyArray<T>, "entries">
 {
   /** @internal */ protected declare realm: Realm;
+
+  /**
+   * The representation in the binding of the underlying collection.
+   * @internal
+   */
+  public abstract readonly internal: OrderedCollectionInternal;
+
   /** @internal */ protected declare results: binding.Results;
-  /** @internal */ protected declare helpers: OrderedCollectionHelpers;
+
   /** @internal */
-  constructor(realm: Realm, results: binding.Results, helpers: OrderedCollectionHelpers) {
+  constructor(realm: Realm, results: binding.Results, accessor: Accessor, typeHelpers: TypeHelpers<T>) {
     if (arguments.length === 0) {
       throw new IllegalConstructorError("OrderedCollection");
     }
-    super((callback, keyPaths) => {
+    super(accessor, typeHelpers, (callback, keyPaths) => {
       return results.addNotificationCallback(
         (changes) => {
           try {
@@ -147,6 +185,7 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
     });
     // Wrap in a proxy to trap ownKeys and get, enabling the spread operator
     const proxied = new Proxy(this, PROXY_HANDLER as ProxyHandler<this>);
+
     // Get the class helpers for later use, if available
     const { objectType } = results;
     const classHelpers = typeof objectType === "string" && objectType !== "" ? realm.getClassHelpers(objectType) : null;
@@ -162,12 +201,6 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
       configurable: false,
       writable: false,
       value: results,
-    });
-    Object.defineProperty(this, "helpers", {
-      enumerable: false,
-      configurable: false,
-      writable: false,
-      value: helpers,
     });
     Object.defineProperty(this, "classHelpers", {
       enumerable: false,
@@ -187,6 +220,7 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
       configurable: true,
       writable: false,
     });
+
     return proxied;
   }
 
@@ -196,25 +230,16 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
   private declare mixedToBinding: (value: unknown, options: { isQueryArg: boolean }) => binding.MixedArg;
 
   /**
-   * Get an element of the ordered collection by index.
-   * @param index - The index.
-   * @returns The element.
+   * Get an element of the collection.
    * @internal
    */
-  public get(index: number): T {
-    return this.helpers.fromBinding(this.helpers.get(this.results, index)) as T;
-  }
+  public abstract get(index: number): T;
 
   /**
-   * Set an element of the ordered collection by index.
-   * @param index - The index.
-   * @param value - The value.
+   * Set an element in the collection.
    * @internal
    */
-  public set(index: number, value: T): void;
-  public set() {
-    throw new Error(`Assigning into a ${this.constructor.name} is not supported`);
-  }
+  public abstract set(index: number, value: T): void;
 
   /**
    * The plain object representation for JSON serialization.
@@ -250,10 +275,9 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
    * @returns An iterator with all values in the collection.
    */
   *values(): Generator<T> {
-    const snapshot = this.results.snapshot();
-    const { get, fromBinding } = this.helpers;
+    const snapshot = this.snapshot();
     for (const i of this.keys()) {
-      yield fromBinding(get(snapshot, i)) as T;
+      yield snapshot[i];
     }
   }
 
@@ -262,11 +286,10 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
    * @returns An iterator with all key/value pairs in the collection.
    */
   *entries(): Generator<EntryType> {
-    const { get, fromBinding } = this.helpers;
-    const snapshot = this.results.snapshot();
-    const size = snapshot.size();
+    const snapshot = this.snapshot();
+    const size = snapshot.length;
     for (let i = 0; i < size; i++) {
-      yield [i, fromBinding(get(snapshot, i))] as EntryType;
+      yield [i, snapshot[i]] as EntryType;
     }
   }
 
@@ -291,7 +314,7 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
    * @returns The name of the type of values.
    */
   get type(): PropertyType {
-    return getTypeName(this.results.type & ~binding.PropertyType.Flags, undefined);
+    return getTypeName(toItemType(this.results.type), undefined);
   }
 
   /**
@@ -360,11 +383,17 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
    */
   indexOf(searchElement: T, fromIndex?: number): number {
     assert(typeof fromIndex === "undefined", "The second fromIndex argument is not yet supported");
+
     if (this.type === "object") {
       assert.instanceOf(searchElement, RealmObject);
-      return this.results.indexOfObj(searchElement[INTERNAL]);
+      return this.results.indexOfObj(searchElement[OBJ_INTERNAL]);
+    } else if (isJsOrRealmList(searchElement) || isJsOrRealmDictionary(searchElement)) {
+      // Collections are always treated as not equal since their
+      // references will always be different for each access.
+      const NOT_FOUND = -1;
+      return NOT_FOUND;
     } else {
-      return this.results.indexOf(this.helpers.toBinding(searchElement));
+      return this.results.indexOf(this[TYPE_HELPERS].toBinding(searchElement));
     }
   }
   /**
@@ -776,12 +805,16 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
    * let merlots = wines.filtered('variety == "Merlot" && vintage <= $0', maxYear);
    */
   filtered(queryString: string, ...args: unknown[]): Results<T> {
-    const { results: parent, realm, helpers } = this;
+    const { results: parent, realm } = this;
     const kpMapping = binding.Helpers.getKeypathMapping(realm.internal);
     const bindingArgs = args.map((arg) => this.queryArgToBinding(arg));
     const newQuery = parent.query.table.query(queryString, bindingArgs, kpMapping);
     const results = binding.Helpers.resultsAppendQuery(parent, newQuery);
-    return new Results(realm, results, helpers);
+
+    const itemType = toItemType(results.type);
+    const typeHelpers = this[TYPE_HELPERS];
+    const accessor = createResultsAccessor({ realm, typeHelpers, itemType });
+    return new Results(realm, results, accessor, typeHelpers);
   }
 
   /** @internal */
@@ -852,7 +885,7 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
   sorted(arg0: boolean | SortDescriptor[] | string = "self", arg1?: boolean): Results<T> {
     if (Array.isArray(arg0)) {
       assert.undefined(arg1, "second 'argument'");
-      const { results: parent, realm, helpers } = this;
+      const { results: parent, realm } = this;
       // Map optional "reversed" to "ascending" (expected by the binding)
       const descriptors = arg0.map<[string, boolean]>((arg, i) => {
         if (typeof arg === "string") {
@@ -868,7 +901,10 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
       });
       // TODO: Call `parent.sort`, avoiding property name to column key conversion to speed up performance here.
       const results = parent.sortByNames(descriptors);
-      return new Results(realm, results, helpers);
+      const itemType = toItemType(results.type);
+      const typeHelpers = this[TYPE_HELPERS];
+      const accessor = createResultsAccessor({ realm, typeHelpers, itemType });
+      return new Results(realm, results, accessor, typeHelpers);
     } else if (typeof arg0 === "string") {
       return this.sorted([[arg0, arg1 === true]]);
     } else if (typeof arg0 === "boolean") {
@@ -893,7 +929,12 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
    * @returns Results which will **not** live update.
    */
   snapshot(): Results<T> {
-    return new Results(this.realm, this.results.snapshot(), this.helpers);
+    const { realm, internal } = this;
+    const snapshot = internal.snapshot();
+    const itemType = toItemType(snapshot.type);
+    const typeHelpers = this[TYPE_HELPERS];
+    const accessor = createResultsAccessor({ realm, typeHelpers, itemType });
+    return new Results(realm, snapshot, accessor, typeHelpers);
   }
 
   private getPropertyColumnKey(name: string | undefined): binding.ColKey {
@@ -910,4 +951,36 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
   private mapKeyPaths(keyPaths: string[]) {
     return this.realm.internal.createKeyPathArray(this.results.objectType, keyPaths);
   }
+}
+
+type Getter<CollectionType, T> = (collection: CollectionType, index: number) => T;
+
+type GetterFactoryOptions<T> = {
+  fromBinding: TypeHelpers<T>["fromBinding"];
+  itemType: binding.PropertyType;
+};
+
+/** @internal */
+export function createDefaultGetter<CollectionType extends OrderedCollectionInternal, T>({
+  fromBinding,
+  itemType,
+}: GetterFactoryOptions<T>): Getter<CollectionType, T> {
+  const isObjectItem = itemType === binding.PropertyType.Object || itemType === binding.PropertyType.LinkingObjects;
+  return isObjectItem ? (...args) => getObject(fromBinding, ...args) : (...args) => getKnownType(fromBinding, ...args);
+}
+
+function getObject<T>(
+  fromBinding: TypeHelpers<T>["fromBinding"],
+  collection: OrderedCollectionInternal,
+  index: number,
+): T {
+  return fromBinding(collection.getObj(index));
+}
+
+function getKnownType<T>(
+  fromBinding: TypeHelpers<T>["fromBinding"],
+  collection: OrderedCollectionInternal,
+  index: number,
+): T {
+  return fromBinding(collection.getAny(index));
 }

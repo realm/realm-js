@@ -16,11 +16,37 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import type { Dictionary, List, Results } from "./internal";
+import type {
+  Dictionary,
+  DictionaryAccessor,
+  List,
+  OrderedCollectionAccessor,
+  RealmSet,
+  Results,
+  TypeHelpers,
+} from "./internal";
 import { CallbackAdder, IllegalConstructorError, Listeners, TypeAssertionError, assert, binding } from "./internal";
 
 /**
- * Abstract base class containing methods shared by Realm {@link List}, {@link Dictionary} and {@link Results}.
+ * Collection accessor identifier.
+ * @internal
+ */
+export const COLLECTION_ACCESSOR = Symbol("Collection#accessor");
+
+/**
+ * Collection type helpers identifier.
+ * @internal
+ */
+export const COLLECTION_TYPE_HELPERS = Symbol("Collection#typeHelpers");
+
+/**
+ * Accessor for getting and setting items in the binding collection.
+ * @internal
+ */
+type CollectionAccessor<T = unknown> = OrderedCollectionAccessor<T> | DictionaryAccessor<T>;
+
+/**
+ * Abstract base class containing methods shared by Realm {@link List}, {@link Dictionary}, {@link Results} and {@link RealmSet}.
  *
  * A {@link Collection} always reflect the current state of the Realm. The one exception to this is
  * when using `for...in` or `for...of` enumeration, which will always enumerate over the
@@ -34,13 +60,31 @@ export abstract class Collection<
   EntryType = [KeyType, ValueType],
   T = ValueType,
   ChangeCallbackType = unknown,
+  /** @internal */
+  Accessor extends CollectionAccessor<ValueType> = CollectionAccessor<ValueType>,
 > implements Iterable<T>
 {
+  /**
+   * Accessor for getting and setting items in the binding collection.
+   * @internal
+   */
+  protected readonly [COLLECTION_ACCESSOR]: Accessor;
+
+  /**
+   * Helper for converting the values to and from their binding representations.
+   * @internal
+   */
+  protected readonly [COLLECTION_TYPE_HELPERS]: TypeHelpers<ValueType>;
+
   /** @internal */
   private listeners: Listeners<ChangeCallbackType, binding.NotificationToken, [string[] | undefined]>;
 
   /** @internal */
-  constructor(addListener: CallbackAdder<ChangeCallbackType, binding.NotificationToken, [string[] | undefined]>) {
+  constructor(
+    accessor: Accessor,
+    typeHelpers: TypeHelpers<ValueType>,
+    addListener: CallbackAdder<ChangeCallbackType, binding.NotificationToken, [string[] | undefined]>,
+  ) {
     if (arguments.length === 0) {
       throw new IllegalConstructorError("Collection");
     }
@@ -56,6 +100,9 @@ export abstract class Collection<
       configurable: false,
       writable: false,
     });
+
+    this[COLLECTION_ACCESSOR] = accessor;
+    this[COLLECTION_TYPE_HELPERS] = typeHelpers;
   }
 
   /**

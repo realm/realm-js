@@ -17,16 +17,22 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import {
+  COLLECTION_ACCESSOR as ACCESSOR,
+  Dictionary,
   IllegalConstructorError,
+  List,
   OrderedCollection,
-  OrderedCollectionHelpers,
   Realm,
   SubscriptionOptions,
   TimeoutPromise,
+  TypeHelpers,
   Unmanaged,
   WaitForSync,
   assert,
   binding,
+  createDefaultGetter,
+  createDictionaryAccessor,
+  createListAccessor,
 } from "./internal";
 
 /**
@@ -38,12 +44,18 @@ import {
  * will thus never be called).
  * @see https://www.mongodb.com/docs/realm/sdk/react-native/model-data/data-types/collections/
  */
-export class Results<T = unknown> extends OrderedCollection<T> {
+export class Results<T = unknown> extends OrderedCollection<
+  T,
+  [number, T],
+  /** @internal */
+  ResultsAccessor<T>
+> {
   /**
    * The representation in the binding.
    * @internal
    */
-  public declare internal: binding.Results;
+  public declare readonly internal: binding.Results;
+
   /** @internal */
   public subscriptionName?: string;
 
@@ -51,11 +63,12 @@ export class Results<T = unknown> extends OrderedCollection<T> {
    * Create a `Results` wrapping a set of query `Results` from the binding.
    * @internal
    */
-  constructor(realm: Realm, internal: binding.Results, helpers: OrderedCollectionHelpers) {
+  constructor(realm: Realm, internal: binding.Results, accessor: ResultsAccessor<T>, typeHelpers: TypeHelpers<T>) {
     if (arguments.length === 0 || !(internal instanceof binding.Results)) {
       throw new IllegalConstructorError("Results");
     }
-    super(realm, internal, helpers);
+    super(realm, internal, accessor, typeHelpers);
+
     Object.defineProperty(this, "internal", {
       enumerable: false,
       configurable: false,
@@ -73,6 +86,16 @@ export class Results<T = unknown> extends OrderedCollection<T> {
       configurable: false,
       writable: true,
     });
+  }
+
+  /** @internal */
+  public get(index: number): T {
+    return this[ACCESSOR].get(this.internal, index);
+  }
+
+  /** @internal */
+  public set(): never {
+    throw new Error("Modifying a Results collection is not supported.");
   }
 
   get length(): number {
@@ -98,20 +121,16 @@ export class Results<T = unknown> extends OrderedCollection<T> {
    * @since 2.0.0
    */
   update(propertyName: keyof Unmanaged<T>, value: Unmanaged<T>[typeof propertyName]): void {
-    const {
-      classHelpers,
-      helpers: { get },
-    } = this;
     assert.string(propertyName);
-    assert(this.type === "object" && classHelpers, "Expected a result of Objects");
-    const { set } = classHelpers.properties.get(propertyName);
-
-    const snapshot = this.results.snapshot();
+    const { classHelpers, type, results } = this;
+    assert(type === "object" && classHelpers, "Expected a result of Objects");
+    const { set: objectSet } = classHelpers.properties.get(propertyName);
+    const snapshot = results.snapshot();
     const size = snapshot.size();
     for (let i = 0; i < size; i++) {
-      const obj = get(snapshot, i);
+      const obj = snapshot.getObj(i);
       assert.instanceOf(obj, binding.Obj);
-      set(obj, value);
+      objectSet(obj, value);
     }
   }
 
@@ -175,6 +194,59 @@ export class Results<T = unknown> extends OrderedCollection<T> {
   isEmpty(): boolean {
     return this.internal.size() === 0;
   }
+}
+
+/**
+ * Accessor for getting items from the binding collection.
+ * @internal
+ */
+export type ResultsAccessor<T = unknown> = {
+  get: (results: binding.Results, index: number) => T;
+};
+
+type ResultsAccessorFactoryOptions<T> = {
+  realm: Realm;
+  typeHelpers: TypeHelpers<T>;
+  itemType: binding.PropertyType;
+};
+
+/** @internal */
+export function createResultsAccessor<T>(options: ResultsAccessorFactoryOptions<T>): ResultsAccessor<T> {
+  return options.itemType === binding.PropertyType.Mixed
+    ? createResultsAccessorForMixed(options)
+    : createResultsAccessorForKnownType(options);
+}
+
+function createResultsAccessorForMixed<T>({
+  realm,
+  typeHelpers,
+}: Omit<ResultsAccessorFactoryOptions<T>, "itemType">): ResultsAccessor<T> {
+  return {
+    get(results, index) {
+      const value = results.getAny(index);
+      switch (value) {
+        case binding.ListSentinel: {
+          const accessor = createListAccessor<T>({ realm, typeHelpers, itemType: binding.PropertyType.Mixed });
+          return new List<T>(realm, results.getList(index), accessor, typeHelpers) as T;
+        }
+        case binding.DictionarySentinel: {
+          const accessor = createDictionaryAccessor<T>({ realm, typeHelpers, itemType: binding.PropertyType.Mixed });
+          return new Dictionary<T>(realm, results.getDictionary(index), accessor, typeHelpers) as T;
+        }
+        default:
+          return typeHelpers.fromBinding(value);
+      }
+    },
+  };
+}
+
+function createResultsAccessorForKnownType<T>({
+  typeHelpers,
+  itemType,
+}: Omit<ResultsAccessorFactoryOptions<T>, "realm">): ResultsAccessor<T> {
+  return {
+    get: createDefaultGetter({ fromBinding: typeHelpers.fromBinding, itemType }),
+  };
 }
 
 /* eslint-disable-next-line @typescript-eslint/no-explicit-any -- Useful for APIs taking any `Results` */
