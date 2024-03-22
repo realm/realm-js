@@ -772,6 +772,7 @@ describe("Lists", () => {
     openRealmBeforeEach({
       schema: [LinkTypeSchema, TestObjectSchema, PersonListSchema, PersonSchema, PrimitiveArraysSchema],
     });
+
     it("are typesafe", function (this: RealmContext) {
       let obj: ILinkTypeSchema;
       let prim: IPrimitiveArraysSchema;
@@ -870,24 +871,6 @@ describe("Lists", () => {
         testAssign("data", DATA1);
         testAssign("date", DATE1);
 
-        function testAssignNull(name: string, expected: string) {
-          //@ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
-          expect(() => (prim[name] = [null])).throws(Error, `Expected '${name}[0]' to be ${expected}, got null`);
-          // TODO: Length should equal 1 when this is fixed: https://github.com/realm/realm-js/issues/6359
-          //       (This is due to catching the above error within this write transaction.)
-          //@ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
-          expect(prim[name].length).equals(0);
-          // expect(prim[name].length).equals(1);
-        }
-
-        testAssignNull("bool", "a boolean");
-        testAssignNull("int", "a number or bigint");
-        testAssignNull("float", "a number");
-        testAssignNull("double", "a number");
-        testAssignNull("string", "a string");
-        testAssignNull("data", "an instance of ArrayBuffer");
-        testAssignNull("date", "an instance of Date");
-
         testAssign("optBool", true);
         testAssign("optInt", 1);
         testAssign("optFloat", 1.1);
@@ -910,7 +893,33 @@ describe("Lists", () => {
       //@ts-expect-error throws on modification outside of transaction.
       expect(() => (prim.bool = [])).throws("Cannot modify managed objects outside of a write transaction.");
     });
+
+    it("throws when assigning null to non-nullable", function (this: RealmContext) {
+      const realm = this.realm;
+      const prim = realm.write(() => realm.create<IPrimitiveArraysSchema>(PrimitiveArraysSchema.name, {}));
+
+      function testAssignNull(name: string, expected: string) {
+        expect(() => {
+          realm.write(() => {
+            // @ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
+            prim[name] = [null];
+          });
+        }).throws(Error, `Expected '${name}[0]' to be ${expected}, got null`);
+
+        // @ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
+        expect(prim[name].length).equals(0);
+      }
+
+      testAssignNull("bool", "a boolean");
+      testAssignNull("int", "a number or bigint");
+      testAssignNull("float", "a number");
+      testAssignNull("double", "a number");
+      testAssignNull("string", "a string");
+      testAssignNull("data", "an instance of ArrayBuffer");
+      testAssignNull("date", "an instance of Date");
+    });
   });
+
   describe("operations", () => {
     openRealmBeforeEach({ schema: [LinkTypeSchema, TestObjectSchema, PersonSchema, PersonListSchema] });
     it("supports enumeration", function (this: RealmContext) {
