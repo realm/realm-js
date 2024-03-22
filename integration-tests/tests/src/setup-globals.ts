@@ -74,3 +74,7 @@ const { defaultLogLevel = "off" } = environment;
 Realm.setLogLevel(defaultLogLevel);
 
 Realm.flags.THROW_ON_GLOBAL_REALM = true;
+
+after(() => {
+  Realm.shutdown();
+});
