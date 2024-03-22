@@ -192,7 +192,7 @@ function convertPrimToNode(addon: NodeAddon, type: string, expr: string): string
       return `Napi::BigInt::New(${env}, ${expr})`;
 
     case "std::chrono::milliseconds":
-      return `Napi::Number::New(${env}, std::chrono::milliseconds(${expr}ms).count())`;
+      return `Napi::Number::New(${env}, std::chrono::milliseconds(${expr}).count())`;
 
     case "StringData":
     case "std::string_view":
