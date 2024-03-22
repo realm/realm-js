@@ -239,6 +239,9 @@ function convertPrimToJsi(addon: JsiAddon, type: string, expr: string): string {
     case "uint64_t":
       return `bigIntFromU64(_env, ${expr})`;
 
+    case "std::chrono::milliseconds":
+      return `bigIntFromU64(_env, std::chrono::milliseconds(${expr}ms).count())`;
+
     case "StringData":
     case "std::string_view":
     case "std::string":
