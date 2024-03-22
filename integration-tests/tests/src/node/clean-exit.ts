@@ -45,7 +45,6 @@ describe("clean exits in Node.js", function () {
       `
         const Realm = require(process.env.REALM_PACKAGE_PATH);
         const realm = new Realm();
-        realm.close();
         Realm.shutdown();
       `,
       Math.min(this.timeout(), 5000),
