@@ -220,15 +220,14 @@ export class Dictionary<T = unknown> extends Collection<
    * @ts-expect-error We're exposing methods in the end-users namespace of values */
   *values(): Generator<T> {
     const realm = this[REALM];
-    const snapshot = this[INTERNAL].values.snapshot();
-    const itemType = toItemType(snapshot.type);
+    const values = this[INTERNAL].values;
+    const itemType = toItemType(values.type);
     const typeHelpers = this[TYPE_HELPERS];
     const accessor = createResultsAccessor({ realm, typeHelpers, itemType });
-    const results = new Results<T>(realm, snapshot, accessor, typeHelpers);
-    const size = results.length;
+    const results = new Results<T>(realm, values, accessor, typeHelpers);
 
-    for (let i = 0; i < size; i++) {
-      yield results[i];
+    for (const value of results.values()) {
+      yield value;
     }
   }
 

@@ -430,8 +430,7 @@ export function insertIntoListOfMixed(
   // TODO: Solve the "removeAll()" case for self-assignment.
   internal.removeAll();
 
-  let index = 0;
-  for (const item of list) {
+  for (const [index, item] of list.entries()) {
     if (isJsOrRealmList(item)) {
       internal.insertCollection(index, binding.CollectionType.List);
       insertIntoListOfMixed(item, internal.getList(index), toBinding);
@@ -441,7 +440,6 @@ export function insertIntoListOfMixed(
     } else {
       internal.insertAny(index, toBinding(item));
     }
-    index++;
   }
 }
 
