@@ -2897,25 +2897,6 @@ describe("Mixed", () => {
         expect(created.mixed).to.be.null;
         expect(() => dictionary.key).to.throw("This collection is no more");
       });
-
-      // If `REALM_DEBUG`, the max nesting level is 4.
-      it.skip("throws when exceeding the max nesting level", function (this: RealmContext) {
-        expect(() => {
-          this.realm.write(() => {
-            this.realm.create<IMixedSchema>(MixedSchema.name, {
-              mixed: [1, [2, [3, [4, [5]]]]],
-            });
-          });
-        }).to.throw("Max nesting level reached");
-
-        expect(() => {
-          this.realm.write(() => {
-            this.realm.create<IMixedSchema>(MixedSchema.name, {
-              mixed: { depth1: { depth2: { depth3: { depth4: { depth5: "value" } } } } },
-            });
-          });
-        }).to.throw("Max nesting level reached");
-      });
     });
   });
 
