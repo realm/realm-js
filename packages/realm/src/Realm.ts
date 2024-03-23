@@ -192,7 +192,7 @@ export class Realm {
     binding.App.clearCachedApps();
     ProgressRealmPromise.cancelAll();
 
-    binding.Helpers.resetDefaultLogger();
+    binding.Logger.setDefaultLogger(null);
     garbageCollection.collect();
   }
 

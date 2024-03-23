@@ -254,7 +254,6 @@ classes:
       - base64_decode
       - make_logger_factory
       - make_logger
-      - reset_default_logger
       - simulate_sync_error
       - consume_thread_safe_reference_to_shared_realm
       - file_exists
