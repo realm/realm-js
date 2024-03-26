@@ -66,7 +66,7 @@ describe("Test Harness", function (this: Mocha.Suite) {
    * @see [typings.d.ts](./typings.d.ts) for documentation.
    */
   function longTimeout(this: Mocha.Context | Mocha.Suite) {
-    this.timeout(environment.longTimeout || DEFAULT_LONG_TIMEOUT); // 30 seconds
+    this.timeout(environment.longTimeoutMs || DEFAULT_LONG_TIMEOUT); // 30 seconds
   }
 
   // Patching the Suite and Context with a longTimeout method

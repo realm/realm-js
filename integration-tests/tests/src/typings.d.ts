@@ -29,7 +29,7 @@ interface path {
 
 type KnownEnvironment = {
   /** Set the number of milliseconds to use for tests that require a long timeout. */
-  longTimeout?: number;
+  longTimeoutMs?: number;
   /** Set the name of the cluster, used when setting up the "mongodb-atlas" service on imported apps. */
   mongodbClusterName?: string;
   /** The type of service to use when importing an app which uses the mongodb service. */
