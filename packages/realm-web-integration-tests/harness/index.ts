@@ -92,27 +92,24 @@ export async function run(devtools = false) {
   });
 
   // Start the webpack-dev-server
-  const devServer = new WebpackDevServer(compiler, {
-    proxy: { "/api": baseUrl },
-    historyApiFallback: true,
-    static: {
-      directory: realmWebPath,
-      publicPath: "/realm-web",
+  const devServer = new WebpackDevServer(
+    {
+      port: 8080,
+      host: "localhost",
+      proxy: [{ context: "/api", target: baseUrl }],
+      historyApiFallback: true,
+      static: {
+        directory: realmWebPath,
+        publicPath: "/realm-web",
+      },
     },
-  });
+    compiler,
+  );
 
-  await new Promise<void>((resolve, reject) => {
-    devServer.listen(8080, "localhost", (err) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve();
-      }
-    });
-  });
+  await devServer.start();
 
   process.once("exit", () => {
-    devServer.close();
+    devServer.stop().catch(console.error);
   });
 
   // Start the mocha remote server
@@ -129,7 +126,7 @@ export async function run(devtools = false) {
   // Start up the browser, running the tests
   const browser = await puppeteer.launch({
     devtools,
-    headless: devtools ? false : "new",
+    headless: devtools ? false : true,
   });
 
   process.once("exit", () => {
@@ -145,7 +142,7 @@ export async function run(devtools = false) {
       const text = message.text();
       issues.push(text);
       console.error(`[ERROR] ${text}`);
-    } else if (type === "warning") {
+    } else if (type === "warn") {
       const text = message.text();
       issues.push(text);
       console.warn(`[WARNING] ${text}`);
