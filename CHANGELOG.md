@@ -17,6 +17,7 @@
 * Improved performance of RQL queries on a non-linked string property using `>`, `>=`, `<`, `<=` operators and fixed behavior that a null string should be evaluated as less than everything, previously nulls were not matched. ([realm/realm-core#3939](https://github.com/realm/realm-core/issues/3939))
 * Added support for using aggregate operations on Mixed properties in queries. ([realm/realm-core#7398](https://github.com/realm/realm-core/pull/7398))
 * Improved file compaction performance on platforms with page sizes greater than 4k (for example arm64 Apple platforms) for files less than 256 pages in size. ([realm/realm-core#7492](https://github.com/realm/realm-core/pull/7492))
+* Added the ability to pass a category as the second argument to `setLogLevel`. ([#6560](https://github.com/realm/realm-js/issues/6560))
 
 ### Fixed
 * Aligned Dictionaries to Lists and Sets when they get cleared. ([#6205](https://github.com/realm/realm-core/issues/6205), since v10.3.0-rc.1)
