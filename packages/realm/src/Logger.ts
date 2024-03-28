@@ -140,22 +140,6 @@ export const LOG_CATEGORIES = [
 export type LogCategory = (typeof LOG_CATEGORIES)[number];
 
 /**
- * Log options to use when setting the log level.
- */
-export type LogOptions = {
-  /**
-   * The log level to be used by the logger.
-   * @default "info"
-   */
-  level: LogLevel;
-  /**
-   * The category to set the log level for. If omitted, the log level
-   * is set for all categories (`"Realm"`).
-   */
-  category?: LogCategory;
-};
-
-/**
  * A callback passed to `Realm.App.Sync.setLogger` when instrumenting the Atlas Device Sync client with a custom logger.
  * @param level - The level of the log entry between 0 and 8 inclusively.
  * Use this as an index into `['all', 'trace', 'debug', 'detail', 'info', 'warn', 'error', 'fatal', 'off']` to get the name of the level.

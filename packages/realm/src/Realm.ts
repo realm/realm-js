@@ -32,7 +32,6 @@ import {
   List,
   LogCategory,
   LogLevel,
-  LogOptions,
   LoggerCallback,
   LoggerCallback1,
   LoggerCallback2,
@@ -112,36 +111,18 @@ export class Realm {
   private static internals = new Set<binding.WeakRef<binding.Realm>>();
 
   /**
-   * Sets the log level across all levels.
+   * Sets the log level.
    * @param level - The log level to be used by the logger. The default value is `info`.
+   * @param category - The category to set the log level for. If omitted, the log level is set for all categories (`"Realm"`).
    * @note The log level can be changed during the lifetime of the application.
    * @since 12.0.0
    * @example
    * Realm.setLogLevel("all");
    */
-  static setLogLevel(level: LogLevel): void;
-
-  /**
-   * Sets the log level for a specific category.
-   * @param options - The log options to use.
-   * @note The log level can be changed during the lifetime of the application.
-   * @since 12.7.0
-   * @example
-   * Realm.setLogLevel({ category: "Realm", level: "all" });
-   */
-  static setLogLevel(options: LogOptions): void;
-  static setLogLevel(arg: LogLevel | LogOptions) {
-    const setLevel = (level: LogLevel, category = "Realm") => {
-      assert(LOG_CATEGORIES.includes(category as LogCategory), `Unexpected log category: '${category}'`);
-      const categoryRef = binding.LogCategoryRef.getCategory(category);
-      categoryRef.setDefaultLevelThreshold(toBindingLoggerLevel(level));
-    };
-
-    if (typeof arg === "string") {
-      setLevel(arg);
-    } else {
-      setLevel(arg.level, arg.category);
-    }
+  static setLogLevel(level: LogLevel, category: LogCategory = "Realm"): void {
+    assert(LOG_CATEGORIES.includes(category as LogCategory), `Unexpected log category: '${category}'`);
+    const categoryRef = binding.LogCategoryRef.getCategory(category);
+    categoryRef.setDefaultLevelThreshold(toBindingLoggerLevel(level));
   }
 
   /**
