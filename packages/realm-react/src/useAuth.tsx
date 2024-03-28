@@ -23,7 +23,9 @@ import { AuthOperationName, AuthResult } from "./types";
 import { useApp, useAuthResult } from "./AppProvider";
 import { useAuthOperation } from "./useAuthOperation";
 
-interface UseAuth {
+export type UseAuthHook = () => AuthMethods;
+
+export interface AuthMethods {
   /**
    * Log in with a {@link Realm.Credentials} instance. This allows login with any
    * authentication mechanism supported by Realm.
@@ -108,7 +110,7 @@ interface UseAuth {
  * code.
  * @returns An object containing operations and state for authenticating with an Atlas App.
  */
-export function useAuth(): UseAuth {
+export const useAuth: UseAuthHook = () => {
   const app = useApp();
   const [result] = useAuthResult();
 
@@ -182,4 +184,4 @@ export function useAuth(): UseAuth {
     logInWithFunction,
     logOut,
   };
-}
+};

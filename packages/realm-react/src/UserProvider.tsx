@@ -26,7 +26,7 @@ import { useApp } from "./AppProvider";
  */
 export const UserContext = createContext<Realm.User | null>(null);
 
-type UserProviderProps = {
+export type UserProviderProps = {
   /**
    * The fallback component to render if there is no authorized user.  This can be used
    * to render a login screen or another component which will log the user in.
@@ -75,7 +75,6 @@ export const UserProvider: React.FC<UserProviderProps> = ({ fallback: Fallback, 
  * {@link UserProvider} context. The user is stored as React state,
  * so will trigger a re-render whenever it changes (e.g. logging in,
  * logging out, switching user).
- *
  */
 export const useUser = <
   FunctionsFactoryType extends Realm.DefaultFunctionsFactory,

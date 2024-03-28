@@ -46,8 +46,9 @@ export type CollectionCallback = Parameters<typeof Realm.Results.prototype.addLi
 /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
 export type AnyRealmObject = Realm.Object<any>;
 
-export type RealmClassType<T = any> = { new (...args: any): T };
+/* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+export type RealmClassType<T extends AnyRealmObject = AnyRealmObject> = { new (...args: any): T };
 
-export function isClassModelConstructor(value: unknown): value is RealmClassType<unknown> {
+export function isClassModelConstructor(value: unknown): value is RealmClassType {
   return Object.getPrototypeOf(value) === Realm.Object;
 }
