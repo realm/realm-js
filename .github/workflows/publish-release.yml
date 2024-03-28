@@ -19,13 +19,13 @@ jobs:
     steps:
 
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         submodules: recursive
         ref: ${{ inputs.commit || github.event.pull_request.head.sha }}
 
     - name: Setup node version
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
         node-version: 20
         registry-url: 'https://registry.npmjs.org'
@@ -39,7 +39,7 @@ jobs:
 
     - name: Restore NPM cache
       id: npm-cache
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: ${{ steps.npm-cache-dir.outputs.dir }}
         key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
@@ -109,7 +109,7 @@ jobs:
         method: squash
 
     - name: Checkout base branch (after merge)
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         submodules: recursive
         ref: ${{ steps.find-pull-request.outputs.base-ref }}
