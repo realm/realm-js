@@ -87,15 +87,16 @@ export class User<
   UserProfileDataType extends DefaultUserProfileData = DefaultUserProfileData,
 > {
   /** @internal */
-  public app: App;
+  public readonly app: App;
 
   /** @internal */
-  public internal: binding.SyncUser;
+  public readonly internal: binding.SyncUser;
 
-  // cached version of profile
+  /** @internal */
   private cachedProfile: UserProfileDataType | undefined;
 
-  private listeners = new Listeners<UserChangeCallback, UserListenerToken>({
+  /** @internal */
+  private readonly listeners = new Listeners<UserChangeCallback, UserListenerToken>({
     add: (callback: () => void): UserListenerToken => {
       return this.internal.subscribe(callback);
     },
@@ -123,6 +124,27 @@ export class User<
     this.internal = internal;
     this.app = app;
     this.cachedProfile = undefined;
+
+    Object.defineProperty(this, "listeners", {
+      enumerable: false,
+      configurable: false,
+      writable: false,
+    });
+    Object.defineProperty(this, "internal", {
+      enumerable: false,
+      configurable: false,
+      writable: false,
+    });
+    Object.defineProperty(this, "app", {
+      enumerable: false,
+      configurable: false,
+      writable: false,
+    });
+    Object.defineProperty(this, "cachedProfile", {
+      enumerable: false,
+      configurable: false,
+      writable: true,
+    });
   }
 
   /**
