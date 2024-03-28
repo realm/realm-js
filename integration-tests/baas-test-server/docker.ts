@@ -118,12 +118,17 @@ export function spawnBaaS({
   tag,
   accessKeyId,
   secretAccessKey,
+  configPath,
 }: {
   tag: string;
   accessKeyId: string;
   secretAccessKey: string;
+  configPath: string | undefined;
 }) {
   console.log("Starting server from tag", chalk.dim(tag));
+  const configOptions = configPath
+    ? ["--mount", `type=bind,source=${configPath},target=/app/test_overwritable_config.json`]
+    : [];
   spawn(chalk.blueBright("baas"), "docker", [
     "run",
     "--name",
@@ -136,6 +141,7 @@ export function spawnBaaS({
     `AWS_SECRET_ACCESS_KEY=${secretAccessKey}`,
     "--publish",
     `${BAAS_PORT}:${BAAS_PORT}`,
+    ...configOptions,
     tag,
   ]);
 }
