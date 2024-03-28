@@ -16,22 +16,33 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-if (!global.fs) {
+// declare global {
+//   export const title: string;
+//   export const fs: fs;
+//   export const path: path;
+//   export const environment: Environment;
+//   /**
+//    * The environment might expose a method to suggest a garbage collection.
+//    */
+//   export const gc: undefined | (() => void);
+// }
+
+if (typeof fs !== "object") {
   throw new Error("Expected 'fs' to be available as a global");
 }
 
-if (!global.path) {
+if (typeof path !== "object") {
   throw new Error("Expected 'path' to be available as a global");
 }
 
-if (!global.environment || typeof global.environment !== "object") {
+if (typeof environment !== "object") {
   throw new Error("Expected 'environment' to be available as a global");
 }
 
 // Patch in a function that can skip running tests in specific environments
 import { testSkipIf, suiteSkipIf } from "./utils/skip-if";
-global.describe.skipIf = suiteSkipIf;
-global.it.skipIf = testSkipIf;
+describe.skipIf = suiteSkipIf;
+it.skipIf = testSkipIf;
 
 import chai from "chai";
 
@@ -55,7 +66,7 @@ describe("Test Harness", function (this: Mocha.Suite) {
    * @see [typings.d.ts](./typings.d.ts) for documentation.
    */
   function longTimeout(this: Mocha.Context | Mocha.Suite) {
-    this.timeout(environment.longTimeout || DEFAULT_LONG_TIMEOUT); // 30 seconds
+    this.timeout(environment.longTimeoutMs || DEFAULT_LONG_TIMEOUT); // 30 seconds
   }
 
   // Patching the Suite and Context with a longTimeout method

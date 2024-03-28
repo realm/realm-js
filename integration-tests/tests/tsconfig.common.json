@@ -1,0 +1,33 @@
+{
+	"compilerOptions": {
+		"composite": true,
+		"target": "es2022",
+		"module": "es2022",
+		"moduleResolution": "node",
+		"useDefineForClassFields": false,
+		"strict": true,
+		"strictFunctionTypes": false,
+		"esModuleInterop": true,
+		"resolveJsonModule": true,
+		"outDir": "dist",
+		"lib": [
+			"es2022"
+		],
+		"types": [
+			"realm",
+			"bson",
+			"buffer",
+			"mocha",
+			"chai"
+		],
+		"noImplicitAny": true
+	},
+	"include": [
+		"src/typings.d.ts",
+		"src/runtime.d.ts",
+		"src/**/*.ts"
+	],
+	"exclude": [
+		"src/node/"
+	]
+}

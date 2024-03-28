@@ -24,7 +24,7 @@
       ]
     },
     "build": {
-      "command": "tsc",
+      "command": "tsc --build .",
       "dependencies": [
         "build-dependencies"
       ]

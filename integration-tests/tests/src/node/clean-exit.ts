@@ -20,7 +20,7 @@ import { execSync } from "child_process";
 
 describe("Clean exit for Node.js scripts", function () {
   // Repro for https://github.com/realm/realm-js/issues/4535 - currently still failing
-  it.skip("exits cleanly when creating a new Realm.App", function (this: RealmContext) {
+  it.skip("exits cleanly when creating a new Realm.App", function () {
     execSync(
       `node -e 'const Realm = require("realm"); const app = new Realm.App({ id: "myapp-abcde" }); Realm.clearTestState();'`,
       {
