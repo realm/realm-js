@@ -1,3 +1,10 @@
+## vNext Release notes (TBD)
+=============================================================
+
+### Fixed
+* Use optional chaining to infer Node release and version to avoid crashes in non-node environments
+
+
 2.0.0 Release notes (2022-10-18)
 =============================================================
 
