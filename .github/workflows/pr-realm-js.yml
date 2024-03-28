@@ -258,6 +258,8 @@ jobs:
       # Pin the Xcode version
       DEVELOPER_DIR: /Applications/Xcode_14.3.1.app
       IOS_DEVICE_NAME: iPhone 14
+      ANDROID_API_LEVEL: 31
+      ANDROID_ARCH: x86_64
     runs-on: ${{ matrix.variant.runner }}
     strategy:
       fail-fast: false
@@ -272,7 +274,7 @@ jobs:
           - { os: darwin, target: "test:ci:main", runner: macos-latest, environment: electron }
           - { os: darwin, target: "test:ci:renderer", runner: macos-latest, environment: electron }
           - { os: darwin, target: "test:ci", runner: macos-latest, environment: node }
-          - { os: android, target: "test:ci:android", runner: macos-latest-large, environment: react-native, arch: "armeabi-v7a" }
+          - { os: android, target: "test:ci:android", runner: ubuntu-latest, environment: react-native, arch: "armeabi-v7a" }
           - { os: ios, target: "test:ci:ios", runner: macos-latest-xlarge, environment: react-native, arch: "ios" }
           #- { os: ios, target: "test:ci:catalyst", runner: macos-latest, environment: react-native, arch: "catalyst" }
     timeout-minutes: 60
@@ -402,6 +404,13 @@ jobs:
         timeout-minutes: 75
         run: npm run ${{ matrix.variant.target}} --prefix integration-tests/environments/${{ matrix.variant.environment }}
 
+      - name: Enable KVM group perms
+        if: ${{ matrix.variant.os == 'android' }}
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
       - name: Setup Java Gradle cache for android test app
         if: ${{ matrix.variant.os == 'android' }}
         uses: actions/cache@v3
@@ -413,21 +422,32 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      - name: Setup Android Emulator cache
-        if: ${{ matrix.variant.os == 'android' }}
-        uses: actions/cache@v3
-        id: avd-cache
-        with:
-          path: |
-            ~/.android/avd/*
-            ~/.android/adb*
-          key: avd-29
-
       - uses: actions/setup-java@v3
         if: ${{ matrix.variant.os == 'android' }}
         with:
           distribution: 'zulu' # See 'Supported distributions' for available options
           java-version: '17'
+        
+      - name: AVD cache
+        if: ${{ matrix.variant.os == 'android' }}
+        uses: actions/cache@v4
+        id: avd-cache
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-${{ env.ANDROID_API_LEVEL }}-${{ env.ANDROID_ARCH }}
+
+      - name: create AVD and generate snapshot for caching
+        if: matrix.variant.os == 'android' && steps.avd-cache.outputs.cache-hit != 'true'
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: ${{ env.ANDROID_API_LEVEL }}
+          arch: ${{ env.ANDROID_ARCH }}
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: false
+          script: echo "Generated AVD snapshot for caching."
 
       - name: Run ${{matrix.variant.target}} (${{ matrix.variant.os}} / ${{ matrix.variant.environment }})
         if: ${{ matrix.variant.os == 'android' }}
@@ -436,11 +456,11 @@ jobs:
         timeout-minutes: 75
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 29
+          api-level: ${{ env.ANDROID_API_LEVEL }}
+          arch: ${{ env.ANDROID_ARCH }}
           force-avd-creation: false
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
-          arch: x86
           ndk: ${{ env.NDK_VERSION }}
           cmake: 3.22.1
           script: npm run ${{ matrix.variant.target}} --prefix integration-tests/environments/${{ matrix.variant.environment }}
