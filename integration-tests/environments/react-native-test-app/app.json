@@ -11,10 +11,12 @@
   ],
   "resources": {
     "android": [
+      "bundled.realm",
       "dist/res",
       "dist/main.android.jsbundle"
     ],
     "ios": [
+      "bundled.realm",
       "dist/assets",
       "dist/main.ios.jsbundle"
     ],

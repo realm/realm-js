@@ -1355,7 +1355,7 @@ SPEC CHECKSUMS:
   ReactCommon: 45b5d4f784e869c44a6f5a8fad5b114ca8f78c53
   ReactNativeHost: 446b46cbfc2d16420bfd249e9064802e929fa9b7
   ReactTestApp-DevSupport: 5cd1b02b4d146811d29dc2455a249f0743fda504
-  ReactTestApp-Resources: 857244f3a23f2b3157b364fa06cf3e8866deff9c
+  ReactTestApp-Resources: d200e68756fa45c648f369210bd7ee0c14759f5a
   RealmJS: 385df5ee940d96f1de26b1dab153e325633d3052
   RNFS: 4ac0f0ea233904cb798630b3c077808c06931688
   SocketRocket: f32cd54efbe0f095c4d7594881e52619cfe80b17
