@@ -21,7 +21,7 @@
     "test:android": {
       "command": "mocha-remote --reporter @realm/mocha-reporter -- concurrently --kill-others-on-fail npm:metro npm:runner",
       "dependencies": [
-        "pod-install:simulator",
+        "../../../packages/realm:build:android",
         "../../../packages/realm:build:ts",
         "../../../packages/mocha-reporter:bundle"
       ],
