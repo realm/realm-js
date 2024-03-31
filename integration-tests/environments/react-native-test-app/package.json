@@ -26,7 +26,19 @@
         "../../../packages/mocha-reporter:bundle"
       ],
       "env": {
-        "PLATFORM": "android"
+        "PLATFORM": "android",
+        "ORG_GRADLE_PROJECT_newArchEnabled": {
+          "external": true,
+          "default": "true"
+        },
+        "ORG_GRADLE_PROJECT_hermesEnabled": {
+          "external": true,
+          "default": "true"
+        },
+        "ORG_GRADLE_PROJECT_bridgelessEnabled": {
+          "external": true,
+          "default": "true"
+        }
       }
     },
     "test:ios": {
