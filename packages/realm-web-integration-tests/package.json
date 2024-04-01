@@ -32,20 +32,20 @@
   "dependencies": {
     "@realm/app-importer": "^0.1.0",
     "chai": "4.3.6",
-    "js-base64": "^3.7.6",
+    "js-base64": "^3.7.7",
     "jwt-encode": "^1.0.1",
-    "mocha-remote-cli": "^1.8.0",
-    "mocha-remote-server": "^1.8.0",
-    "puppeteer": "^22.4.1",
+    "mocha-remote-cli": "^1.11.1",
+    "mocha-remote-server": "^1.11.1",
+    "puppeteer": "^22.6.1",
     "realm-web": "*",
-    "webpack": "^5.90.0",
-    "webpack-dev-server": "^4.15.1"
+    "webpack": "^5.91.0",
+    "webpack-dev-server": "^4.15.2"
   },
   "peerDependencies": {
     "mocha-remote-client": "^1.8.0"
   },
   "devDependencies": {
-    "@types/chai": "^4.3.1",
+    "@types/chai": "^4.3.14",
     "@types/fs-extra": "^11.0.4",
     "@types/mocha": "^8",
     "@types/webpack": "^5.28.0",
