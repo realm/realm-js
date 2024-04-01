@@ -34,8 +34,8 @@
   "react-native": "./dist/react-native/react-native.js",
   "types": "./dist/types/types.d.ts",
   "devDependencies": {
-    "@tsconfig/node18": "^18.2.2",
-    "@tsconfig/recommended": "^1.0.3"
+    "@tsconfig/node18": "^18.2.4",
+    "@tsconfig/recommended": "^1.0.5"
   },
   "engines": {
     "node": ">=18"

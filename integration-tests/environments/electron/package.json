@@ -42,17 +42,17 @@
   "devDependencies": {
     "@realm/mocha-reporter": "*",
     "command-line-args": "^5.2.1",
-    "electron": "^28.1.4",
-    "electron-builder": "^24.9.1",
+    "electron": "^28.2.9",
+    "electron-builder": "^24.13.3",
     "mocha-github-actions-reporter": "^0.3.0",
     "mocha-junit-reporter": "^2.2.0",
-    "mocha-remote-cli": "^1.8.0"
+    "mocha-remote-cli": "^1.11.1"
   },
   "dependencies": {
     "@electron/remote": "^2.1.2",
     "@realm/integration-tests": "*",
     "fs-extra": "^11.2.0",
-    "mocha-remote-client": "^1.8.0",
+    "mocha-remote-client": "^1.11.1",
     "@realm/app-importer": "*"
   },
   "build": {

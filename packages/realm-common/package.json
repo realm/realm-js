@@ -57,9 +57,9 @@
   "license": "Apache-2.0",
   "dependencies": {},
   "devDependencies": {
-    "@types/chai": "^4.2.10",
+    "@types/chai": "^4.3.14",
     "@types/mocha": "^5",
     "chai": "4.3.6",
-    "mocha": "^5.2.0"
+    "mocha": "^10.3.0"
   }
 }

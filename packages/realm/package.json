@@ -332,7 +332,7 @@
     "debug": "^4.3.4",
     "node-machine-id": "^1.1.12",
     "path-browserify": "^1.0.1",
-    "prebuild-install": "^7.1.1"
+    "prebuild-install": "^7.1.2"
   },
   "peerDependencies": {
     "react-native": ">=0.71.0"
@@ -343,11 +343,11 @@
     }
   },
   "devDependencies": {
-    "@babel/cli": "^7.23.9",
-    "@babel/core": "^7.23.9",
-    "@babel/plugin-transform-modules-commonjs": "^7.23.3",
+    "@babel/cli": "^7.24.1",
+    "@babel/core": "^7.24.3",
+    "@babel/plugin-transform-modules-commonjs": "^7.24.1",
     "@realm/bindgen": "^0.1.0",
-    "@types/chai": "^4.3.3",
+    "@types/chai": "^4.3.14",
     "@types/mocha": "^10.0.0",
     "@types/node": "^18.19.8",
     "@types/path-browserify": "^1.0.0",
@@ -355,7 +355,7 @@
     "cmake-js": "6.3.2",
     "command-line-args": "^5.2.1",
     "cross-env": "^7.0.3",
-    "mocha": "^10.1.0",
+    "mocha": "^10.3.0",
     "prebuild": "^12.1.0",
     "react-native": "0.73.2",
     "typedoc-plugin-rename-defaults": "^0.7.0"
