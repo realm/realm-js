@@ -20,7 +20,6 @@ import { expect } from "chai";
 import Realm, { PropertySchema } from "realm";
 
 import { openRealmBefore, openRealmBeforeEach } from "../hooks";
-import { sleep } from "../utils/sleep";
 
 type Item<ValueType = Realm.Mixed> = {
   dict: Realm.Dictionary<ValueType>;
@@ -60,17 +59,6 @@ const DictTypedSchema: Realm.ObjectSchema = {
   },
 };
 
-const DictMixedSchema = {
-  name: "MixedDictionary",
-  properties: {
-    dict1: "mixed{}",
-    dict2: "mixed{}",
-  },
-};
-
-type IDictSchema = {
-  fields: Record<any, any>;
-};
 type ITwoDictSchema = {
   dict1: Record<any, any>;
   dict2: Record<any, any>;
@@ -307,17 +295,17 @@ describe("Dictionary", () => {
       });
     });
 
-    // This is currently not supported
-    it.skip("can store dictionary values using string keys", function (this: RealmContext) {
+    it("can store dictionary values using string keys", function (this: RealmContext) {
       const item = this.realm.write(() => {
         const item = this.realm.create<Item>("Item", {});
         const item2 = this.realm.create<Item>("Item", {});
-        item2.dict.key1 = "Hello";
-        item.dict.key1 = item2.dict;
+        item2.dict.key1 = "hello";
+        item.dict.key1 = item2;
         return item;
       });
-      // @ts-expect-error We expect a dictionary inside dictionary
-      expect(item.dict.key1.dict.key1).equals("hello");
+      const innerObject = item.dict.key1 as Realm.Object<Item> & Item;
+      expect(innerObject).instanceOf(Realm.Object);
+      expect(innerObject.dict).deep.equals({ key1: "hello" });
     });
 
     it("can store a reference to itself using string keys", function (this: RealmContext) {
@@ -599,7 +587,7 @@ describe("Dictionary", () => {
   });
 
   describe("embedded models", () => {
-    openRealmBeforeEach({ schema: [DictTypedSchema, DictMixedSchema, EmbeddedChild] });
+    openRealmBeforeEach({ schema: [DictTypedSchema, EmbeddedChild] });
     it("inserts correctly", function (this: RealmContext) {
       this.realm.write(() => {
         this.realm.create(DictTypedSchema.name, {
@@ -614,17 +602,6 @@ describe("Dictionary", () => {
       expect(dict_1.children2.num).equal(3, "We expect children2#3");
       expect(dict_2.children1?.num).equal(4, "We expect children1#4");
       expect(dict_2.children2?.num).equal(5, "We expect children2#5");
-    });
-
-    it("throws on invalid input", function (this: RealmContext) {
-      this.realm.write(() => {
-        expect(() => {
-          this.realm.create(DictMixedSchema.name, {
-            dict1: { children1: { num: 2 }, children2: { num: 3 } },
-            dict2: { children1: { num: 4 }, children2: { num: 5 } },
-          });
-        }).throws("Unable to convert an object with ctor 'Object' to a Mixed");
-      });
     });
   });
 });

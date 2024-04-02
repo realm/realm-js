@@ -4,8 +4,54 @@
 * None
 
 ### Enhancements
-* None.
-  
+* A `mixed` value can now hold a `Realm.List` and `Realm.Dictionary` with nested collections. Note that `Realm.Set` is not supported as a `mixed` value. ([#6513](https://github.com/realm/realm-js/pull/6513))
+
+```typescript
+class CustomObject extends Realm.Object {
+  value!: Realm.Mixed;
+
+  static schema: ObjectSchema = {
+    name: "CustomObject",
+    properties: {
+      value: "mixed",
+    },
+  };
+}
+
+const realm = await Realm.open({ schema: [CustomObject] });
+
+// Create an object with a dictionary value as the Mixed property,
+// containing primitives and a list.
+const realmObject = realm.write(() => {
+  return realm.create(CustomObject, {
+    value: {
+      num: 1,
+      string: "hello",
+      bool: true,
+      list: [
+        {
+          dict: {
+            string: "world",
+          },
+        },
+      ],
+    },
+  });
+});
+
+// Accessing the collection value returns the managed collection.
+// The default generic type argument is `unknown` (mixed).
+const dictionary = realmObject.value as Realm.Dictionary;
+const list = dictionary.list as Realm.List;
+const leafDictionary = (list[0] as Realm.Dictionary).dict as Realm.Dictionary;
+console.log(leafDictionary.string); // "world"
+
+// Update the Mixed property to a list.
+realm.write(() => {
+  realmObject.value = [1, "hello", { newKey: "new value" }];
+});
+```
+
 ### Fixed
 * Inserting the same typed link to the same key in a dictionary more than once would incorrectly create multiple backlinks to the object. This did not appear to cause any crashes later, but would have affecting explicit backlink count queries (eg: `...@links.@count`) and possibly notifications ([realm/realm-core#7676](https://github.com/realm/realm-core/issues/7676) since v12.7.1).
 * Having links in a nested collections would leave the file inconsistent if the top object is removed. ([realm/realm-core#7657](https://github.com/realm/realm-core/issues/7657), since v12.7.0)

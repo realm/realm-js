@@ -17,14 +17,21 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import {
+  COLLECTION_ACCESSOR as ACCESSOR,
   AssertionError,
+  Dictionary,
   IllegalConstructorError,
   ObjectSchema,
   OrderedCollection,
-  OrderedCollectionHelpers,
   Realm,
+  TypeHelpers,
   assert,
   binding,
+  createDefaultGetter,
+  createDictionaryAccessor,
+  insertIntoDictionaryOfMixed,
+  isJsOrRealmDictionary,
+  toItemType,
 } from "./internal";
 
 type PartiallyWriteableArray<T> = Pick<Array<T>, "pop" | "push" | "shift" | "unshift" | "splice">;
@@ -36,27 +43,36 @@ type PartiallyWriteableArray<T> = Pick<Array<T>, "pop" | "push" | "shift" | "uns
  * only store values of a single type (indicated by the `type` and `optional`
  * properties of the List), and can only be modified inside a {@link Realm.write | write} transaction.
  */
-export class List<T = unknown> extends OrderedCollection<T> implements PartiallyWriteableArray<T> {
+export class List<T = unknown>
+  extends OrderedCollection<
+    T,
+    [number, T],
+    /** @internal */
+    ListAccessor<T>
+  >
+  implements PartiallyWriteableArray<T>
+{
   /**
    * The representation in the binding.
    * @internal
    */
-  public declare internal: binding.List;
+  public declare readonly internal: binding.List;
 
   /** @internal */
   private declare isEmbedded: boolean;
 
   /** @internal */
-  constructor(realm: Realm, internal: binding.List, helpers: OrderedCollectionHelpers) {
+  constructor(realm: Realm, internal: binding.List, accessor: ListAccessor<T>, typeHelpers: TypeHelpers<T>) {
     if (arguments.length === 0 || !(internal instanceof binding.List)) {
       throw new IllegalConstructorError("List");
     }
-    super(realm, internal.asResults(), helpers);
+    const results = internal.asResults();
+    super(realm, results, accessor, typeHelpers);
 
     // Getting the `objectSchema` off the internal will throw if base type isn't object
-    const baseType = this.results.type & ~binding.PropertyType.Flags;
     const isEmbedded =
-      baseType === binding.PropertyType.Object && internal.objectSchema.tableType === binding.TableType.Embedded;
+      toItemType(results.type) === binding.PropertyType.Object &&
+      internal.objectSchema.tableType === binding.TableType.Embedded;
 
     Object.defineProperty(this, "internal", {
       enumerable: false,
@@ -72,33 +88,22 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
     });
   }
 
+  /** @internal */
+  public get(index: number): T {
+    return this[ACCESSOR].get(this.internal, index);
+  }
+
+  /** @internal */
+  public set(index: number, value: T): void {
+    this[ACCESSOR].set(this.internal, index, value);
+  }
+
   /**
    * Checks if this collection has not been deleted and is part of a valid Realm.
    * @returns `true` if the collection can be safely accessed.
    */
   isValid(): boolean {
     return this.internal.isValid;
-  }
-
-  /**
-   * Set an element of the ordered collection by index
-   * @param index The index
-   * @param value The value
-   * @internal
-   */
-  public set(index: number, value: unknown): void {
-    const {
-      realm,
-      internal,
-      isEmbedded,
-      helpers: { toBinding },
-    } = this;
-    assert.inTransaction(realm);
-    // TODO: Consider a more performant way to determine if the list is embedded
-    internal.setAny(
-      index,
-      toBinding(value, isEmbedded ? { createObj: () => [internal.setEmbedded(index), true] } : undefined),
-    );
   }
 
   /**
@@ -122,15 +127,12 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
    */
   pop(): T | undefined {
     assert.inTransaction(this.realm);
-    const {
-      internal,
-      helpers: { fromBinding },
-    } = this;
+    const { internal } = this;
     const lastIndex = internal.size - 1;
     if (lastIndex >= 0) {
-      const result = fromBinding(internal.getAny(lastIndex));
+      const result = this.get(lastIndex);
       internal.remove(lastIndex);
-      return result as T;
+      return result;
     }
   }
 
@@ -144,20 +146,11 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
    */
   push(...items: T[]): number {
     assert.inTransaction(this.realm);
-    const {
-      isEmbedded,
-      internal,
-      helpers: { toBinding },
-    } = this;
+    const { internal } = this;
     const start = internal.size;
     for (const [offset, item] of items.entries()) {
       const index = start + offset;
-      if (isEmbedded) {
-        // Simply transforming to binding will insert the embedded object
-        toBinding(item, { createObj: () => [internal.insertEmbedded(index), true] });
-      } else {
-        internal.insertAny(index, toBinding(item));
-      }
+      this[ACCESSOR].insert(internal, index, item);
     }
     return internal.size;
   }
@@ -169,12 +162,9 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
    */
   shift(): T | undefined {
     assert.inTransaction(this.realm);
-    const {
-      internal,
-      helpers: { fromBinding },
-    } = this;
+    const { internal } = this;
     if (internal.size > 0) {
-      const result = fromBinding(internal.getAny(0)) as T;
+      const result = this.get(0);
       internal.remove(0);
       return result;
     }
@@ -190,18 +180,10 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
    */
   unshift(...items: T[]): number {
     assert.inTransaction(this.realm);
-    const {
-      isEmbedded,
-      internal,
-      helpers: { toBinding },
-    } = this;
+    const { internal } = this;
+    const { insert } = this[ACCESSOR];
     for (const [index, item] of items.entries()) {
-      if (isEmbedded) {
-        // Simply transforming to binding will insert the embedded object
-        toBinding(item, { createObj: () => [internal.insertEmbedded(index), true] });
-      } else {
-        internal.insertAny(index, toBinding(item));
-      }
+      insert(internal, index, item);
     }
     return internal.size;
   }
@@ -250,11 +232,7 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
     // Comments in the code below is copied from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/splice
     assert.inTransaction(this.realm);
     assert.number(start, "start");
-    const {
-      isEmbedded,
-      internal,
-      helpers: { fromBinding, toBinding },
-    } = this;
+    const { internal } = this;
     // If negative, it will begin that many elements from the end of the array.
     if (start < 0) {
       start = internal.size + start;
@@ -270,21 +248,17 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
     // Get the elements that are about to be deleted
     const result: T[] = [];
     for (let i = start; i < end; i++) {
-      result.push(fromBinding(internal.getAny(i)) as T);
+      result.push(this.get(i));
     }
     // Remove the elements from the list (backwards to avoid skipping elements as they're being deleted)
     for (let i = end - 1; i >= start; i--) {
       internal.remove(i);
     }
     // Insert any new elements
+    const { insert } = this[ACCESSOR];
     for (const [offset, item] of items.entries()) {
       const index = start + offset;
-      if (isEmbedded) {
-        // Simply transforming to binding will insert the embedded object
-        toBinding(item, { createObj: () => [internal.insertEmbedded(index), true] });
-      } else {
-        internal.insertAny(index, toBinding(item));
-      }
+      insert(internal, index, item);
     }
     return result;
   }
@@ -342,4 +316,133 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
 
     this.internal.swap(index1, index2);
   }
+}
+
+/**
+ * Accessor for getting, setting, and inserting items in the binding collection.
+ * @internal
+ */
+export type ListAccessor<T = unknown> = {
+  get: (list: binding.List, index: number) => T;
+  set: (list: binding.List, index: number, value: T) => void;
+  insert: (list: binding.List, index: number, value: T) => void;
+};
+
+type ListAccessorFactoryOptions<T> = {
+  realm: Realm;
+  typeHelpers: TypeHelpers<T>;
+  itemType: binding.PropertyType;
+  isEmbedded?: boolean;
+};
+
+/** @internal */
+export function createListAccessor<T>(options: ListAccessorFactoryOptions<T>): ListAccessor<T> {
+  return options.itemType === binding.PropertyType.Mixed
+    ? createListAccessorForMixed<T>(options)
+    : createListAccessorForKnownType<T>(options);
+}
+
+function createListAccessorForMixed<T>({
+  realm,
+  typeHelpers,
+}: Pick<ListAccessorFactoryOptions<T>, "realm" | "typeHelpers">): ListAccessor<T> {
+  const { toBinding } = typeHelpers;
+  return {
+    get(list, index) {
+      const value = list.getAny(index);
+      switch (value) {
+        case binding.ListSentinel: {
+          const accessor = createListAccessor<T>({ realm, typeHelpers, itemType: binding.PropertyType.Mixed });
+          return new List<T>(realm, list.getList(index), accessor, typeHelpers) as T;
+        }
+        case binding.DictionarySentinel: {
+          const accessor = createDictionaryAccessor<T>({ realm, typeHelpers, itemType: binding.PropertyType.Mixed });
+          return new Dictionary<T>(realm, list.getDictionary(index), accessor, typeHelpers) as T;
+        }
+        default:
+          return typeHelpers.fromBinding(value);
+      }
+    },
+    set(list, index, value) {
+      assert.inTransaction(realm);
+
+      if (isJsOrRealmList(value)) {
+        list.setCollection(index, binding.CollectionType.List);
+        insertIntoListOfMixed(value, list.getList(index), toBinding);
+      } else if (isJsOrRealmDictionary(value)) {
+        list.setCollection(index, binding.CollectionType.Dictionary);
+        insertIntoDictionaryOfMixed(value, list.getDictionary(index), toBinding);
+      } else {
+        list.setAny(index, toBinding(value));
+      }
+    },
+    insert(list, index, value) {
+      assert.inTransaction(realm);
+
+      if (isJsOrRealmList(value)) {
+        list.insertCollection(index, binding.CollectionType.List);
+        insertIntoListOfMixed(value, list.getList(index), toBinding);
+      } else if (isJsOrRealmDictionary(value)) {
+        list.insertCollection(index, binding.CollectionType.Dictionary);
+        insertIntoDictionaryOfMixed(value, list.getDictionary(index), toBinding);
+      } else {
+        list.insertAny(index, toBinding(value));
+      }
+    },
+  };
+}
+
+function createListAccessorForKnownType<T>({
+  realm,
+  typeHelpers,
+  itemType,
+  isEmbedded,
+}: Omit<ListAccessorFactoryOptions<T>, "isMixed">): ListAccessor<T> {
+  const { fromBinding, toBinding } = typeHelpers;
+  return {
+    get: createDefaultGetter({ fromBinding, itemType }),
+    set(list, index, value) {
+      assert.inTransaction(realm);
+      list.setAny(
+        index,
+        toBinding(value, isEmbedded ? { createObj: () => [list.setEmbedded(index), true] } : undefined),
+      );
+    },
+    insert(list, index, value) {
+      assert.inTransaction(realm);
+      if (isEmbedded) {
+        // Simply transforming to binding will insert the embedded object
+        toBinding(value, { createObj: () => [list.insertEmbedded(index), true] });
+      } else {
+        list.insertAny(index, toBinding(value));
+      }
+    },
+  };
+}
+
+/** @internal */
+export function insertIntoListOfMixed(
+  list: List | unknown[],
+  internal: binding.List,
+  toBinding: TypeHelpers["toBinding"],
+) {
+  // TODO: Solve the "removeAll()" case for self-assignment.
+  internal.removeAll();
+
+  for (const [index, item] of list.entries()) {
+    if (isJsOrRealmList(item)) {
+      internal.insertCollection(index, binding.CollectionType.List);
+      insertIntoListOfMixed(item, internal.getList(index), toBinding);
+    } else if (isJsOrRealmDictionary(item)) {
+      internal.insertCollection(index, binding.CollectionType.Dictionary);
+      insertIntoDictionaryOfMixed(item, internal.getDictionary(index), toBinding);
+    } else {
+      internal.insertAny(index, toBinding(item));
+    }
+  }
+}
+
+/** @internal */
+export function isJsOrRealmList(value: unknown): value is List | unknown[] {
+  return Array.isArray(value) || value instanceof List;
 }
