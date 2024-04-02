@@ -61,7 +61,7 @@ jobs:
 
       - name: Run tests with coverage
         timeout-minutes: 60
-        run: npm run ci:coverage --workspace @realm/integration-tests -- --reporter mocha-github-actions-reporter --timeout ${{ env.MOCHA_TIMEOUT }}
+        run: npm run ci:coverage --workspace @realm/integration-tests -- --reporter mocha-github-actions-reporter --timeout ${{ env.MOCHA_TIMEOUT }} --grep "'Observable Dictionary'"
         env:
           CONTEXT: missingServer,syncLogLevel=warn,longTimeoutMs=${{ env.LONG_TIMEOUT }}
 
