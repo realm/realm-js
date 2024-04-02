@@ -52,6 +52,7 @@ jobs:
 
       - name: Start BaaS test server
         id: baas
+        if: false
         uses: ./.github/actions/baas-test-server
         with:
           branch: ${{ env.BAAS_BRANCH }}
@@ -62,7 +63,7 @@ jobs:
         timeout-minutes: 60
         run: npm run ci:coverage --workspace @realm/integration-tests -- --reporter mocha-github-actions-reporter --timeout ${{ env.MOCHA_TIMEOUT }}
         env:
-          CONTEXT: syncLogLevel=warn,longTimeoutMs=${{ env.LONG_TIMEOUT }},baseUrl=${{ steps.baas.outputs.baas-url }}
+          CONTEXT: missingServer,syncLogLevel=warn,longTimeoutMs=${{ env.LONG_TIMEOUT }}
 
       - name: Coveralls
         uses: coverallsapp/github-action@v2
