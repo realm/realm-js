@@ -1,3 +1,68 @@
+## vNext (TBD)
+
+### Enhancements
+* A `mixed` value can now hold a `Realm.List` and `Realm.Dictionary` with nested collections. Note that `Realm.Set` is not supported as a `mixed` value. ([#6513](https://github.com/realm/realm-js/pull/6513))
+
+```typescript
+class CustomObject extends Realm.Object {
+  value!: Realm.Mixed;
+
+  static schema: ObjectSchema = {
+    name: "CustomObject",
+    properties: {
+      value: "mixed",
+    },
+  };
+}
+
+const realm = await Realm.open({ schema: [CustomObject] });
+
+// Create an object with a dictionary value as the Mixed property,
+// containing primitives and a list.
+const realmObject = realm.write(() => {
+  return realm.create(CustomObject, {
+    value: {
+      num: 1,
+      string: "hello",
+      bool: true,
+      list: [
+        {
+          dict: {
+            string: "world",
+          },
+        },
+      ],
+    },
+  });
+});
+
+// Accessing the collection value returns the managed collection.
+// The default generic type argument is `unknown` (mixed).
+const dictionary = realmObject.value as Realm.Dictionary;
+const list = dictionary.list as Realm.List;
+const leafDictionary = (list[0] as Realm.Dictionary).dict as Realm.Dictionary;
+console.log(leafDictionary.string); // "world"
+
+// Update the Mixed property to a list.
+realm.write(() => {
+  realmObject.value = [1, "hello", { newKey: "new value" }];
+});
+```
+
+### Fixed
+* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
+* None
+
+### Compatibility
+* React Native >= v0.71.4
+* Realm Studio v15.0.0.
+* File format: generates Realms with format v24 (reads and upgrades file format v10 or later).
+
+### Internal
+<!-- * Either mention core version or upgrade -->
+<!-- * Using Realm Core vX.Y.Z -->
+<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
+
 ## 12.7.1 (2024-04-19)
 
 ### Fixed
