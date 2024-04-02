@@ -843,6 +843,16 @@ class NodeCppDecls extends CppDecls {
               `,
             )
             .join("\n")}
+
+          // We are returning sentinel values for lists and dictionaries in the
+          // form of Symbol singletons. This is due to not being able to construct
+          // the actual list or dictionary in the current context.
+          case realm::type_List:
+            return Napi::Symbol::For(napi_env_var_ForBindGen, "Realm.List");
+
+          case realm::type_Dictionary:
+            return Napi::Symbol::For(napi_env_var_ForBindGen, "Realm.Dictionary");
+
           // The remaining cases are never stored in a Mixed.
           ${spec.mixedInfo.unusedDataTypes.map((t) => `case DataType::Type::${t}: break;`).join("\n")}
           }

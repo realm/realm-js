@@ -124,7 +124,7 @@ function generateArguments(spec: BoundSpec, args: Arg[]) {
 
 function generateMixedTypes(spec: BoundSpec) {
   return `
-    export type Mixed = null | ${spec.mixedInfo.getters
+    export type Mixed = null | symbol | ${spec.mixedInfo.getters
       .map(({ type }) => generateType(spec, type, Kind.Ret))
       .join(" | ")};
     export type MixedArg = null | ${spec.mixedInfo.ctors.map((type) => generateType(spec, type, Kind.Arg)).join(" | ")};
@@ -173,6 +173,8 @@ export function generate({ rawSpec, spec: boundSpec, file }: TemplateContext): v
       public reason?: string;
       constructor(isOk: boolean) { this.isOk = isOk; }
     }
+    export const ListSentinel = Symbol.for("Realm.List");
+    export const DictionarySentinel = Symbol.for("Realm.Dictionary");
   `);
 
   const out = file("native.d.ts", eslintFormatter);

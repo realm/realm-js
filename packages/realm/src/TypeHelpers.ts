@@ -21,13 +21,9 @@ import {
   ClassHelpers,
   Collection,
   Dictionary,
-  GeoBox,
-  GeoCircle,
-  GeoPolygon,
   INTERNAL,
   List,
   ObjCreator,
-  OrderedCollectionHelpers,
   REALM,
   Realm,
   RealmObject,
@@ -38,6 +34,11 @@ import {
   binding,
   boxToBindingGeospatial,
   circleToBindingGeospatial,
+  createDictionaryAccessor,
+  createListAccessor,
+  isGeoBox,
+  isGeoCircle,
+  isGeoPolygon,
   polygonToBindingGeospatial,
   safeGlobalThis,
 } from "./internal";
@@ -73,7 +74,10 @@ export function toArrayBuffer(value: unknown, stringToBase64 = true) {
   return value;
 }
 
-/** @internal */
+/**
+ * Helpers for converting a value to and from its binding representation.
+ * @internal
+ */
 export type TypeHelpers<T = unknown> = {
   toBinding(
     value: T,
@@ -143,12 +147,14 @@ export function mixedToBinding(
         }
       }
     }
+
     // Convert typed arrays to an `ArrayBuffer`
     for (const TypedArray of TYPED_ARRAY_CONSTRUCTORS) {
       if (value instanceof TypedArray) {
         return value.buffer.slice(value.byteOffset, value.byteOffset + value.byteLength);
       }
     }
+
     // Rely on the binding for any other value
     return value as binding.MixedArg;
   }
@@ -168,38 +174,21 @@ function mixedFromBinding(options: TypeOptions, value: binding.MixedArg): unknow
     const { wrapObject } = getClassHelpers(value.tableKey);
     return wrapObject(linkedObj);
   } else if (value instanceof binding.List) {
-    const collectionHelpers: OrderedCollectionHelpers = {
-      toBinding: mixedToBinding.bind(null, realm.internal),
-      fromBinding: mixedFromBinding.bind(null, options),
-      get(_: binding.Results, index: number) {
-        return value.getAny(index);
-      },
-    };
-    return new List(realm, value, collectionHelpers);
+    const mixedType = binding.PropertyType.Mixed;
+    const typeHelpers = getTypeHelpers(mixedType, options);
+    return new List(realm, value, createListAccessor({ realm, typeHelpers, itemType: mixedType }), typeHelpers);
   } else if (value instanceof binding.Dictionary) {
-    const typeHelpers: TypeHelpers<Realm.Mixed> = {
-      toBinding: mixedToBinding.bind(null, realm.internal),
-      fromBinding: mixedFromBinding.bind(null, options),
-    };
-    return new Dictionary(realm, value, typeHelpers);
+    const mixedType = binding.PropertyType.Mixed;
+    const typeHelpers = getTypeHelpers(mixedType, options);
+    return new Dictionary(
+      realm,
+      value,
+      createDictionaryAccessor({ realm, typeHelpers, itemType: mixedType }),
+      typeHelpers,
+    );
   } else {
     return value;
   }
-}
-
-function isGeoCircle(value: object): value is GeoCircle {
-  return "distance" in value && "center" in value && typeof value["distance"] === "number";
-}
-
-function isGeoBox(value: object): value is GeoBox {
-  return "bottomLeft" in value && "topRight" in value;
-}
-
-function isGeoPolygon(value: object): value is GeoPolygon {
-  return (
-    ("type" in value && value["type"] === "Polygon" && "coordinates" in value && Array.isArray(value["coordinates"])) ||
-    ("outerRing" in value && Array.isArray(value["outerRing"]))
-  );
 }
 
 function defaultToBinding(value: unknown): binding.MixedArg {
@@ -356,9 +345,8 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => Type
     };
   },
   [binding.PropertyType.Mixed](options) {
-    const { realm } = options;
     return {
-      toBinding: mixedToBinding.bind(null, realm.internal),
+      toBinding: mixedToBinding.bind(null, options.realm.internal),
       fromBinding: mixedFromBinding.bind(null, options),
     };
   },
@@ -392,13 +380,14 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => Type
   [binding.PropertyType.Array]({ realm, getClassHelpers, name, objectSchemaName }) {
     assert.string(objectSchemaName, "objectSchemaName");
     const classHelpers = getClassHelpers(objectSchemaName);
+
     return {
       fromBinding(value: unknown) {
         assert.instanceOf(value, binding.List);
         const propertyHelpers = classHelpers.properties.get(name);
-        const collectionHelpers = propertyHelpers.collectionHelpers;
-        assert.object(collectionHelpers);
-        return new List(realm, value, collectionHelpers);
+        const { listAccessor } = propertyHelpers;
+        assert.object(listAccessor);
+        return new List(realm, value, listAccessor, propertyHelpers);
       },
       toBinding() {
         throw new Error("Not supported");
@@ -437,6 +426,10 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => Type
 };
 
 /** @internal */
+export function toItemType(type: binding.PropertyType) {
+  return type & ~binding.PropertyType.Flags;
+}
+
 export function getTypeHelpers(type: binding.PropertyType, options: TypeOptions): TypeHelpers {
   const helpers = TYPES_MAPPING[type];
   assert(helpers, `Unexpected type ${type}`);

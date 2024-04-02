@@ -29,14 +29,15 @@ import {
   ObjectListeners,
   OmittedRealmTypes,
   OrderedCollection,
-  OrderedCollectionHelpers,
   Realm,
   RealmObjectConstructor,
   Results,
   TypeAssertionError,
+  TypeHelpers,
   Unmanaged,
   assert,
   binding,
+  createResultsAccessor,
   flags,
   getTypeName,
 } from "./internal";
@@ -429,7 +430,8 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
   linkingObjects<T = DefaultObject>(objectType: string, propertyName: string): Results<RealmObject<T> & T>;
   linkingObjects<T extends AnyRealmObject>(objectType: Constructor<T>, propertyName: string): Results<T>;
   linkingObjects<T extends AnyRealmObject>(objectType: string | Constructor<T>, propertyName: string): Results<T> {
-    const targetClassHelpers = this[REALM].getClassHelpers(objectType);
+    const realm = this[REALM];
+    const targetClassHelpers = realm.getClassHelpers(objectType);
     const { objectSchema: targetObjectSchema, properties, wrapObject } = targetClassHelpers;
     const targetProperty = properties.get(propertyName);
     const originObjectSchema = this.objectSchema();
@@ -439,27 +441,24 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
       () => `'${targetObjectSchema.name}#${propertyName}' is not a relationship to '${originObjectSchema.name}'`,
     );
 
-    const collectionHelpers: OrderedCollectionHelpers = {
+    const typeHelpers: TypeHelpers<T> = {
       // See `[binding.PropertyType.LinkingObjects]` in `TypeHelpers.ts`.
       toBinding(value: unknown) {
         return value as binding.MixedArg;
       },
       fromBinding(value: unknown) {
         assert.instanceOf(value, binding.Obj);
-        return wrapObject(value);
-      },
-      // See `[binding.PropertyType.Array]` in `PropertyHelpers.ts`.
-      get(results: binding.Results, index: number) {
-        return results.getObj(index);
+        return wrapObject(value) as T;
       },
     };
+    const accessor = createResultsAccessor<T>({ realm, typeHelpers, itemType: binding.PropertyType.Object });
 
     // Create the Result for the backlink view.
-    const tableRef = binding.Helpers.getTable(this[REALM].internal, targetObjectSchema.tableKey);
+    const tableRef = binding.Helpers.getTable(realm.internal, targetObjectSchema.tableKey);
     const tableView = this[INTERNAL].getBacklinkView(tableRef, targetProperty.columnKey);
-    const results = binding.Results.fromTableView(this[REALM].internal, tableView);
+    const results = binding.Results.fromTableView(realm.internal, tableView);
 
-    return new Results(this[REALM], results, collectionHelpers);
+    return new Results<T>(realm, results, accessor, typeHelpers);
   }
 
   /**
@@ -574,6 +573,12 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
         return "decimal128";
       } else if (value instanceof BSON.UUID) {
         return "uuid";
+      } else if (value === binding.ListSentinel) {
+        return "list";
+      } else if (value === binding.DictionarySentinel) {
+        return "dictionary";
+      } else if (typeof value === "symbol") {
+        throw new Error(`Unexpected Symbol: ${value.toString()}`);
       } else {
         assert.never(value, "value");
       }
