@@ -4,7 +4,53 @@
 * None
 
 ### Enhancements
-* None
+* A `mixed` value can now hold a `Realm.List` and `Realm.Dictionary` with nested collections. Note that `Realm.Set` is not supported as a `mixed` value. ([#6513](https://github.com/realm/realm-js/pull/6513))
+
+```typescript
+class CustomObject extends Realm.Object {
+  value!: Realm.Mixed;
+
+  static schema: ObjectSchema = {
+    name: "CustomObject",
+    properties: {
+      value: "mixed",
+    },
+  };
+}
+
+const realm = await Realm.open({ schema: [CustomObject] });
+
+// Create an object with a dictionary value as the Mixed property,
+// containing primitives and a list.
+const realmObject = realm.write(() => {
+  return realm.create(CustomObject, {
+    value: {
+      num: 1,
+      string: "hello",
+      bool: true,
+      list: [
+        {
+          dict: {
+            string: "world",
+          },
+        },
+      ],
+    },
+  });
+});
+
+// Accessing the collection value returns the managed collection.
+// The default generic type argument is `unknown` (mixed).
+const dictionary = realmObject.value as Realm.Dictionary;
+const list = dictionary.list as Realm.List;
+const leafDictionary = (list[0] as Realm.Dictionary).dict as Realm.Dictionary;
+console.log(leafDictionary.string); // "world"
+
+// Update the Mixed property to a list.
+realm.write(() => {
+  realmObject.value = [1, "hello", { newKey: "new value" }];
+});
+```
 
 ### Fixed
 * Fixed `User#callFunction` to correctly pass arguments to the server. Previously they would be sent as an array, so if your server-side function used to handle the unwrapping of arguments, it would need an update too. The "functions factory" pattern of calling `user.functions.sum(1, 2, 3)` wasn't affected by this bug. Thanks to @deckyfx for finding this and suggesting the fix! ([#6447](https://github.com/realm/realm-js/issues/6447), since v12.0.0)
