@@ -37,7 +37,7 @@
         },
         "ORG_GRADLE_PROJECT_bridgelessEnabled": {
           "external": true,
-          "default": "true"
+          "default": "false"
         }
       }
     },
@@ -113,7 +113,7 @@
     "base-64": "^1.0.0",
     "mocha-remote-react-native": "^1.12.2",
     "react": "18.2.0",
-    "react-native": "0.73.2",
+    "react-native": "0.73.6",
     "react-native-fetch-api": "^3.0.0",
     "react-native-get-random-values": "^1.11.0",
     "realm": "*",

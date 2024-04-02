@@ -357,7 +357,7 @@
     "cross-env": "^7.0.3",
     "mocha": "^10.1.0",
     "prebuild": "^12.1.0",
-    "react-native": "0.73.2",
+    "react-native": "0.73.6",
     "typedoc-plugin-rename-defaults": "^0.7.0"
   },
   "engines": {
