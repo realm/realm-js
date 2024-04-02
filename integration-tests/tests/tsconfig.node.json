@@ -6,6 +6,7 @@
     "moduleResolution": "Bundler",
     "outDir": "dist",
     "strictFunctionTypes": false,
+		"useDefineForClassFields": false,
     "types": [
       "node",
       "node-fetch",
