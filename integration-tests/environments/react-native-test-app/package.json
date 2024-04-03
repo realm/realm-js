@@ -143,8 +143,5 @@
     "react-native-test-app": "^3.2.16",
     "react-test-renderer": "18.2.0",
     "typescript": "5.0.4"
-  },
-  "engines": {
-    "node": ">=18"
   }
 }

@@ -126,7 +126,7 @@ export async function run(devtools = false) {
   // Start up the browser, running the tests
   const browser = await puppeteer.launch({
     devtools,
-    headless: devtools ? false : true,
+    headless: !devtools,
   });
 
   process.once("exit", () => {
