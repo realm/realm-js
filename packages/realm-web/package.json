@@ -11,9 +11,9 @@
     "./dist/bundle.es.js": "./dist/bundle.dom.es.js"
   },
   "scripts": {
-    "prepack": "npm run build",
+    "prepack": "npm run bundle",
     "bundle": "wireit",
-    "start": "npm run build -- --watch",
+    "start": "npm run bundle -- --watch",
     "lint": "eslint --ext .js,.ts .",
     "test": "mocha",
     "postversion": "ts-node --project scripts/tsconfig.json scripts/postversion.ts",
