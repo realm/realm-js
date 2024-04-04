@@ -239,7 +239,12 @@ export class Fetcher implements LocationUrlContext {
         return response;
       } else {
         const error = await MongoDBRealmError.fromRequestAndResponse(url, request, response);
-        if (user && response.status === 401 && error.errorCode === "InvalidSession") {
+        if (
+          user &&
+          response.status === 401 &&
+          (error.errorCode === "InvalidSession" || // Expired token
+            error.error === "unauthorized") // Entirely invalid signature
+        ) {
           if (tokenType === "access") {
             // If the access token has expired, it would help refreshing it
             await user.refreshAccessToken();
