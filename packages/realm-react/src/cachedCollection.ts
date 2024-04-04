@@ -27,17 +27,19 @@ function getCacheKey(id: string) {
 }
 
 /**
- * Arguments object for {@link cachedCollection}.
+ * Arguments object for {@link createCachedCollection}.
  */
 type CachedCollectionArgs<T> = {
   /**
    * The {@link Realm.Collection} to proxy
    */
   collection: Realm.List<T> | Realm.Results<T>;
+
   /**
    * The {@link Realm} instance
    */
   realm: Realm;
+
   /**
    * Callback which is called whenever an object in the collection changes
    */
@@ -56,12 +58,18 @@ type CachedCollectionArgs<T> = {
    * references being created.
    */
   objectCache?: Map<string, T>;
+
   /**
    * Optional flag specifying that this is a derived (`sorted` or `filtered`) version of
    * an existing collection, so we should not create or remove listeners or clear the cache
    * when this is torn down.
    */
   isDerived?: boolean;
+
+  /**
+   * Optional list of key-paths to limit notifications.
+   */
+  keyPaths?: string[];
 };
 
 /**
@@ -82,6 +90,7 @@ export function createCachedCollection<T extends Realm.Object<any>>({
   updatedRef,
   objectCache = new Map(),
   isDerived = false,
+  keyPaths,
 }: CachedCollectionArgs<T>): { collection: Realm.Results<T> | Realm.List<T>; tearDown: () => void } {
   const cachedCollectionHandler: ProxyHandler<Realm.Results<T> | Realm.List<T>> = {
     get: function (target, key, receiver) {
@@ -98,6 +107,7 @@ export function createCachedCollection<T extends Realm.Object<any>>({
               updatedRef,
               objectCache,
               isDerived: true,
+              keyPaths,
             });
             return newCol;
           };
@@ -177,10 +187,10 @@ export function createCachedCollection<T extends Realm.Object<any>>({
     // see https://github.com/realm/realm-js/issues/4375
     if (realm.isInTransaction) {
       setImmediate(() => {
-        collection.addListener(listenerCallback);
+        collection.addListener(listenerCallback, keyPaths);
       });
     } else {
-      collection.addListener(listenerCallback);
+      collection.addListener(listenerCallback, keyPaths);
     }
   }
 

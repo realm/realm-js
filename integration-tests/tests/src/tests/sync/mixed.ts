@@ -229,7 +229,7 @@ function describeTypes(flexibleSync: boolean) {
   });
 }
 
-describe.skipIf(environment.missingServer, "mixed", () => {
+describe("mixed", () => {
   describe("partition-based sync roundtrip", function () {
     this.longTimeout();
     importAppBefore(buildAppConfig("with-pbs").anonAuth().partitionBasedSync());

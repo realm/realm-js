@@ -24,17 +24,21 @@ if(DEFINED CMAKE_JS_VERSION)
     elseif(CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
       if(NODE_ARCH STREQUAL "arm")
         set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_SOURCE_DIR}/vendor/realm-core/tools/cmake/armv7-linux-gnueabihf.toolchain.cmake")
+        add_link_options(-fuse-ld=bfd)
         # due to how multiarch works in debian this is needed to link to the correct system libraries
         set(CMAKE_IGNORE_PATH "/usr/lib/x86_64-linux-gnu")
       elseif(NODE_ARCH STREQUAL "arm64")
         set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_SOURCE_DIR}/vendor/realm-core/tools/cmake/aarch64-linux-gnu.toolchain.cmake")
         set(CMAKE_IGNORE_PATH "/usr/lib/x86_64-linux-gnu")
+        add_link_options(-fuse-ld=gold)
+        add_link_options(-Wl,-z,noexecstack)
+        add_link_options(-Wl,--warn-execstack)
       elseif(NODE_ARCH STREQUAL "x64")
         set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_SOURCE_DIR}/vendor/realm-core/tools/cmake/x86_64-linux-gnu.toolchain.cmake")
+        add_link_options(-fuse-ld=gold)
+        add_link_options(-Wl,-z,noexecstack)
+        add_link_options(-Wl,--warn-execstack)
       endif()
-      add_link_options(-fuse-ld=gold)
-      add_link_options(-Wl,-z,noexecstack)
-      add_link_options(-Wl,--warn-execstack)
     endif()
 endif()
 
@@ -137,35 +141,7 @@ list(FILTER SDK_TS_FILES EXCLUDE REGEX "templates/[^/]*\.ts$")
 
 set(JS_SPEC_FILE ${SDK_DIR}/bindgen/js_spec.yml)
 set(JS_OPT_IN_FILE ${SDK_DIR}/bindgen/js_opt_in_spec.yml)
-set(TYPESCRIPT_OUTPUT_DIR ${SDK_DIR}/generated/ts)
-
-set(GENERATED_TS_FILES
-    ${TYPESCRIPT_OUTPUT_DIR}/native.d.mts
-    ${TYPESCRIPT_OUTPUT_DIR}/core.ts
-)
-bindgen(
-    TEMPLATE ${SDK_DIR}/bindgen/src/templates/typescript.ts
-    OUTPUTS ${GENERATED_TS_FILES}
-    OUTDIR ${TYPESCRIPT_OUTPUT_DIR}
-    SPECS ${JS_SPEC_FILE}
-    OPTIN ${JS_OPT_IN_FILE}
-    SOURCES ${SDK_TS_FILES}
-)
-
-set(GENERATED_JS_FILES
-    ${TYPESCRIPT_OUTPUT_DIR}/native-node.mjs
-    ${TYPESCRIPT_OUTPUT_DIR}/native-react-native.mjs
-)
-bindgen(
-    TEMPLATE ${SDK_DIR}/bindgen/src/templates/node-wrapper.ts
-    OUTPUTS ${GENERATED_JS_FILES}
-    OUTDIR ${TYPESCRIPT_OUTPUT_DIR}
-    SPECS ${JS_SPEC_FILE}
-    OPTIN ${JS_OPT_IN_FILE}
-    SOURCES ${SDK_TS_FILES}
-)
-
-add_custom_target(TypeScript ALL DEPENDS ${GENERATED_TS_FILES} ${GENERATED_JS_FILES})
+set(NODE_OUTPUT_DIR ${SDK_DIR}/binding/build)
 
 if(DEFINED CMAKE_JS_VERSION)
     include(node.cmake)

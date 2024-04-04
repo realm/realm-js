@@ -16,9 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import "./binding";
 import "./fs";
 import "./device-info";
 import "./sync-proxy-config";
 import "./custom-inspect";
 
-export * from "../../index";
+import { Realm } from "../../Realm";
+export = Realm;

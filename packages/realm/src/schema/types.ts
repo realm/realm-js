@@ -314,3 +314,5 @@ export type PropertySchemaStrict = PropertySchemaCommon &
         optional?: false;
       }
   );
+
+export type ObjectType = string | RealmObjectConstructor;

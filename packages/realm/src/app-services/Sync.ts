@@ -18,19 +18,13 @@
 
 import {
   App,
-  ConnectionState,
   LogLevel,
   Logger,
-  MutableSubscriptionSet,
-  NumericLogLevel,
   OpenRealmBehaviorConfiguration,
   OpenRealmBehaviorType,
   OpenRealmTimeOutBehavior,
   PartitionValue,
   Realm,
-  Subscription,
-  SubscriptionSet,
-  SubscriptionSetState,
   SyncSession,
   User,
   assert,
@@ -41,17 +35,9 @@ import {
   validateSyncConfiguration,
 } from "../internal";
 
-export class Sync {
-  static Session = SyncSession;
-  static ConnectionState = ConnectionState;
-  static Subscription = Subscription;
-  static SubscriptionSet = SubscriptionSet;
-  static MutableSubscriptionSet = MutableSubscriptionSet;
-  static SubscriptionSetState = SubscriptionSetState;
-  /** @deprecated Please use {@link SubscriptionSetState} as a named import */
-  static SubscriptionsState = SubscriptionSetState;
-  static NumericLogLevel = NumericLogLevel;
+import * as internal from "../internal";
 
+export class Sync {
   /** @deprecated Will be removed in v13.0.0. Please use {@link Realm.setLogLevel}. */
   static setLogLevel(app: App, level: LogLevel) {
     const numericLevel = toBindingLoggerLevel(level);
@@ -60,7 +46,7 @@ export class Sync {
 
   /** @deprecated Will be removed in v13.0.0. Please use {@link Realm.setLogger}. */
   static setLogger(app: App, logger: Logger) {
-    const factory = binding.Helpers.makeLoggerFactory((level, message) => {
+    const factory = binding.Helpers.makeLoggerFactory((_, level, message) => {
       logger(fromBindingLoggerLevelToNumericLogLevel(level), message);
     });
     app.internal.syncManager.setLoggerFactory(factory);
@@ -193,4 +179,21 @@ export class Sync {
     timeOut: 30 * 1000,
     timeOutBehavior: OpenRealmTimeOutBehavior.ThrowException,
   };
+}
+
+// eslint-disable-next-line @typescript-eslint/no-namespace
+export namespace Sync {
+  export import ConnectionState = internal.ConnectionState;
+  export import BaseSubscriptionSet = internal.BaseSubscriptionSet;
+  export import LogLevel = internal.LogLevel;
+  export import NumericLogLevel = internal.NumericLogLevel;
+  export import MutableSubscriptionSet = internal.MutableSubscriptionSet;
+  export import PartitionValue = internal.PartitionValue;
+  export import SubscriptionOptions = internal.SubscriptionOptions;
+  export import SubscriptionSet = internal.SubscriptionSet;
+  export import SubscriptionSetState = internal.SubscriptionSetState;
+  /** @deprecated Please use {@link internal.SubscriptionSetState | SubscriptionSetState} */
+  export import SubscriptionsState = internal.SubscriptionSetState;
+  export import Subscription = internal.Subscription;
+  export import Session = internal.SyncSession;
 }

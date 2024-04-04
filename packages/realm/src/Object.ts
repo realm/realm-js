@@ -488,10 +488,6 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
   /**
    * Add a listener `callback` which will be called when a **live** object instance changes.
    * @param callback - A function to be called when changes occur.
-   * @param callback.obj - The object that changed.
-   * @param callback.changes - A dictionary with information about the changes.
-   * @param callback.changes.deleted - Is `true` if the object has been deleted.
-   * @param callback.changes.changedProperties  - An array of properties that have changed their value.
    * @param keyPaths - Indicates a lower bound on the changes relevant for the listener. This is a lower bound, since if multiple listeners are added (each with their own `keyPaths`) the union of these key-paths will determine the changes that are considered relevant for all listeners registered on the object. In other words: A listener might fire more than the key-paths specify, if other listeners with different key-paths are present.
    * @throws A {@link TypeAssertionError} if `callback` is not a function.
    * @example

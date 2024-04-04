@@ -33,6 +33,7 @@ const PRIMITIVES_MAPPING: Record<string, string> = {
   int32_t: "number",
   count_t: "number",
   uint64_t: "Int64",
+  "std::chrono::milliseconds": "Int64",
   "std::string": "string",
   "std::string_view": "string",
   StringData: "string",
@@ -58,7 +59,7 @@ const PRIMITIVES_MAPPING: Record<string, string> = {
 // Be Careful! These need to apply to the *whole* type, so arg[] would be problematic if arg is A|B.
 const TEMPLATE_MAPPING: Record<string, (...args: string[]) => string> = {
   "std::vector": (arg) => `Array<${arg}>`,
-  "util::Optional": (arg) => `undefined | ${arg}`,
+  "std::optional": (arg) => `undefined | ${arg}`,
   Nullable: (t) => `null | ${t}`,
   "std::shared_ptr": (arg) => arg,
   "std::pair": (a, b) => `[${a}, ${b}]`,
@@ -174,14 +175,11 @@ export function generate({ rawSpec, spec: boundSpec, file }: TemplateContext): v
     }
   `);
 
-  const out = file("native.d.mts", eslint);
+  const out = file("native.d.ts", eslint);
   out("// This file is generated: Update the spec instead of editing this file directly");
-
-  out("declare module 'realm/binding' {");
-
   out('import { ObjectId, UUID, Decimal128 } from "bson";');
-  out("import { Float, Status, ", spec.enums.map((e) => e.name).join(", "), '} from "realm/binding/core";');
-  out('export * from "realm/binding/core";');
+  out("import { Float, Status, ", spec.enums.map((e) => e.name).join(", "), '} from "../dist/core";');
+  out('export * from "../dist/core";');
 
   out("// Utilities");
   out("export type AppError = Error & {code: number};");
@@ -230,8 +228,8 @@ export function generate({ rawSpec, spec: boundSpec, file }: TemplateContext): v
       // TODO consider making the Arg version just alias the Ret version if the bodies are the same.
       out(`export type ${rec.jsName}${suffix(kind)} = {`);
       for (const field of fields) {
-        // For Optional<T> fields, the field will always be there in Ret mode, but it may be undefined.
-        // This is handled by Optional<T> becoming `undefined | T`.
+        // For optional<T> fields, the field will always be there in Ret mode, but it may be undefined.
+        // This is handled by optional<T> becoming `undefined | T`.
         const optField = !field.required && kind === Kind.Arg;
         const hasInterestingDefault = ![undefined, "", "{}", "[]"].includes(field.defaultVal);
 
@@ -290,6 +288,4 @@ export function generate({ rawSpec, spec: boundSpec, file }: TemplateContext): v
     }
     out(`}`);
   }
-
-  out("} // end of module declaration");
 }

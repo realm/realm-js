@@ -37,6 +37,7 @@ export type ClassHelpers = {
   canonicalObjectSchema: CanonicalObjectSchema;
 };
 
+/** @internal */
 export function setClassHelpers(constructor: RealmObjectConstructor, value: ClassHelpers): void {
   // Store the properties map on the object class
   Object.defineProperty(constructor, INTERNAL_HELPERS, {
@@ -52,6 +53,7 @@ export function setClassHelpers(constructor: RealmObjectConstructor, value: Clas
  * NOTE: This is a free function instead of a member of RealmObject to limit conflicts with user defined properties.
  * @param arg The object or constructor to get a helpers for.
  * @returns Helpers injected onto the class by the `ClassMap`.
+ * @internal
  */
 export function getClassHelpers(arg: typeof RealmObject): ClassHelpers {
   const helpers = arg[INTERNAL_HELPERS];

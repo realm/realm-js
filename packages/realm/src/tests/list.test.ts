@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Realm } from "../index";
+import { Realm } from "../Realm";
 
 import { RealmContext, closeRealm, generateTempRealmPath } from "./utils";
 

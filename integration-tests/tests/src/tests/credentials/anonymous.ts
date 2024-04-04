@@ -21,7 +21,7 @@ import { Credentials, User } from "realm";
 import { importAppBefore } from "../../hooks";
 import { buildAppConfig } from "../../utils/build-app-config";
 
-describe.skipIf(environment.missingServer, "anonymous credentials", () => {
+describe("anonymous credentials", () => {
   importAppBefore(buildAppConfig("with-anon").anonAuth());
 
   it("authenticates", async function (this: AppContext) {

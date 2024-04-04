@@ -19,6 +19,7 @@
 import { binding } from "../internal";
 /**
  * Authentication provider where users identify using an API-key.
+ * @deprecated https://www.mongodb.com/docs/atlas/app-services/reference/push-notifications/
  */
 export class PushClient {
   /** @internal */

@@ -22,7 +22,7 @@ import { expect } from "chai";
 import { fromBindingPropertySchema } from "../schema/from-binding";
 import { toBindingPropertySchema } from "../schema/to-binding";
 import { normalizePropertySchema } from "../schema/normalize";
-import { PropertySchema } from "../schema";
+import { PropertySchema } from "../schema/types";
 
 const TEST_CASES: (string | PropertySchema)[] = [
   "string",
@@ -49,6 +49,8 @@ describe("schema transform", () => {
         linkOriginPropertyName: "",
         isPrimary: false,
         isIndexed: false,
+        isFulltextIndexed: false,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         columnKey: { value: 0n } as any,
         ...bindingSchema,
       });

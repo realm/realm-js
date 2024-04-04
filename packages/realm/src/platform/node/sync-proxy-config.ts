@@ -19,8 +19,10 @@
 import process from "node:process";
 import { URL } from "node:url";
 
-import { ProxyType } from "realm/binding";
+import { binding } from "../binding";
 import { inject } from "../sync-proxy-config";
+
+import ProxyType = binding.ProxyType;
 
 inject({
   create() {

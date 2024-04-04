@@ -37,3 +37,4 @@ jobs:
         draft: false
         body: An automated PR for next react native templates release.
         commit-message: "[${{ steps.update-version.outputs.version }}] Bump version"
+        labels: no-jira-ticket

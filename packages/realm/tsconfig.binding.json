@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "outDir": "binding/dist",
+    "rootDir": "binding/generated",
+    "target": "es2022",
+    "module": "Node16",
+    "moduleResolution": "Node16",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "preserveConstEnums": true,
+    "lib": [
+      "ES2022"
+    ],
+    "types": [
+      "@realm/fetch"
+    ],
+    "noResolve": true
+  },
+  "files": [
+    "./binding/generated/core.ts"
+  ]
+}

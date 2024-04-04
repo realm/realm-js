@@ -1,8 +1,5 @@
 {
-  "name": "@realm/js-binding",
+  "name": "@realm/js-bindgen",
   "private": true,
-  "type": "module",
-  "workspaces": [
-    "packages/realm/bindgen/vendor/realm-core/"
-  ]
+  "type": "module"
 }

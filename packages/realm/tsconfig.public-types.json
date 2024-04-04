@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.shared.json",
+  "compilerOptions": {
+    "outDir": "dist/public-types",
+    "emitDeclarationOnly": true,
+    "declarationMap": true,
+    "stripInternal": true
+  },
+  "references": [
+    { "path": "./tsconfig.shared.json" }
+  ]
+}

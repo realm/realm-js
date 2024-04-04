@@ -1,8 +1,7 @@
 {
   "name": "@realm/fetch",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "module": "true",
-  "private": true,
   "scripts": {
     "build": "wireit"
   },
@@ -21,14 +20,17 @@
     }
   },
   "exports": {
+    "types": "./dist/types/types.d.ts",
     "node": {
       "import": "./dist/node-esm/node.js",
       "require": "./dist/node-cjs/node.js"
     },
     "react-native": "./dist/react-native/react-native.js",
-    "browser": "./dist/browser/browser.js",
-    "types": "./dist/types/types.d.ts"
+    "browser": "./dist/browser/browser.js"
   },
+  "files": [
+    "dist"
+  ],
   "react-native": "./dist/react-native/react-native.js",
   "types": "./dist/types/types.d.ts",
   "devDependencies": {

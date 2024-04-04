@@ -55,7 +55,11 @@ function tryWrap(body: string) {
 }
 
 class CppJsiFunc extends CppFunc {
-  constructor(private addon: JsiAddon, name: string, props?: CppFuncProps) {
+  constructor(
+    private addon: JsiAddon,
+    name: string,
+    props?: CppFuncProps,
+  ) {
     super(name, "jsi::Value", jsi_callback_args, props);
   }
 
@@ -235,6 +239,9 @@ function convertPrimToJsi(addon: JsiAddon, type: string, expr: string): string {
     case "uint64_t":
       return `bigIntFromU64(_env, ${expr})`;
 
+    case "std::chrono::milliseconds":
+      return `bigIntFromU64(_env, std::chrono::milliseconds(${expr}).count())`;
+
     case "StringData":
     case "std::string_view":
     case "std::string":
@@ -328,6 +335,9 @@ function convertPrimFromJsi(addon: JsiAddon, type: string, expr: string): string
       return `bigIntToI64(_env, jsi::Value(_env, ${expr}))`;
     case "uint64_t":
       return `bigIntToU64(_env, jsi::Value(_env, ${expr}))`;
+
+    case "std::chrono::milliseconds":
+      return `std::chrono::milliseconds(bigIntToU64(_env, jsi::Value(_env, ${expr})))`;
 
     case "std::string":
       return `(${expr}).asString(_env).utf8(_env)`;
@@ -430,7 +440,7 @@ function convertToJsi(addon: JsiAddon, type: Type, expr: string): string {
           return c(new Pointer(inner), expr);
         case "Nullable":
           return `[&] (auto&& val) { return !val ? jsi::Value::null() : ${c(inner, "FWD(val)")}; }(${expr})`;
-        case "util::Optional":
+        case "std::optional":
           return `[&] (auto&& opt) { return !opt ? jsi::Value::undefined() : ${c(inner, "*FWD(opt)")}; }(${expr})`;
         case "std::vector":
           // TODO try different ways to create the array to see what is fastest.
@@ -558,7 +568,7 @@ function convertFromJsi(addon: JsiAddon, type: Type, expr: string): string {
           return `[&] (auto&& val) {
               return val.isNull() ? ${inner.toCpp()}() : ${c(inner, "FWD(val)")};
           }(${expr})`;
-        case "util::Optional":
+        case "std::optional":
           return `[&] (auto&& val) {
               return val.isUndefined() ? ${type.toCpp()}() : ${c(inner, "FWD(val)")};
           }(${expr})`;
@@ -955,7 +965,7 @@ class JsiCppDecls extends CppDecls {
                   .getProperty(_env, "name").asString(_env).utf8(_env);
               throw jsi::JSError(_env, "Unable to convert an object with ctor '" + ctorName + "' to a Mixed");
           }
-          // NOTE: must not treat undefined as null here, because that makes Optional<Mixed> ambiguous.
+          // NOTE: must not treat undefined as null here, because that makes optional<Mixed> ambiguous.
           throw jsi::JSError(_env, "Can't convert " + val.toString(_env).utf8(_env) + " to Mixed");
         `,
       }),
@@ -1061,6 +1071,7 @@ export function generate({ rawSpec, spec, file: makeFile }: TemplateContext): vo
 
   out(`
       #include <jsi/jsi.h>
+      #include <chrono>
       #include <realm_js_jsi_helpers.h>
 
       namespace realm::js {
@@ -1080,7 +1091,7 @@ export function generate({ rawSpec, spec, file: makeFile }: TemplateContext): vo
         extern "C" {
         void realm_jsi_invalidate_caches() {
             // Clear the default logger, to prevent it from holding on to a pointer that was released
-            realm::util::Logger::set_default_level_threshold(realm::util::Logger::Level::off);
+            realm::util::LogCategory::get_category(realm::util::LogCategory::realm.get_name()).set_default_level_threshold(realm::util::Logger::Level::off);
             realm::util::Logger::set_default_logger(nullptr);
             // Close all cached Realms
             realm::_impl::RealmCoordinator::clear_all_caches();

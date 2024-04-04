@@ -1,0 +1,25 @@
+{
+  "extends": "@tsconfig/node-lts",
+  "compilerOptions": {
+    "composite": true,
+    "module": "es2022",
+    "moduleResolution": "Bundler",
+    "outDir": "dist",
+    "strictFunctionTypes": false,
+		"useDefineForClassFields": false,
+    "types": [
+      "node",
+      "node-fetch",
+			"mocha",
+			"chai",
+      "chai-as-promised"
+    ]
+  },
+  "include": [
+    "src/typings.d.ts",
+    "src/node/**/*.ts"
+  ],
+  "references": [
+		{ "path": "./tsconfig.common.json" }
+  ]
+}

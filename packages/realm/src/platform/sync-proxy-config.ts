@@ -16,18 +16,20 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { SyncProxyConfig } from "../binding";
+import type { binding } from "./binding";
 
 type SyncProxyConfigType = {
-  create(): SyncProxyConfig | undefined;
+  create(): binding.SyncProxyConfig | undefined;
 };
 
+/** @internal */
 export const syncProxyConfig: SyncProxyConfigType = {
   create() {
     throw new Error("proxyConfig is not supported on this platform");
   },
 };
 
-export function inject(injected: SyncProxyConfigType) {
-  Object.freeze(Object.assign(syncProxyConfig, injected));
+/** @internal */
+export function inject(value: SyncProxyConfigType) {
+  Object.freeze(Object.assign(syncProxyConfig, value));
 }

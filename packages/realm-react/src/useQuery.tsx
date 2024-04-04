@@ -20,31 +20,54 @@ import { useCallback, useEffect, useMemo, useReducer, useRef } from "react";
 import Realm from "realm";
 
 import { createCachedCollection } from "./cachedCollection";
-import { getObjects } from "./helpers";
+import { AnyRealmObject, RealmClassType, getObjects, isClassModelConstructor } from "./helpers";
 
-type RealmClassType<T = any> = { new (...args: any): T };
 type QueryCallback<T> = (collection: Realm.Results<T>) => Realm.Results<T>;
 type DependencyList = ReadonlyArray<unknown>;
+
+export type QueryHookOptions<T> = {
+  type: string;
+  query?: QueryCallback<T>;
+  keyPaths?: string | string[];
+};
+
+export type QueryHookClassBasedOptions<T> = {
+  type: RealmClassType<T>;
+  query?: QueryCallback<T>;
+  keyPaths?: string | string[];
+};
+
+export type UseQueryHook = {
+  <T>(options: QueryHookOptions<T>, deps?: DependencyList): Realm.Results<T & Realm.Object<T>>;
+  <T extends AnyRealmObject>(options: QueryHookClassBasedOptions<T>, deps?: DependencyList): Realm.Results<T>;
+  <T>(type: string): Realm.Results<T & Realm.Object<T>>;
+  <T extends AnyRealmObject>(type: RealmClassType<T>): Realm.Results<T>;
+
+  /** @deprecated To help the `react-hooks/exhaustive-deps` eslint rule detect missing dependencies, we've suggest passing a option object as the first argument */
+  <T>(type: string, query?: QueryCallback<T>, deps?: DependencyList): Realm.Results<T & Realm.Object<T>>;
+  /** @deprecated To help the `react-hooks/exhaustive-deps` eslint rule detect missing dependencies, we've suggest passing a option object as the first argument */
+  <T extends AnyRealmObject>(
+    type: RealmClassType<T>,
+    query?: QueryCallback<T>,
+    deps?: DependencyList,
+  ): Realm.Results<T>;
+};
+
+/**
+ * Maps a value to itself
+ */
+function identity<T>(value: T): T {
+  return value;
+}
 
 /**
  * Generates the `useQuery` hook from a given `useRealm` hook.
  * @param useRealm - Hook that returns an open Realm instance
  * @returns useObject - Hook that is used to gain access to a {@link Realm.Collection}
  */
-export function createUseQuery(useRealm: () => Realm) {
-  function useQuery<T>(
-    type: string,
-    query?: QueryCallback<T>,
-    deps?: DependencyList,
-  ): Realm.Results<T & Realm.Object<T>>;
-  function useQuery<T extends Realm.Object<any>>(
-    type: RealmClassType<T>,
-    query?: QueryCallback<T>,
-    deps?: DependencyList,
-  ): Realm.Results<T>;
-  function useQuery<T extends Realm.Object<any>>(
-    type: string | RealmClassType<T>,
-    query: QueryCallback<T> = (collection: Realm.Results<T>) => collection,
+export function createUseQuery(useRealm: () => Realm): UseQueryHook {
+  function useQuery<T extends AnyRealmObject>(
+    { type, query = identity, keyPaths }: QueryHookOptions<T> | QueryHookClassBasedOptions<T>,
     deps: DependencyList = [],
   ): Realm.Results<T> {
     const realm = useRealm();
@@ -60,9 +83,9 @@ export function createUseQuery(useRealm: () => Realm) {
     const updatedRef = useRef(true);
     const queryCallbackRef = useRef<QueryCallback<T> | null>(null);
 
-    // We want the user of this hook to be able pass in the `query` function inline (without the need to `useCallback` on it)
-    // This means that the query function is unstable and will be a redefined on each render of the component where `useQuery` is used
-    // Therefore we use the `deps` array to memoize the query function internally, and only use the returned `queryCallback`
+    /* eslint-disable-next-line react-hooks/exhaustive-deps -- We want the user of this hook to be able pass in the `query` function inline (without the need to `useCallback` on it)
+    This means that the query function is unstable and will be a redefined on each render of the component where `useQuery` is used
+    Therefore we use the `deps` array to memoize the query function internally, and only use the returned `queryCallback` */
     const queryCallback = useCallback(query, [...deps, ...requiredDeps]);
 
     // If the query function changes, we need to update the cachedCollection
@@ -75,6 +98,12 @@ export function createUseQuery(useRealm: () => Realm) {
       return queryCallback(getObjects(realm, type));
     }, [type, realm, queryCallback]);
 
+    const memoizedKeyPaths = useMemo(
+      () => (typeof keyPaths === "string" ? [keyPaths] : keyPaths),
+      /* eslint-disable-next-line react-hooks/exhaustive-deps -- Memoizing the keyPaths to avoid renders */
+      [JSON.stringify(keyPaths)],
+    );
+
     // Wrap the cachedObject in useMemo, so we only replace it with a new instance if `realm` or `queryResult` change
     const { collection, tearDown } = useMemo(() => {
       return createCachedCollection<T>({
@@ -82,8 +111,9 @@ export function createUseQuery(useRealm: () => Realm) {
         realm,
         updateCallback: forceRerender,
         updatedRef,
+        keyPaths: memoizedKeyPaths,
       });
-    }, [realm, queryResult]);
+    }, [realm, queryResult, memoizedKeyPaths]);
 
     // Invoke the tearDown of the cachedCollection when useQuery is unmounted
     useEffect(() => {
@@ -100,5 +130,23 @@ export function createUseQuery(useRealm: () => Realm) {
     // This will never not be defined, but the type system doesn't know that
     return collectionRef.current as Realm.Results<T>;
   }
-  return useQuery;
+
+  return function useQueryOverload<T extends AnyRealmObject>(
+    typeOrOptions: QueryHookOptions<T> | QueryHookClassBasedOptions<T> | string | RealmClassType<T>,
+    queryOrDeps: DependencyList | QueryCallback<T> = identity,
+    deps: DependencyList = [],
+  ): Realm.Results<T> {
+    if (typeof typeOrOptions === "string" && typeof queryOrDeps === "function") {
+      /* eslint-disable-next-line react-hooks/rules-of-hooks -- We're calling `useQuery` once in any of the brances */
+      return useQuery({ type: typeOrOptions, query: queryOrDeps }, deps);
+    } else if (isClassModelConstructor(typeOrOptions) && typeof queryOrDeps === "function") {
+      /* eslint-disable-next-line react-hooks/rules-of-hooks -- We're calling `useQuery` once in any of the brances */
+      return useQuery({ type: typeOrOptions as RealmClassType<T>, query: queryOrDeps }, deps);
+    } else if (typeof typeOrOptions === "object" && typeOrOptions !== null) {
+      /* eslint-disable-next-line react-hooks/rules-of-hooks -- We're calling `useQuery` once in any of the brances */
+      return useQuery(typeOrOptions, Array.isArray(queryOrDeps) ? queryOrDeps : deps);
+    } else {
+      throw new Error("Unexpected arguments passed to useQuery");
+    }
+  };
 }

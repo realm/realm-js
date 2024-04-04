@@ -22,7 +22,7 @@ import { expectDecimalEqual } from "../../utils/comparisons";
 import { itUploadsDeletesAndDownloads } from "./upload-delete-download";
 import { buildAppConfig } from "../../utils/build-app-config";
 
-describe.skipIf(environment.missingServer, "Type roundtrip of Dictionary object", () => {
+describe("Type roundtrip of Dictionary object", () => {
   importAppBefore(buildAppConfig("with-pbs").anonAuth().partitionBasedSync());
   authenticateUserBefore();
 

@@ -100,7 +100,7 @@ export async function fetchBaasTag(branch: string) {
 
 export function pullBaas({ profile, tag }: { profile: string; tag: string }) {
   try {
-    execSync(`docker pull ${tag}`, { encoding: "utf8" });
+    execSync(`docker pull ${tag}`, { stdio: "inherit" });
   } catch (err) {
     if (isExecError(err) && err.stderr.includes("Your authorization token has expired")) {
       execSync(`aws --profile ${profile} sso login`, { stdio: "inherit" });

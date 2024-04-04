@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import React, { createContext, useContext, useEffect, useState } from "react";
+import type Realm from "realm";
 
 import { useApp } from "./AppProvider";
 

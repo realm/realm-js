@@ -45,6 +45,7 @@ function getAny(results: binding.Results, index: number) {
   return results.getAny(index);
 }
 
+/** @internal */
 export type HelperOptions = {
   realm: Realm;
   getClassHelpers: (name: string) => ClassHelpers;
@@ -64,6 +65,7 @@ type PropertyAccessors = {
   collectionHelpers?: OrderedCollectionHelpers;
 };
 
+/** @internal */
 export type PropertyHelpers = TypeHelpers &
   PropertyAccessors & {
     type: binding.PropertyType;
@@ -336,6 +338,7 @@ function getPropertyHelpers(type: binding.PropertyType, options: PropertyOptions
   }
 }
 
+/** @internal */
 export function createPropertyHelpers(property: PropertyContext, options: HelperOptions): PropertyHelpers {
   const collectionType = property.type & binding.PropertyType.Collection;
   const typeOptions: TypeOptions = {

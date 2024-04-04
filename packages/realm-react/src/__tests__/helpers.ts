@@ -16,6 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import fs from "node:fs";
+import path from "node:path";
+import os from "node:os";
 import { AppConfig, AppImporter, Credentials } from "@realm/app-importer";
 import { act, waitFor } from "@testing-library/react-native";
 
@@ -24,8 +27,10 @@ const {
   PRIVATE_KEY: privateKey,
   USERNAME: username = "unique_user@domain.com",
   PASSWORD: password = "password",
-  REALM_BASE_URL: realmBaseUrl = "http://localhost:9090",
+  REALM_BASE_URL: baseUrl = "http://localhost:9090",
 } = process.env;
+
+export { baseUrl };
 
 export async function testAuthOperation({
   authOperation,
@@ -41,8 +46,6 @@ export async function testAuthOperation({
     expectedResult();
   });
 }
-
-export const baseUrl = realmBaseUrl;
 
 function getCredentials(): Credentials {
   if (typeof publicKey === "string" && typeof privateKey === "string") {
@@ -67,4 +70,9 @@ const importer = new AppImporter({
 
 export async function importApp(config: AppConfig): Promise<{ appId: string }> {
   return importer.importApp(config);
+}
+
+export function randomRealmPath() {
+  const tempDirPath = fs.mkdtempSync(path.join(os.tmpdir(), "realm-react-tests-"));
+  return path.join(tempDirPath, "test.realm");
 }

@@ -23,6 +23,7 @@ on:
         - '@realm/react'
         - '@realm/tools'
         - '@realm/web'
+        - '@realm/fetch'
 
 jobs:
   publish-package-release:
@@ -37,6 +38,7 @@ jobs:
           {
             "@realm/babel-plugin": {
               "PACKAGE_PATH": "packages/babel-plugin",
+              "PREPARE_SCRIPT_NAME": "bundle",
               "PACKAGE_NAME": "@realm/babel-plugin",
               "VERSION_PREFIX": "babel-plugin-",
               "RELEASE_TITLE": "Realm Babel Plugin",
@@ -44,6 +46,7 @@ jobs:
             },
             "@realm/common": {
               "PACKAGE_PATH": "packages/realm-common",
+              "PREPARE_SCRIPT_NAME": "bundle",
               "PACKAGE_NAME": "@realm/common",
               "VERSION_PREFIX": "realm-common-",
               "RELEASE_TITLE": "Realm Common",
@@ -51,6 +54,7 @@ jobs:
             },
             "@realm/react": {
               "PACKAGE_PATH": "packages/realm-react",
+              "PREPARE_SCRIPT_NAME": "bundle",
               "PACKAGE_NAME": "@realm/react",
               "VERSION_PREFIX": "realm-react-",
               "RELEASE_TITLE": "Realm React",
@@ -58,6 +62,7 @@ jobs:
             },
             "@realm/tools": {
               "PACKAGE_PATH": "packages/realm-tools",
+              "PREPARE_SCRIPT_NAME": "bundle",
               "PACKAGE_NAME": "@realm/tools",
               "VERSION_PREFIX": "realm-tools-",
               "RELEASE_TITLE": "Realm Tools",
@@ -65,10 +70,19 @@ jobs:
             },
             "@realm/web": {
               "PACKAGE_PATH": "packages/realm-web",
+              "PREPARE_SCRIPT_NAME": "bundle",
               "PACKAGE_NAME": "realm-web",
               "VERSION_PREFIX": "realm-web-",
               "RELEASE_TITLE": "Realm Web",
               "SDK_NAME": "Web"
+            },
+            "@realm/fetch": {
+              "PACKAGE_PATH": "packages/fetch",
+              "PREPARE_SCRIPT_NAME": "build",
+              "PACKAGE_NAME": "@realm/fetch",
+              "VERSION_PREFIX": "realm-fetch-",
+              "RELEASE_TITLE": "Realm Fetch",
+              "SDK_NAME": "Fetch"
             }
           }
 
@@ -90,17 +104,17 @@ jobs:
       run: npm ci --ignore-scripts
 
     - name: Bundle package
-      run: npm run bundle --workspace=${{env.PACKAGE_NAME}}
+      run: npm run ${{ env.PREPARE_SCRIPT_NAME }} --workspace=${{ env.PACKAGE_NAME }}
 
     - name: Read version
       id: get-version
       run: |
-        pkgVersion=$(jq -r .version ${{env.PACKAGE_PATH}}/package.json)
+        pkgVersion=$(jq -r .version ${{ env.PACKAGE_PATH }}/package.json)
         echo "version=$pkgVersion" >> $GITHUB_OUTPUT
       shell: bash
 
-    - name: Publish ${{env.RELEASE_TITLE}} v${{ steps.get-version.outputs.version }} on NPM
-      working-directory: ${{env.PACKAGE_PATH}}
+    - name: Publish ${{ env.RELEASE_TITLE }} v${{ steps.get-version.outputs.version }} on NPM
+      working-directory: ${{ env.PACKAGE_PATH }}
       run: npm publish --tag '${{ inputs.tag}}'
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -125,14 +139,14 @@ jobs:
         ref: ${{ steps.find-pull-request.outputs.base-ref }}
 
     - name: Extract Changelog
-      run: node scripts/extract-changelog.js ${{ steps.get-version.outputs.version }} ${{ github.workspace }}/${{env.PACKAGE_PATH}}/CHANGELOG.md > EXTRACTED_CHANGELOG.md
+      run: node scripts/extract-changelog.js ${{ steps.get-version.outputs.version }} ${{ github.workspace }}/${{ env.PACKAGE_PATH }}/CHANGELOG.md > EXTRACTED_CHANGELOG.md
 
     - name: Create Github Release
       uses: ncipollo/release-action@v1
       with:
         bodyFile: EXTRACTED_CHANGELOG.md
-        name: ${{env.RELEASE_TITLE}} v${{ steps.get-version.outputs.version }}
-        tag: ${{env.VERSION_PREFIX}}v${{ steps.get-version.outputs.version }}
+        name: ${{ env.RELEASE_TITLE }} v${{ steps.get-version.outputs.version }}
+        tag: ${{ env.VERSION_PREFIX }}v${{ steps.get-version.outputs.version }}
         token: ${{ secrets.GITHUB_TOKEN }}
         draft: false
 
@@ -140,26 +154,26 @@ jobs:
       uses: realm/ci-actions/release-to-slack@9166f8af1cc0739f03702c66294ed2fe4cc55f4c
       with:
         changelog: EXTRACTED_CHANGELOG.md
-        sdk: ${{env.SDK_NAME}}
+        sdk: ${{ env.SDK_NAME }}
         webhook-url: ${{ secrets.SLACK_RELEASE_WEBHOOK }}
         version: ${{ steps.get-version.outputs.version }}
       # This job might fail due to failed markdown-to-slack conversion.
       continue-on-error: true
 
     - name: Update Changelog
-      working-directory: ${{ github.workspace }}/${{env.PACKAGE_PATH}}
-      run: ${{ github.workspace }}/scripts/changelog-header.sh
+      run: npm run prepend-changelog-header -- ${{ github.workspace }}/${{ env.PACKAGE_PATH }}/CHANGELOG.md
 
     - name: Create vNext PR
       id: vnext-pr
       uses: peter-evans/create-pull-request@v4
       with:
-        branch: prepare-${{env.VERSION_PREFIX}}vnext
-        title: Prepare for ${{env.RELEASE_TITLE}} vNext
+        branch: prepare-${{ env.VERSION_PREFIX }}vnext
+        title: Prepare for ${{ env.RELEASE_TITLE }} vNext
         body: Update Changelog for vNext
         delete-branch: true
         commit-message: Prepare for vNext
         base: ${{ steps.find-pull-request.outputs.base-ref }}
+        labels: no-jira-ticket
 
     - name: Merge Pull Request
       uses: juliangruber/merge-pull-request-action@v1

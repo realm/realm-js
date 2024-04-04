@@ -1,0 +1,32 @@
+{
+  "name": "RealmTests",
+  "displayName": "RealmTests",
+  "singleApp": "realm-tests",
+  "components": [
+    {
+      "appKey": "RealmTests",
+      "displayName": "RealmTests",
+      "slug": "realm-tests"
+    }
+  ],
+  "resources": {
+    "android": [
+      "bundled.realm",
+      "dist/res",
+      "dist/main.android.jsbundle"
+    ],
+    "ios": [
+      "bundled.realm",
+      "dist/assets",
+      "dist/main.ios.jsbundle"
+    ],
+    "macos": [
+      "dist/assets",
+      "dist/main.macos.jsbundle"
+    ],
+    "windows": [
+      "dist/assets",
+      "dist/main.windows.bundle"
+    ]
+  }
+}

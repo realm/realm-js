@@ -28,8 +28,6 @@ export * from "./safeGlobalThis";
 /** @internal */
 export * from "./platform";
 
-/** @internal */
-export * as binding from "./binding";
 export * from "./flags";
 export * from "./bson";
 export * from "./errors";
@@ -78,6 +76,7 @@ export * from "./app-services/utils";
 export * from "./app-services/SyncConfiguration";
 export * from "./app-services/Credentials";
 export * from "./app-services/User";
+export * from "./app-services/MongoDB";
 export * from "./app-services/NetworkTransport";
 export * from "./app-services/SyncSession";
 export * from "./app-services/ApiKeyAuth";
@@ -88,10 +87,12 @@ export * from "./app-services/FunctionsFactory";
 export * from "./app-services/UserProfile";
 export * from "./app-services/BaseSubscriptionSet";
 export * from "./app-services/MutableSubscriptionSet";
+export * from "./app-services/Services";
 export * from "./app-services/SubscriptionSet";
 export * from "./app-services/Subscription";
 export * from "./app-services/Sync";
 export * from "./app-services/App";
+export * from "./app-services/Auth";
 
 export * from "./Realm";
 export * from "./RealmListeners";
@@ -100,3 +101,5 @@ export * from "./ProgressRealmPromise";
 
 export * from "./Unmanaged";
 export * from "./schema";
+
+import "./deprecated-global";

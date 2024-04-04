@@ -1,35 +1,10 @@
 {
-  "compilerOptions": {
-    "strict": true,
-    "target": "ES2022",
-    "module": "ES2020",
-    "moduleResolution": "node",
-    "noEmit": true,
-    "esModuleInterop": true,
-    "noResolve": true,
-    "lib": [
-      "ES2022"
-    ],
-    "types": [
-      "@realm/fetch",
-      "bson",
-      "debug",
-      "ms" // debug dependency
-    ],
-    "baseUrl": ".",
-    "paths": {
-      "realm/binding": ["./generated/ts/native-node.mjs"],
-      "realm/binding/core": ["./generated/ts/core.ts"]
-    }
-  },
-  "include": [
-    "src/",
-    "generated/ts/"
-  ],
-  "exclude": [
-    "src/tests/",
-    "type-tests/",
-    "src/platform/node/",
-    "src/platform/react-native/"
-  ],
+  "files": [],
+  "references": [
+    { "path": "./tsconfig.shared.json" },
+    { "path": "./tsconfig.node.json" },
+    { "path": "./tsconfig.react-native.json" },
+    { "path": "./tsconfig.tests.json" },
+    { "path": "./tsconfig.public-types.json" }
+  ]
 }

@@ -19,12 +19,12 @@
 import type { AnyFetch } from "@realm/fetch";
 import {
   AnyUser,
+  BaseConfiguration,
   Credentials,
   DefaultFunctionsFactory,
   DefaultObject,
   EmailPasswordAuth,
   Listeners,
-  Sync,
   User,
   assert,
   binding,
@@ -66,7 +66,7 @@ export type Metadata = {
   /**
    * The 512-bit (64-byte) encryption key used to encrypt and decrypt meta data in Realm Apps.
    * This will not change the encryption key for individual Realms. This should still be set in
-   * {@link Configuration.encryptionKey} when opening the Realm.
+   * {@link BaseConfiguration.encryptionKey} when opening the Realm.
    * @since 12.2.0
    */
   encryptionKey?: ArrayBuffer;
@@ -211,14 +211,6 @@ export class App<
     return newApp;
   }
 
-  public static Sync = Sync;
-
-  /**
-   * All credentials available for authentication.
-   * @see https://www.mongodb.com/docs/atlas/app-services/authentication/
-   */
-  public static Credentials = Credentials;
-
   /** @internal */
   public static deviceInfo = deviceInfo.create();
   /** @internal */
@@ -267,7 +259,7 @@ export class App<
   constructor(configOrId: AppConfiguration | string) {
     const config: AppConfiguration = typeof configOrId === "string" ? { id: configOrId } : configOrId;
     assert.object(config, "config");
-    const { id, baseUrl, app, timeout, multiplexSessions = true, baseFilePath, metadata, fetch } = config;
+    const { id, baseUrl, timeout, multiplexSessions = true, baseFilePath, metadata, fetch } = config;
     assert.string(id, "id");
     if (timeout !== undefined) {
       assert.number(timeout, "timeout");
@@ -401,4 +393,16 @@ export class App<
   public removeAllListeners() {
     this.listeners.removeAll();
   }
+}
+
+import * as internal from "../internal";
+
+// eslint-disable-next-line @typescript-eslint/no-namespace
+export namespace App {
+  /**
+   * All credentials available for authentication.
+   * @see https://www.mongodb.com/docs/atlas/app-services/authentication/
+   */
+  export type Credentials = internal.Credentials;
+  export import Sync = internal.Sync;
 }

@@ -42,3 +42,12 @@ export function getObjects<T extends Realm.Object>(
 }
 
 export type CollectionCallback = Parameters<typeof Realm.Results.prototype.addListener>[0];
+
+/* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+export type AnyRealmObject = Realm.Object<any>;
+
+export type RealmClassType<T = any> = { new (...args: any): T };
+
+export function isClassModelConstructor(value: unknown): value is RealmClassType<unknown> {
+  return Object.getPrototypeOf(value) === Realm.Object;
+}

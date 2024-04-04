@@ -172,7 +172,7 @@ async function addSubscriptionAndSync<T extends Realm.Object<T>>(
   return { subs, sub, query };
 }
 
-describe.skipIf(environment.missingServer, "Flexible sync", function () {
+describe("Flexible sync", function () {
   this.timeout(60_000); // TODO: Temporarily hardcoded until envs are set up.
   importAppBefore(buildAppConfig("with-flx").anonAuth().flexibleSync());
   authenticateUserBefore();

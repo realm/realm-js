@@ -34,9 +34,6 @@ export function openRealmHook(config: OpenRealmConfiguration = {}) {
     if (this.realm) {
       throw new Error("Unexpected realm on context, use only one openRealmBefore per test");
     } else {
-      this.closeRealm = async () => {
-        console.warn("🤷 Skipped closing a Realm that failed to open");
-      };
       const { realm, config: actualConfig } = await openRealm(config, this.user as unknown as User);
       this.realm = realm;
       this.closeRealm = async ({
@@ -70,7 +67,9 @@ export function openRealmHook(config: OpenRealmConfiguration = {}) {
  * @param this Mocha `this` context
  */
 export function closeThisRealm(this: RealmContext & Mocha.Context): void {
-  this.closeRealm({ clearTestState: true, deleteFile: true });
+  if (this.closeRealm) {
+    this.closeRealm({ clearTestState: true, deleteFile: true });
+  }
   // Clearing the test state to ensure the sync session gets completely reset and nothing is cached between tests
   Realm.clearTestState();
 }

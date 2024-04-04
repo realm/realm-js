@@ -77,6 +77,8 @@ jobs:
           path: |
             README.md
             packages/*/dist
+            packages/realm/binding/dist
+            packages/realm/binding/generated
 
   build:
     name: Build for ${{ matrix.variant.os }} ${{ matrix.variant.arch }}
@@ -137,7 +139,7 @@ jobs:
       # On linux, electron requires a connected display.  We fake this by giving it a headless environment using xvfb
       # Relevant issue: https://github.com/juliangruber/browser-run/issues/147
       - name: Linux Environment setup
-        if: ${{ (matrix.variant.runner == 'ubuntu-latest') }}
+        if: ${{ matrix.variant.runner == 'ubuntu-latest' }}
         run: sudo apt-get install ccache ninja-build
 
 
@@ -197,7 +199,7 @@ jobs:
 
       # build the c++ library for standard targets
       - name: Build node
-        if: ${{ (matrix.variant.os != 'ios') && (matrix.variant.os != 'android') }}
+        if: ${{ matrix.variant.os != 'ios' && matrix.variant.os != 'android' }}
         run: npm run build:node:prebuild:${{matrix.variant.arch}} --workspace realm
 
       # Due to a limitation in upload-artifact a redundant file is needed to force
@@ -241,9 +243,9 @@ jobs:
           - { os: darwin, target: "test:ci:main", runner: macos-latest, environment: electron }
           - { os: darwin, target: "test:ci:renderer", runner: macos-latest, environment: electron }
           - { os: darwin, target: "test:ci", runner: macos-latest, environment: node }
-          - { os: android, target: "test:ci:android", runner: macos-latest-large, environment: react-native, arch: "armeabi-v7a" }
-          - { os: ios, target: "test:ci:ios", runner: macos-latest-xlarge, environment: react-native, arch: "ios" }
-          #- { os: ios, target: "test:ci:catalyst", runner: macos-latest, environment: react-native, arch: "catalyst" }
+          - { os: android, target: "test:ci:android", runner: macos-latest-large, environment: react-native-test-app, arch: "armeabi-v7a" }
+          - { os: ios, target: "test:ci:ios", runner: macos-latest-xlarge, environment: react-native-test-app, arch: "ios" }
+          #- { os: ios, target: "test:ci:catalyst", runner: macos-latest, environment: react-native-test-app, arch: "catalyst" }
     timeout-minutes: 60
     steps:
       - name: Checkout code
@@ -279,7 +281,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: 'zulu' # See 'Supported distributions' for available options
-          java-version: '${{env.JAVA_VERSION }}'
+          java-version: '${{ env.JAVA_VERSION }}'
 
       - name: Setup Android SDK
         if: ${{ matrix.variant.os == 'android' }}
@@ -295,7 +297,7 @@ jobs:
 
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1
-        if: ${{ matrix.variant.environment == 'react-native' }}
+        if: ${{ matrix.variant.environment == 'react-native-test-app' }}
         with:
           key: ${{ runner.os }}-${{ matrix.variant.os }}-${{ matrix.variant.arch }}
           max-size: '2.0G'
@@ -303,16 +305,24 @@ jobs:
       # in CI file timestamps change with every run so instead rely on file content hashing
       # https://reactnative.dev/docs/build-speed#using-this-approach-on-a-ci
       - name: Configure ccache
-        if: ${{ matrix.variant.environment == 'react-native' }}
+        if: ${{ matrix.variant.environment == 'react-native-test-app' }}
         run: ccache --set-config="compiler_check=content"
 
+      # Hermes doesn't work with Cocoapods 1.15.0
+      # https://forums.developer.apple.com/forums/thread/745518
+      - name: Install older Cocoapods version
+        if: ${{ matrix.variant.os == 'ios' }}
+        uses: maxim-lobanov/setup-cocoapods@v1
+        with:
+          version: 1.14.3
+
       - name: Install IOS tools
-        if: ${{ (matrix.variant.os == 'ios') }}
+        if: ${{ matrix.variant.os == 'ios' }}
         run: |
           npm install -g ios-deploy
 
       - name: Set xvfb wrapper for Linux / electron tests
-        if: ${{ (matrix.variant.os == 'linux') && (matrix.variant.environment == 'electron' )}}
+        if: ${{ matrix.variant.os == 'linux' && matrix.variant.environment == 'electron' }}
         run: |
           sudo apt-get install xvfb
           echo "wrapper=xvfb-run" >> $GITHUB_ENV
@@ -358,10 +368,10 @@ jobs:
 
       - name: Create Mocha Remote Context
         id: mocha-env
-        run: echo "context=syncLogLevel=warn,longTimeout=${{ env.LONG_TIMEOUT }},realmBaseUrl=${{ steps.baas.outputs.baas-url }}" >> $GITHUB_OUTPUT
+        run: echo "context=syncLogLevel=warn,longTimeoutMs=${{ env.LONG_TIMEOUT }},baseUrl=${{ steps.baas.outputs.baas-url }}" >> $GITHUB_OUTPUT
 
       - name: Run ${{matrix.variant.target}} (${{ matrix.variant.os}} / ${{ matrix.variant.environment }})
-        if: ${{ (matrix.variant.os != 'android') && (matrix.variant.os != 'ios') }}
+        if: ${{ matrix.variant.os != 'android' && matrix.variant.os != 'ios' }}
         env:
           MOCHA_REMOTE_CONTEXT: ${{ steps.mocha-env.outputs.context }}
         # The non react native environments should not take so long
@@ -369,14 +379,14 @@ jobs:
         run: ${{ env.wrapper }} npm run ${{ matrix.variant.target}} --prefix integration-tests/environments/${{ matrix.variant.environment }}
 
       - name: Run ${{matrix.variant.target}} (${{ matrix.variant.os}} / ${{ matrix.variant.environment }})
-        if: ${{ (matrix.variant.os == 'ios') }}
+        if: ${{ matrix.variant.os == 'ios' }}
         env:
           MOCHA_REMOTE_CONTEXT: ${{ steps.mocha-env.outputs.context }}
         timeout-minutes: 75
         run: npm run ${{ matrix.variant.target}} --prefix integration-tests/environments/${{ matrix.variant.environment }}
 
       - name: Setup Java Gradle cache for android test app
-        if: ${{ (matrix.variant.os == 'android') }}
+        if: ${{ matrix.variant.os == 'android' }}
         uses: actions/cache@v4
         with:
           path: |
@@ -387,7 +397,7 @@ jobs:
             ${{ runner.os }}-gradle-
 
       - name: Setup Android Emulator cache
-        if: ${{ (matrix.variant.os == 'android') }}
+        if: ${{ matrix.variant.os == 'android' }}
         uses: actions/cache@v4
         id: avd-cache
         with:
@@ -397,7 +407,7 @@ jobs:
           key: avd-29
 
       - name: Run ${{matrix.variant.target}} (${{ matrix.variant.os}} / ${{ matrix.variant.environment }})
-        if: ${{ (matrix.variant.os == 'android') }}
+        if: ${{ matrix.variant.os == 'android' }}
         env:
           MOCHA_REMOTE_CONTEXT: ${{ steps.mocha-env.outputs.context }}
         timeout-minutes: 75

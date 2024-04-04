@@ -19,7 +19,10 @@ import { isAbsolute, join } from "path-browserify";
 
 import { inject } from "../file-system";
 import { extendDebug } from "../../debug";
-import { Helpers, JsPlatformHelpers } from "../../binding";
+import { binding } from "../binding";
+
+import JsPlatformHelpers = binding.JsPlatformHelpers;
+import Helpers = binding.Helpers;
 
 const debug = extendDebug("fs");
 

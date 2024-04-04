@@ -107,9 +107,12 @@ coverage/
 /packages/realm/bindgen/vendor/bindgen-lib/generated/
 /packages/realm/generated/
 /packages/realm/binding/jsi/jsi_init.cpp
+/packages/realm/binding/generated
 
 # Build artifacts
 /packages/realm/dist/
+/packages/realm/binding/dist/
+/packages/realm/binding/build/
 /packages/realm/prebuilds/
 /packages/realm/react-native/android/src/main/java/io/realm/react/Version.java
 /packages/realm/react-native/android/src/main/jniLibs/

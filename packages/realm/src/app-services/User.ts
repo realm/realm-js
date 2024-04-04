@@ -26,8 +26,8 @@ import {
   DefaultUserProfileData,
   Document,
   Listeners,
-  MongoDB,
   MongoDBCollection,
+  MongoDBService,
   ProviderType,
   PushClient,
   assert,
@@ -238,7 +238,7 @@ export class User<
 
   /**
    * Use this to call functions defined by the Atlas App Services application, as this user.
-   * @returns A {@link FunctionsFactory} that can be used to call the app's functions.
+   * @returns A {@link UserFunctionsFactoryType} that can be used to call the app's functions.
    */
   get functions(): UserFunctionsFactoryType {
     return createFactory(this as User, undefined);
@@ -345,7 +345,7 @@ export class User<
    *                       .collection<Widget>("widgets")
    *                       .find({ color: "blue" });
    */
-  mongoClient(serviceName: string): MongoDB {
+  mongoClient(serviceName: string): MongoDBService {
     assert.string(serviceName, "serviceName");
     assert(serviceName.length, "Please provide the name of the MongoDB service to connect to.");
 

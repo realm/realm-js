@@ -20,46 +20,54 @@
     "lint": {
       "command": "eslint --ext .js,.ts . && tsc --noEmit",
       "dependencies": [
-        "../../packages/realm:bundle"
+        "build-dependencies"
       ]
     },
     "build": {
-      "command": "tsc",
+      "command": "tsc --build .",
       "dependencies": [
-        "../../packages/realm:bundle",
         "build-dependencies"
       ]
     },
     "start": {
       "command": "mocha --watch",
       "dependencies": [
-        "../../packages/realm:bundle",
         "build-dependencies"
-      ]
+      ],
+      "env": {
+        "TSX_TSCONFIG_PATH": "./tsconfig.mocha.json"
+      }
     },
     "test": {
       "command": "mocha --exit",
       "dependencies": [
-        "../../packages/realm:bundle",
         "build-dependencies"
-      ]
+      ],
+      "env": {
+        "TSX_TSCONFIG_PATH": "./tsconfig.mocha.json"
+      }
     },
     "coverage": {
       "command": "nyc mocha --exit",
       "dependencies": [
-        "../../packages/realm:bundle:coverage",
         "build-dependencies"
-      ]
+      ],
+      "env": {
+        "TSX_TSCONFIG_PATH": "./tsconfig.mocha.json"
+      }
     },
     "ci:coverage": {
       "command": "nyc --reporter=lcov -- mocha --exit",
       "dependencies": [
-        "../../packages/realm:bundle:coverage",
         "build-dependencies"
-      ]
+      ],
+      "env": {
+        "TSX_TSCONFIG_PATH": "./tsconfig.mocha.json"
+      }
     },
     "build-dependencies": {
       "dependencies": [
+        "../../packages/realm:build:ts",
         "../../packages/realm:build:node",
         "../../packages/mocha-reporter:bundle"
       ]
@@ -69,7 +77,6 @@
     "realm": "*"
   },
   "devDependencies": {
-    "@istanbuljs/nyc-config-typescript": "^1.0.2",
     "@realm/app-importer": "*",
     "@realm/mocha-reporter": "*",
     "@thi.ng/bench": "^3.1.16",
@@ -83,7 +90,7 @@
     "realm": "*"
   },
   "dependencies": {
-    "@thi.ng/bench": "^3.1.16",
+    "@thi.ng/bench": "^3.4.24",
     "chai": "4.3.6",
     "chai-as-promised": "^7.1.1",
     "jsrsasign": "^11.0.0",

@@ -16,13 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import {
-  ObjectSchema as BindingObjectSchema,
-  Property as BindingProperty,
-  PropertyType as BindingPropertyType,
-  TableType,
-} from "../binding";
-import { assert } from "../internal";
+import { assert, binding } from "../internal";
+
+type BindingObjectSchema = binding.ObjectSchema;
+type BindingProperty = binding.Property;
+import TableType = binding.TableType;
+import BindingPropertyType = binding.PropertyType;
 
 import { CanonicalObjectSchema, CanonicalPropertySchema, PropertyTypeName } from "./types";
 

@@ -22,6 +22,7 @@ import { FlatList, ListRenderItem, Text, TextInput, TouchableHighlight, View } f
 import Realm from "realm";
 
 import { createUseObject } from "../useObject";
+import { randomRealmPath } from "./helpers";
 
 export class ListItem extends Realm.Object {
   id!: Realm.BSON.ObjectId;
@@ -66,7 +67,7 @@ export class List extends Realm.Object {
 const configuration: Realm.Configuration = {
   schema: [List, ListItem],
   deleteRealmIfMigrationNeeded: true,
-  path: "testArtifacts/use-object-render.realm",
+  path: randomRealmPath(),
 };
 
 // TODO: It would be better not to have to rely on this, but at the moment I see no other alternatives

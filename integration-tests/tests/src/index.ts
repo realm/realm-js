@@ -29,17 +29,16 @@ import "./setup-globals";
 
 afterEach(() => {
   // Trigger garbage collection after every test, if exposed by the environment.
-  if (typeof global.gc === "function") {
-    global.gc();
+  if (typeof gc === "function") {
+    gc();
   }
 });
 
-import "./utils/import-app.test.ts";
-import "./utils/chai-plugin.test.ts";
-import "./utils/listener-stub.test.ts";
-import "./utils/promise-handle.test.ts";
-import "./utils/sequence.test.ts";
-import "./mocha-internals.test.ts";
+import "./utils/chai-plugin.test";
+import "./utils/listener-stub.test";
+import "./utils/promise-handle.test";
+import "./utils/sequence.test";
+import "./mocha-internals.test";
 
 import "./tests";
 import "./performance-tests";

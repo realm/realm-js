@@ -46,13 +46,32 @@ type PropertyType = string;
 export type SortDescriptor = string | [string, boolean];
 
 export type CollectionChangeSet = {
+  /**
+   * The indices in the collection where objects were inserted.
+   */
   insertions: number[];
+  /**
+   * The indices in the collection where objects were deleted.
+   */
   deletions: number[];
+  /**
+   * The indices in the new state of the collection where objects were modified.
+   */
   newModifications: number[];
+  /**
+   * The indices in the old state of the collection where objects were modified.
+   */
   oldModifications: number[];
 };
+
 export type CollectionChangeCallback<T = unknown, EntryType extends [unknown, unknown] = [unknown, unknown]> = (
+  /**
+   * The collection instance that changed.
+   */
   collection: OrderedCollection<T, EntryType>,
+  /**
+   * An object with information about the changes.
+   */
   changes: CollectionChangeSet,
 ) => void;
 
@@ -192,6 +211,7 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
 
   /** @internal */
   protected declare classHelpers: ClassHelpers | null;
+  /** @internal */
   private declare mixedToBinding: (value: unknown) => binding.MixedArg;
 
   /**
@@ -890,6 +910,7 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
     return new Results(this.realm, this.results.snapshot(), this.helpers);
   }
 
+  /** @internal */
   private getPropertyColumnKey(name: string | undefined): binding.ColKey {
     if (this.classHelpers) {
       assert.string(name, "name");
@@ -901,6 +922,7 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
     }
   }
 
+  /** @internal */
   private mapKeyPaths(keyPaths: string[]) {
     return this.realm.internal.createKeyPathArray(this.results.objectType, keyPaths);
   }
