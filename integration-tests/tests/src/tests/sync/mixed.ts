@@ -207,7 +207,9 @@ function describeTypes(flexibleSync: boolean) {
   describeRoundtrip({
     typeName: "Decimal128",
     value: decimal128,
-    testValue: (value: Realm.BSON.Decimal128) => decimal128.bytes.equals(value.bytes),
+    testValue: (value: Realm.BSON.Decimal128) => {
+      expect(value.toString()).equals(decimal128.toString());
+    },
     flexibleSync,
   });
 
