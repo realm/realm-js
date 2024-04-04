@@ -53,10 +53,11 @@ type SimpleObject = Record<string, unknown>;
 export class Credentials<PayloadType extends SimpleObject = SimpleObject> implements Realm.Credentials<PayloadType> {
   /**
    * Creates credentials that logs in using the [Anonymous Provider](https://docs.mongodb.com/realm/authentication/anonymous/).
+   * @param reuse - Reuse any existing anonymous user already logged in.
    * @returns The credentials instance, which can be passed to `app.logIn`.
    */
-  static anonymous(): Credentials<AnonymousPayload> {
-    return new Credentials<AnonymousPayload>("anon-user", "anon-user", {});
+  static anonymous(reuse = true): Credentials<AnonymousPayload> {
+    return new Credentials<AnonymousPayload>("anon-user", "anon-user", reuse, {});
   }
 
   /**
@@ -65,7 +66,7 @@ export class Credentials<PayloadType extends SimpleObject = SimpleObject> implem
    * @returns The credentials instance, which can be passed to `app.logIn`.
    */
   static apiKey(key: string): Credentials<ApiKeyPayload> {
-    return new Credentials<ApiKeyPayload>("api-key", "api-key", { key });
+    return new Credentials<ApiKeyPayload>("api-key", "api-key", false, { key });
   }
 
   /**
@@ -76,7 +77,7 @@ export class Credentials<PayloadType extends SimpleObject = SimpleObject> implem
    * @returns The credentials instance, which can be passed to `app.logIn`.
    */
   static emailPassword(email: string, password: string): Credentials<EmailPasswordPayload> {
-    return new Credentials<EmailPasswordPayload>("local-userpass", "local-userpass", {
+    return new Credentials<EmailPasswordPayload>("local-userpass", "local-userpass", false, {
       username: email,
       password,
     });
@@ -90,7 +91,7 @@ export class Credentials<PayloadType extends SimpleObject = SimpleObject> implem
   static function<PayloadType extends FunctionPayload = FunctionPayload>(
     payload: PayloadType,
   ): Credentials<PayloadType> {
-    return new Credentials<PayloadType>("custom-function", "custom-function", payload);
+    return new Credentials<PayloadType>("custom-function", "custom-function", false, payload);
   }
 
   /**
@@ -99,7 +100,7 @@ export class Credentials<PayloadType extends SimpleObject = SimpleObject> implem
    * @returns The credentials instance, which can be passed to `app.logIn`.
    */
   static jwt(token: string): Credentials<JWTPayload> {
-    return new Credentials<JWTPayload>("custom-token", "custom-token", {
+    return new Credentials<JWTPayload>("custom-token", "custom-token", false, {
       token,
     });
   }
@@ -110,7 +111,7 @@ export class Credentials<PayloadType extends SimpleObject = SimpleObject> implem
    * @returns The credentials instance, which can be passed to `app.logIn`.
    */
   static google<P extends OAuth2RedirectPayload | GooglePayload>(payload: GoogleOptions): Credentials<P> {
-    return new Credentials<P>("oauth2-google", "oauth2-google", Credentials.derivePayload(payload) as P);
+    return new Credentials<P>("oauth2-google", "oauth2-google", false, Credentials.derivePayload(payload) as P);
   }
 
   /**
@@ -144,6 +145,7 @@ export class Credentials<PayloadType extends SimpleObject = SimpleObject> implem
     return new Credentials<PayloadType>(
       "oauth2-facebook",
       "oauth2-facebook",
+      false,
       redirectUrlOrAccessToken.includes("://")
         ? { redirectUrl: redirectUrlOrAccessToken }
         : { accessToken: redirectUrlOrAccessToken },
@@ -161,6 +163,7 @@ export class Credentials<PayloadType extends SimpleObject = SimpleObject> implem
     return new Credentials<PayloadType>(
       "oauth2-apple",
       "oauth2-apple",
+      false,
       redirectUrlOrIdToken.includes("://") ? { redirectUrl: redirectUrlOrIdToken } : { id_token: redirectUrlOrIdToken },
     );
   }
@@ -177,28 +180,35 @@ export class Credentials<PayloadType extends SimpleObject = SimpleObject> implem
   public readonly providerType: ProviderType;
 
   /**
+   * Reuse any user already authenticated with this provider.
+   */
+  public readonly reuse: boolean;
+
+  /**
    * The data being sent to the service when authenticating.
    */
   public readonly payload: PayloadType;
 
-  constructor(name: string, type: "anon-user", payload: AnonymousPayload);
-  constructor(name: string, type: "api-key", payload: ApiKeyPayload);
-  constructor(name: string, type: "local-userpass", payload: EmailPasswordPayload);
-  constructor(name: string, type: "custom-function", payload: FunctionPayload);
-  constructor(name: string, type: "custom-token", payload: JWTPayload);
-  constructor(name: string, type: "oauth2-google", payload: OAuth2RedirectPayload | GooglePayload);
-  constructor(name: string, type: "oauth2-facebook", payload: OAuth2RedirectPayload | FacebookPayload);
-  constructor(name: string, type: "oauth2-apple", payload: OAuth2RedirectPayload | ApplePayload);
+  constructor(name: string, type: "anon-user", reuse: boolean, payload: AnonymousPayload);
+  constructor(name: string, type: "api-key", reuse: false, payload: ApiKeyPayload);
+  constructor(name: string, type: "local-userpass", reuse: false, payload: EmailPasswordPayload);
+  constructor(name: string, type: "custom-function", reuse: false, payload: FunctionPayload);
+  constructor(name: string, type: "custom-token", reuse: false, payload: JWTPayload);
+  constructor(name: string, type: "oauth2-google", reuse: false, payload: OAuth2RedirectPayload | GooglePayload);
+  constructor(name: string, type: "oauth2-facebook", reuse: false, payload: OAuth2RedirectPayload | FacebookPayload);
+  constructor(name: string, type: "oauth2-apple", reuse: false, payload: OAuth2RedirectPayload | ApplePayload);
 
   /**
    * Constructs an instance of credentials.
    * @param providerName The name of the authentication provider used when authenticating.
    * @param providerType The type of the authentication provider used when authenticating.
+   * @param reuse Reuse any user already authenticated with this provider.
    * @param payload The data being sent to the service when authenticating.
    */
-  constructor(providerName: string, providerType: ProviderType, payload: PayloadType) {
+  constructor(providerName: string, providerType: ProviderType, reuse: boolean, payload: PayloadType) {
     this.providerName = providerName;
     this.providerType = providerType;
+    this.reuse = reuse;
     this.payload = payload;
   }
 }

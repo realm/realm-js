@@ -202,6 +202,18 @@ export class App<
     credentials: Credentials,
     fetchProfile = true,
   ): Promise<User<FunctionsFactoryType, CustomDataType>> {
+    if (credentials.reuse) {
+      // TODO: Consider exposing providerName on "User" and match against that instead?
+      const existingUser = this.users.find((user) => user.providerType === credentials.providerType);
+      if (existingUser) {
+        this.switchUser(existingUser);
+        // If needed, fetch and set the profile on the user
+        if (fetchProfile) {
+          await existingUser.refreshProfile();
+        }
+        return existingUser;
+      }
+    }
     const response = await this.authenticator.authenticate(credentials);
     const user = this.createOrUpdateUser(response, credentials.providerType);
     // Let's ensure this will be the current user, in case the user object was reused.
