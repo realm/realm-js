@@ -356,7 +356,7 @@
     "command-line-args": "^5.2.1",
     "cross-env": "^7.0.3",
     "mocha": "^10.1.0",
-    "prebuild": "^12.1.0",
+    "prebuild": "^13.0.0",
     "react-native": "0.73.6",
     "typedoc-plugin-rename-defaults": "^0.7.0"
   },
