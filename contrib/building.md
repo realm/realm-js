@@ -43,14 +43,15 @@ The following dependencies are required. All except Xcode can be installed by fo
 - [Xcode](https://developer.apple.com/xcode/) latest Xcode with command line tools installed
   - The latest Xcode should work, which can be downloaded from [Mac App Store](https://itunes.apple.com/us/app/xcode/id497799835?mt=12). To install older Xcode versions, [Xcodes.app](https://github.com/RobotsAndPencils/XcodesApp) is highly recommended
 - [Node.js](https://nodejs.org/en/) version 16 or later
-  - We recommend [using NVM](https://github.com/nvm-sh/nvm#installing-and-updating) to enable fast switching between Node.js & NPM versions
+  - We recommend [fnm](https://github.com/Schniz/fnm) or [NVM](https://github.com/nvm-sh/nvm#installing-and-updating) to enable fast switching between Node.js & NPM versions
 - [CMake](https://cmake.org/) 3.21.4 or later
+- [ClangFormat](https://clang.llvm.org/docs/ClangFormat.html) Used by the binding generator to format C++ code. You can install it through Homebrew: `brew install clang-format`
 - [OpenJDK 8](https://openjdk.java.net/install/)
 - [Android SDK 23+](https://developer.android.com/studio/index.html#command-tools)
   - Optionally, you can install [Android Studio](https://developer.android.com/studio)
 - [Android NDK 23](https://developer.android.com/ndk/downloads/index.html)
 - [Android CMake](https://developer.android.com/ndk/guides/cmake)
-- [Docker](https://www.docker.com/) is used for testing. You can install it through Homebrew: `brew install --cask docker`.
+- [Docker](https://www.docker.com/) is used for testing. You can install it [as a desktop app](https://www.docker.com/products/docker-desktop/) or through Homebrew: `brew install --cask docker`.
 
 Moreover, in order to avoid introducing false positives in our analytics dataset, it is highly recommended to disable analytics by adding the following to your shell configuration:
 
