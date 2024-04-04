@@ -58,7 +58,7 @@ export function createMockFetch(responses: unknown[]): MockFetch {
           url: response.url,
           json: async () => ({
             error: response.error,
-            errorCode: response.errorCode,
+            error_code: response.errorCode,
             link: response.link,
           }),
           headers: {
