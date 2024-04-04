@@ -26,8 +26,8 @@ import * as bson from "bson";
 export namespace BSON {
   export const ObjectId = bson.ObjectId;
   export type ObjectId = bson.ObjectId;
-  export const ObjectID = bson.ObjectID;
-  export type ObjectID = bson.ObjectID;
+  export const ObjectID = bson.ObjectId;
+  export type ObjectID = bson.ObjectId;
   export const Decimal128 = bson.Decimal128;
   export type Decimal128 = bson.Decimal128;
   export const UUID = bson.UUID;
