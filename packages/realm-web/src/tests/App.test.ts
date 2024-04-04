@@ -814,7 +814,7 @@ describe("App", () => {
       baseUrl: "http://localhost:1337",
     });
 
-    const credentials = App.Credentials.anonymous();
+    const credentials = App.Credentials.anonymous(false);
     await app1.logIn(credentials, false); // Alice
     await app2.logIn(credentials, false); // Charlie
     const bob = await app1.logIn(credentials, true);
