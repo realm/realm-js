@@ -24,7 +24,7 @@
       ]
     },
     "build": {
-      "command": "tsc",
+      "command": "tsc --build .",
       "dependencies": [
         "build-dependencies"
       ]
@@ -33,25 +33,37 @@
       "command": "mocha --watch",
       "dependencies": [
         "build-dependencies"
-      ]
+      ],
+      "env": {
+        "TSX_TSCONFIG_PATH": "./tsconfig.mocha.json"
+      }
     },
     "test": {
       "command": "mocha --exit",
       "dependencies": [
         "build-dependencies"
-      ]
+      ],
+      "env": {
+        "TSX_TSCONFIG_PATH": "./tsconfig.mocha.json"
+      }
     },
     "coverage": {
       "command": "nyc mocha --exit",
       "dependencies": [
         "build-dependencies"
-      ]
+      ],
+      "env": {
+        "TSX_TSCONFIG_PATH": "./tsconfig.mocha.json"
+      }
     },
     "ci:coverage": {
       "command": "nyc --reporter=lcov -- mocha --exit",
       "dependencies": [
         "build-dependencies"
-      ]
+      ],
+      "env": {
+        "TSX_TSCONFIG_PATH": "./tsconfig.mocha.json"
+      }
     },
     "build-dependencies": {
       "dependencies": [

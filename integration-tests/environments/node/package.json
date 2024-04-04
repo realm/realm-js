@@ -6,12 +6,12 @@
   "scripts": {
     "test": "wireit",
     "test:commonjs": "wireit",
-    "test:ci": "mocha-remote --reporter @realm/mocha-reporter tsx index.mjs",
+    "test:ci": "mocha-remote --reporter @realm/mocha-reporter -- tsx index.mjs",
     "lint": "eslint --ext js,mjs ."
   },
   "wireit": {
     "test": {
-      "command": "mocha-remote --reporter @realm/mocha-reporter tsx index.mjs",
+      "command": "mocha-remote --reporter @realm/mocha-reporter -- tsx index.mjs",
       "dependencies": [
         "../../../packages/realm:build:ts",
         "../../../packages/realm:build:node",
@@ -19,7 +19,7 @@
       ]
     },
     "test:commonjs": {
-      "command": "mocha-remote --reporter @realm/mocha-reporter tsx index.cjs",
+      "command": "mocha-remote --reporter @realm/mocha-reporter -- tsx index.cjs",
       "dependencies": [
         "../../../packages/realm:build:ts",
         "../../../packages/realm:build:node",
@@ -30,8 +30,8 @@
   "dependencies": {
     "@realm/integration-tests": "*",
     "mocha-github-actions-reporter": "^0.3.1",
-    "mocha-remote-cli": "^1.8.0",
-    "mocha-remote-client": "^1.8.0",
+    "mocha-remote-cli": "^1.12.2",
+    "mocha-remote-client": "^1.12.2",
     "realm": "*"
   },
   "devDependencies": {

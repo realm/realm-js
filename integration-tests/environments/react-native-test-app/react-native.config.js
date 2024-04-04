@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2020 Realm Inc.
+// Copyright 2024 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,29 +16,26 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-console.log("Loading Realm Integration Tests");
-
-import { flags } from "realm";
-
-// TODO: Refactor tests to disable this
-flags.ALLOW_VALUES_ARRAYS = true;
-// We need this to call Realm.clearTestState()
-flags.ALLOW_CLEAR_TEST_STATE = true;
-
-import "./setup-globals";
-
-afterEach(() => {
-  // Trigger garbage collection after every test, if exposed by the environment.
-  if (typeof gc === "function") {
-    gc();
+const project = (() => {
+  try {
+    const { configureProjects } = require("react-native-test-app");
+    return configureProjects({
+      android: {
+        sourceDir: "android",
+      },
+      ios: {
+        sourceDir: "ios",
+      },
+      windows: {
+        sourceDir: "windows",
+        solutionFile: "windows/RealmTests.sln",
+      },
+    });
+  } catch (_) {
+    return undefined;
   }
-});
+})();
 
-import "./utils/chai-plugin.test";
-import "./utils/listener-stub.test";
-import "./utils/promise-handle.test";
-import "./utils/sequence.test";
-import "./mocha-internals.test";
-
-import "./tests";
-import "./performance-tests";
+module.exports = {
+  ...(project ? { project } : undefined),
+};

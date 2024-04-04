@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2020 Realm Inc.
+// Copyright 2024 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,29 +16,16 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-console.log("Loading Realm Integration Tests");
+import { polyfill as polyfillReadableStream } from "react-native-polyfill-globals/src/readable-stream";
+import { polyfill as polyfillEncoding } from "react-native-polyfill-globals/src/encoding";
+import { polyfill as polyfillFetch } from "react-native-polyfill-globals/src/fetch";
 
-import { flags } from "realm";
+polyfillReadableStream();
+polyfillEncoding();
+polyfillFetch();
 
-// TODO: Refactor tests to disable this
-flags.ALLOW_VALUES_ARRAYS = true;
-// We need this to call Realm.clearTestState()
-flags.ALLOW_CLEAR_TEST_STATE = true;
+import { AppRegistry } from "react-native";
+import App from "./App";
+import { name as appName } from "./app.json";
 
-import "./setup-globals";
-
-afterEach(() => {
-  // Trigger garbage collection after every test, if exposed by the environment.
-  if (typeof gc === "function") {
-    gc();
-  }
-});
-
-import "./utils/chai-plugin.test";
-import "./utils/listener-stub.test";
-import "./utils/promise-handle.test";
-import "./utils/sequence.test";
-import "./mocha-internals.test";
-
-import "./tests";
-import "./performance-tests";
+AppRegistry.registerComponent(appName, () => App);
