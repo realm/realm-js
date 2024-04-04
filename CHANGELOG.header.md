@@ -1,9 +1,3 @@
-#!/bin/bash
-
-set -e
-set -o pipefail
-
-CHANGELOG=$(cat <<EOF
 ## vNext (TBD)
 
 ### Deprecations
@@ -25,9 +19,3 @@ CHANGELOG=$(cat <<EOF
 <!-- * Either mention core version or upgrade -->
 <!-- * Using Realm Core vX.Y.Z -->
 <!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
-
-$(cat CHANGELOG.md)
-EOF
-)
-
-echo "$CHANGELOG" > CHANGELOG.md
