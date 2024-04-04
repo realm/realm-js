@@ -1,3 +1,17 @@
+## vNext (TBD)
+
+### Deprecations
+* None
+
+### Enhancements
+* None
+
+### Fixed
+* None
+
+### Internal
+* None
+
 2.0.0 Release notes (2022-10-18)
 =============================================================
 
