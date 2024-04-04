@@ -138,7 +138,7 @@ jobs:
       continue-on-error: true
 
     - name: Update Changelog
-      run: ${{ github.workspace }}/scripts/changelog-header.sh
+      run: npm run prepend-changelog-header
 
     - name: Create vNext PR
       id: vnext-pr

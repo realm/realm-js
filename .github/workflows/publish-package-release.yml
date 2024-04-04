@@ -161,8 +161,7 @@ jobs:
       continue-on-error: true
 
     - name: Update Changelog
-      working-directory: ${{ github.workspace }}/${{ env.PACKAGE_PATH }}
-      run: ${{ github.workspace }}/scripts/changelog-header.sh
+      run: npm run prepend-changelog-header -- ${{ github.workspace }}/${{ env.PACKAGE_PATH }}/CHANGELOG.md
 
     - name: Create vNext PR
       id: vnext-pr
