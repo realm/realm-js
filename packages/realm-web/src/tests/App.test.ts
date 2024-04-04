@@ -961,4 +961,34 @@ describe("App", () => {
       expect(refreshToken).equals("gilfoyles-forth-refresh-token");
     }
   });
+
+  it("will reuse anonymous users by default and avoid it when asked not to", async () => {
+    const fetch = createMockFetch([
+      LOCATION_RESPONSE,
+      {
+        user_id: "alices-id",
+        access_token: "alices-access-token",
+        refresh_token: "alices-refresh-token",
+        device_id: "000000000000000000000000",
+      },
+      {
+        user_id: "bobs-id",
+        access_token: "bobs-access-token",
+        refresh_token: "bobs-refresh-token",
+        device_id: "000000000000000000000000",
+      },
+    ]);
+    const app = new App({
+      id: "my-mocked-app",
+      storage: new MemoryStorage(),
+      fetch,
+      baseUrl: "http://localhost:1337",
+    });
+    const user1 = await app.logIn(Credentials.anonymous(), false);
+    const user2 = await app.logIn(Credentials.anonymous(), false);
+    expect(user2).equals(user1);
+    const user3 = await app.logIn(Credentials.anonymous(false), false);
+    expect(user3).not.equals(user1);
+    expect(user3.id).not.equals(user1.id);
+  });
 });
