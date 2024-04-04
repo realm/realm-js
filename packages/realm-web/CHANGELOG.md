@@ -1,5 +1,8 @@
 ## vNext (TBD)
 
+### Breaking Changes
+* Logging in with `Credentials.anonymous()` credentials will reuse any existing anonymous user which is already authenticated with the app. This will result in less users being created. Use `Credentials.anonymous(false)` to disable this behaviour and achieve the old behaviour of creating new anonymous users on every login. ([#6592](https://github.com/realm/realm-js/pull/6592))
+
 ### Deprecations
 * None
 
