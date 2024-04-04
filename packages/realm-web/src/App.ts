@@ -35,7 +35,7 @@ type SimpleObject = Record<string, unknown>;
 /**
  * Default base url to prefix all requests if no baseUrl is specified in the configuration.
  */
-export const DEFAULT_BASE_URL = "https://realm.mongodb.com";
+export const DEFAULT_BASE_URL = "https://services.cloud.mongodb.com";
 
 /**
  * Configuration to pass as an argument when constructing an app.
