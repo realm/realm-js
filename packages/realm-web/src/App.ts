@@ -390,6 +390,6 @@ export class App<
    */
   private hydrate() {
     const userIds = this.storage.getUserIds();
-    this.users = userIds.map((id) => new User({ app: this, id }));
+    this.users = userIds.map((id) => new User<FunctionsFactoryType, CustomDataType>({ app: this, id }));
   }
 }
