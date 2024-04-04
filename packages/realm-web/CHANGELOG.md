@@ -4,7 +4,7 @@
 * None
 
 ### Enhancements
-* None
+* The base URL used to communicate with the Atlas App Services was updated changed from "https://realm.mongodb.com" to "https://services.cloud.mongodb.com".
 
 ### Fixed
 * None
