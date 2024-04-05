@@ -161,8 +161,7 @@ jobs:
       continue-on-error: true
 
     - name: Update Changelog
-      working-directory: ${{ github.workspace }}/${{ env.PACKAGE_PATH }}
-      run: ${{ github.workspace }}/scripts/changelog-header.sh
+      run: npm run prepend-changelog-header -- ${{ github.workspace }}/${{ env.PACKAGE_PATH }}/CHANGELOG.md
 
     - name: Create vNext PR
       id: vnext-pr
@@ -174,6 +173,7 @@ jobs:
         delete-branch: true
         commit-message: Prepare for vNext
         base: ${{ steps.find-pull-request.outputs.base-ref }}
+        labels: no-jira-ticket
 
     - name: Merge Pull Request
       uses: juliangruber/merge-pull-request-action@v1

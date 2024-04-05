@@ -11,7 +11,8 @@
     "lint:fix": "wireit",
     "lint:cpp": "find src packages/realm/bindgen/src -name '*.cpp' -or -name '*.h' -or -name '*.hpp' | xargs clang-format --dry-run --Werror",
     "lint:cpp:fix": "find src packages/realm/bindgen/src -name '*.cpp' -or -name '*.h' -or -name '*.hpp' | xargs clang-format -i",
-    "clean": "git clean -fdx -e node_modules -e .env"
+    "clean": "git clean -fdx -e node_modules -e .env",
+    "prepend-changelog-header": "tsx scripts/prepend-changelog-header.ts"
   },
   "wireit": {
     "build": {
@@ -68,7 +69,7 @@
     "integration-tests/tests",
     "integration-tests/environments/node",
     "integration-tests/environments/electron",
-    "integration-tests/environments/react-native",
+    "integration-tests/environments/react-native-test-app",
     "integration-tests/baas-test-server"
   ],
   "dependencies": {
@@ -94,7 +95,7 @@
     "eslint-plugin-react-native": "^4.0.0",
     "node-addon-api": "^7.1.0",
     "prettier": "2.8.8",
-    "react-native": "0.73.2",
+    "react-native": "0.73.6",
     "rollup": "^4.9.6",
     "rollup-plugin-dts": "^6.1.0",
     "rollup-plugin-istanbul": "^5.0.0",

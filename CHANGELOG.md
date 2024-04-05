@@ -1,24 +1,88 @@
 ## vNext (TBD)
 
-### Deprecations
-* None
+> [!NOTE]
+> This version bumps the Realm file format to version 24. It is not possible to downgrade to earlier versions. Older files will automatically be upgraded to the new file format. Files created by Realm JavaScript prior to v6.0.0, might not be upgradeable. **Only Realm Studio 15.0.0 or later** will be able to open the new file format.
 
 ### Enhancements
-* None
+* Updated bundled OpenSSL version to 3.2.0. ([realm/realm-core#7303](https://github.com/realm/realm-core/pull/7303))
+* Improved performance of object notifiers with complex schemas by ~20%. ([realm/realm-core#7424](https://github.com/realm/realm-core/pull/7424))
+* Improved performance with very large number of notifiers by ~75%. ([realm/realm-core#7424](https://github.com/realm/realm-core/pull/7424))
+* Improved performance of aggregate operations on Dictionaries of objects, particularly when the dictionaries are empty. ([realm/realm-core#7418](https://github.com/realm/realm-core/pull/7418)
+* Property keypath in RQL can be substituted with value given as argument. Use `$P<i>` in query string. ([realm/realm-core#7033](https://github.com/realm/realm-core/issues/7033))
+* You can now use query substitution for the `@type` argument. ([realm/realm-core#7289](https://github.com/realm/realm-core/issues/7289))
+* Storage of `Decimal128` properties has been optimized so that the individual values will take up 0 bits (if all nulls), 32 bits, 64 bits or 128 bits depending on what is needed. ([realm/realm-core#6111]https://github.com/realm/realm-core/pull/6111))
+* Querying a specific entry in a collection (in particular 'first and 'last') is supported. ([realm/realm-core#4269](https://github.com/realm/realm-core/issues/4269))
+* Index on list of strings property now supported ([realm/realm-core#7142](https://github.com/realm/realm-core/pull/7142))
+* You can set the threshold levels for trace output on individual categories. ([realm/realm-core#7004](https://github.com/realm/realm-core/pull/7004))
+* Improved performance of RQL queries on a non-linked string property using `>`, `>=`, `<`, `<=` operators and fixed behavior that a null string should be evaluated as less than everything, previously nulls were not matched. ([realm/realm-core#3939](https://github.com/realm/realm-core/issues/3939))
+* Added support for using aggregate operations on Mixed properties in queries. ([realm/realm-core#7398](https://github.com/realm/realm-core/pull/7398))
+* Improved file compaction performance on platforms with page sizes greater than 4k (for example arm64 Apple platforms) for files less than 256 pages in size. ([realm/realm-core#7492](https://github.com/realm/realm-core/pull/7492))
+* Added the ability to set the log level for one or more categories via `Realm.setLogLevel`. ([#6560](https://github.com/realm/realm-js/issues/6560))
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None
+* Aligned Dictionaries to Lists and Sets when they get cleared. ([#6205](https://github.com/realm/realm-core/issues/6205), since v10.3.0-rc.1)
+* Fixed equality queries on a `Mixed` property with an index possibly returning the wrong result if values of different types happened to have the same StringIndex hash. ([realm/realm-core#6407](https://github.com/realm/realm-core/issues/6407), since v10.5.0-beta.1)
+* `@count`/`@size` is now supported for `Mixed` properties. ([realm/realm-core#7280](https://github.com/realm/realm-core/issues/7280), since v10.0.0)
+* Fixed queries like `indexed_property == NONE {x}` which mistakenly matched on only `x` instead of not `x`. This only applies when an indexed property with equality (`==`, or `IN`) matches with `NONE` on a list of one item. If the constant list contained more than one value then it was working correctly. ([realm/realm-java#7862](https://github.com/realm/realm-java/issues/7862), since v10.20.0)
+* Uploading the changesets recovered during an automatic client reset recovery may lead to `Bad server version` errors and a new client reset. ([realm/realm-core#7279](https://github.com/realm/realm-core/issues/7279), since v12.5.0)
+* Fixed crash in full text index using prefix search with no matches ([realm/realm-core#7309](https://github.com/realm/realm-core/issues/7309), since v12.2.0)
+* Fixed a race condition when backing up Realm files before a client reset which could have lead to overwriting an existing file. ([realm/realm-core#7341](https://github.com/realm/realm-core/pull/7341))
+* Fixed a bug when removing items from a list that could result in invalidated links becoming visible which could cause crashes or exceptions when accessing those list items later on. This affects synced Realms where another client had previously removed a list with over 1000 items in it, and then further local removals from the same list caused the list to have fewer than 1000 items. ([#7414](https://github.com/realm/realm-core/pull/7414), since v10.0.0)
+* Fixed opening a Realm with cached user while offline results in fatal error and session does not retry connection. ([#6554](https://github.com/realm/realm-js/issues/6554) and [#6558](https://github.com/realm/realm-js/issues/6558), since v12.6.0)
+* Fixed sorting order of strings to use standard unicode codepoint order instead of grouping similar English letters together. A noticeable change will be from "aAbBzZ" to "ABZabz". ([realm/realm-core#2573](https://github.com/realm/realm-core/issues/2573))
+* `data` and `string` are now strongly typed for comparisons and queries. This change is especially relevant when querying for a string constant on a Mixed property, as now only strings will be returned. If searching for `data` is desired, then that type must be specified by the constant. In RQL the new way to specify a binary constant is to use `mixed = bin('xyz')` or `mixed = binary('xyz')`. ([realm/realm-core#6407](https://github.com/realm/realm-core/issues/6407))
 
 ### Compatibility
 * React Native >= v0.71.4
-* Realm Studio v14.0.0.
-* File format: generates Realms with format v23 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
+* Realm Studio v15.0.0.
+* File format: generates Realms with format v24 (reads and upgrades file format v10 or later).
 
 ### Internal
-<!-- * Either mention core version or upgrade -->
-<!-- * Using Realm Core vX.Y.Z -->
-<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
+* Upgraded Realm Core from v13.26.0 to v14.4.1. ([#6499](https://github.com/realm/realm-js/issues/6499), [#6541](https://github.com/realm/realm-js/issues/6541), [#6568](https://github.com/realm/realm-js/issues/6568), and [#6572](https://github.com/realm/realm-js/issues/6572))
+
+## 12.7.0-rc.0 (2024-03-26)
+
+> [!NOTE]
+> This version bumps the Realm file format to version 24. It is not possible to downgrade to earlier versions. Older files will automatically be upgraded to the new file format. Files created by Realm JavaScript prior to v6.0.0, might not be upgradeable. **Only Realm Studio 15.0.0 or later** will be able to open the new file format.
+
+> [!NOTE]
+> This release doesn't include the changes previously released as [v12.7.0-alpha.0](https://github.com/realm/realm-js/releases/tag/v12.7.0-alpha.0) and is a pre-release because we plan on updating the `setLogLevel` API before releasing this as `v12.7.0`: https://github.com/realm/realm-js/issues/6560 and we just wanted to get this out for Realm Studio `v15.0.0`.
+
+### Enhancements
+* Updated bundled OpenSSL version to 3.2.0. ([realm/realm-core#7303](https://github.com/realm/realm-core/pull/7303))
+* Improved performance of object notifiers with complex schemas by ~20%. ([realm/realm-core#7424](https://github.com/realm/realm-core/pull/7424))
+* Improved performance with very large number of notifiers by ~75%. ([realm/realm-core#7424](https://github.com/realm/realm-core/pull/7424))
+* Improved performance of aggregate operations on Dictionaries of objects, particularly when the dictionaries are empty. ([realm/realm-core#7418](https://github.com/realm/realm-core/pull/7418)
+* Property keypath in RQL can be substituted with value given as argument. Use `$P<i>` in query string. ([realm/realm-core#7033](https://github.com/realm/realm-core/issues/7033))
+* You can now use query substitution for the `@type` argument. ([realm/realm-core#7289](https://github.com/realm/realm-core/issues/7289))
+* Storage of `Decimal128` properties has been optimized so that the individual values will take up 0 bits (if all nulls), 32 bits, 64 bits or 128 bits depending on what is needed. ([realm/realm-core#6111]https://github.com/realm/realm-core/pull/6111))
+* Querying a specific entry in a collection (in particular 'first and 'last') is supported. ([realm/realm-core#4269](https://github.com/realm/realm-core/issues/4269))
+* Index on list of strings property now supported ([realm/realm-core#7142](https://github.com/realm/realm-core/pull/7142))
+* You can set the threshold levels for trace output on individual categories. ([realm/realm-core#7004](https://github.com/realm/realm-core/pull/7004))
+* Improved performance of RQL queries on a non-linked string property using `>`, `>=`, `<`, `<=` operators and fixed behavior that a null string should be evaluated as less than everything, previously nulls were not matched. ([realm/realm-core#3939](https://github.com/realm/realm-core/issues/3939))
+* Added support for using aggregate operations on Mixed properties in queries. ([realm/realm-core#7398](https://github.com/realm/realm-core/pull/7398))
+* Improved file compaction performance on platforms with page sizes greater than 4k (for example arm64 Apple platforms) for files less than 256 pages in size. ([realm/realm-core#7492](https://github.com/realm/realm-core/pull/7492))
+
+### Fixed
+* Aligned Dictionaries to Lists and Sets when they get cleared. ([#6205](https://github.com/realm/realm-core/issues/6205), since v10.3.0-rc.1)
+* Fixed equality queries on a `Mixed` property with an index possibly returning the wrong result if values of different types happened to have the same StringIndex hash. ([realm/realm-core#6407](https://github.com/realm/realm-core/issues/6407), since v10.5.0-beta.1)
+* `@count`/`@size` is now supported for `Mixed` properties. ([realm/realm-core#7280](https://github.com/realm/realm-core/issues/7280), since v10.0.0)
+* Fixed queries like `indexed_property == NONE {x}` which mistakenly matched on only `x` instead of not `x`. This only applies when an indexed property with equality (`==`, or `IN`) matches with `NONE` on a list of one item. If the constant list contained more than one value then it was working correctly. ([realm/realm-java#7862](https://github.com/realm/realm-java/issues/7862), since v10.20.0)
+* Uploading the changesets recovered during an automatic client reset recovery may lead to `Bad server version` errors and a new client reset. ([realm/realm-core#7279](https://github.com/realm/realm-core/issues/7279), since v12.5.0)
+* Fixed crash in full text index using prefix search with no matches ([realm/realm-core#7309](https://github.com/realm/realm-core/issues/7309), since v12.2.0)
+* Fixed a race condition when backing up Realm files before a client reset which could have lead to overwriting an existing file. ([realm/realm-core#7341](https://github.com/realm/realm-core/pull/7341))
+* Fixed a bug when removing items from a list that could result in invalidated links becoming visible which could cause crashes or exceptions when accessing those list items later on. This affects synced Realms where another client had previously removed a list with over 1000 items in it, and then further local removals from the same list caused the list to have fewer than 1000 items. ([#7414](https://github.com/realm/realm-core/pull/7414), since v10.0.0)
+* Fixed opening a Realm with cached user while offline results in fatal error and session does not retry connection. ([#6554](https://github.com/realm/realm-js/issues/6554) and [#6558](https://github.com/realm/realm-js/issues/6558), since v12.6.0)
+* Fixed sorting order of strings to use standard unicode codepoint order instead of grouping similar English letters together. A noticeable change will be from "aAbBzZ" to "ABZabz". ([realm/realm-core#2573](https://github.com/realm/realm-core/issues/2573))
+* `data` and `string` are now strongly typed for comparisons and queries. This change is especially relevant when querying for a string constant on a Mixed property, as now only strings will be returned. If searching for `data` is desired, then that type must be specified by the constant. In RQL the new way to specify a binary constant is to use `mixed = bin('xyz')` or `mixed = binary('xyz')`. ([realm/realm-core#6407](https://github.com/realm/realm-core/issues/6407))
+
+### Compatibility
+* React Native >= v0.71.4
+* Realm Studio v15.0.0.
+* File format: generates Realms with format v24 (reads and upgrades file format v10 or later).
+
+### Internal
+* Upgraded Realm Core from v13.26.0 to v14.4.1. ([#6499](https://github.com/realm/realm-js/issues/6499), [#6541](https://github.com/realm/realm-js/issues/6541), [#6568](https://github.com/realm/realm-js/issues/6568), and [#6572](https://github.com/realm/realm-js/issues/6572))
 
 ## 12.6.2 (2024-03-04)
 
@@ -26,11 +90,8 @@
 * Fixed binding abstraction to allow access of certain properties (`$$typeof` for now) prior to its injection. ([#6522](https://github.com/realm/realm-js/issues/6522), since v12.6.1)
 * Added a missing dependency on `path-browserify`. ([#6522](https://github.com/realm/realm-js/issues/6522), since v12.6.1)
 
-### Compatibility
-* React Native >= v0.71.4
-* Realm Studio v14.0.0.
-* File format: generates Realms with format v23 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
-
+### Internal
+* Using Realm Core v13.26.0.
 
 ## 12.6.1 (2024-02-26)
 

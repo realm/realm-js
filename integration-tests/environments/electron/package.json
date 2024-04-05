@@ -13,8 +13,8 @@
     "test": "wireit",
     "test:main": "wireit",
     "test:renderer": "wireit",
-    "test:ci:main": "mocha-remote --reporter mocha-github-actions-reporter --id main tsx runner.ts main",
-    "test:ci:renderer": "mocha-remote --reporter mocha-github-actions-reporter --id renderer tsx runner.ts renderer",
+    "test:ci:main": "mocha-remote --reporter mocha-github-actions-reporter --id main -- tsx runner.ts main",
+    "test:ci:renderer": "mocha-remote --reporter mocha-github-actions-reporter --id renderer -- tsx runner.ts renderer",
     "lint": "eslint .",
     "package": "electron-builder --dir"
   },
@@ -23,7 +23,7 @@
       "command": "npm run test:main && npm run test:renderer"
     },
     "test:main": {
-      "command": "mocha-remote --reporter @realm/mocha-reporter --id main tsx runner.ts main",
+      "command": "mocha-remote --reporter @realm/mocha-reporter --id main -- tsx runner.ts main",
       "dependencies": [
         "../../../packages/realm:build:ts",
         "../../../packages/realm:build:node",
@@ -31,7 +31,7 @@
       ]
     },
     "test:renderer": {
-      "command": "mocha-remote --reporter @realm/mocha-reporter --id renderer tsx runner.ts renderer",
+      "command": "mocha-remote --reporter @realm/mocha-reporter --id renderer -- tsx runner.ts renderer",
       "dependencies": [
         "../../../packages/realm:build:ts",
         "../../../packages/realm:build:node",
@@ -42,17 +42,17 @@
   "devDependencies": {
     "@realm/mocha-reporter": "*",
     "command-line-args": "^5.2.1",
-    "electron": "^28.1.4",
+    "electron": "^29.1.6",
     "electron-builder": "^24.9.1",
     "mocha-github-actions-reporter": "^0.3.0",
     "mocha-junit-reporter": "^2.2.0",
-    "mocha-remote-cli": "^1.8.0"
+    "mocha-remote-cli": "^1.12.2"
   },
   "dependencies": {
     "@electron/remote": "^2.1.2",
     "@realm/integration-tests": "*",
     "fs-extra": "^11.2.0",
-    "mocha-remote-client": "^1.8.0",
+    "mocha-remote-client": "^1.12.2",
     "@realm/app-importer": "*"
   },
   "build": {

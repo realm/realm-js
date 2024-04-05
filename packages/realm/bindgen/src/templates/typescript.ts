@@ -33,6 +33,7 @@ const PRIMITIVES_MAPPING: Record<string, string> = {
   int32_t: "number",
   count_t: "number",
   uint64_t: "Int64",
+  "std::chrono::milliseconds": "Int64",
   "std::string": "string",
   "std::string_view": "string",
   StringData: "string",

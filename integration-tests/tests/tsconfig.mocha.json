@@ -1,0 +1,10 @@
+{
+  "extends": "@tsconfig/node-lts",
+  "compilerOptions": {
+    "strictFunctionTypes": false,
+    "useDefineForClassFields": false,
+  },
+  "include": [
+    "src"
+  ]
+}

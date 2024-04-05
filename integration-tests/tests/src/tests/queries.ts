@@ -327,7 +327,7 @@ describe("Queries", () => {
           ["Unsupported comparison between type", "boolCol == 0"],
           ["Unsupported comparison between type", "boolCol == 1"],
           ["Unsupported comparison between type", "boolCol == 'not a bool'"],
-          ["Unsupported comparison between type", "boolCol == $0", "not a bool"],
+          ["Cannot compare argument $0 with value", "boolCol == $0", "not a bool"],
           ["Unsupported comparison operator", "boolCol BEGINSWITH true"],
           ["Unsupported comparison operator", "boolCol CONTAINS true"],
           ["Unsupported comparison operator", "boolCol ENDSWITH true"],
@@ -363,7 +363,7 @@ describe("Queries", () => {
         expectQueryException(this.realm, NullableTypesObject, [
           ["Unsupported comparison between type", "dateCol == 'not a date'"],
           ["Unsupported comparison between type", "dateCol == 1"],
-          ["Unsupported comparison between type", "dateCol == $0", 1],
+          ["Cannot compare argument $0 with value", "dateCol == $0", 1],
         ]);
       });
     });
@@ -401,7 +401,7 @@ describe("Queries", () => {
         expectQueryException(this.realm, NullableTypesObject, [
           ["Unsupported comparison between type", "intCol == false"],
           ["Cannot convert", "intCol == 'not an int'"],
-          ["Unsupported comparison between type", "intCol == $0", "not an int"],
+          ["Cannot convert", "intCol == $0", "not an int"],
           ["Unsupported comparison operator", "intCol BEGINSWITH 1"],
           ["Unsupported comparison operator", "intCol CONTAINS 1"],
           ["Unsupported comparison operator", "intCol ENDSWITH 1"],
@@ -446,7 +446,7 @@ describe("Queries", () => {
         expectQueryException(this.realm, NullableTypesObject, [
           ["Unsupported comparison between type", "floatCol == false"],
           ["Cannot convert", "floatCol == 'not a float'"],
-          ["Unsupported comparison between type", "floatCol == $0", "not a float"],
+          ["Cannot convert", "floatCol == $0", "not a float"],
           ["Unsupported comparison operator", "floatCol BEGINSWITH 1"],
           ["Unsupported comparison operator", "floatCol CONTAINS 1"],
           ["Unsupported comparison operator", "floatCol ENDSWITH 1"],
@@ -492,7 +492,7 @@ describe("Queries", () => {
         expectQueryException(this.realm, NullableTypesObject, [
           ["Unsupported comparison between type", "doubleCol == false"],
           ["Cannot convert", "doubleCol == 'not a double'"],
-          ["Unsupported comparison between type", "doubleCol == $0", "not a double"],
+          ["Cannot convert", "doubleCol == $0", "not a double"],
           ["Unsupported comparison operator", "doubleCol BEGINSWITH 1"],
           ["Unsupported comparison operator", "doubleCol CONTAINS 1"],
           ["Unsupported comparison operator", "doubleCol ENDSWITH 1"],
@@ -557,7 +557,7 @@ describe("Queries", () => {
         expectQueryException(this.realm, NullableTypesObject, [
           ["Unsupported comparison between type", "stringCol == true"],
           ["Unsupported comparison between type", "stringCol == 123"],
-          ["Unsupported comparison operator", "stringCol CONTAINS $0", 1],
+          ["Cannot compare argument $0 with value", "stringCol CONTAINS $0", 1],
         ]);
       });
     });

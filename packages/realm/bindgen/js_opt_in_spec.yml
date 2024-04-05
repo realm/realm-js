@@ -120,6 +120,22 @@ records:
       - before_notify
       - schema_did_change
 
+  ResumptionDelayInfo:
+    fields:
+      - max_resumption_delay_interval
+      - resumption_delay_interval
+      - resumption_delay_backoff_multiplier
+      - delay_jitter_divisor
+
+  SyncClientTimeouts:
+    fields:
+      - connect_timeout
+      - connection_linger_time
+      - ping_keepalive_period
+      - pong_keepalive_timeout
+      - fast_reconnect_limit
+      - reconnect_backoff_info
+
   SyncClientConfig:
     fields:
       - base_file_path
@@ -127,6 +143,7 @@ records:
       - custom_encryption_key
       - user_agent_binding_info
       - multiplex_sessions
+      - timeouts
 
   SyncError:
    fields:
@@ -244,11 +261,16 @@ classes:
       - get_results_description
       - feed_buffer
       - make_ssl_verify_callback
+      - needs_file_format_upgrade
+
+  LogCategoryRef:
+    methods:
+      - set_default_level_threshold
+      - get_category
 
   Logger:
     methods:
       - set_default_logger
-      - set_default_level_threshold
 
   ConstTableRef:
     methods:

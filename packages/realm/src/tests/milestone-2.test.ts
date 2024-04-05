@@ -90,6 +90,7 @@ describe("Milestone #2", () => {
 
     it("returns a spreadable object", function (this: RealmContext) {
       const alice = this.realm.objectForPrimaryKey<PersonWithFriend>("Person", "Alice");
+      assert(alice);
       expect(alice.keys()).deep.equals(["name", "bestFriend", "age"]);
       const spread = { ...alice };
       expect(Object.keys(spread)).deep.equals(alice.keys());
@@ -105,6 +106,7 @@ describe("Milestone #2", () => {
 
     it("returns the correct string", function (this: RealmContext) {
       const alice = this.realm.objectForPrimaryKey<Person>("Person", "Alice");
+      assert(alice);
       expect(alice.name).equals("Alice");
     });
   });
@@ -117,6 +119,7 @@ describe("Milestone #2", () => {
 
     it("returns the correct object", function (this: RealmContext) {
       const alice = this.realm.objectForPrimaryKey<PersonWithFriend>("Person", "Alice");
+      assert(alice);
       assert(alice.bestFriend instanceof RealmObject);
       expect(alice.bestFriend.name).equals("Bob");
     });
@@ -133,6 +136,7 @@ describe("Milestone #2", () => {
 
     it("persists the value", function (this: RealmContext) {
       const charlie = this.realm.objectForPrimaryKey<Person>("Person", "Charlie");
+      assert(charlie);
       this.realm.write(() => {
         charlie.age = 11;
         expect(charlie.age).equals(11);
@@ -153,12 +157,15 @@ describe("Milestone #2", () => {
 
     it("persists the value", function (this: RealmContext) {
       const alice = this.realm.objectForPrimaryKey<PersonWithFriend>("Person", "Alice");
+      assert(alice);
       const bob = this.realm.objectForPrimaryKey<PersonWithFriend>("Person", "Bob");
       this.realm.write(() => {
         alice.bestFriend = null;
         expect(alice.bestFriend).equals(null);
         alice.bestFriend = bob;
-        expect(alice.bestFriend.name).equals("Bob");
+        const { bestFriend } = alice;
+        assert(bestFriend);
+        expect(bestFriend.name).equals("Bob");
       });
     });
   });

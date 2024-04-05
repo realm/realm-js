@@ -140,16 +140,16 @@ function getRealmVersion() {
 }
 
 /**
- * Reads and parses `dependencies.list`.
- * Each line has be form "KEY=VALUE", and we to find "REALM_CORE_VERSION"
+ * Reads and parses `dependencies.yml`.
+ * Each line has be form "KEY: VALUE", and we to find "REALM_CORE_VERSION"
  * @returns the Realm Core version as a string
  */
 function getRealmCoreVersion() {
-  const dependenciesListPath = path.resolve(realmCorePackagePath, "dependencies.list");
+  const dependenciesListPath = path.resolve(realmCorePackagePath, "dependencies.yml");
   const dependenciesList = fs
     .readFileSync(dependenciesListPath, "utf8")
     .split("\n")
-    .map((s) => s.split("="));
+    .map((s) => s.split(":"));
   return dependenciesList.find((e) => e[0] === "VERSION")[1];
 }
 

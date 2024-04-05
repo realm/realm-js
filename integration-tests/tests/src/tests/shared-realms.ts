@@ -17,22 +17,19 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
-import Realm, { List } from "realm";
+import Realm from "realm";
 
 import { openRealmBefore, openRealmBeforeEach } from "../hooks";
 import { createLocalConfig } from "../utils/open-realm";
+import { LogEntry } from "realm";
 
 describe("SharedRealm operations", () => {
   describe("logger", () => {
     it("logger callback gets called", async function () {
-      type Log = {
-        message: string;
-        level: string;
-      };
-      let logs: Log[] = [];
+      let logs: LogEntry[] = [];
 
-      Realm.setLogger((level, message) => {
-        logs.push({ level, message });
+      Realm.setLogger((entry) => {
+        logs.push(entry);
       });
 
       Realm.setLogLevel("all");

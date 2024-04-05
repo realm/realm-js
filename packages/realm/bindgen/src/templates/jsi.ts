@@ -239,6 +239,9 @@ function convertPrimToJsi(addon: JsiAddon, type: string, expr: string): string {
     case "uint64_t":
       return `bigIntFromU64(_env, ${expr})`;
 
+    case "std::chrono::milliseconds":
+      return `bigIntFromU64(_env, std::chrono::milliseconds(${expr}).count())`;
+
     case "StringData":
     case "std::string_view":
     case "std::string":
@@ -332,6 +335,9 @@ function convertPrimFromJsi(addon: JsiAddon, type: string, expr: string): string
       return `bigIntToI64(_env, jsi::Value(_env, ${expr}))`;
     case "uint64_t":
       return `bigIntToU64(_env, jsi::Value(_env, ${expr}))`;
+
+    case "std::chrono::milliseconds":
+      return `std::chrono::milliseconds(bigIntToU64(_env, jsi::Value(_env, ${expr})))`;
 
     case "std::string":
       return `(${expr}).asString(_env).utf8(_env)`;
@@ -1065,6 +1071,7 @@ export function generate({ rawSpec, spec, file: makeFile }: TemplateContext): vo
 
   out(`
       #include <jsi/jsi.h>
+      #include <chrono>
       #include <realm_js_jsi_helpers.h>
 
       namespace realm::js {
@@ -1084,7 +1091,7 @@ export function generate({ rawSpec, spec, file: makeFile }: TemplateContext): vo
         extern "C" {
         void realm_jsi_invalidate_caches() {
             // Clear the default logger, to prevent it from holding on to a pointer that was released
-            realm::util::Logger::set_default_level_threshold(realm::util::Logger::Level::off);
+            realm::util::LogCategory::get_category(realm::util::LogCategory::realm.get_name()).set_default_level_threshold(realm::util::Logger::Level::off);
             realm::util::Logger::set_default_logger(nullptr);
             // Close all cached Realms
             realm::_impl::RealmCoordinator::clear_all_caches();

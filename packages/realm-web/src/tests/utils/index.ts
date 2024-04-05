@@ -72,6 +72,7 @@ export const INVALID_SESSION_ERROR = new MongoDBRealmError(
   401,
   "",
   "invalid session",
+  "InvalidSession",
 );
 
 export * from "./MockApp";
