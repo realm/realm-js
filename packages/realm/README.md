@@ -21,7 +21,7 @@ It might help to think of the Realm database as the persistance layer of the Atl
 ## Features
 
 * **Mobile-first:** Realm is the first database built from the ground up to run directly inside phones, tablets and wearables.
-* **Simple:** Data is directly [exposed as objects](https://www.mongodb.com/docs/atlas/device-sdks/sdk/node/realm-files/) and [queryable by code](https://www.mongodb.com/docs/atlas/device-sdks/node/crud/query-data/), removing the need for ORM's riddled with performance & maintenance issues.
+* **Simple:** Data is directly [exposed as objects](https://www.mongodb.com/docs/atlas/device-sdks/sdk/node/realm-files/) and [queryable by code](https://www.mongodb.com/docs/atlas/device-sdks/sdk/node/crud/query-data/), removing the need for ORM's riddled with performance & maintenance issues.
 * **Modern:** The database supports relationships, generics, and vectorization.
 * **Fast:** It is faster than even raw SQLite on common operations, while maintaining an extremely rich feature set.
 * **[MongoDB Atlas Device Sync](https://www.mongodb.com/atlas/app-services/device-sync)**: Makes it simple to keep data in sync across users, devices, and your backend in real time. Get started for free with [a template application](https://github.com/mongodb/template-app-react-native-todo) and [create the cloud backend](http://mongodb.com/realm/register?utm_medium=github_atlas_CTA&utm_source=realm_js_github).
