@@ -119,7 +119,7 @@ For a full fledged example, check out [our templates](https://github.com/realm/r
 ## Realm Hooks
 
 ### useRealm
-Returns the instance of the [`Realm`](https://www.mongodb.com/docs/realm-sdks/js/latest/Realm.html) configured by `createRealmContext` and the `RealmProvider`.  The following is an example of how to use this Hook to make a write transaction callback for a component.
+Returns the instance of the [`Realm`](https://www.mongodb.com/docs/realm-sdks/js/latest/classes/Realm.html) configured by `createRealmContext` and the `RealmProvider`.  The following is an example of how to use this Hook to make a write transaction callback for a component.
 
 ```tsx
 import {useRealm} from '@realm/react';
@@ -146,7 +146,7 @@ const Component = ({item}) => {
 
 ### useQuery
 
-Returns [`Realm.Results`](https://www.mongodb.com/docs/realm-sdks/js/latest/Realm.Results.html) from a given type. This Hook will update on any changes to any Object in the Collection and return an empty array if the Collection is empty.
+Returns [`Realm.Results`](https://www.mongodb.com/docs/realm-sdks/js/latest/classes/Realm.Results.html) from a given type. This Hook will update on any changes to any Object in the Collection and return an empty array if the Collection is empty.
 The result of this can be consumed directly by the `data` argument of any React Native [`VirtualizedList`](https://reactnative.dev/docs/virtualizedlist) or [`FlatList`](https://reactnative.dev/docs/flatlist).  If the component used for the list's `renderItem` prop is wrapped with [`React.Memo`](https://reactjs.org/docs/react-api.html#reactmemo), then only the modified object will re-render.
 
 ```tsx
@@ -171,7 +171,7 @@ const Component = () => {
 ```
 
 ### useObject
- Returns a [`Realm.Object`](https://www.mongodb.com/docs/realm-sdks/js/latest/Realm.Object.html) for a given type and primary key.  The Hook will update on any changes to the properties on the returned Object and return `null` if it either doesn't exist or has been deleted.
+ Returns a [`Realm.Object`](https://www.mongodb.com/docs/realm-sdks/js/latest/classes/Realm.Object.html) for a given type and primary key.  The Hook will update on any changes to the properties on the returned Object and return `null` if it either doesn't exist or has been deleted.
 
 ```tsx
 import {useObject} from '@realm/react';
@@ -341,7 +341,7 @@ const SomeComponent = () => {
 
 ### Authentication Hooks
 
-The following hooks can be used to authenticate users in your application.  They return authentication operations and a single result object which can be read to track the progress of the current result. More information about the specific auth methods can be found in the [Authenticate Users](https://www.mongodb.com/docs/realm/sdk/react-native/manage-users/authenticate-users) Documentation.
+The following hooks can be used to authenticate users in your application.  They return authentication operations and a single result object which can be read to track the progress of the current result. More information about the specific auth methods can be found in the [Authenticate Users](https://www.mongodb.com/docs/atlas/device-sdks/sdk/react-native/manage-users/authenticate-users) Documentation.
 
 ## `result`
 The authentication hooks return a `result` has the following structure:

@@ -14,27 +14,27 @@ Realm is a mobile database that runs directly inside phones, tablets or wearable
 
 <img align="right" style="min-width:150px;width:20%;" src="https://raw.githubusercontent.com/realm/realm-js/main/media/atlas-device-sync.svg" alt="Atlas Device Sync">
 
-The [Atlas Device SDKs](https://www.mongodb.com/docs/realm/sdk/) are a collection of language and platform specific SDKs, each with a suite of app development tools optimized for data access and persistence on mobile and edge devices. Use the SDKs to build data-driven mobile, edge, web, desktop, and IoT apps.
+The [Atlas Device SDKs](https://www.mongodb.com/docs/atlas/device-sdks/) are a collection of language and platform specific SDKs, each with a suite of app development tools optimized for data access and persistence on mobile and edge devices. Use the SDKs to build data-driven mobile, edge, web, desktop, and IoT apps.
 
 It might help to think of the Realm database as the persistance layer of the Atlas Device SDKs.
 
 ## Features
 
 * **Mobile-first:** Realm is the first database built from the ground up to run directly inside phones, tablets and wearables.
-* **Simple:** Data is directly [exposed as objects](https://www.mongodb.com/docs/realm/sdk/node/realm-files/) and [queryable by code](https://www.mongodb.com/docs/realm/sdk/node/crud/query-data/), removing the need for ORM's riddled with performance & maintenance issues.
+* **Simple:** Data is directly [exposed as objects](https://www.mongodb.com/docs/atlas/device-sdks/sdk/node/realm-files/) and [queryable by code](https://www.mongodb.com/docs/atlas/device-sdks/node/crud/query-data/), removing the need for ORM's riddled with performance & maintenance issues.
 * **Modern:** The database supports relationships, generics, and vectorization.
 * **Fast:** It is faster than even raw SQLite on common operations, while maintaining an extremely rich feature set.
 * **[MongoDB Atlas Device Sync](https://www.mongodb.com/atlas/app-services/device-sync)**: Makes it simple to keep data in sync across users, devices, and your backend in real time. Get started for free with [a template application](https://github.com/mongodb/template-app-react-native-todo) and [create the cloud backend](http://mongodb.com/realm/register?utm_medium=github_atlas_CTA&utm_source=realm_js_github).
 
 ## Getting Started
 
-Please see the detailed instructions in our docs to use [Atlas Device SDK for Node.js](https://www.mongodb.com/docs/realm/sdk/node/) and [Atlas Device SDK for React Native](https://www.mongodb.com/docs/realm/sdk/react-native/). Please notice that currently only Node.js version 18 or later is supported. For React Native users, we have a [compatibility matrix](https://github.com/realm/realm-js/blob/HEAD/COMPATIBILITY.md) showing which versions are supported.
+Please see the detailed instructions in our docs to use [Atlas Device SDK for Node.js](https://www.mongodb.com/docs/atlas/device-sdks/sdk/node/) and [Atlas Device SDK for React Native](https://www.mongodb.com/docs/atlas/device-sdks/sdk/react-native/). Please notice that currently only Node.js version 18 or later is supported. For React Native users, we have a [compatibility matrix](https://github.com/realm/realm-js/blob/HEAD/COMPATIBILITY.md) showing which versions are supported.
 
 ## Documentation
 
 ### Atlas Device SDKs for React Native and Node.js
 
-The documentation for the Atlas Device SDK for React Native can be found at [mongodb.com/docs/realm/sdk/react-native/](https://www.mongodb.com/docs/realm/sdk/react-native/). The documentation for the Atlas Device SDK for Node.js can be found at [mongodb.com/docs/realm/sdk/node](https://www.mongodb.com/docs/realm/sdk/node/).
+The documentation for the Atlas Device SDK for React Native can be found at [mongodb.com/docs/atlas/device-sdks/sdk/react-native/](https://www.mongodb.com/docs/atlas/device-sdks/sdk/react-native/). The documentation for the Atlas Device SDK for Node.js can be found at [mongodb.com/docs/atlas/device-sdks/sdk/node/](https://www.mongodb.com/docs/atlas/device-sdks/sdk/node/).
 
 The API reference is located at [docs.mongodb.com/realm-sdks/js/latest/](https://docs.mongodb.com/realm-sdks/js/latest/).
 
