@@ -101,7 +101,7 @@ function ensureSimulator() {
     const { runtimes } = xcode.simctl.list("runtimes", "ios");
     const [runtime] = runtimes.filter((r) => r.isAvailable);
     if (!runtime) {
-      throw new Error("No available iOS runtimes");
+      throw new Error("No available iOS runtimes (run `xcodebuild -downloadPlatform iOS`)");
     }
     // Create the device
     const { stdout } = xcode.simctl.create(IOS_DEVICE_NAME, IOS_DEVICE_TYPE_ID, runtime.identifier);
