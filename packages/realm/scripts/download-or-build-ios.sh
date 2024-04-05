@@ -17,7 +17,7 @@ mkdir -p build
 pushd build
 
 # Get core version
-CORE_VERSION=v$(grep "^VERSION=" "$BINDGEN_PATH/vendor/realm-core/dependencies.list" | cut -d '=' -f2)
+CORE_VERSION=v$(grep "^VERSION:" "$BINDGEN_PATH/vendor/realm-core/dependencies.yml" | cut -d ':' -f2 | xargs)
 TAR_FILE_NAME=realm-Release-$CORE_VERSION-$PLATFORM_NAME-devel.tar.gz
 
 # There are only Release builds available on the CDN
