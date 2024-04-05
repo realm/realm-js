@@ -17,6 +17,7 @@
 
 ### Fixed
 * Removed race condition in `useObject` ([#6291](https://github.com/realm/realm-js/issues/6291)) Thanks [@bimusik](https://github.com/bimusiek)!
+* Fixed flickering of the `RealmProvider`'s `fallback` component and its `children` when offline. ([#6333](https://github.com/realm/realm-js/issues/6333))
 
 ### Compatibility
 * React Native >= v0.71.4

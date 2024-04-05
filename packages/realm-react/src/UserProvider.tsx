@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useReducer, useState } from "react";
 import type Realm from "realm";
 
 import { useApp } from "./AppProvider";
@@ -35,6 +35,21 @@ type UserProviderProps = {
   children: React.ReactNode;
 };
 
+function userWasUpdated(userA: Realm.User | null, userB: Realm.User | null) {
+  if (!userA && !userB) {
+    return false;
+  } else if (userA && userB) {
+    return (
+      userA.id !== userB.id ||
+      userA.state !== userB.state ||
+      userA.accessToken !== userB.accessToken ||
+      userA.refreshToken !== userB.refreshToken
+    );
+  } else {
+    return true;
+  }
+}
+
 /**
  * React component providing a Realm user on the context for the sync hooks
  * to use. A `UserProvider` is required for an app to use the hooks.
@@ -42,23 +57,32 @@ type UserProviderProps = {
 export const UserProvider: React.FC<UserProviderProps> = ({ fallback: Fallback, children }) => {
   const app = useApp();
   const [user, setUser] = useState<Realm.User | null>(() => app.currentUser);
+  const [, forceUpdate] = useReducer((x) => x + 1, 0);
 
-  // Support for a possible change in configuration
-  if (app.currentUser?.id != user?.id) {
-    setUser(app.currentUser);
+  // Support for a possible change in configuration.
+  // Do the check here rather than in a `useEffect()` so as to not render stale state. This allows
+  // for the rerender to restart without also having to rerender the children using the stale state.
+  const currentUser = app.currentUser;
+  if (userWasUpdated(user, currentUser)) {
+    setUser(currentUser);
   }
 
   useEffect(() => {
-    const event = () => {
-      setUser(app.currentUser);
-    };
-    user?.addListener(event);
-    app?.addListener(event);
-    return () => {
-      user?.removeListener(event);
-      app?.removeListener(event);
-    };
-  }, [user, app]);
+    app.addListener(forceUpdate);
+
+    return () => app.removeListener(forceUpdate);
+  }, [app]);
+
+  useEffect(() => {
+    user?.addListener(forceUpdate);
+
+    return () => user?.removeListener(forceUpdate);
+
+    /*
+      eslint-disable-next-line react-hooks/exhaustive-deps
+      -- We should depend on `user.id` rather than `user` as the ID will indicate a new user in this case.
+    */
+  }, [user?.id]);
 
   if (!user) {
     if (typeof Fallback === "function") {
