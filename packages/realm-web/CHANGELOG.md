@@ -4,7 +4,7 @@
 * None
 
 ### Enhancements
-* None
+* The base URL used to communicate with the Atlas App Services was updated changed from "https://realm.mongodb.com" to "https://services.cloud.mongodb.com". ([#6591](https://github.com/realm/realm-js/pull/6591))
 
 ### Fixed
 * Fixed an endless loop of requests that would happen if linking credentials failed due to an authentication failure. ([#6588](https://github.com/realm/realm-js/pull/6588), since v0.6.0)
