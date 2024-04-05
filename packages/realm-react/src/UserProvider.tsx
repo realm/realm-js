@@ -59,7 +59,9 @@ export const UserProvider: React.FC<UserProviderProps> = ({ fallback: Fallback, 
   const [user, setUser] = useState<Realm.User | null>(() => app.currentUser);
   const [, forceUpdate] = useReducer((x) => x + 1, 0);
 
-  // Support for a possible change in configuration
+  // Support for a possible change in configuration.
+  // Do the check here rather than in a `useEffect()` so as to not render stale state. This allows
+  // for the rerender to restart without also having to rerender the children using the stale state.
   const currentUser = app.currentUser;
   if (userWasUpdated(user, currentUser)) {
     setUser(currentUser);
