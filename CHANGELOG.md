@@ -4,6 +4,7 @@
 > This version bumps the Realm file format to version 24. It is not possible to downgrade to earlier versions. Older files will automatically be upgraded to the new file format. Files created by Realm JavaScript prior to v6.0.0, might not be upgradeable. **Only Realm Studio 15.0.0 or later** will be able to open the new file format.
 
 ### Enhancements
+* The base URL used to communicate with the Atlas App Services was updated changed from "https://realm.mongodb.com" to "https://services.cloud.mongodb.com". ([realm/realm-core#7534](https://github.com/realm/realm-core/pull/7534)).
 * Updated bundled OpenSSL version to 3.2.0. ([realm/realm-core#7303](https://github.com/realm/realm-core/pull/7303))
 * Improved performance of object notifiers with complex schemas by ~20%. ([realm/realm-core#7424](https://github.com/realm/realm-core/pull/7424))
 * Improved performance with very large number of notifiers by ~75%. ([realm/realm-core#7424](https://github.com/realm/realm-core/pull/7424))
@@ -31,6 +32,9 @@
 * Fixed opening a Realm with cached user while offline results in fatal error and session does not retry connection. ([#6554](https://github.com/realm/realm-js/issues/6554) and [#6558](https://github.com/realm/realm-js/issues/6558), since v12.6.0)
 * Fixed sorting order of strings to use standard unicode codepoint order instead of grouping similar English letters together. A noticeable change will be from "aAbBzZ" to "ABZabz". ([realm/realm-core#2573](https://github.com/realm/realm-core/issues/2573))
 * `data` and `string` are now strongly typed for comparisons and queries. This change is especially relevant when querying for a string constant on a Mixed property, as now only strings will be returned. If searching for `data` is desired, then that type must be specified by the constant. In RQL the new way to specify a binary constant is to use `mixed = bin('xyz')` or `mixed = binary('xyz')`. ([realm/realm-core#6407](https://github.com/realm/realm-core/issues/6407))
+
+* Fixed diverging history due to a bug in the replication code when setting default null values (embedded objects included) ([realm/realm-core#7536](https://github.com/realm/realm-core/issues/7536)).
+* Null pointer exception may be triggered when logging out and async commits callbacks not executed ([realm/realm-core#7434](https://github.com/realm/realm-core/issues/7434), since v12.6.0)
 
 ### Compatibility
 * React Native >= v0.71.4
