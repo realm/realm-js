@@ -182,13 +182,12 @@ export function createCachedCollection<T extends Realm.Object<any>>({
     }
   };
 
-  let wasSetImmediate = false;
+  let setImmediateId: ReturnType<typeof setImmediate> | undefined = undefined;
   if (!isDerived) {
     // If we are in a transaction, then push adding the listener to the event loop.  This will allow the write transaction to finish.
     // see https://github.com/realm/realm-js/issues/4375
     if (realm.isInTransaction) {
-      wasSetImmediate = true;
-      setImmediate(() => {
+      setImmediateId = setImmediate(() => {
         collection.addListener(listenerCallback, keyPaths);
       });
     } else {
@@ -198,13 +197,10 @@ export function createCachedCollection<T extends Realm.Object<any>>({
 
   const tearDown = () => {
     if (!isDerived) {
-      if(wasSetImmediate) {
-        setImmediate(() => {
-          collection.removeListener(listenerCallback);
-        });
-      } else {
-        collection.removeListener(listenerCallback);
+      if (setImmediateId) {
+        clearImmediate(setImmediateId);
       }
+      collection.removeListener(listenerCallback);
       objectCache.clear();
     }
   };
