@@ -485,8 +485,7 @@ function convertToJsi(addon: JsiAddon, type: Type, expr: string): string {
         case "AsyncResult":
           assert.fail("Should never see AsyncResult here");
       }
-      assert.fail(`unknown template ${type.name}`);
-      break;
+      return assert.fail(`unknown template ${type.name}`);
 
     case "Class":
       assert(!type.sharedPtrWrapped, `should not directly convert from ${type.name} without shared_ptr wrapper`);
@@ -617,8 +616,7 @@ function convertFromJsi(addon: JsiAddon, type: Type, expr: string): string {
         case "std::function":
           return `${type.toCpp()}(${c(inner, expr)})`;
       }
-      assert.fail(`unknown template ${type.name}`);
-      break;
+      return assert.fail(`unknown template ${type.name}`);
 
     case "Class":
       if (type.sharedPtrWrapped) return `*JS_TO_SHARED_${type.name}(_env, ${expr})`;
