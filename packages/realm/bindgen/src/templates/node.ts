@@ -30,9 +30,9 @@ import {
   Pointer,
   Template,
 } from "@realm/bindgen/bound-model";
-import { clangFormat } from "@realm/bindgen/formatter";
 
 import { doJsPasses } from "../js-passes";
+import { trunk } from "../trunk-formatter";
 
 // Code assumes this is a unique name that is always in scope to refer to the Napi::Env.
 // Callbacks need to ensure this is in scope. Functions taking Env arguments must use this name.
@@ -919,7 +919,7 @@ class NodeCppDecls extends CppDecls {
 }
 
 export function generate({ rawSpec, spec, file: makeFile }: TemplateContext): void {
-  const out = makeFile("node_init.cpp", clangFormat);
+  const out = makeFile("node_init.cpp", trunk);
 
   // HEADER
   out(`// This file is generated: Update the spec instead of editing this file directly`);
