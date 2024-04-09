@@ -9,8 +9,9 @@
     "bundle": "wireit",
     "lint": "wireit",
     "lint:fix": "wireit",
-    "lint:cpp": "find src packages/realm/bindgen/src -name '*.cpp' -or -name '*.h' -or -name '*.hpp' | xargs clang-format --dry-run --Werror",
-    "lint:cpp:fix": "find src packages/realm/bindgen/src -name '*.cpp' -or -name '*.h' -or -name '*.hpp' | xargs clang-format -i",
+    "trunk:check": "trunk check",
+    "trunk:check-all": "trunk check --all",
+    "trunk:fmt": "trunk fmt",
     "clean": "git clean -fdx -e node_modules -e .env",
     "prepend-changelog-header": "tsx scripts/prepend-changelog-header.ts"
   },
