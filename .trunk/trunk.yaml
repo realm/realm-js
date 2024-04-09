@@ -10,8 +10,8 @@ plugins:
       ref: v1.4.5
       uri: https://github.com/trunk-io/plugins
 # Many linters and tools depend on runtimes - configure them here. (https://docs.trunk.io/runtimes)
-runtimes:
-  enabled:
+# runtimes:
+#   enabled:
 # This is the section where you manage your linters. (https://docs.trunk.io/check/configuration)
 lint:
   enabled:
