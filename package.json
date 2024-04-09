@@ -9,9 +9,6 @@
     "bundle": "wireit",
     "lint": "wireit",
     "lint:fix": "wireit",
-    "trunk:check": "trunk check",
-    "trunk:check-all": "trunk check --all",
-    "trunk:fmt": "trunk fmt",
     "clean": "git clean -fdx -e node_modules -e .env",
     "prepend-changelog-header": "tsx scripts/prepend-changelog-header.ts"
   },
@@ -33,13 +30,13 @@
       ]
     },
     "lint": {
-      "command": "npm run lint --workspaces --if-present",
+      "command": "npm run lint --workspaces --if-present && trunk check --all",
       "dependencies": [
         "./packages/babel-plugin:bundle"
       ]
     },
     "lint:fix": {
-      "command": "npm run lint --workspaces --if-present -- --fix",
+      "command": "npm run lint --workspaces --if-present -- --fix && trunk fmt",
       "dependencies": [
         "./packages/babel-plugin:bundle"
       ]

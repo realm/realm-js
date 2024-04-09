@@ -20,5 +20,3 @@ jobs:
         run: npm ci
       - name: Run linting of subpackages
         run: npm run lint
-      - name: Run trunk to lint C++ code
-        run: npm run trunk:check-all
