@@ -27,12 +27,15 @@ flags.ALLOW_CLEAR_TEST_STATE = true;
 
 import "./setup-globals";
 
-afterEach(() => {
-  // Trigger garbage collection after every test, if exposed by the environment.
-  if (typeof gc === "function") {
-    gc();
-  }
-});
+if (environment.disableGarbageCollectionAfterTests !== true) {
+  // Trigger garbage collection after every test, if `gc` is exposed by the environment.
+  afterEach(() => {
+    if (typeof gc === "function") {
+      console.log("GC!");
+      gc();
+    }
+  });
+}
 
 import "./utils/chai-plugin.test";
 import "./utils/listener-stub.test";

@@ -44,6 +44,8 @@ type KnownEnvironment = {
   defaultLogLevel?: Realm.App.Sync.LogLevel;
   /** Set the sync client log level to help debugging sync client issues */
   syncLogLevel?: Realm.App.Sync.LogLevel;
+  /** Disables the automatic garbage collection between tests */
+  disableGarbageCollectionAfterTests?: true;
 
   // BaaS server and Realm App Importer specific variables below
 

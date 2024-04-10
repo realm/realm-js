@@ -63,7 +63,7 @@ jobs:
         timeout-minutes: 60
         run: npm run ci:coverage --workspace @realm/integration-tests -- --reporter mocha-github-actions-reporter --timeout ${{ env.MOCHA_TIMEOUT }}
         env:
-          CONTEXT: missingServer,syncLogLevel=warn,longTimeoutMs=${{ env.LONG_TIMEOUT }}
+          CONTEXT: disableGarbageCollectionAfterTests,missingServer,syncLogLevel=warn,longTimeoutMs=${{ env.LONG_TIMEOUT }}
 
       - run: cat coverage/lcov.info
 
