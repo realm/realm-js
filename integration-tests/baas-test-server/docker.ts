@@ -102,15 +102,13 @@ export function pullBaas({ profile, tag }: { profile: string; tag: string }) {
   try {
     execSync(`docker pull ${tag}`, { stdio: "inherit" });
   } catch (err) {
-    if (isExecError(err) && err.stderr.includes("Your authorization token has expired")) {
-      execSync(`aws --profile ${profile} sso login`, { stdio: "inherit" });
-      execSync(
-        `aws --profile ${profile} ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${ECR_HOSTNAME}`,
-        { stdio: "inherit" },
-      );
-    } else {
-      throw err;
-    }
+    // We'll assume that any error pulling the image is related to not being authenticated.
+    // Unfortunately, it's not trivial to inherit the stdio and match on the stderr at the same time.
+    execSync(`aws --profile ${profile} sso login`, { stdio: "inherit" });
+    execSync(
+      `aws --profile ${profile} ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${ECR_HOSTNAME}`,
+      { stdio: "inherit" },
+    );
   }
 }
 
