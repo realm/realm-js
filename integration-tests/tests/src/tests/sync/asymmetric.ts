@@ -19,7 +19,7 @@
 import { expect } from "chai";
 import Realm, { BSON } from "realm";
 
-import { authenticateUserBefore, importAppBefore, openRealmBeforeEach } from "../../hooks";
+import { authenticateUserBefore, importAppBefore, openRealmBefore } from "../../hooks";
 import { buildAppConfig } from "../../utils/build-app-config";
 
 describe("Asymmetric sync", function () {
@@ -52,7 +52,7 @@ describe("Asymmetric sync", function () {
 
       importAppBefore(buildAppConfig("with-flx").anonAuth().flexibleSync());
       authenticateUserBefore();
-      openRealmBeforeEach({
+      openRealmBefore({
         schema: [PersonSchema, DogSchema],
         sync: {
           flexible: true,
