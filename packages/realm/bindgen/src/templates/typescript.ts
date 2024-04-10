@@ -22,7 +22,7 @@ import { TemplateContext } from "@realm/bindgen/context";
 import { Arg, BoundSpec, NamedType, Property, Type } from "@realm/bindgen/bound-model";
 
 import { doJsPasses } from "../js-passes";
-import { eslint } from "../eslint-formatter";
+import { eslintFormatter } from "../formatters";
 
 const PRIMITIVES_MAPPING: Record<string, string> = {
   void: "void",
@@ -151,7 +151,7 @@ export function generate({ rawSpec, spec: boundSpec, file }: TemplateContext): v
 
   const spec = doJsPasses(boundSpec);
 
-  const coreOut = file("core.ts", eslint);
+  const coreOut = file("core.ts", eslintFormatter);
   coreOut("// This file is generated: Update the spec instead of editing this file directly");
 
   coreOut("// Enums");
@@ -175,7 +175,7 @@ export function generate({ rawSpec, spec: boundSpec, file }: TemplateContext): v
     }
   `);
 
-  const out = file("native.d.ts", eslint);
+  const out = file("native.d.ts", eslintFormatter);
   out("// This file is generated: Update the spec instead of editing this file directly");
   out('import { ObjectId, UUID, Decimal128 } from "bson";');
   out("import { Float, Status, ", spec.enums.map((e) => e.name).join(", "), '} from "../dist/core";');

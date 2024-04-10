@@ -17,11 +17,11 @@
 ////////////////////////////////////////////////////////////////////////////
 import { TemplateContext } from "@realm/bindgen/context";
 
-import { eslint } from "../eslint-formatter";
+import { eslintFormatter } from "../formatters";
 import { generate as generateBase, generateNativeBigIntSupport } from "./base-wrapper";
 
 export function generate(context: TemplateContext): void {
-  const out = context.file("native.react-native.mjs", eslint);
+  const out = context.file("native.react-native.mjs", eslintFormatter);
 
   out("// This file is generated: Update the spec instead of editing this file directly");
 
@@ -62,6 +62,6 @@ export function generate(context: TemplateContext): void {
 
   generateBase(context, out);
 
-  context.file("native.react-native.d.mts", eslint)("export * from './native'");
-  context.file("native.react-native.d.cts", eslint)("import * as binding from './native'; export = binding;");
+  context.file("native.react-native.d.mts", eslintFormatter)("export * from './native'");
+  context.file("native.react-native.d.cts", eslintFormatter)("import * as binding from './native'; export = binding;");
 }

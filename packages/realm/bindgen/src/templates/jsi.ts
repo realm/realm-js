@@ -32,7 +32,7 @@ import {
 } from "@realm/bindgen/bound-model";
 
 import { doJsPasses } from "../js-passes";
-import { trunk } from "../trunk-formatter";
+import { trunkFormatter } from "../formatters";
 
 // Code assumes this is a unique name that is always in scope to refer to the jsi::Runtime.
 // Callbacks need to ensure this is in scope. Functions taking Runtime arguments must use this name.
@@ -1058,7 +1058,7 @@ class JsiCppDecls extends CppDecls {
 }
 
 export function generate({ rawSpec, spec, file: makeFile }: TemplateContext): void {
-  const out = makeFile("jsi_init.cpp", trunk);
+  const out = makeFile("jsi_init.cpp", trunkFormatter);
 
   // HEADER
   out(`// This file is generated: Update the spec instead of editing this file directly`);
