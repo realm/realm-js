@@ -19,23 +19,13 @@
 import cp, { execSync } from "node:child_process";
 import assert from "node:assert";
 import chalk from "chalk";
-import { ExecError, UsageError } from "./helpers";
+import { UsageError } from "./helpers";
 import { listImages } from "./baasaas/client";
 
 const BAAS_CONTAINER_NAME = "baas-test-server";
 const BAAS_PORT = 9090;
 const BAAS_VARIANT = process.arch === "arm64" ? "ubuntu2004-arm64" : "ubuntu2004-docker";
 const ECR_HOSTNAME = "969505754201.dkr.ecr.us-east-1.amazonaws.com";
-
-function isExecError(value: unknown): value is ExecError {
-  return (
-    value instanceof Error &&
-    "stdout" in value &&
-    typeof value.stdout === "string" &&
-    "stderr" in value &&
-    typeof value.stderr === "string"
-  );
-}
 
 function registerExitListeners(logPrefix: string, child: cp.ChildProcess) {
   function killChild() {
