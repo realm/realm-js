@@ -98,7 +98,7 @@
     "rollup-plugin-dts": "^6.1.0",
     "rollup-plugin-istanbul": "^5.0.0",
     "rollup-plugin-node-builtins": "^2.1.2",
-    "tsx": "^4.7.0",
+    "tsx": "^4.7.2",
     "typedoc": "^0.25.7",
     "typescript": "5.0.4",
     "wireit": "^0.14.4"

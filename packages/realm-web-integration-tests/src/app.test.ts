@@ -55,7 +55,7 @@ describe("App#constructor", () => {
 
   it("can log in two users, switch between them and log out", async () => {
     const app = createApp();
-    const credentials = Credentials.anonymous();
+    const credentials = Credentials.anonymous(false);
     // Authenticate the first user
     const user1 = await app.logIn(credentials);
     expect(app.currentUser).equals(user1);
