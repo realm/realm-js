@@ -58,6 +58,7 @@ import {
   flags,
   fromBindingRealmSchema,
   fs,
+  garbageCollection,
   normalizeObjectSchema,
   normalizeRealmSchema,
   toArrayBuffer,
@@ -156,12 +157,10 @@ export class Realm {
   }
 
   /**
-   * Clears the state by closing and deleting any Realm in the default directory and logout all users.
-   * NOTE: Not a part of the public API and it's primarily used from the library's tests.
-   * @private
+   * Closes all Realms, cancels all pending {@link Realm.open} calls, clears internal caches, resets the logger and collects garbage.
+   * Call this method to free up the event loop and allow Node.js to perform a graceful exit.
    */
-  public static clearTestState(): void {
-    assert(flags.ALLOW_CLEAR_TEST_STATE, "Set the flags.ALLOW_CLEAR_TEST_STATE = true before calling this.");
+  public static shutdown() {
     // Close any realms not already closed
     for (const realmRef of Realm.internals) {
       const realm = realmRef.deref();
@@ -174,6 +173,18 @@ export class Realm {
     binding.App.clearCachedApps();
     ProgressRealmPromise.cancelAll();
 
+    binding.Logger.setDefaultLogger(null);
+    garbageCollection.collect();
+  }
+
+  /**
+   * Clears the state by closing and deleting any Realm in the default directory and logout all users.
+   * NOTE: Not a part of the public API and it's primarily used from the library's tests.
+   * @private
+   */
+  public static clearTestState(): void {
+    assert(flags.ALLOW_CLEAR_TEST_STATE, "Set the flags.ALLOW_CLEAR_TEST_STATE = true before calling this.");
+    Realm.shutdown();
     // Delete all Realm files in the default directory
     const defaultDirectoryPath = fs.getDefaultDirectoryPath();
     fs.removeRealmFilesFromDirectory(defaultDirectoryPath);

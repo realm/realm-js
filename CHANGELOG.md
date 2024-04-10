@@ -65,6 +65,7 @@
 * Improved performance of RQL queries on a non-linked string property using `>`, `>=`, `<`, `<=` operators and fixed behavior that a null string should be evaluated as less than everything, previously nulls were not matched. ([realm/realm-core#3939](https://github.com/realm/realm-core/issues/3939))
 * Added support for using aggregate operations on Mixed properties in queries. ([realm/realm-core#7398](https://github.com/realm/realm-core/pull/7398))
 * Improved file compaction performance on platforms with page sizes greater than 4k (for example arm64 Apple platforms) for files less than 256 pages in size. ([realm/realm-core#7492](https://github.com/realm/realm-core/pull/7492))
+* Added a static `Realm.shutdown()` method, which closes all Realms, cancels all pending `Realm.open` calls, clears internal caches, resets the logger and collects garbage. Call this method to free up the event loop and allow Node.js to perform a graceful exit. ([#6571](https://github.com/realm/realm-js/pull/6571), since v12.0.0)
 
 ### Fixed
 * Aligned Dictionaries to Lists and Sets when they get cleared. ([#6205](https://github.com/realm/realm-core/issues/6205), since v10.3.0-rc.1)
