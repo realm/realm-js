@@ -16,20 +16,31 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 import { expect } from "chai";
-import Realm from "realm";
+import Realm, { ObjectSchema } from "realm";
 
 import { importAppBefore, authenticateUserBefore, openRealmBefore } from "../../hooks";
 
 import { itUploadsDeletesAndDownloads } from "./upload-delete-download";
 import { buildAppConfig } from "../../utils/build-app-config";
 
-type MixedClass = {
-  _id: Realm.BSON.ObjectId;
-  value: Realm.Mixed;
-  list: Realm.List<Realm.Mixed>;
-};
 type Value = Realm.Mixed | ((realm: Realm) => Realm.Mixed);
 type ValueTester = (actual: Realm.Mixed, inserted: Realm.Mixed) => void | boolean;
+
+class MixedClass extends Realm.Object<MixedClass> {
+  _id!: Realm.BSON.ObjectId;
+  value: Realm.Mixed;
+  list!: Realm.List<Realm.Mixed>;
+
+  static schema: ObjectSchema = {
+    name: "MixedClass",
+    properties: {
+      _id: "objectId",
+      value: "mixed",
+      list: "mixed[]",
+    },
+    primaryKey: "_id",
+  };
+}
 
 /**
  * The default tester of values.
@@ -48,35 +59,38 @@ function defaultTester(actual: Realm.Mixed, inserted: Realm.Mixed) {
  * - Deletes the Realm locally
  * - Reopens and downloads the Realm
  * - Performs a test to ensure the downloaded value match the value created locally.
- * @param typeName
- * @param options
+ * @param typeName Name of the mixed type (only used for the test name)
+ * @param value The value to be used for the test, or a function to obtain it
+ * @param testValue The function used to assert equality
+ * @param useFlexibleSync Boolean to indicate the use of flexible sync (otherwise partition based sync will be used)
  */
 function describeRoundtrip({
   typeName,
   value,
-  testValue = defaultTester,
-  flexibleSync,
+  valueTester = defaultTester,
+  useFlexibleSync,
 }: {
   typeName: string;
   value: Value;
-  testValue?: ValueTester;
-  flexibleSync: boolean;
+  valueTester?: ValueTester;
+  useFlexibleSync: boolean;
 }) {
   function performTest(actual: Realm.Mixed, inserted: Realm.Mixed) {
-    const result = testValue(actual, inserted);
+    const result = valueTester(actual, inserted);
     if (typeof result === "boolean") {
-      expect(result).equals(true, `${testValue} failed!`);
+      //TODO If we use the default tester this is not necessary.
+      expect(result).equals(true, `${valueTester} failed!`);
     }
   }
 
-  // TODO: This might be a useful utility
+  // TODO: This might be a useful utility  //Should we keep this around if not used?
   function log(...args: [string]) {
     const date = new Date();
     console.log(date.toString(), date.getMilliseconds(), ...args);
   }
 
   async function setupTest(realm: Realm) {
-    if (flexibleSync) {
+    if (useFlexibleSync) {
       await realm.subscriptions.update((mutableSubs) => {
         mutableSubs.add(realm.objects("MixedClass"));
       });
@@ -86,22 +100,8 @@ function describeRoundtrip({
 
   describe(`roundtrip of '${typeName}'`, () => {
     openRealmBefore({
-      schema: [
-        {
-          name: "MixedClass",
-          primaryKey: "_id",
-          properties: {
-            _id: "objectId",
-            value: "mixed?",
-            list: "mixed[]",
-          },
-        },
-      ],
-      sync: flexibleSync
-        ? {
-            flexible: true,
-          }
-        : { partitionValue: "mixed-test" },
+      schema: [MixedClass],
+      sync: useFlexibleSync ? { flexible: true } : { partitionValue: "mixed-test" },
     });
 
     it("writes", async function (this: RealmContext) {
@@ -110,7 +110,7 @@ function describeRoundtrip({
       this._id = new Realm.BSON.ObjectId();
       this.realm.write(() => {
         this.value = typeof value === "function" ? value(this.realm) : value;
-        this.realm.create<MixedClass>("MixedClass", {
+        this.realm.create(MixedClass, {
           _id: this._id,
           value: this.value,
           // Adding a few other unrelated elements to the list
@@ -152,18 +152,18 @@ function describeRoundtrip({
 function describeTypes(flexibleSync: boolean) {
   authenticateUserBefore();
 
-  describeRoundtrip({ typeName: "null", value: null, flexibleSync });
+  describeRoundtrip({ typeName: "null", value: null, useFlexibleSync: flexibleSync });
 
-  // TODO: Provide an API to speficy storing this as an int
-  describeRoundtrip({ typeName: "int", value: 123, flexibleSync });
+  // TODO: Provide an API to specify storing this as an int
+  describeRoundtrip({ typeName: "int", value: 123, useFlexibleSync: flexibleSync });
 
   // TODO: Provide an API to specify which of these to store
-  describeRoundtrip({ typeName: "float / double", value: 123.456, flexibleSync });
+  describeRoundtrip({ typeName: "float / double", value: 123.456, useFlexibleSync: flexibleSync });
 
-  describeRoundtrip({ typeName: "bool (true)", value: true, flexibleSync });
-  describeRoundtrip({ typeName: "bool (false)", value: false, flexibleSync });
+  describeRoundtrip({ typeName: "bool (true)", value: true, useFlexibleSync: flexibleSync });
+  describeRoundtrip({ typeName: "bool (false)", value: false, useFlexibleSync: flexibleSync });
 
-  describeRoundtrip({ typeName: "string", value: "test-string", flexibleSync });
+  describeRoundtrip({ typeName: "string", value: "test-string", useFlexibleSync: flexibleSync });
 
   // Unsupported:
   // describeSimpleRoundtrip("undefined", undefined);
@@ -172,43 +172,43 @@ function describeTypes(flexibleSync: boolean) {
   describeRoundtrip({
     typeName: "data",
     value: buffer,
-    testValue: (value: ArrayBuffer) => {
+    valueTester: (value: ArrayBuffer) => {
       expect(value.byteLength).equals(4);
       expect([...new Uint8Array(value)]).deep.equals([4, 8, 12, 16]);
     },
-    flexibleSync,
+    useFlexibleSync: flexibleSync,
   });
 
   const date = new Date(1620768552979);
   describeRoundtrip({
     typeName: "date",
     value: date,
-    testValue: (value: Date) => value.getTime() === date.getTime(),
-    flexibleSync,
+    valueTester: (value: Date) => value.getTime() === date.getTime(),
+    useFlexibleSync: flexibleSync,
   });
 
   const objectId = new Realm.BSON.ObjectId("609afc1290a3c1818f04635e");
   describeRoundtrip({
     typeName: "ObjectId",
     value: objectId,
-    testValue: (value: Realm.BSON.ObjectId) => objectId.equals(value),
-    flexibleSync,
+    valueTester: (value: Realm.BSON.ObjectId) => objectId.equals(value),
+    useFlexibleSync: flexibleSync,
   });
 
   const uuid = new Realm.BSON.UUID("9476a497-60ef-4439-bc8a-52b8ad0d4875");
   describeRoundtrip({
     typeName: "UUID",
     value: uuid,
-    testValue: (value: Realm.BSON.UUID) => uuid.equals(value),
-    flexibleSync,
+    valueTester: (value: Realm.BSON.UUID) => uuid.equals(value),
+    useFlexibleSync: flexibleSync,
   });
 
   const decimal128 = Realm.BSON.Decimal128.fromString("1234.5678");
   describeRoundtrip({
     typeName: "Decimal128",
     value: decimal128,
-    testValue: (value: Realm.BSON.Decimal128) => decimal128.bytes.equals(value.bytes),
-    flexibleSync,
+    valueTester: (value: Realm.BSON.Decimal128) => decimal128.bytes.equals(value.bytes),
+    useFlexibleSync: flexibleSync,
   });
 
   const recursiveObjectId = new Realm.BSON.ObjectId();
@@ -224,12 +224,12 @@ function describeTypes(flexibleSync: boolean) {
       result.value = result;
       return result;
     },
-    testValue: (value: MixedClass) => recursiveObjectId.equals(value._id),
-    flexibleSync,
+    valueTester: (value: MixedClass) => recursiveObjectId.equals(value._id),
+    useFlexibleSync: flexibleSync,
   });
 }
 
-describe("mixed", () => {
+describe("mixed synced", () => {
   describe("partition-based sync roundtrip", function () {
     this.longTimeout();
     importAppBefore(buildAppConfig("with-pbs").anonAuth().partitionBasedSync());
