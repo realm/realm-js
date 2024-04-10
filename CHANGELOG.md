@@ -18,6 +18,7 @@
 * Added support for using aggregate operations on Mixed properties in queries. ([realm/realm-core#7398](https://github.com/realm/realm-core/pull/7398))
 * Improved file compaction performance on platforms with page sizes greater than 4k (for example arm64 Apple platforms) for files less than 256 pages in size. ([realm/realm-core#7492](https://github.com/realm/realm-core/pull/7492))
 * Added the ability to set the log level for one or more categories via `Realm.setLogLevel`. ([#6560](https://github.com/realm/realm-js/issues/6560))
+* Added detection and better instructions when imported from the Expo Go app. ([#6523](https://github.com/realm/realm-js/pull/6523))
 
 ### Fixed
 * Aligned Dictionaries to Lists and Sets when they get cleared. ([#6205](https://github.com/realm/realm-core/issues/6205), since v10.3.0-rc.1)
