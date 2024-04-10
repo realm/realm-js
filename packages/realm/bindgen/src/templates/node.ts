@@ -30,9 +30,9 @@ import {
   Pointer,
   Template,
 } from "@realm/bindgen/bound-model";
-import { clangFormat } from "@realm/bindgen/formatter";
 
 import { doJsPasses } from "../js-passes";
+import { trunkFormatter } from "../formatters";
 
 // Code assumes this is a unique name that is always in scope to refer to the Napi::Env.
 // Callbacks need to ensure this is in scope. Functions taking Env arguments must use this name.
@@ -417,8 +417,7 @@ function convertToNode(addon: NodeAddon, type: Type, expr: string): string {
         case "AsyncResult":
           assert.fail("Should never see AsyncResult here");
       }
-      assert.fail(`unknown template ${type.name}`);
-      break;
+      return assert.fail(`unknown template ${type.name}`);
 
     case "Class":
       assert(!type.sharedPtrWrapped, `should not directly convert from ${type.name} without shared_ptr wrapper`);
@@ -537,8 +536,7 @@ function convertFromNode(addon: NodeAddon, type: Type, expr: string): string {
         case "std::function":
           return `${type.toCpp()}(${c(inner, expr)})`;
       }
-      assert.fail(`unknown template ${type.name}`);
-      break;
+      return assert.fail(`unknown template ${type.name}`);
 
     case "Class":
       if (type.sharedPtrWrapped) return `*NODE_TO_SHARED_${type.name}(${expr})`;
@@ -919,7 +917,7 @@ class NodeCppDecls extends CppDecls {
 }
 
 export function generate({ rawSpec, spec, file: makeFile }: TemplateContext): void {
-  const out = makeFile("node_init.cpp", clangFormat);
+  const out = makeFile("node_init.cpp", trunkFormatter);
 
   // HEADER
   out(`// This file is generated: Update the spec instead of editing this file directly`);
