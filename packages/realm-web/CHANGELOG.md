@@ -1,5 +1,8 @@
 ## vNext (TBD)
 
+> [!NOTE]
+> This version communicates with Atlas Device Services through a different URL (https://services.cloud.mongodb.com). While we consider this an internal detail of the SDK, you might need to update rules in firewalls or other configuration that you've used to limit connections made by your app.
+
 ### Deprecations
 * None
 
