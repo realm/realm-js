@@ -3,6 +3,9 @@
 > [!NOTE]
 > This version bumps the Realm file format to version 24. It is not possible to downgrade to earlier versions. Older files will automatically be upgraded to the new file format. Files created by Realm JavaScript prior to v6.0.0, might not be upgradeable. **Only Realm Studio 15.0.0 or later** will be able to open the new file format.
 
+> [!NOTE]
+> This version communicates with Atlas Device Services through a different URL (https://services.cloud.mongodb.com). While we consider this an internal detail of the SDK, you might need to update rules in firewalls or other configuration that you've used to limit connections made by your app.
+
 ### Enhancements
 * Updated bundled OpenSSL version to 3.2.0. ([realm/realm-core#7303](https://github.com/realm/realm-core/pull/7303))
 * Improved performance of object notifiers with complex schemas by ~20%. ([realm/realm-core#7424](https://github.com/realm/realm-core/pull/7424))

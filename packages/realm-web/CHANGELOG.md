@@ -1,17 +1,20 @@
 ## vNext (TBD)
 
+> [!NOTE]
+> This version communicates with Atlas Device Services through a different URL (https://services.cloud.mongodb.com). While we consider this an internal detail of the SDK, you might need to update rules in firewalls or other configuration that you've used to limit connections made by your app.
+
 ### Deprecations
 * None
 
 ### Enhancements
-* The base URL used to communicate with the Atlas App Services was updated changed from "https://realm.mongodb.com" to "https://services.cloud.mongodb.com". ([#6591](https://github.com/realm/realm-js/pull/6591))
+* None
 
 ### Fixed
 * Fixed an endless loop of requests that would happen if linking credentials failed due to an authentication failure. ([#6588](https://github.com/realm/realm-js/pull/6588), since v0.6.0)
 * Logging in with `Credentials.anonymous()` credentials will now reuse any existing anonymous user which is already authenticated with the app. This aligns with the behaviour of the `realm` package and will result in less users being created. Use `Credentials.anonymous(false)` to disable this behaviour and achieve the old behaviour of creating new anonymous users on every login. ([#6592](https://github.com/realm/realm-js/pull/6592))
 
 ### Internal
-* None
+* The base URL used to communicate with the Atlas App Services was changed from "https://realm.mongodb.com" to "https://services.cloud.mongodb.com". ([#6591](https://github.com/realm/realm-js/pull/6591))
 
 2.0.0 Release notes (2022-10-18)
 =============================================================
