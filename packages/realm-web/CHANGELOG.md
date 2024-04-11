@@ -14,7 +14,7 @@
 * Logging in with `Credentials.anonymous()` credentials will now reuse any existing anonymous user which is already authenticated with the app. This aligns with the behaviour of the `realm` package and will result in less users being created. Use `Credentials.anonymous(false)` to disable this behaviour and achieve the old behaviour of creating new anonymous users on every login. ([#6592](https://github.com/realm/realm-js/pull/6592))
 
 ### Internal
-* The base URL used to communicate with the Atlas App Services was updated changed from "https://realm.mongodb.com" to "https://services.cloud.mongodb.com". ([#6591](https://github.com/realm/realm-js/pull/6591))
+* The base URL used to communicate with the Atlas App Services was changed from "https://realm.mongodb.com" to "https://services.cloud.mongodb.com". ([#6591](https://github.com/realm/realm-js/pull/6591))
 
 2.0.0 Release notes (2022-10-18)
 =============================================================
