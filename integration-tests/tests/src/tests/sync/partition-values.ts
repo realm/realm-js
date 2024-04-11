@@ -93,7 +93,7 @@ describe("Partition-values", () => {
         -Number.MAX_SAFE_INTEGER,
         new BSON.ObjectId("603fa0af4caa9c90ff6e126c"),
         new BSON.UUID("f3287217-d1a2-445b-a4f7-af0520413b2a"),
-        null, // TODO: This causes the call to `new Realm(config)` to throw null pointer exception.
+        null,
         "",
       ];
 
