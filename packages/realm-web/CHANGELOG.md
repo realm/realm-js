@@ -3,7 +3,7 @@
 > [!NOTE]
 > This version communicates with Atlas Device Services through a different URL (https://services.cloud.mongodb.com). While we consider this an internal detail of the SDK, you might need to update rules in firewalls or other configuration that you've used to limit connections made by your app.
 
-### Breaking changes
+### Breaking Changes
 * The re-exported [bson](https://www.npmjs.com/package/bson) library (via `Realm.BSON`) has been upgraded from 4.7.2 to 6.6.0. ([6561](https://github.com/realm/realm-js/issues/6561))
   * Notable changes (refer to BSON's [v5](https://github.com/mongodb/js-bson/releases/tag/v5.0.0) and [v6](https://github.com/mongodb/js-bson/releases/tag/v6.0.0) release notes for all changes):
     * Removed `ObjectID` with uppercase `D` (please use `ObjectId`).
