@@ -28,6 +28,8 @@ on:
 jobs:
   publish-package-release:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
     steps:
     - run: echo "Publishing release for ${{inputs.package}}"
     - uses: kanga333/variable-mapper@v0.3.0
@@ -115,7 +117,7 @@ jobs:
 
     - name: Publish ${{ env.RELEASE_TITLE }} v${{ steps.get-version.outputs.version }} on NPM
       working-directory: ${{ env.PACKAGE_PATH }}
-      run: npm publish --tag '${{ inputs.tag}}'
+      run: npm publish --provenance --tag '${{ inputs.tag}}'
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 

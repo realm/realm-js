@@ -37,6 +37,11 @@
     "@tsconfig/node18": "^18.2.2",
     "@tsconfig/recommended": "^1.0.3"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/realm/realm-js.git",
+    "directory": "packages/fetch"
+  },
   "engines": {
     "node": ">=18"
   }
