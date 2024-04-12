@@ -1417,7 +1417,7 @@ describe("Mixed", () => {
             expect(list[0]).equals("updated");
           });
 
-          // TODO: Solve the "removeAll()" case for self-assignment.
+          // TODO: Enable when self-assignment is solved (https://github.com/realm/realm-core/issues/7422).
           it.skip("self assigns", function (this: RealmContext) {
             const created = this.realm.write(() => {
               return this.realm.create<IMixedSchema>(MixedSchema.name, { mixed: ["original1", "original2"] });
@@ -1439,7 +1439,7 @@ describe("Mixed", () => {
             expect(list[1]).equals("original2");
           });
 
-          // TODO: Solve the "removeAll()" case for self-assignment.
+          // TODO: Enable when self-assignment is solved (https://github.com/realm/realm-core/issues/7422).
           it.skip("self assigns nested list", function (this: RealmContext) {
             const { mixed: list } = this.realm.write(() => {
               return this.realm.create<IMixedSchema>(MixedSchema.name, {
@@ -1603,7 +1603,7 @@ describe("Mixed", () => {
             expect(dictionary.newKey).equals("updated");
           });
 
-          // TODO: Solve the "removeAll()" case for self-assignment.
+          // TODO: Enable when self-assignment is solved (https://github.com/realm/realm-core/issues/7422).
           it.skip("self assigns", function (this: RealmContext) {
             const created = this.realm.write(() => {
               return this.realm.create<IMixedSchema>(MixedSchema.name, {
@@ -1627,7 +1627,7 @@ describe("Mixed", () => {
             expect(dictionary.key2).equals("original2");
           });
 
-          // TODO: Solve the "removeAll()" case for self-assignment.
+          // TODO: Enable when self-assignment is solved (https://github.com/realm/realm-core/issues/7422).
           it.skip("self assigns nested dictionary", function (this: RealmContext) {
             const { mixed: dictionary } = this.realm.write(() => {
               return this.realm.create<IMixedSchema>(MixedSchema.name, {

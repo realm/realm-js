@@ -426,7 +426,7 @@ export function insertIntoListOfMixed(
   internal: binding.List,
   toBinding: TypeHelpers["toBinding"],
 ) {
-  // TODO: Solve the "removeAll()" case for self-assignment.
+  // TODO: Solve the "removeAll()" case for self-assignment (https://github.com/realm/realm-core/issues/7422).
   internal.removeAll();
 
   for (const [index, item] of list.entries()) {
