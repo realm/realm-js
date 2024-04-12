@@ -794,7 +794,7 @@ describe("Lists", () => {
         obj.arrayCol = [this.realm.create<ITestObjectSchema>(TestObjectSchema.name, { doubleCol: 1.0 })];
         expect(obj.arrayCol[0].doubleCol).equals(1.0);
 
-        // TODO: Solve the "removeAll()" case for self-assignment.
+        // TODO: Enable when self-assignment is solved (https://github.com/realm/realm-core/issues/7422).
         // obj.arrayCol = obj.arrayCol; // eslint-disable-line no-self-assign
         // expect(obj.arrayCol[0].doubleCol).equals(1.0);
 
