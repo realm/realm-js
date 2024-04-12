@@ -4,7 +4,7 @@
 * None
 
 ### Enhancements
-* A `mixed` value can now hold a `Realm.List` and `Realm.Dictionary` with nested collections. Note that `Realm.Set` is not supported as a `mixed` value. ([#6513](https://github.com/realm/realm-js/pull/6513))
+* A `mixed` value can now hold a `Realm.List` and `Realm.Dictionary` with nested collections. Note that `Realm.Set` is not supported as a `mixed` value. ([#6613](https://github.com/realm/realm-js/pull/6613))
 ```typescript
 class CustomObject extends Realm.Object {
   value!: Realm.Types.Mixed;
