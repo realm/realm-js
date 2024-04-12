@@ -7,7 +7,6 @@
 > This version communicates with Atlas Device Services through a different URL (https://services.cloud.mongodb.com). While we consider this an internal detail of the SDK, you might need to update rules in firewalls or other configuration that you've used to limit connections made by your app.
 
 ### Enhancements
-
 * Updated bundled OpenSSL version to 3.2.0. ([realm/realm-core#7303](https://github.com/realm/realm-core/pull/7303))
 * Improved performance of object notifiers with complex schemas by ~20%. ([realm/realm-core#7424](https://github.com/realm/realm-core/pull/7424))
 * Improved performance with very large number of notifiers by ~75%. ([realm/realm-core#7424](https://github.com/realm/realm-core/pull/7424))
@@ -24,10 +23,9 @@
 * Added the ability to set the log level for one or more categories via `Realm.setLogLevel`. ([#6560](https://github.com/realm/realm-js/issues/6560))
 * Added detection and better instructions when imported from the Expo Go app. ([#6523](https://github.com/realm/realm-js/pull/6523))
 * A `mixed` value can now hold a `Realm.List` and `Realm.Dictionary` with nested collections. Note that `Realm.Set` is not supported as a `mixed` value. ([#6513](https://github.com/realm/realm-js/pull/6513))
-
 ```typescript
 class CustomObject extends Realm.Object {
-  value!: Realm.Mixed;
+  value!: Realm.Types.Mixed;
 
   static schema: ObjectSchema = {
     name: "CustomObject",
@@ -39,8 +37,8 @@ class CustomObject extends Realm.Object {
 
 const realm = await Realm.open({ schema: [CustomObject] });
 
-// Create an object with a dictionary value as the Mixed property,
-// containing primitives and a list.
+// Create an object with a dictionary value as the Mixed
+// property, containing primitives and a list.
 const realmObject = realm.write(() => {
   return realm.create(CustomObject, {
     value: {
@@ -49,9 +47,7 @@ const realmObject = realm.write(() => {
       bool: true,
       list: [
         {
-          dict: {
-            string: "world",
-          },
+          string: "world",
         },
       ],
     },
@@ -59,16 +55,30 @@ const realmObject = realm.write(() => {
 });
 
 // Accessing the collection value returns the managed collection.
-// The default generic type argument is `unknown` (mixed).
-const dictionary = realmObject.value as Realm.Dictionary;
-const list = dictionary.list as Realm.List;
-const leafDictionary = (list[0] as Realm.Dictionary).dict as Realm.Dictionary;
+const dictionary = realmObject.value;
+expectDictionary(dictionary);
+const list = dictionary.list;
+expectList(list);
+const leafDictionary = list[0];
+expectDictionary(leafDictionary);
 console.log(leafDictionary.string); // "world"
 
 // Update the Mixed property to a list.
 realm.write(() => {
   realmObject.value = [1, "hello", { newKey: "new value" }];
 });
+
+// Useful custom helper functions. (Will be provided in a future release.)
+function expectList(value: unknown): asserts value is Realm.List {
+  if (!(value instanceof Realm.List)) {
+    throw new Error("Expected a 'Realm.List'.");
+  }
+}
+function expectDictionary(value: unknown): asserts value is Realm.Dictionary {
+  if (!(value instanceof Realm.Dictionary)) {
+    throw new Error("Expected a 'Realm.Dictionary'.");
+  }
+}
 ```
 
 ### Fixed
