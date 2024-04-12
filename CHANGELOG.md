@@ -22,7 +22,7 @@
 * Improved file compaction performance on platforms with page sizes greater than 4k (for example arm64 Apple platforms) for files less than 256 pages in size. ([realm/realm-core#7492](https://github.com/realm/realm-core/pull/7492))
 * Added the ability to set the log level for one or more categories via `Realm.setLogLevel`. ([#6560](https://github.com/realm/realm-js/issues/6560))
 * Added detection and better instructions when imported from the Expo Go app. ([#6523](https://github.com/realm/realm-js/pull/6523))
-* A `mixed` value can now hold a `Realm.List` and `Realm.Dictionary` with nested collections. Note that `Realm.Set` is not supported as a `mixed` value. ([#6513](https://github.com/realm/realm-js/pull/6513))
+* A `mixed` value can now hold a `Realm.List` and `Realm.Dictionary` with nested collections. Note that `Realm.Set` is not supported as a `mixed` value. ([#6613](https://github.com/realm/realm-js/pull/6613))
 ```typescript
 class CustomObject extends Realm.Object {
   value!: Realm.Types.Mixed;
