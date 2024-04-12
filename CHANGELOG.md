@@ -2,10 +2,9 @@
 
 ### Enhancements
 * A `mixed` value can now hold a `Realm.List` and `Realm.Dictionary` with nested collections. Note that `Realm.Set` is not supported as a `mixed` value. ([#6513](https://github.com/realm/realm-js/pull/6513))
-
 ```typescript
 class CustomObject extends Realm.Object {
-  value!: Realm.Mixed;
+  value!: Realm.Types.Mixed;
 
   static schema: ObjectSchema = {
     name: "CustomObject",
@@ -17,8 +16,8 @@ class CustomObject extends Realm.Object {
 
 const realm = await Realm.open({ schema: [CustomObject] });
 
-// Create an object with a dictionary value as the Mixed property,
-// containing primitives and a list.
+// Create an object with a dictionary value as the Mixed
+// property, containing primitives and a list.
 const realmObject = realm.write(() => {
   return realm.create(CustomObject, {
     value: {
@@ -27,9 +26,7 @@ const realmObject = realm.write(() => {
       bool: true,
       list: [
         {
-          dict: {
-            string: "world",
-          },
+          string: "world",
         },
       ],
     },
@@ -37,16 +34,30 @@ const realmObject = realm.write(() => {
 });
 
 // Accessing the collection value returns the managed collection.
-// The default generic type argument is `unknown` (mixed).
-const dictionary = realmObject.value as Realm.Dictionary;
-const list = dictionary.list as Realm.List;
-const leafDictionary = (list[0] as Realm.Dictionary).dict as Realm.Dictionary;
+const dictionary = realmObject.value;
+expectDictionary(dictionary);
+const list = dictionary.list;
+expectList(list);
+const leafDictionary = list[0];
+expectDictionary(leafDictionary);
 console.log(leafDictionary.string); // "world"
 
 // Update the Mixed property to a list.
 realm.write(() => {
   realmObject.value = [1, "hello", { newKey: "new value" }];
 });
+
+// Useful custom helper functions. (Will be provided in a future release.)
+function expectList(value: unknown): asserts value is Realm.List {
+  if (!(value instanceof Realm.List)) {
+    throw new Error("Expected a 'Realm.List'.");
+  }
+}
+function expectDictionary(value: unknown): asserts value is Realm.Dictionary {
+  if (!(value instanceof Realm.Dictionary)) {
+    throw new Error("Expected a 'Realm.Dictionary'.");
+  }
+}
 ```
 
 ### Fixed
