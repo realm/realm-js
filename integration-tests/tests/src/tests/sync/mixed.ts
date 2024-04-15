@@ -50,33 +50,12 @@ class MixedClass extends Realm.Object<MixedClass> {
  * @param inserted The value inserted locally before upload.
  */
 function defaultTester(actual: Realm.Mixed, inserted: Realm.Mixed) {
-  expect(actual).equals(inserted);
-}
-
-// These two are taken from the changelog. Should we add it
-function expectList(value: unknown): asserts value is Realm.List {
-  //
-  if (!(value instanceof Realm.List)) {
-    throw new Error("Expected a 'Realm.List'.");
-  }
-}
-function expectDictionary(value: unknown): asserts value is Realm.Dictionary {
-  if (!(value instanceof Realm.Dictionary)) {
-    throw new Error("Expected a 'Realm.Dictionary'.");
-  }
-}
-
-/**
- * The default tester of values.
- * @param actual The value downloaded from the server.
- * @param inserted The value inserted locally before upload.
- */
-function betterTester(actual: Realm.Mixed, inserted: Realm.Mixed) {
   if (actual instanceof Realm.List) {
     const insertedVal = inserted as Realm.Mixed[]; //TODO I should remove all of these "as" (?)
-    actual.forEach((item, index) => betterTester(item, insertedVal[index]));
+    actual.forEach((item, index) => defaultTester(item, insertedVal[index]));
   } else if (actual instanceof Realm.Dictionary) {
-    Object.keys(actual).forEach((key) => betterTester(actual[key], inserted[key]));
+    const insertedVal = inserted as { [key: string]: Mixed };
+    Object.keys(actual).forEach((key) => defaultTester(actual[key], insertedVal[key]));
   } else if (actual instanceof Realm.BSON.Decimal128) {
     const insertedVal = inserted as Realm.BSON.Decimal128;
     expect(actual.bytes.equals(insertedVal.bytes)).equals(true);
@@ -90,10 +69,10 @@ function betterTester(actual: Realm.Mixed, inserted: Realm.Mixed) {
     const insertedVal = inserted as Date;
     expect(actual.getTime() == insertedVal.getTime()).equals(true);
   } else if (actual instanceof ArrayBuffer) {
-    const insertedVal = inserted as Uint8Array;
-    const binary_view = new Uint8Array(actual);
-    expect(actual.byteLength).equals(insertedVal.byteLength);
-    binary_view.forEach((item, index) => betterTester(item, insertedVal[index]));
+    const actualBinaryView = new Uint8Array(actual);
+    const insertedBynaryView = new Uint8Array(inserted as ArrayBuffer);
+    expect(actualBinaryView.byteLength).equals(insertedBynaryView.byteLength);
+    actualBinaryView.forEach((item, index) => defaultTester(item, insertedBynaryView[index]));
   } else {
     expect(actual).equals(inserted);
   }
@@ -123,7 +102,6 @@ function describeRoundtrip({
   valueTester?: ValueTester;
   useFlexibleSync: boolean;
 }) {
-  valueTester = betterTester;
   function performTest(actual: Realm.Mixed, inserted: Realm.Mixed) {
     const result = valueTester(actual, inserted);
     if (typeof result === "boolean") {
@@ -278,7 +256,6 @@ function describeTypes(flexibleSync: boolean) {
   });
 
   if (flexibleSync) {
-    //TODO Remove only
     describe("collections in mixed", () => {
       const data = new Uint8Array([0xd8, 0x21, 0xd6, 0xe8, 0x00, 0x57, 0xbc, 0xb2, 0x6a, 0x15]);
 
@@ -292,7 +269,7 @@ function describeTypes(flexibleSync: boolean) {
         new Realm.BSON.ObjectId("609afc1290a3c1818f04635e"),
         new Realm.BSON.UUID("9476a497-60ef-4439-bc8a-52b8ad0d4875"),
         new Date(1620768552979),
-        data,
+        data.buffer,
       ];
 
       const mixedDict = {
@@ -305,7 +282,7 @@ function describeTypes(flexibleSync: boolean) {
         objectId: new Realm.BSON.ObjectId("609afc1290a3c1818f04635e"),
         uuid: new Realm.BSON.UUID("9476a497-60ef-4439-bc8a-52b8ad0d4875"),
         date: new Date(1620768552979),
-        data: data,
+        data: data.buffer,
       };
 
       const nestedMixedList: Mixed[] = [...mixedList, mixedList, mixedDict];
@@ -319,35 +296,31 @@ function describeTypes(flexibleSync: boolean) {
       describeRoundtrip({
         typeName: "list",
         value: mixedList,
-        valueTester: betterTester,
         useFlexibleSync: true,
       });
 
       describeRoundtrip({
         typeName: "nested list",
         value: nestedMixedList,
-        valueTester: betterTester,
         useFlexibleSync: true,
       });
 
       describeRoundtrip({
         typeName: "dictionary",
         value: mixedDict,
-        valueTester: betterTester,
         useFlexibleSync: true,
       });
 
       describeRoundtrip({
         typeName: "nested dictionary",
         value: nextedMixedDict,
-        valueTester: betterTester,
         useFlexibleSync: true,
       });
     });
   }
 }
 
-describe("mixed synced", () => {
+describe.only("mixed synced", () => {
   //TODO Should we keep this around?
   describe("partition-based sync roundtrip", function () {
     this.longTimeout();
