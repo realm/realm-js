@@ -25,7 +25,10 @@ import dts from "rollup-plugin-dts";
 import pkg from "./package.json" assert { type: "json" };
 
 const replacer = replace({
+  preventAssignment: true,
+  values: {
   __SDK_VERSION__: JSON.stringify(pkg.version),
+  },
 });
 
 export default [
