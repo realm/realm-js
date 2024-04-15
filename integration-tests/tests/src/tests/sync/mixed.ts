@@ -310,7 +310,7 @@ function describeTypes(flexibleSync: boolean) {
   }
 }
 
-describe.only("mixed synced", () => {
+describe("mixed synced", () => {
   //TODO Should we keep this around?
   describe("partition-based sync roundtrip", function () {
     this.longTimeout();
