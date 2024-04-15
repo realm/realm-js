@@ -1360,10 +1360,6 @@ export namespace Realm {
   export import PushClient = internal.PushClient;
 }
 
-// Clear the internal state to prevent crashes when reloading on React Native
-binding.RealmCoordinator.clearAllCaches();
-binding.App.clearCachedApps();
-
 // Set default logger and log level.
 Realm.setLogger(defaultLogger);
 Realm.setLogLevel(defaultLoggerLevel);

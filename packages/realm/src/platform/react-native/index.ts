@@ -22,5 +22,9 @@ import "./fs";
 import "./device-info";
 import "./sync-proxy-config";
 
+// Clear the internal state to prevent crashes when reloading the app
+binding.RealmCoordinator.clearAllCaches();
+binding.App.clearCachedApps();
+
 import { Realm } from "../../Realm";
 export = Realm;
