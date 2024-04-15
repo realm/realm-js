@@ -84,6 +84,7 @@ export function generate({ spec: boundSpec }: TemplateContext, out: Outputter): 
     "Decimal128",
     "EJSON_parse: EJSON.parse",
     "EJSON_stringify: EJSON.stringify",
+    "Symbol_for: Symbol.for",
   ];
 
   for (const cls of spec.classes) {
