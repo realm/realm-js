@@ -24,7 +24,7 @@ import { itUploadsDeletesAndDownloads } from "./upload-delete-download";
 import { buildAppConfig } from "../../utils/build-app-config";
 
 type Value = Realm.Mixed | ((realm: Realm) => Realm.Mixed);
-type ValueTester = (actual: Realm.Mixed, inserted: Realm.Mixed) => void | boolean;
+type ValueTester = (actual: Realm.Mixed, inserted: Realm.Mixed) => void;
 
 class MixedClass extends Realm.Object<MixedClass> {
   _id!: Realm.BSON.ObjectId;
@@ -103,11 +103,7 @@ function describeRoundtrip({
   useFlexibleSync: boolean;
 }) {
   function performTest(actual: Realm.Mixed, inserted: Realm.Mixed) {
-    const result = valueTester(actual, inserted);
-    if (typeof result === "boolean") {
-      //TODO If we use the default tester this is not necessary.
-      expect(result).equals(true, `${valueTester} failed!`);
-    }
+    valueTester(actual, inserted);
   }
 
   // TODO: This might be a useful utility  //Should we keep this around if not used?
@@ -199,10 +195,6 @@ function describeTypes(flexibleSync: boolean) {
   describeRoundtrip({
     typeName: "data",
     value: buffer,
-    valueTester: (value: ArrayBuffer) => {
-      expect(value.byteLength).equals(4);
-      expect([...new Uint8Array(value)]).deep.equals([4, 8, 12, 16]);
-    },
     useFlexibleSync: flexibleSync,
   });
 
@@ -210,7 +202,6 @@ function describeTypes(flexibleSync: boolean) {
   describeRoundtrip({
     typeName: "date",
     value: date,
-    valueTester: (value: Date) => value.getTime() === date.getTime(),
     useFlexibleSync: flexibleSync,
   });
 
@@ -218,7 +209,6 @@ function describeTypes(flexibleSync: boolean) {
   describeRoundtrip({
     typeName: "ObjectId",
     value: objectId,
-    valueTester: (value: Realm.BSON.ObjectId) => objectId.equals(value),
     useFlexibleSync: flexibleSync,
   });
 
@@ -226,7 +216,6 @@ function describeTypes(flexibleSync: boolean) {
   describeRoundtrip({
     typeName: "UUID",
     value: uuid,
-    valueTester: (value: Realm.BSON.UUID) => uuid.equals(value),
     useFlexibleSync: flexibleSync,
   });
 
@@ -234,7 +223,6 @@ function describeTypes(flexibleSync: boolean) {
   describeRoundtrip({
     typeName: "Decimal128",
     value: decimal128,
-    valueTester: (value: Realm.BSON.Decimal128) => decimal128.bytes.equals(value.bytes),
     useFlexibleSync: flexibleSync,
   });
 
@@ -251,7 +239,9 @@ function describeTypes(flexibleSync: boolean) {
       result.value = result;
       return result;
     },
-    valueTester: (value: MixedClass) => recursiveObjectId.equals(value._id),
+    valueTester: (value: MixedClass) => {
+      expect(recursiveObjectId.equals(value._id)).equals(true); //TODO I should be able to put this into the default tester
+    },
     useFlexibleSync: flexibleSync,
   });
 
