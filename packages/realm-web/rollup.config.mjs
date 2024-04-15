@@ -27,7 +27,7 @@ import pkg from "./package.json" assert { type: "json" };
 const replacer = replace({
   preventAssignment: true,
   values: {
-  __SDK_VERSION__: JSON.stringify(pkg.version),
+    __SDK_VERSION__: JSON.stringify(pkg.version),
   },
 });
 
@@ -100,15 +100,16 @@ export default [
       },
     ],
     plugins: [
-      commonjs(),
-      typescript({
-        tsconfig: "src/dom/tsconfig.json",
-      }),
       nodeResolve({
         mainFields: ["browser", "module", "main"],
         exportConditions: ["browser", "module", "main"],
         modulesOnly: true,
         preferBuiltins: false,
+      }),
+      commonjs(),
+      typescript({
+        tsconfig: "src/dom/tsconfig.json",
+        removeComments: true,
       }),
       replacer,
     ],
