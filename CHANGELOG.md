@@ -47,7 +47,7 @@
 * The base URL used to communicate with the Atlas App Services was changed from "https://realm.mongodb.com" to "https://services.cloud.mongodb.com". ([realm/realm-core#7534](https://github.com/realm/realm-core/pull/7534)).
 * Upgraded Realm Core from v13.26.0 to v14.5.1. ([#6499](https://github.com/realm/realm-js/issues/6499), [#6541](https://github.com/realm/realm-js/issues/6541), [#6568](https://github.com/realm/realm-js/issues/6568), [#6572](https://github.com/realm/realm-js/issues/6572), [#6599](https://github.com/realm/realm-js/issues/6599), and [#6610](https://github.com/realm/realm-js/issues/6610))
 * Publish releases with [provenance statements](https://docs.npmjs.com/generating-provenance-statements).
-* Use CMake v3.29.2 on Github Actions.
+* Use CMake v3.29.2 and Node v20.11.1 on Github Actions.
 
 ## 12.7.0-rc.0 (2024-03-26)
 

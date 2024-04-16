@@ -84,7 +84,7 @@ jobs:
       - name: Setup node version
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 20.11.1
           cache: npm
 
       - name: Get NPM cache directory
@@ -188,13 +188,6 @@ jobs:
           # This tells msbuild to compile only one file at a time; ccache needs that.
           echo 'UseMultiToolTask=true' >> $GITHUB_ENV
           echo 'VCPKG_KEEP_ENV_VARS=CCACHE_COMPILER;CCACHE_STATSLOG;CCACHE_LOGFILE;CCACHE_COMPILERTYPE;UseMultiToolTask' >> $GITHUB_ENV
-
-      # stupid workaround
-      - name: Stupid workaround
-        if: ${{ runner.os == 'Windows' }}
-        shell: bash
-        run: |
-          npm install -g cmake-js
 
       # build the c++ library for standard targets
       - name: Build node
