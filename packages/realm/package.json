@@ -70,7 +70,8 @@
     "scripts/submit-analytics.mjs",
     "react-native.config.js",
     "RealmJS.podspec",
-    "binding.gyp"
+    "binding.gyp",
+    "PrivacyInfo.xcprivacy"
   ],
   "scripts": {
     "test": "wireit",
