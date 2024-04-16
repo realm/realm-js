@@ -114,6 +114,12 @@ jobs:
         with:
           cmake-version: '3.29.2'
 
+      - name Check CMake
+        shell: bash
+        run: |
+          which cmake
+          cmake --version
+
       # ninja-build is used by default if available and results in faster build times
       # On linux, electron requires a connected display.  We fake this by giving it a headless environment using xvfb
       # Relevant issue: https://github.com/juliangruber/browser-run/issues/147
