@@ -109,15 +109,9 @@ jobs:
         uses: ilammy/msvc-dev-cmd@v1
 
       - name: Setup CMake
-        if: ${{ runner.os == 'Windows' }}
         uses: jwlawson/actions-setup-cmake@v2
         with:
           cmake-version: '3.29.2'
-
-      - name Check CMake
-        shell: bash
-        run: |
-          dir $(which cmake) >> $GITHUB_PATH
 
       # ninja-build is used by default if available and results in faster build times
       # On linux, electron requires a connected display.  We fake this by giving it a headless environment using xvfb
@@ -328,6 +322,13 @@ jobs:
       - name: MSVC Setup
         if: ${{ runner.os == 'Windows' }}
         uses: ilammy/msvc-dev-cmd@v1
+
+      # we use a different version for Android, and it is specified below
+      - name: Setup CMake
+        if: ${{ matrix.variant.os != 'android' }}
+        uses: jwlawson/actions-setup-cmake@v2
+        with:
+          cmake-version: '3.29.2'
 
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1
