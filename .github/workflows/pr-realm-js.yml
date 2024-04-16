@@ -76,11 +76,6 @@ jobs:
           - { os: ios, runner: macos-latest-xlarge, arch: catalyst, artifact-path: packages/realm/react-native/ios/realm-js-ios.xcframework }
           - { os: ios, runner: macos-latest-xlarge, arch: ios, artifact-path: packages/realm/react-native/ios/realm-js-ios.xcframework }
     steps:
-      - name: Setup CMake
-        uses: jwlawson/actions-setup-cmake@v2
-        with:
-          cmake-version: '3.29.2'
-
       - name: Checkout code
         uses: actions/checkout@v4
         with:
@@ -112,6 +107,12 @@ jobs:
       - name: MSVC Setup
         if: ${{ runner.os == 'Windows' }}
         uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Setup CMake
+        if: ${{ runner.os == 'Windows' }}
+        uses: jwlawson/actions-setup-cmake@v2
+        with:
+          cmake-version: '3.29.2'
 
       # ninja-build is used by default if available and results in faster build times
       # On linux, electron requires a connected display.  We fake this by giving it a headless environment using xvfb
