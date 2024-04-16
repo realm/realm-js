@@ -189,6 +189,13 @@ jobs:
           echo 'UseMultiToolTask=true' >> $GITHUB_ENV
           echo 'VCPKG_KEEP_ENV_VARS=CCACHE_COMPILER;CCACHE_STATSLOG;CCACHE_LOGFILE;CCACHE_COMPILERTYPE;UseMultiToolTask' >> $GITHUB_ENV
 
+      # stupid workaround
+      - name: Stupid workaround
+        if: ${{ runner.os == 'Windows' }}
+        shell: bash
+        run: |
+          npm install -g cmake-js
+
       # build the c++ library for standard targets
       - name: Build node
         if: ${{ matrix.variant.os != 'ios' && matrix.variant.os != 'android' }}
