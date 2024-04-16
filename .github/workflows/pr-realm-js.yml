@@ -117,8 +117,7 @@ jobs:
       - name Check CMake
         shell: bash
         run: |
-          which cmake
-          cmake --version
+          dir $(which cmake) >> $GITHUB_PATH
 
       # ninja-build is used by default if available and results in faster build times
       # On linux, electron requires a connected display.  We fake this by giving it a headless environment using xvfb
