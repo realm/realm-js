@@ -77,9 +77,9 @@ jobs:
           - { os: ios, runner: macos-latest-xlarge, arch: ios, artifact-path: packages/realm/react-native/ios/realm-js-ios.xcframework }
     steps:
       - name: Setup CMake
-        uses: jwlawson/actions-setup-cmake@v2
+        uses: lukka/get-cmake@latest
         with:
-          cmake-version: '3.29.2'
+          cmakeVersion: "3.29.2"
 
       - name: Checkout code
         uses: actions/checkout@v4
@@ -282,6 +282,11 @@ jobs:
           #- { os: ios, target: "test:ci:catalyst", runner: macos-latest, environment: react-native-test-app, arch: "catalyst" }
     timeout-minutes: 60
     steps:
+      - name: Setup CMake
+        uses: lukka/get-cmake@latest
+        with:
+          cmakeVersion: "3.29.2"
+
       - name: Checkout code
         uses: actions/checkout@v4
         with:
