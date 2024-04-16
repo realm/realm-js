@@ -64,7 +64,7 @@ jobs:
           - { os: linux, runner: ubuntu-latest, arch: x64, artifact-path: packages/realm/prebuilds, test-node: true, test-electron: true }
           - { os: linux, runner: ubuntu-latest, arch: arm, artifact-path: packages/realm/prebuilds }
           - { os: linux, runner: ubuntu-latest, arch: arm64, artifact-path: packages/realm/prebuilds }
-          - { os: windows, runner: windows-latest, arch: x64, artifact-path: packages/realm/prebuilds, test-node: true, test-electron: true }
+          - { os: windows, runner: windows-20240403, arch: x64, artifact-path: packages/realm/prebuilds, test-node: true, test-electron: true }
           - { os: windows, runner: windows-2019, arch: ia32, artifact-path: packages/realm/prebuilds }
           - { os: android, runner: ubuntu-latest, arch: x86_64, artifact-path: packages/realm/react-native/android/src/main/jniLibs }
           - { os: android, runner: ubuntu-latest, arch: armeabi-v7a, artifact-path: packages/realm/react-native/android/src/main/jniLibs }
@@ -76,11 +76,6 @@ jobs:
           - { os: ios, runner: macos-latest-xlarge, arch: catalyst, artifact-path: packages/realm/react-native/ios/realm-js-ios.xcframework }
           - { os: ios, runner: macos-latest-xlarge, arch: ios, artifact-path: packages/realm/react-native/ios/realm-js-ios.xcframework }
     steps:
-      - name: Setup CMake
-        uses: lukka/get-cmake@latest
-        with:
-          cmakeVersion: "3.29.2"
-
       - name: Checkout code
         uses: actions/checkout@v4
         with:
@@ -271,9 +266,9 @@ jobs:
           - { os: linux, target: "test:ci", runner: ubuntu-latest, environment: node }
           - { os: linux, target: "test:ci:main", runner: ubuntu-latest, environment: electron }
           - { os: linux, target: "test:ci:renderer", runner: ubuntu-latest, environment: electron }
-          #- { os: windows, target: "test:ci", runner: windows-latest, environment: node}
-          #- { os: windows, target: "test:ci:main", runner: windows-latest, environment: electron }
-          #- { os: windows, target: "test:ci:renderer", runner: windows-latest, environment: electron }
+          #- { os: windows, target: "test:ci", runner: windows-20240403, environment: node}
+          #- { os: windows, target: "test:ci:main", runner: windows-20240403, environment: electron }
+          #- { os: windows, target: "test:ci:renderer", runner: windows-20240403, environment: electron }
           - { os: darwin, target: "test:ci:main", runner: macos-latest, environment: electron }
           - { os: darwin, target: "test:ci:renderer", runner: macos-latest, environment: electron }
           - { os: darwin, target: "test:ci", runner: macos-latest, environment: node }
@@ -282,11 +277,6 @@ jobs:
           #- { os: ios, target: "test:ci:catalyst", runner: macos-latest, environment: react-native-test-app, arch: "catalyst" }
     timeout-minutes: 60
     steps:
-      - name: Setup CMake
-        uses: lukka/get-cmake@latest
-        with:
-          cmakeVersion: "3.29.2"
-
       - name: Checkout code
         uses: actions/checkout@v4
         with:
