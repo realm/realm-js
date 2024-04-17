@@ -161,7 +161,7 @@ describe("SharedRealm operations", () => {
             id: 1,
             number: Infinity,
           });
-        })
+        });
       }).to.throw("The number Infinity cannot be converted to a BigInt because it is not an integer");
     });
 
@@ -179,7 +179,6 @@ describe("SharedRealm operations", () => {
         inMemory: true,
         schema: [DoubleSchema],
       });
-
 
       const obj = realm.write(() => {
         return realm.create(DoubleSchema.name, {
