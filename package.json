@@ -10,6 +10,7 @@
     "lint": "wireit",
     "lint:fix": "wireit",
     "clean": "git clean -fdx -e node_modules -e .env",
+    "update-submodules": "git submodule update --recursive --init",
     "prepend-changelog-header": "tsx scripts/prepend-changelog-header.ts"
   },
   "wireit": {
