@@ -1,4 +1,4 @@
-## vNext (TBD)
+## 12.7.0 (2024-04-17)
 
 > [!NOTE]
 > This version bumps the Realm file format to version 24. It is not possible to downgrade to earlier versions. Older files will automatically be upgraded to the new file format. Files created by Realm JavaScript prior to v6.0.0, might not be upgradeable. **Only Realm Studio 15.0.0 or later** will be able to open the new file format.
