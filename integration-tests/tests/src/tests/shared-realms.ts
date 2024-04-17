@@ -155,6 +155,10 @@ describe("SharedRealm operations", () => {
         schema: [IntSchema],
       });
 
+      // Infinity is not a valid integer. Node and RN throw different error messages so we only
+      // check if throws.
+      // node: "The number Infinity cannot be converted to a BigInt because it is not an integer"
+      // RN: "number is not integral"
       expect(() => {
         realm.write(() => {
           realm.create(IntSchema.name, {
@@ -162,7 +166,7 @@ describe("SharedRealm operations", () => {
             number: Infinity,
           });
         });
-      }).to.throw("The number Infinity cannot be converted to a BigInt because it is not an integer");
+      }).to.throw();
     });
 
     it("Double field accepts Infinity", async () => {
