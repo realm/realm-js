@@ -24,7 +24,6 @@ import { getRegisteredEmailPassCredentials } from "../../utils/credentials";
 import { generatePartition } from "../../utils/generators";
 import { sleep, throwAfterTimeout } from "../../utils/sleep";
 import { buildAppConfig } from "../../utils/build-app-config";
-import { createPromiseHandle } from "../../utils/promise-handle";
 
 const DogForSyncSchema: Realm.ObjectSchema = {
   name: "Dog",
@@ -896,7 +895,6 @@ describe("SessionTest", () => {
           partitionValue: partition,
           //@ts-expect-error internal field
           _sessionStopPolicy: "immediately", // Make it safe to delete files after realm.close()
-
         },
         schema: [PersonForSyncSchema, DogForSyncSchema],
       };
