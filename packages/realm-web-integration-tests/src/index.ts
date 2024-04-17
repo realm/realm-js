@@ -24,25 +24,25 @@ if (location.pathname.endsWith("-callback")) {
   Realm.handleAuthRedirect();
 } else if (location.pathname.endsWith("/google-login")) {
   console.log("Hello to Google Login ...");
-  require("./google-login");
+  await import("./google-login");
 } else {
   new MochaRemoteClient({
-    tests: () => {
+    async tests() {
       beforeEach(function () {
         this.slow(1000);
         this.timeout(10000);
       });
 
-      require("./environment.test");
-      require("./app.test");
-      require("./credentials.test");
-      require("./user.test");
-      require("./functions.test");
-      require("./services.test");
-      require("./api-key-auth.test");
-      require("./email-password-auth.test");
-      require("./iife.test");
-      require("./bson.test");
+      await import("./environment.test");
+      await import("./app.test");
+      await import("./credentials.test");
+      await import("./user.test");
+      await import("./functions.test");
+      await import("./services.test");
+      await import("./api-key-auth.test");
+      await import("./email-password-auth.test");
+      await import("./iife.test");
+      await import("./bson.test");
     },
   });
 }
