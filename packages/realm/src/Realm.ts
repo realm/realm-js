@@ -1360,6 +1360,6 @@ export namespace Realm {
   export import PushClient = internal.PushClient;
 }
 
-//Set default logger and log level.
+// Set default logger and log level.
 Realm.setLogger(defaultLogger);
 Realm.setLogLevel(defaultLoggerLevel);
