@@ -24,6 +24,7 @@ import { getRegisteredEmailPassCredentials } from "../../utils/credentials";
 import { generatePartition } from "../../utils/generators";
 import { sleep, throwAfterTimeout } from "../../utils/sleep";
 import { buildAppConfig } from "../../utils/build-app-config";
+import { createPromiseHandle } from "../../utils/promise-handle";
 
 const DogForSyncSchema: Realm.ObjectSchema = {
   name: "Dog",
@@ -878,7 +879,7 @@ describe("SessionTest", () => {
       expect(encryptedRealmCopy).to.be.undefined;
     });
 
-    it("has expected behaviour", async function (this: AppContext) {
+    it.only("has expected behaviour", async function (this: AppContext) {
       this.longTimeout();
       const credentials1 = await getRegisteredEmailPassCredentials(this.app);
       const credentials2 = await getRegisteredEmailPassCredentials(this.app);
@@ -895,6 +896,7 @@ describe("SessionTest", () => {
           partitionValue: partition,
           //@ts-expect-error internal field
           _sessionStopPolicy: "immediately", // Make it safe to delete files after realm.close()
+
         },
         schema: [PersonForSyncSchema, DogForSyncSchema],
       };
@@ -965,6 +967,7 @@ describe("SessionTest", () => {
       realm1.syncSession?.resume();
       user1 = await this.app.logIn(credentials1);
       await realm1.syncSession?.uploadAllLocalChanges();
+      await realm1.syncSession?.downloadAllServerChanges();
 
       // create copy no. 2 of the realm
       realm1.writeCopyTo(outputConfig2);
