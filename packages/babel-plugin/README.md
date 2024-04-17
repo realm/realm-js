@@ -153,7 +153,7 @@ As a rule, we recommend using TypeScript types where possible, and using `Realm.
 
 Types which are provided by Realm (e.g. `Realm.List`) are exported from both the top-level `Realm` namespace, and from `Realm.Types` - you can use either variant in your models.
 
-The supported types are shown in the table below. See [the Realm documentation](https://www.mongodb.com/docs/realm/sdk/react-native/data-types/field-types/) and [SDK documentation](https://www.mongodb.com/docs/realm-sdks/js/latest/Realm.html#~PropertyType) for more details on each type.
+The supported types are shown in the table below. See [the Realm documentation](https://www.mongodb.com/docs/atlas/device-sdks/sdk/react-native/model-data/data-types/property-types/) for more details on each type.
 
 | Realm.Types type                             | Realm schema type | TypeScript type | Realm type              | Notes                                                                                  |
 | -------------------------------------------- | ----------------- | --------------- | ----------------------- | -------------------------------------------------------------------------------------- |
@@ -175,7 +175,7 @@ The supported types are shown in the table below. See [the Realm documentation](
 
 ### Specifying schema properties as `static`s
 
-Additional schema properties can be specified by adding `static` properties to your class, as shown in the table below. See [the Realm documentation](https://www.mongodb.com/docs/realm/sdk/node/examples/define-a-realm-object-model/) for more details.
+Additional schema properties can be specified by adding `static` properties to your class, as shown in the table below. See [the Realm documentation](https://www.mongodb.com/docs/atlas/device-sdks/sdk/react-native/model-data/define-a-realm-object-model/) for more details.
 
 | Static property | Type      | Notes                                                                      |
 | --------------- | --------- | -------------------------------------------------------------------------- |
@@ -200,7 +200,7 @@ export class Task extends Realm.Object<Task, "description"> {
 
 ### Using decorators to index and remap properties
 
-The `@realm/babel-plugin` package exports decorators to allow you to specify certain properties should be indexed (using the `@index` decorators) or should remap to a Realm schema property with a different name (using the `@mapTo` decorator). To learn more about this functionality, see [the documentation](https://www.mongodb.com/docs/realm/sdk/react-native/examples/define-a-realm-object-model/#index-a-property).
+The `@realm/babel-plugin` package exports decorators to allow you to specify certain properties should be indexed (using the `@index` decorators) or should remap to a Realm schema property with a different name (using the `@mapTo` decorator). To learn more about this functionality, see [the documentation](https://www.mongodb.com/docs/atlas/device-sdks/sdk/react-native/model-data/define-a-realm-object-model/#index-a-property).
 
 Note that use of decorators requires using the `@babel/plugin-proposal-decorators` plugin and for `experimentalDecorators` to be enabled in your `tsconfig.json`. There is currently no way to specifying properties to be indexed or remapped without using decorators.
 
