@@ -965,6 +965,7 @@ describe("SessionTest", () => {
       realm1.syncSession?.resume();
       user1 = await this.app.logIn(credentials1);
       await realm1.syncSession?.uploadAllLocalChanges();
+      await realm1.syncSession?.downloadAllServerChanges();
 
       // create copy no. 2 of the realm
       realm1.writeCopyTo(outputConfig2);

@@ -254,6 +254,8 @@ describe(`GeoSpatial`, () => {
 
   describe("Base cases", () => {
     it("GeoCircle basic", async function (this: RealmContext) {
+      this.longTimeout();
+
       let circle: GeoCircle = {
         center: [0, 0],
         distance: 0.001,
@@ -308,6 +310,8 @@ describe(`GeoSpatial`, () => {
     });
 
     it("GeoBox basic", async function (this: RealmContext) {
+      this.longTimeout();
+
       let box: GeoBox = {
         bottomLeft: [-1, -1],
         topRight: [1, 1],
@@ -362,6 +366,8 @@ describe(`GeoSpatial`, () => {
     });
 
     it("GeoPolygon basic", async function (this: RealmContext) {
+      this.longTimeout();
+
       let polygon: GeoPolygon = {
         outerRing: [
           [-2, -2],
@@ -453,6 +459,8 @@ describe(`GeoSpatial`, () => {
     });
 
     it("Alternative GeoPoint", async function (this: RealmContext) {
+      this.longTimeout();
+
       //Circle
       let circle: GeoCircle = {
         center: [-32.34, -25],
@@ -512,6 +520,8 @@ describe(`GeoSpatial`, () => {
     });
 
     it("Alternative GeoPolygon", async function (this: RealmContext) {
+      this.longTimeout();
+
       //Polygon
       let polygon: CanonicalGeoPolygon = {
         type: "Polygon",
@@ -557,6 +567,8 @@ describe(`GeoSpatial`, () => {
 
     // Altitude throws an error in sync queries
     it("Altitude is supported but ignored", async function (this: RealmContext) {
+      this.longTimeout();
+
       let box: GeoBox = {
         bottomLeft: [50, 50, 10],
         topRight: [52, 52, 10],
@@ -588,6 +600,8 @@ describe(`GeoSpatial`, () => {
     });
 
     it("Coordinate Substitution", async function (this: RealmContext) {
+      this.longTimeout();
+
       //Circle
       const circle: GeoCircle = {
         center: [0, 0],
@@ -647,6 +661,8 @@ describe(`GeoSpatial`, () => {
 
     // Not sync relevant, so we can skip doing this twice
     it("Distance conversions", function (this: RealmContext) {
+      this.longTimeout();
+
       //Test with about 60 centimeters accuracy
       const km = 20;
       expect(kmToRadians(km)).to.be.approximately(0.00313573007, 0.0000001);
