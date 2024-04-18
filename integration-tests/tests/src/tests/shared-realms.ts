@@ -134,4 +134,64 @@ describe("SharedRealm operations", () => {
       expect(this.realm.objectForPrimaryKey("Person", "Bob")).primaryKey.equals("Bob");
     });
   });
+
+  describe("Number conversion", () => {
+    beforeEach(() => {
+      Realm.clearTestState();
+    });
+
+    it("Int field does not accept Infinity", async () => {
+      const IntSchema = {
+        name: "IntSchema",
+        properties: {
+          id: "int",
+          number: "int",
+        },
+        primaryKey: "id",
+      };
+
+      const realm = await Realm.open({
+        inMemory: true,
+        schema: [IntSchema],
+      });
+
+      // Infinity is not a valid integer. Node and RN throw different error messages so we only
+      // check if throws.
+      // node: "The number Infinity cannot be converted to a BigInt because it is not an integer"
+      // RN: "number is not integral"
+      expect(() => {
+        realm.write(() => {
+          realm.create(IntSchema.name, {
+            id: 1,
+            number: Infinity,
+          });
+        });
+      }).to.throw();
+    });
+
+    it("Double field accepts Infinity", async () => {
+      const DoubleSchema = {
+        name: "DoubleSchema",
+        properties: {
+          id: "int",
+          number: "double",
+        },
+        primaryKey: "id",
+      };
+
+      const realm = await Realm.open({
+        inMemory: true,
+        schema: [DoubleSchema],
+      });
+
+      const obj = realm.write(() => {
+        return realm.create(DoubleSchema.name, {
+          id: 1,
+          number: Infinity,
+        });
+      });
+
+      expect(obj.number).equals(Infinity);
+    });
+  });
 });
