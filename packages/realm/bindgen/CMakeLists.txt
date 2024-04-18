@@ -123,7 +123,7 @@ endif()
 
 target_include_directories(realm-js PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
-set(SDK_DIR ${PACKAGE_ROOT_DIR}/packages/realm)
+set(SDK_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../)
 set(BINDING_DIR ${SDK_DIR}/binding)
 
 target_include_directories(realm-js PRIVATE "${BINDING_DIR}")
@@ -159,22 +159,10 @@ if(DEFINED CMAKE_JS_VERSION)
 else()
     include(jsi.cmake)
 
-    bindgen(
-        TEMPLATE ${SDK_DIR}/bindgen/src/templates/jsi.ts
-        OUTPUTS jsi_init.cpp
-        OUTDIR ${CMAKE_CURRENT_BINARY_DIR}
-        SPECS ${JS_SPEC_FILE}
-        OPTIN ${JS_OPT_IN_FILE}
-        SOURCES ${SDK_TS_FILES}
-    )
-
-    target_sources(realm-js PRIVATE jsi_init.cpp ${CMAKE_JS_SRC})
-
+    target_sources(realm-js PRIVATE ${BINDING_DIR}/jsi/jsi_init.cpp ${CMAKE_JS_SRC})
+    target_include_directories(realm-js PRIVATE vendor/realm-core/bindgen/src)
     if(ANDROID)
         add_subdirectory(${BINDING_DIR}/android android)
-    elseif(CMAKE_SYSTEM_NAME STREQUAL iOS)
-        add_subdirectory(${BINDING_DIR}/ios ios)
-    else()
         # disabling for now to simplify the bootstrapping process.
         # message(FATAL_ERROR "Only support JSI builds for Android and iOS")
     endif()

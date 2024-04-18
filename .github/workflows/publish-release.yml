@@ -63,7 +63,7 @@ jobs:
         github_token: ${{ secrets.REALM_CI_PAT }}
         name: realm-js-prebuilds
 
-    - name: Download bundle artifacts from PR
+    - name: Download ts bundle artifacts from PR
       uses: dawidd6/action-download-artifact@d0f291cf39bd21965ea9c4c6e210fc355c3844ed
       with:
         workflow: pr-realm-js.yml
@@ -71,7 +71,17 @@ jobs:
         path: ${{ github.workspace }}
         workflow_conclusion: "" # Ignores workflow conclusion
         github_token: ${{ secrets.REALM_CI_PAT }}
-        name: realm-js-bundles
+        name: realm-js-ts
+
+    - name: Download jsi artifacts from PR
+      uses: dawidd6/action-download-artifact@d0f291cf39bd21965ea9c4c6e210fc355c3844ed
+      with:
+        workflow: pr-realm-js.yml
+        commit: ${{ inputs.commit || github.sha }}
+        path: ${{ github.workspace }}
+        workflow_conclusion: "" # Ignores workflow conclusion
+        github_token: ${{ secrets.REALM_CI_PAT }}
+        name: realm-js-jsi
 
     - name: Read version
       id: get-version

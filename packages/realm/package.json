@@ -66,12 +66,14 @@
     "index.node.js",
     "index.react-native.js",
     "types.d.cts",
-    "react-native/android",
-    "react-native/ios/realm-js-ios.xcframework",
-    "react-native/ios/realm-js-ios.xcframework/**/*.a",
+    "react-native/android/**/*{.gradle,.java,.xml}",
     "react-native/ios/RealmReact",
-    "bindgen/vendor/realm-core/dependencies.list",
-    "scripts/submit-analytics.mjs",
+    "react-native/ios/output-files.xcfilelist",
+    "react-native/shared",
+    "binding",
+    "bindgen",
+    "!bindgen/vendor/realm-core/build-xcode-platforms",
+    "scripts",
     "react-native.config.js",
     "RealmJS.podspec",
     "PrivacyInfo.xcprivacy",
@@ -88,12 +90,9 @@
     "build:node:prebuild:arm64": "wireit",
     "build:node:prebuild:x64": "wireit",
     "build:node:prebuild:ia32": "wireit",
-    "build:android": "wireit",
-    "build:ios": "wireit",
-    "build:ios:debug:simulator": "wireit",
-    "build:ios:debug:ios": "wireit",
-    "build:ios:debug:catalyst": "wireit",
+    "bindgen:generate:jsi": "wireit",
     "check-types": "wireit",
+    "prepare:ios": "wireit",
     "install": "prebuild-install --runtime napi || echo 'Failed to download prebuild for Realm'",
     "docs": "wireit",
     "postinstall": "node ./scripts/submit-analytics.mjs"
@@ -156,6 +155,24 @@
       "output": [
         "binding/dist/core.js",
         "binding/dist/core.d.ts"
+      ]
+    },
+    "bindgen:generate:jsi": {
+      "command": "realm-bindgen --template bindgen/src/templates/jsi.ts --spec bindgen/vendor/realm-core/bindgen/spec.yml --spec bindgen/js_spec.yml --opt-in bindgen/js_opt_in_spec.yml --output ./binding/jsi",
+      "dependencies": [
+        "bindgen:generate:spec-schema"
+      ],
+      "files": [
+        "bindgen/vendor/realm-core/bindgen/spec.yml",
+        "bindgen/vendor/realm-core/bindgen/src",
+        "bindgen/js_spec.yml",
+        "bindgen/js_opt_in_spec.yml",
+        "bindgen/src",
+        "!bindgen/src/templates",
+        "bindgen/src/templates/jsi.ts"
+      ],
+      "output": [
+        "binding/jsi/jsi_init.cpp"
       ]
     },
     "bindgen:generate:typescript": {
@@ -269,54 +286,16 @@
         "PREBUILD_ARCH": "ia32"
       }
     },
-    "build:android": {
-      "command": "tsx ./scripts/build-android.ts",
+    "prepare:ios": {
+      "command": "source ./scripts/generate-dummy-libs.sh && source ./scripts/generate-input-list.sh",
       "files": [
-        "bindgen/android/**",
-        "bindgen/src/**/*.ts",
-        "bindgen/vendor/realm-core/bindgen/src/**/*.ts",
-        "bindgen/vendor/realm-core/bindgen/src/**/*.h",
-        "bindgen/src/**/*.h"
-      ]
-    },
-    "build:ios": {
-      "command": "scripts/build-ios.sh -c ${CONFIGURATION:=Release} ${PLATFORMS}",
-      "files": [
-        "../../src/ios/**",
-        "bindgen/src/**/*.ts",
-        "bindgen/vendor/realm-core/bindgen/src/**/*.ts",
-        "bindgen/vendor/realm-core/bindgen/src/**/*.h",
-        "bindgen/src/**/*.h"
+        "scripts/generate-dummy-libs.sh",
+        "scripts/generate-input-list.sh"
       ],
-      "env": {
-        "PLATFORMS": {
-          "external": true
-        },
-        "CONFIGURATION": {
-          "external": true
-        }
-      }
-    },
-    "build:ios:debug:simulator": {
-      "command": "npm run build:ios",
-      "env": {
-        "PLATFORMS": "simulator",
-        "CONFIGURATION": "Debug"
-      }
-    },
-    "build:ios:debug:ios": {
-      "command": "npm run build:ios",
-      "env": {
-        "PLATFORMS": "ios",
-        "CONFIGURATION": "Debug"
-      }
-    },
-    "build:ios:debug:catalyst": {
-      "command": "npm run build:ios",
-      "env": {
-        "PLATFORMS": "catalyst",
-        "CONFIGURATION": "Debug"
-      }
+      "output": [
+        "react-native/ios/input-files.xcfilelist",
+        "react-native/ios/lib"
+      ]
     },
     "check-types": {
       "command": "tsc --project tsconfig.public-types-check.json",

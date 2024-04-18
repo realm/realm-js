@@ -13,7 +13,7 @@
     "test:ios": "wireit",
     "test:ci:android": "wireit",
     "test:ci:ios": "wireit",
-    "pod-install:simulator": "wireit",
+    "pod-install": "wireit",
     "metro": "react-native start --reset-cache",
     "runner": "node harness/runner.js"
   },
@@ -44,7 +44,7 @@
     "test:ios": {
       "command": "mocha-remote --reporter @realm/mocha-reporter -- concurrently --kill-others-on-fail npm:metro npm:runner",
       "dependencies": [
-        "pod-install:simulator",
+        "pod-install",
         "../../../packages/realm:build:ts",
         "../../../packages/mocha-reporter:bundle"
       ],
@@ -61,24 +61,23 @@
     "test:ci:ios": {
       "command": "mocha-remote -- concurrently --kill-others-on-fail npm:metro npm:runner",
       "dependencies": [
-        "pod-install:ci"
+        "pod-install"
       ],
       "env": {
         "PLATFORM": "ios"
       }
     },
-    "pod-install:simulator": {
+    "pod-install": {
       "command": "pod-install",
       "dependencies": [
-        {
-          "script": "../../../packages/realm:build:ios:debug:simulator",
-          "cascade": false
-        }
+        "../../../packages/realm:prepare:ios",
+        "../../../packages/realm:bindgen:generate:jsi"
       ],
       "clean": "if-file-deleted",
       "files": [
         "ios/Podfile",
-        "../../../packages/realm/react-native/ios/realm-js-ios.xcframework"
+        "../../../packages/realm/RealmJS.podspec",
+        "../../../packages/realm/scripts/*"
       ],
       "output": [
         "ios/Pods",
@@ -88,25 +87,9 @@
         "USE_CCACHE": {
           "external": true
         },
-        "USE_HERMES": {
+        "REALM_BUILD_CORE": {
           "external": true,
           "default": "1"
-        },
-        "RCT_NEW_ARCH_ENABLED": {
-          "external": true,
-          "default": "1"
-        },
-        "USE_BRIDGELESS": {
-          "external": true,
-          "default": "0"
-        }
-      }
-    },
-    "pod-install:ci": {
-      "command": "pod-install",
-      "env": {
-        "USE_CCACHE": {
-          "external": true
         },
         "USE_HERMES": {
           "external": true,
