@@ -5,6 +5,7 @@
 
 ### Enhancements
 * Report the originating error that caused a client reset to occur. ([realm/realm-core#6154](https://github.com/realm/realm-core/issues/6154))
+* Building for iOS and Android has been optimized for compatibility with future React Native versions, by deferring compilation of JSI dependent code to the dependent app's build.
 
 ### Fixed
 * A non-streaming progress notifier would not immediately call its callback after registration. Instead you would have to wait for a download message to be received to get your first update - if you were already caught up when you registered the notifier you could end up waiting a long time for the server to deliver a download that would call/expire your notifier. ([#7627](https://github.com/realm/realm-core/issues/7627), since v12.8.0)
