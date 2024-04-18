@@ -254,7 +254,7 @@ describe(`GeoSpatial`, () => {
 
   describe("Base cases", () => {
     it("GeoCircle basic", async function (this: RealmContext) {
-      this.timeout(5000);
+      this.longTimeout();
 
       let circle: GeoCircle = {
         center: [0, 0],
@@ -310,7 +310,7 @@ describe(`GeoSpatial`, () => {
     });
 
     it("GeoBox basic", async function (this: RealmContext) {
-      this.timeout(5000);
+      this.longTimeout();
 
       let box: GeoBox = {
         bottomLeft: [-1, -1],
@@ -366,7 +366,7 @@ describe(`GeoSpatial`, () => {
     });
 
     it("GeoPolygon basic", async function (this: RealmContext) {
-      this.timeout(5000);
+      this.longTimeout();
 
       let polygon: GeoPolygon = {
         outerRing: [
@@ -459,7 +459,7 @@ describe(`GeoSpatial`, () => {
     });
 
     it("Alternative GeoPoint", async function (this: RealmContext) {
-      this.timeout(5000);
+      this.longTimeout();
 
       //Circle
       let circle: GeoCircle = {
@@ -520,7 +520,7 @@ describe(`GeoSpatial`, () => {
     });
 
     it("Alternative GeoPolygon", async function (this: RealmContext) {
-      this.timeout(5000);
+      this.longTimeout();
 
       //Polygon
       let polygon: CanonicalGeoPolygon = {
@@ -567,7 +567,7 @@ describe(`GeoSpatial`, () => {
 
     // Altitude throws an error in sync queries
     it("Altitude is supported but ignored", async function (this: RealmContext) {
-      this.timeout(5000);
+      this.longTimeout();
 
       let box: GeoBox = {
         bottomLeft: [50, 50, 10],
@@ -600,7 +600,7 @@ describe(`GeoSpatial`, () => {
     });
 
     it("Coordinate Substitution", async function (this: RealmContext) {
-      this.timeout(5000);
+      this.longTimeout();
 
       //Circle
       const circle: GeoCircle = {
@@ -661,7 +661,7 @@ describe(`GeoSpatial`, () => {
 
     // Not sync relevant, so we can skip doing this twice
     it("Distance conversions", function (this: RealmContext) {
-      this.timeout(5000);
+      this.longTimeout();
 
       //Test with about 60 centimeters accuracy
       const km = 20;
