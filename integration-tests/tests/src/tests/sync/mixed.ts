@@ -16,12 +16,13 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 import { expect } from "chai";
-import Realm, { Mixed, ObjectSchema } from "realm";
+import Realm, { Credentials, Mixed, ObjectSchema } from "realm";
 
 import { importAppBefore, authenticateUserBefore, openRealmBefore } from "../../hooks";
 
 import { itUploadsDeletesAndDownloads } from "./upload-delete-download";
 import { buildAppConfig } from "../../utils/build-app-config";
+import { OpenRealmConfiguration, openRealm } from "../../utils/open-realm";
 
 type Value = Realm.Mixed | ((realm: Realm) => Realm.Mixed);
 type ValueTester = (actual: Realm.Mixed, inserted: Realm.Mixed) => void;
@@ -54,7 +55,7 @@ function defaultTester(actual: Realm.Mixed, inserted: Realm.Mixed) {
     const insertedVal = inserted as Realm.Mixed[]; //TODO I should remove all of these "as" (?)
     actual.forEach((item, index) => defaultTester(item, insertedVal[index]));
   } else if (actual instanceof Realm.Dictionary) {
-    const insertedVal = inserted as { [key: string]: Mixed };
+    const insertedVal = inserted as { [key: string]: any };
     Object.keys(actual).forEach((key) => defaultTester(actual[key], insertedVal[key]));
   } else if (actual instanceof Realm.BSON.Decimal128) {
     const insertedVal = inserted as Realm.BSON.Decimal128;
@@ -75,6 +76,15 @@ function defaultTester(actual: Realm.Mixed, inserted: Realm.Mixed) {
     actualBinaryView.forEach((item, index) => defaultTester(item, insertedBynaryView[index]));
   } else {
     expect(actual).equals(inserted);
+  }
+}
+
+async function setupTest(realm: Realm, useFlexibleSync: boolean) {
+  if (useFlexibleSync) {
+    await realm.subscriptions.update((mutableSubs) => {
+      mutableSubs.add(realm.objects("MixedClass"));
+    });
+    await realm.subscriptions.waitForSynchronization();
   }
 }
 
@@ -106,21 +116,6 @@ function describeRoundtrip({
     valueTester(actual, inserted);
   }
 
-  // TODO: This might be a useful utility  //Should we keep this around if not used?
-  function log(...args: [string]) {
-    const date = new Date();
-    console.log(date.toString(), date.getMilliseconds(), ...args);
-  }
-
-  async function setupTest(realm: Realm) {
-    if (useFlexibleSync) {
-      await realm.subscriptions.update((mutableSubs) => {
-        mutableSubs.add(realm.objects("MixedClass"));
-      });
-      await realm.subscriptions.waitForSynchronization();
-    }
-  }
-
   describe(`roundtrip of '${typeName}'`, () => {
     openRealmBefore({
       schema: [MixedClass],
@@ -128,8 +123,8 @@ function describeRoundtrip({
     });
 
     it("writes", async function (this: RealmContext) {
-      await setupTest(this.realm);
-
+      await setupTest(this.realm, useFlexibleSync);
+      //TODO Maybe I could also check that the dictionary can change value
       this._id = new Realm.BSON.ObjectId();
       this.realm.write(() => {
         this.value = typeof value === "function" ? value(this.realm) : value;
@@ -145,7 +140,7 @@ function describeRoundtrip({
     itUploadsDeletesAndDownloads();
 
     it("reads", async function (this: RealmContext) {
-      await setupTest(this.realm);
+      await setupTest(this.realm, useFlexibleSync);
 
       const obj = await new Promise<MixedClass>((resolve) => {
         this.realm
@@ -161,7 +156,7 @@ function describeRoundtrip({
       expect(typeof obj).equals("object");
       // Test the single value
       performTest(obj.value, this.value);
-      // Test the list of values  //TODO Maybe we don't need this?
+      // Test the list of values
       expect(obj.list.length).equals(4);
       const firstElement = obj.list[0];
       performTest(firstElement, this.value);
@@ -172,58 +167,53 @@ function describeRoundtrip({
   });
 }
 
-function describeTypes(flexibleSync: boolean) {
+function describeTypes(useFlexibleSync: boolean) {
   authenticateUserBefore();
 
-  describeRoundtrip({ typeName: "null", value: null, useFlexibleSync: flexibleSync });
+  describeRoundtrip({ typeName: "null", value: null, useFlexibleSync });
 
   // TODO: Provide an API to specify storing this as an int
-  describeRoundtrip({ typeName: "int", value: 123, useFlexibleSync: flexibleSync });
+  describeRoundtrip({ typeName: "int", value: 123, useFlexibleSync });
 
   // TODO: Provide an API to specify which of these to store
-  describeRoundtrip({ typeName: "float / double", value: 123.456, useFlexibleSync: flexibleSync });
-
-  describeRoundtrip({ typeName: "bool (true)", value: true, useFlexibleSync: flexibleSync });
-  describeRoundtrip({ typeName: "bool (false)", value: false, useFlexibleSync: flexibleSync });
-
-  describeRoundtrip({ typeName: "string", value: "test-string", useFlexibleSync: flexibleSync });
-
-  // Unsupported:
-  // describeSimpleRoundtrip("undefined", undefined);
+  describeRoundtrip({ typeName: "float / double", value: 123.456, useFlexibleSync });
+  describeRoundtrip({ typeName: "bool (true)", value: true, useFlexibleSync });
+  describeRoundtrip({ typeName: "bool (false)", value: false, useFlexibleSync });
+  describeRoundtrip({ typeName: "string", value: "test-string", useFlexibleSync });
 
   const buffer = new Uint8Array([4, 8, 12, 16]).buffer;
   describeRoundtrip({
     typeName: "data",
     value: buffer,
-    useFlexibleSync: flexibleSync,
+    useFlexibleSync: useFlexibleSync,
   });
 
   const date = new Date(1620768552979);
   describeRoundtrip({
     typeName: "date",
     value: date,
-    useFlexibleSync: flexibleSync,
+    useFlexibleSync: useFlexibleSync,
   });
 
   const objectId = new Realm.BSON.ObjectId("609afc1290a3c1818f04635e");
   describeRoundtrip({
     typeName: "ObjectId",
     value: objectId,
-    useFlexibleSync: flexibleSync,
+    useFlexibleSync: useFlexibleSync,
   });
 
   const uuid = new Realm.BSON.UUID("9476a497-60ef-4439-bc8a-52b8ad0d4875");
   describeRoundtrip({
     typeName: "UUID",
     value: uuid,
-    useFlexibleSync: flexibleSync,
+    useFlexibleSync: useFlexibleSync,
   });
 
   const decimal128 = Realm.BSON.Decimal128.fromString("1234.5678");
   describeRoundtrip({
     typeName: "Decimal128",
     value: decimal128,
-    useFlexibleSync: flexibleSync,
+    useFlexibleSync: useFlexibleSync,
   });
 
   const recursiveObjectId = new Realm.BSON.ObjectId();
@@ -242,10 +232,10 @@ function describeTypes(flexibleSync: boolean) {
     valueTester: (value: MixedClass) => {
       expect(recursiveObjectId.equals(value._id)).equals(true); //TODO I should be able to put this into the default tester
     },
-    useFlexibleSync: flexibleSync,
+    useFlexibleSync: useFlexibleSync,
   });
 
-  if (flexibleSync) {
+  if (useFlexibleSync) {
     describe("collections in mixed", () => {
       const data = new Uint8Array([0xd8, 0x21, 0xd6, 0xe8, 0x00, 0x57, 0xbc, 0xb2, 0x6a, 0x15]);
 
@@ -277,7 +267,7 @@ function describeTypes(flexibleSync: boolean) {
 
       const nestedMixedList: Mixed[] = [...mixedList, mixedList, mixedDict];
 
-      const nextedMixedDict = {
+      const nestedMixedDict = {
         ...mixedDict,
         innerList: mixedList,
         innerDict: mixedDict,
@@ -303,24 +293,83 @@ function describeTypes(flexibleSync: boolean) {
 
       describeRoundtrip({
         typeName: "nested dictionary",
-        value: nextedMixedDict,
+        value: nestedMixedDict,
         useFlexibleSync: true,
       });
     });
   }
 }
 
-describe("mixed synced", () => {
-  //TODO Should we keep this around?
-  describe("partition-based sync roundtrip", function () {
-    this.longTimeout();
-    importAppBefore(buildAppConfig("with-pbs").anonAuth().partitionBasedSync());
-    describeTypes(false);
-  });
+describe.only("mixed synced", () => {
+  // describe("partition-based sync roundtrip", function () {
+  //   this.longTimeout();
+  //   importAppBefore(buildAppConfig("with-pbs").anonAuth().partitionBasedSync());
+  //   describeTypes(false);
+  // });
 
-  describe.skipIf(environment.skipFlexibleSync, "flexible sync roundtrip", function () {
+  // describe.skipIf(environment.skipFlexibleSync, "flexible sync roundtrip", function () {
+  //   this.longTimeout();
+  //   importAppBefore(buildAppConfig("with-flx").anonAuth().flexibleSync());
+  //   describeTypes(true);
+  // });
+
+  describe.skipIf(environment.skipFlexibleSync, "mixed collections", function () {
     this.longTimeout();
     importAppBefore(buildAppConfig("with-flx").anonAuth().flexibleSync());
-    describeTypes(true);
+
+    const realmConfig = {
+      schema: [MixedClass],
+      sync: { flexible: true },
+    } satisfies OpenRealmConfiguration;
+
+    it("writes", async function (this: Mocha.Context & AppContext & UserContext) {
+      const user1 = await this.getUser(Credentials.anonymous());
+      const { realm: realm1, config: config1 } = await openRealm(realmConfig, user1);
+      await setupTest(realm1, true); // this adds the subscriptions
+
+      const obId = new Realm.BSON.ObjectID();
+      const obj1 = realm1.write(() => {
+        return realm1.create(MixedClass, {
+          _id: obId,
+          value: 23,
+        });
+      });
+
+      await realm1.syncSession?.uploadAllLocalChanges();
+
+      const user2 = await this.getUser(Credentials.anonymous());
+      const { realm: realm2, config: config2 } = await openRealm(realmConfig, user2);
+      await setupTest(realm2, true);
+
+      const obj2 = await new Promise<MixedClass>((resolve) => {
+        realm2
+          .objects<MixedClass>("MixedClass")
+          .filtered("_id = $0", obId)
+          .addListener(([obj]) => {
+            if (obj) {
+              resolve(obj);
+            }
+          });
+      });
+
+      expect(obj2.value).equals(obj1.value);
+
+      //Cleanup
+      realm1.close();
+      realm2.close();
+      Realm.deleteFile(config1);
+      Realm.deleteFile(config2);
+      Realm.clearTestState();
+    });
+
+    /***
+     * What to test
+     * - changing from one type to another
+     *  - string to list
+     *  - modifying list
+     *  - list to dictionary
+     *  - modifying dictionary
+     *  -
+     */
   });
 });

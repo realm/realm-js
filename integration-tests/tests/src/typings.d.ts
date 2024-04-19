@@ -142,7 +142,11 @@ declare namespace Mocha {
 }
 
 // Mocha contexts made available by hooks
-type AppContext = { app: Realm.App; databaseName: string } & Mocha.Context;
+type AppContext = {
+  app: Realm.App;
+  databaseName: string;
+  getUser: (credentials: Realm.Credentials) => Promise<Realm.User>;
+} & Mocha.Context;
 type UserContext = { user: Realm.User } & Mocha.Context;
 type CloseRealmOptions = { deleteFile: boolean; clearTestState: boolean; reopen: boolean };
 type RealmContext = {
