@@ -83,3 +83,9 @@ export function openRealmBefore(config: OpenRealmConfiguration = {}): void {
   before(openRealmBefore.name, openRealmHook(config));
   after("closeRealmAfter", closeThisRealm);
 }
+
+export function setupRealmHook() {
+  return async function openRealmHandler(this: UserContext & Mocha.Context): Promise<void> {
+    this.longTimeout();
+  };
+}
