@@ -69,9 +69,10 @@ export function openRealmHook(config: OpenRealmConfiguration = {}) {
 export function closeThisRealm(this: RealmContext & Mocha.Context): void {
   if (this.closeRealm) {
     this.closeRealm({ clearTestState: true, deleteFile: true });
+  } else {
+    // Clearing the test state to ensure the sync session gets completely reset and nothing is cached between tests
+    Realm.clearTestState();
   }
-  // Clearing the test state to ensure the sync session gets completely reset and nothing is cached between tests
-  Realm.clearTestState();
 }
 
 export function openRealmBeforeEach(config: OpenRealmConfiguration = {}): void {
@@ -84,8 +85,33 @@ export function openRealmBefore(config: OpenRealmConfiguration = {}): void {
   after("closeRealmAfter", closeThisRealm);
 }
 
-export function setupRealmHook() {
-  return async function openRealmHandler(this: UserContext & Mocha.Context): Promise<void> {
-    this.longTimeout();
+export async function setupRealmHook(this: AppContext & MultiRealmContext): Promise<void> {
+  this.openedInfo = [];
+
+  this.getRealm = async (config: OpenRealmConfiguration): Promise<Realm> => {
+    const user = await this.getUser(Realm.Credentials.anonymous(false));
+    const realmAndConfig = await openRealm(config, user);
+    this.openedInfo.push(realmAndConfig);
+    return realmAndConfig.realm;
   };
+
+  this.closeAllRealms = async () => {
+    this.openedInfo?.forEach(({ realm, config }) => {
+      if (!realm?.isClosed) {
+        realm.close();
+      }
+      Realm.deleteFile(config);
+    });
+
+    Realm.clearTestState();
+  };
+}
+
+export function closeMultiRealms(this: AppContext & MultiRealmContext): void {
+  this.closeAllRealms?.();
+}
+
+export function setupMultiRealmsBeforeAndAfterEach(): void {
+  beforeEach("openMultiRealmsBeforeEach", setupRealmHook);
+  afterEach("closeMultiRealmsAfterEach", closeMultiRealms);
 }
