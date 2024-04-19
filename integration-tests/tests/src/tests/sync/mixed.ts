@@ -18,7 +18,12 @@
 import { expect } from "chai";
 import Realm, { Credentials, Mixed, ObjectSchema } from "realm";
 
-import { importAppBefore, authenticateUserBefore, openRealmBefore } from "../../hooks";
+import {
+  importAppBefore,
+  authenticateUserBefore,
+  openRealmBefore,
+  setupMultiRealmsBeforeAndAfterEach as setupMultiRealmsBeforeAndAfterEach,
+} from "../../hooks";
 
 import { itUploadsDeletesAndDownloads } from "./upload-delete-download";
 import { buildAppConfig } from "../../utils/build-app-config";
@@ -301,30 +306,30 @@ function describeTypes(useFlexibleSync: boolean) {
 }
 
 describe.only("mixed synced", () => {
-  // describe("partition-based sync roundtrip", function () {
-  //   this.longTimeout();
-  //   importAppBefore(buildAppConfig("with-pbs").anonAuth().partitionBasedSync());
-  //   describeTypes(false);
-  // });
+  describe("partition-based sync roundtrip", function () {
+    this.longTimeout();
+    importAppBefore(buildAppConfig("with-pbs").anonAuth().partitionBasedSync());
+    describeTypes(false);
+  });
 
-  // describe.skipIf(environment.skipFlexibleSync, "flexible sync roundtrip", function () {
-  //   this.longTimeout();
-  //   importAppBefore(buildAppConfig("with-flx").anonAuth().flexibleSync());
-  //   describeTypes(true);
-  // });
+  describe.skipIf(environment.skipFlexibleSync, "flexible sync roundtrip", function () {
+    this.longTimeout();
+    importAppBefore(buildAppConfig("with-flx").anonAuth().flexibleSync());
+    describeTypes(true);
+  });
 
   describe.skipIf(environment.skipFlexibleSync, "mixed collections", function () {
     this.longTimeout();
     importAppBefore(buildAppConfig("with-flx").anonAuth().flexibleSync());
+    setupMultiRealmsBeforeAndAfterEach();
 
     const realmConfig = {
       schema: [MixedClass],
       sync: { flexible: true },
     } satisfies OpenRealmConfiguration;
 
-    it("writes", async function (this: Mocha.Context & AppContext & UserContext) {
-      const user1 = await this.getUser(Credentials.anonymous(false));
-      const { realm: realm1, config: config1 } = await openRealm(realmConfig, user1);
+    it("simple test", async function (this: Mocha.Context & AppContext & MultiRealmContext) {
+      const realm1 = await this.getRealm(realmConfig);
       await setupTest(realm1, true); // this adds the subscriptions
 
       const obId = new Realm.BSON.ObjectID();
@@ -337,8 +342,7 @@ describe.only("mixed synced", () => {
 
       await realm1.syncSession?.uploadAllLocalChanges();
 
-      const user2 = await this.getUser(Credentials.anonymous(false));
-      const { realm: realm2, config: config2 } = await openRealm(realmConfig, user2);
+      const realm2 = await this.getRealm(realmConfig);
       await setupTest(realm2, true);
 
       const obj2 = await new Promise<MixedClass>((resolve) => {
@@ -353,23 +357,6 @@ describe.only("mixed synced", () => {
       });
 
       expect(obj2.value).equals(obj1.value);
-
-      //Cleanup
-      realm1.close();
-      realm2.close();
-      Realm.deleteFile(config1);
-      Realm.deleteFile(config2);
-      Realm.clearTestState();
     });
-
-    /***
-     * What to test
-     * - changing from one type to another
-     *  - string to list
-     *  - modifying list
-     *  - list to dictionary
-     *  - modifying dictionary
-     *  -
-     */
   });
 });
