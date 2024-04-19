@@ -7,8 +7,7 @@
 * None
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None
+* Removed incorrect privacy manifest for iOS. ([#6624](https://github.com/realm/realm-js/issues/6624), since v12.7.0)
 
 ### Compatibility
 * React Native >= v0.71.4
