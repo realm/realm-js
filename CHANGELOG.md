@@ -1,10 +1,4 @@
-## vNext (TBD)
-
-### Deprecations
-* None
-
-### Enhancements
-* None
+## 12.7.1 (2024-04-19)
 
 ### Fixed
 * Fixed a crash when integrating removal of already removed dictionary key. ([realm/realm-core#7488](https://github.com/realm/realm-core/issues/7488), since v10.0.0)
