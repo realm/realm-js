@@ -30,7 +30,6 @@
 > This version communicates with Atlas Device Services through a different URL (https://services.cloud.mongodb.com). While we consider this an internal detail of the SDK, you might need to update rules in firewalls or other configuration that you've used to limit connections made by your app.
 
 ### Enhancements
-* Added [iOS Privacy Manifest](https://developer.apple.com/documentation/bundleresources/privacy_manifest_files?language=objc). ([#6547](https://github.com/realm/realm-js/issues/6547)
 * Updated bundled OpenSSL version to 3.2.0. ([realm/realm-core#7303](https://github.com/realm/realm-core/pull/7303))
 * Improved performance of object notifiers with complex schemas by ~20%. ([realm/realm-core#7424](https://github.com/realm/realm-core/pull/7424))
 * Improved performance with very large number of notifiers by ~75%. ([realm/realm-core#7424](https://github.com/realm/realm-core/pull/7424))
