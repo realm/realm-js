@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import Realm from "realm";
+import Realm, { Credentials } from "realm";
 
 import { AppConfig, AppImporter, Credentials } from "@realm/app-importer";
 import { mongodbServiceType } from "../utils/ExtendedAppConfigBuilder";
@@ -148,6 +148,10 @@ export function importAppBefore(config: AppConfig | { config: AppConfig }, sdkCo
 
         console.log(`${magentaTime}: ${greenLogLevel}:\t${whiteMessage}`);
       });
+
+      this.getUser = async (cred: Realm.Credentials): Promise<Realm.User> => {
+        return this.app.logIn(cred);
+      };
     }
   });
 
