@@ -43,7 +43,6 @@ Pod::Spec.new do |s|
 
   s.source_files           = 'react-native/ios/RealmReact/*.mm'
   s.public_header_files    = 'react-native/ios/RealmReact/*.h'
-  s.resource_bundles       = { 'RealmJS' => ['PrivacyInfo.xcprivacy'] }
 
   s.frameworks             = uses_frameworks ? ['React'] : []
 

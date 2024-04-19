@@ -8,6 +8,7 @@
 
 ### Fixed
 * Fixed a crash when integrating removal of already removed dictionary key. ([realm/realm-core#7488](https://github.com/realm/realm-core/issues/7488), since v10.0.0)
+* Removed incorrect privacy manifest for iOS. ([#6624](https://github.com/realm/realm-js/issues/6624), since v12.7.0)
 
 ### Compatibility
 * React Native >= v0.71.4
