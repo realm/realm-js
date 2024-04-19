@@ -1,11 +1,13 @@
 # coding: utf-8
 require 'json'
 
+# Reads REALM_BUILD_FROM_SOURCE environment variable
+BUILD_FROM_SOURCE = ENV['REALM_BUILD_FROM_SOURCE'] === 'true' || ENV['REALM_BUILD_FROM_SOURCE'] === '1'
+CMAKE_PATH = Pod::Executable::which('cmake')
+
 package = JSON.parse(File.read(File.expand_path('package.json', __dir__)))
 
 app_path = File.expand_path('../..', __dir__)
-
-cmake_path = Pod::Executable::which('cmake')
 
 # There is no API to detect the use of "use_frameworks!" in the Podfile which depends on this Podspec.
 # The "React" framework is only available and should be used if the Podfile calls use_frameworks!
@@ -70,24 +72,35 @@ Pod::Spec.new do |s|
                                   '"$(PODS_TARGET_SRCROOT)/bindgen/vendor/realm-core/bindgen/src/"'
                                 ].join(' ')
                               }
-  # Create placeholders for vendored_libraries, so they are added to the xcode project
-  s.prepare_command = <<-EOS
-  source "#{__dir__}/scripts/generate-dummy-libs.sh"
-  source "#{__dir__}/scripts/generate-input-list.sh"
-  EOS
 
   s.vendored_libraries = "react-native/ios/lib/*.a"
 
   s.dependency 'React'
 
-  # Post install script
-  s.script_phase = {
-    :name => 'Retrieve libraries and headers',
-    :execution_position => :before_compile,
-    :input_file_lists => ["$(PODS_TARGET_SRCROOT)/react-native/ios/input-files.xcfilelist"],
-    :output_file_lists => ["$(PODS_TARGET_SRCROOT)/react-native/ios/output-files.xcfilelist"],
-    :script => <<-EOS
-    source "$PODS_TARGET_SRCROOT/scripts/download-or-build-ios.sh"
-    EOS
-  }
+  # We can rely on 'node' resolving correctly, since the command is executed by CocoaPods directly
+  s.prepare_command = "node '#{__dir__}/scripts/realm-core.mjs' podspec-prepare #{BUILD_FROM_SOURCE ? "--assert-cmake '#{CMAKE_PATH}'" : '--assert-prebuilds'}"
+
+  if BUILD_FROM_SOURCE
+    s.script_phase = {
+      :name => 'Build Realm Core',
+      :execution_position => :before_compile,
+      :input_file_lists => ["$(PODS_TARGET_SRCROOT)/react-native/ios/input-files.xcfilelist"],
+      :output_file_lists => ["$(PODS_TARGET_SRCROOT)/react-native/ios/output-files.xcfilelist"],
+      :script => <<-EOS
+        source "${REACT_NATIVE_PATH}/scripts/xcode/with-environment.sh"
+        $NODE_BINARY "${PODS_TARGET_SRCROOT}/scripts/realm-core.mjs" build --platform ios
+      EOS
+    }
+  else
+    s.script_phase = {
+      :name => 'Download Realm Core prebuilds',
+      :execution_position => :before_compile,
+      :input_file_lists => ["$(PODS_TARGET_SRCROOT)/react-native/ios/input-files.xcfilelist"],
+      :output_file_lists => ["$(PODS_TARGET_SRCROOT)/react-native/ios/output-files.xcfilelist"],
+      :script => <<-EOS
+        source "${REACT_NATIVE_PATH}/scripts/xcode/with-environment.sh"
+        $NODE_BINARY "${PODS_TARGET_SRCROOT}/scripts/realm-core.mjs" download --platform ios
+      EOS
+    }
+  end
 end

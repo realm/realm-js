@@ -94,6 +94,7 @@
     "prepare:ios": "wireit",
     "install": "prebuild-install --runtime napi || echo 'Failed to download prebuild for Realm'",
     "docs": "wireit",
+    "realm-core": "node ./scripts/realm-core.mjs",
     "postinstall": "node ./scripts/submit-analytics.mjs"
   },
   "wireit": {
@@ -286,10 +287,9 @@
       }
     },
     "prepare:ios": {
-      "command": "source ./scripts/generate-dummy-libs.sh && source ./scripts/generate-input-list.sh",
+      "command": "./scripts/realm-core.mjs podspec-prepare",
       "files": [
-        "scripts/generate-dummy-libs.sh",
-        "scripts/generate-input-list.sh"
+        "scripts/realm-core.mjs"
       ],
       "output": [
         "react-native/ios/input-files.xcfilelist",
@@ -309,10 +309,15 @@
       ]
     }
   },
+  "bin": {
+    "realm-core": "./scripts/realm-core.mjs"
+  },
   "dependencies": {
     "@realm/fetch": "^0.1.1",
     "bson": "^4.7.2",
+    "commander": "^11",
     "debug": "^4.3.4",
+    "glob": "^10.3.12",
     "node-machine-id": "^1.1.12",
     "path-browserify": "^1.0.1",
     "prebuild-install": "^7.1.1"
