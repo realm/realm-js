@@ -7,18 +7,15 @@
 * None
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None
+* Fixed a crash when integrating removal of already removed dictionary key. ([realm/realm-core#7488](https://github.com/realm/realm-core/issues/7488), since v10.0.0)
 
 ### Compatibility
 * React Native >= v0.71.4
 * Realm Studio v15.0.0.
-* File format: generates Realms with format v24 (reads and upgrades file format v10.
+* File format: generates Realms with format v24 (reads and upgrades file format v10 or later).
 
 ### Internal
-<!-- * Either mention core version or upgrade -->
-<!-- * Using Realm Core vX.Y.Z -->
-<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
+* Upgraded Realm Core from v14.5.1 to v14.5.2. ([#6628](https://github.com/realm/realm-js/issues/6628)
 * Update URLs to documentation.
 
 ## 12.7.0 (2024-04-17)
