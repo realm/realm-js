@@ -157,6 +157,10 @@ type RealmContext = {
    */
   closeRealm(options?: Partial<CloseRealmOptions>): Promise<void>;
 } & Mocha.Context;
+type MultiRealmContext = {
+  realms: Realm[];
+  getRealm: (config: Realm.OpenRealmBehaviorConfiguration) => Promise<Realm>;
+} & Mocha.Context;
 type RealmObjectContext<T = Record<string, unknown>> = {
   object: Realm.Object<T> & T;
 } & RealmContext;

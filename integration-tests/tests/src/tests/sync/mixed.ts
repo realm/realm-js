@@ -323,7 +323,7 @@ describe.only("mixed synced", () => {
     } satisfies OpenRealmConfiguration;
 
     it("writes", async function (this: Mocha.Context & AppContext & UserContext) {
-      const user1 = await this.getUser(Credentials.anonymous());
+      const user1 = await this.getUser(Credentials.anonymous(false));
       const { realm: realm1, config: config1 } = await openRealm(realmConfig, user1);
       await setupTest(realm1, true); // this adds the subscriptions
 
@@ -337,7 +337,7 @@ describe.only("mixed synced", () => {
 
       await realm1.syncSession?.uploadAllLocalChanges();
 
-      const user2 = await this.getUser(Credentials.anonymous());
+      const user2 = await this.getUser(Credentials.anonymous(false));
       const { realm: realm2, config: config2 } = await openRealm(realmConfig, user2);
       await setupTest(realm2, true);
 
