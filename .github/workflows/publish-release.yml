@@ -51,7 +51,7 @@ jobs:
           ${{ runner.os }}-node-
 
     - name: Install node modules
-      run: npm ci --ignore-scripts
+      run: npm ci
 
     - name: Download prebuild artifacts from PR
       uses: dawidd6/action-download-artifact@d0f291cf39bd21965ea9c4c6e210fc355c3844ed
@@ -117,6 +117,9 @@ jobs:
       with:
         submodules: recursive
         ref: ${{ steps.find-pull-request.outputs.base-ref }}
+
+    - name: Install node modules (again)
+      run: npm ci
 
     - name: Extract Changelog
       run: node scripts/extract-changelog.js ${{ steps.get-version.outputs.version }} > EXTRACTED_CHANGELOG.md
