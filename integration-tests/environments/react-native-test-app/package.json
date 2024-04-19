@@ -87,7 +87,7 @@
         "USE_CCACHE": {
           "external": true
         },
-        "REALM_BUILD_CORE": {
+        "REALM_BUILD_FROM_SOURCE": {
           "external": true,
           "default": "1"
         },

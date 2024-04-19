@@ -206,10 +206,10 @@ npm run bindgen:generate:jsi  --workspace realm
 npm run bundle --workspace realm
 ```
 
-In the consuming project, be sure to enable building core from source by setting the environment variable `REALM_BUILD_CORE`.
+In the consuming project, be sure to enable building core from source by setting the environment variable `REALM_BUILD_FROM_SOURCE`.
 This can either be set globally or locally before running `pod install`:
 ```
-REALM_BUILD_CORE=1 pod install
+REALM_BUILD_FROM_SOURCE=1 pod install
 ```
 
 ### Building for Android
