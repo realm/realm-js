@@ -18,7 +18,7 @@
 
 import React, { createContext, useContext, useLayoutEffect, useRef, useState } from "react";
 import Realm from "realm";
-import { isEqual } from "lodash";
+import { isEqual } from "lodash.isequal";
 
 import { AuthResult, OperationState } from "./types";
 
