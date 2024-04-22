@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 import { expect } from "chai";
-import Realm, { Credentials, Mixed, ObjectSchema } from "realm";
+import Realm, { Mixed, ObjectSchema } from "realm";
 
 import {
   importAppBefore,
@@ -27,10 +27,9 @@ import {
 
 import { itUploadsDeletesAndDownloads } from "./upload-delete-download";
 import { buildAppConfig } from "../../utils/build-app-config";
-import { OpenRealmConfiguration, openRealm } from "../../utils/open-realm";
 
 type Value = Realm.Mixed | ((realm: Realm) => Realm.Mixed);
-type ValueTester = (actual: Realm.Mixed, inserted: Realm.Mixed) => void;
+type ValueTester = (actual: Realm.Mixed, inserted: Realm.Mixed, realm?: Realm) => void;
 
 class MixedClass extends Realm.Object<MixedClass> {
   _id!: Realm.BSON.ObjectId;
@@ -55,13 +54,13 @@ class MixedClass extends Realm.Object<MixedClass> {
  * @param actual The value downloaded from the server.
  * @param inserted The value inserted locally before upload.
  */
-function defaultTester(actual: Realm.Mixed, inserted: Realm.Mixed) {
+function defaultTester(actual: Realm.Mixed, inserted: Realm.Mixed, realm?: Realm) {
   if (actual instanceof Realm.List) {
-    const insertedVal = inserted as Realm.Mixed[]; //TODO I should remove all of these "as" (?)
-    actual.forEach((item, index) => defaultTester(item, insertedVal[index]));
+    const insertedVal = inserted as Realm.Mixed[];
+    actual.forEach((item, index) => defaultTester(item, insertedVal[index], realm));
   } else if (actual instanceof Realm.Dictionary) {
     const insertedVal = inserted as { [key: string]: any };
-    Object.keys(actual).forEach((key) => defaultTester(actual[key], insertedVal[key]));
+    Object.keys(actual).forEach((key) => defaultTester(actual[key], insertedVal[key], realm));
   } else if (actual instanceof Realm.BSON.Decimal128) {
     const insertedVal = inserted as Realm.BSON.Decimal128;
     expect(actual.bytes.equals(insertedVal.bytes)).equals(true);
@@ -79,6 +78,10 @@ function defaultTester(actual: Realm.Mixed, inserted: Realm.Mixed) {
     const insertedBynaryView = new Uint8Array(inserted as ArrayBuffer);
     expect(actualBinaryView.byteLength).equals(insertedBynaryView.byteLength);
     actualBinaryView.forEach((item, index) => defaultTester(item, insertedBynaryView[index]));
+  } else if (actual instanceof MixedClass && realm) {
+    const insertedVal = realm.objects<MixedClass>("MixedClass").filtered("_id = $0", actual._id)[0];
+    expect(actual._id.equals(insertedVal._id)).equals(true);
+    defaultTester(actual.value, insertedVal.value);
   } else {
     expect(actual).equals(inserted);
   }
@@ -117,8 +120,8 @@ function describeRoundtrip({
   valueTester?: ValueTester;
   useFlexibleSync: boolean;
 }) {
-  function performTest(actual: Realm.Mixed, inserted: Realm.Mixed) {
-    valueTester(actual, inserted);
+  function performTest(actual: Realm.Mixed, inserted: Realm.Mixed, realm: Realm) {
+    valueTester(actual, inserted, realm);
   }
 
   describe(`roundtrip of '${typeName}'`, () => {
@@ -160,11 +163,11 @@ function describeRoundtrip({
 
       expect(typeof obj).equals("object");
       // Test the single value
-      performTest(obj.value, this.value);
+      performTest(obj.value, this.value, this.realm);
       // Test the list of values
       expect(obj.list.length).equals(4);
       const firstElement = obj.list[0];
-      performTest(firstElement, this.value);
+      performTest(firstElement, this.value, this.realm);
       // No need to keep these around
       delete this._id;
       delete this.value;
@@ -242,63 +245,81 @@ function describeTypes(useFlexibleSync: boolean) {
 
   if (useFlexibleSync) {
     describe("collections in mixed", () => {
-      const data = new Uint8Array([0xd8, 0x21, 0xd6, 0xe8, 0x00, 0x57, 0xbc, 0xb2, 0x6a, 0x15]);
+      const data = new Uint8Array([0xd8, 0x21, 0xd6, 0xe8, 0x00, 0x57, 0xbc, 0xb2, 0x6a, 0x15]).buffer;
 
-      const mixedList: Mixed[] = [
-        null,
-        true,
-        1,
-        5.0,
-        "string",
-        Realm.BSON.Decimal128.fromString("1234.5678"),
-        new Realm.BSON.ObjectId("609afc1290a3c1818f04635e"),
-        new Realm.BSON.UUID("9476a497-60ef-4439-bc8a-52b8ad0d4875"),
-        new Date(1620768552979),
-        data.buffer,
-      ];
+      const getMixedList = (realm: Realm) => {
+        const ob = realm.create<MixedClass>("MixedClass", {
+          _id: new Realm.BSON.ObjectId(),
+        });
 
-      const mixedDict = {
-        null: null,
-        bool: true,
-        int: 1,
-        float: 5.0,
-        string: "stringVal",
-        decimal: Realm.BSON.Decimal128.fromString("1234.5678"),
-        objectId: new Realm.BSON.ObjectId("609afc1290a3c1818f04635e"),
-        uuid: new Realm.BSON.UUID("9476a497-60ef-4439-bc8a-52b8ad0d4875"),
-        date: new Date(1620768552979),
-        data: data.buffer,
+        return [
+          null,
+          true,
+          1,
+          5.0,
+          "string",
+          Realm.BSON.Decimal128.fromString("1234.5678"),
+          new Realm.BSON.ObjectId("609afc1290a3c1818f04635e"),
+          new Realm.BSON.UUID("9476a497-60ef-4439-bc8a-52b8ad0d4875"),
+          new Date(1620768552979),
+          data,
+          ob,
+        ];
       };
 
-      const nestedMixedList: Mixed[] = [...mixedList, mixedList, mixedDict];
+      const getMixedDict = (realm: Realm) => {
+        const ob = realm.create<MixedClass>("MixedClass", {
+          _id: new Realm.BSON.ObjectId(),
+        });
 
-      const nestedMixedDict = {
-        ...mixedDict,
-        innerList: mixedList,
-        innerDict: mixedDict,
+        return {
+          null: null,
+          bool: true,
+          int: 1,
+          float: 5.0,
+          string: "stringVal",
+          decimal: Realm.BSON.Decimal128.fromString("1234.5678"),
+          objectId: new Realm.BSON.ObjectId("609afc1290a3c1818f04635e"),
+          uuid: new Realm.BSON.UUID("9476a497-60ef-4439-bc8a-52b8ad0d4875"),
+          date: new Date(1620768552979),
+          data: data,
+          obj: ob,
+        };
+      };
+
+      const getNestedMixedList = (realm: Realm) => {
+        return [...getMixedList(realm), getMixedList(realm), getMixedDict(realm)];
+      };
+
+      const getNestedMixedDict = (realm: Realm) => {
+        return {
+          ...getMixedDict(realm),
+          innerList: getMixedList(realm),
+          innerDict: getMixedDict(realm),
+        };
       };
 
       describeRoundtrip({
         typeName: "list",
-        value: mixedList,
+        value: getMixedList,
         useFlexibleSync: true,
       });
 
       describeRoundtrip({
         typeName: "nested list",
-        value: nestedMixedList,
+        value: getNestedMixedList,
         useFlexibleSync: true,
       });
 
       describeRoundtrip({
         typeName: "dictionary",
-        value: mixedDict,
+        value: getMixedDict,
         useFlexibleSync: true,
       });
 
       describeRoundtrip({
         typeName: "nested dictionary",
-        value: nestedMixedDict,
+        value: getNestedMixedDict,
         useFlexibleSync: true,
       });
     });
@@ -311,52 +332,118 @@ describe.only("mixed synced", () => {
     importAppBefore(buildAppConfig("with-pbs").anonAuth().partitionBasedSync());
     describeTypes(false);
   });
-
   describe.skipIf(environment.skipFlexibleSync, "flexible sync roundtrip", function () {
     this.longTimeout();
     importAppBefore(buildAppConfig("with-flx").anonAuth().flexibleSync());
     describeTypes(true);
   });
-
-  describe.skipIf(environment.skipFlexibleSync, "mixed collections", function () {
-    this.longTimeout();
-    importAppBefore(buildAppConfig("with-flx").anonAuth().flexibleSync());
-    setupMultiRealmsBeforeAndAfterEach();
-
-    const realmConfig = {
-      schema: [MixedClass],
-      sync: { flexible: true },
-    } satisfies OpenRealmConfiguration;
-
-    it("simple test", async function (this: Mocha.Context & AppContext & MultiRealmContext) {
-      const realm1 = await this.getRealm(realmConfig);
-      await setupTest(realm1, true); // this adds the subscriptions
-
-      const obId = new Realm.BSON.ObjectID();
-      const obj1 = realm1.write(() => {
-        return realm1.create(MixedClass, {
-          _id: obId,
-          value: 23,
-        });
-      });
-
-      await realm1.syncSession?.uploadAllLocalChanges();
-
-      const realm2 = await this.getRealm(realmConfig);
-      await setupTest(realm2, true);
-
-      const obj2 = await new Promise<MixedClass>((resolve) => {
-        realm2
-          .objects<MixedClass>("MixedClass")
-          .filtered("_id = $0", obId)
-          .addListener(([obj]) => {
-            if (obj) {
-              resolve(obj);
-            }
-          });
-      });
-
-      expect(obj2.value).equals(obj1.value);
-    });
-  });
+  //TODO Need to add examples with objects
+  // describe.skipIf(environment.skipFlexibleSync, "mixed collections", function () {
+  //   this.longTimeout();
+  //   importAppBefore(buildAppConfig("with-flx").anonAuth().flexibleSync());
+  //   setupMultiRealmsBeforeAndAfterEach();
+  //   const realmConfig = {
+  //     schema: [MixedClass],
+  //     sync: { flexible: true },
+  //   } satisfies OpenRealmConfiguration;
+  //   function getWaiter(obj: MixedClass, propertyName: keyof MixedClass): Promise<void> {
+  //     return new Promise((resolve) => {
+  //       obj.addListener((_, changes) => {
+  //         if (changes.changedProperties.includes(propertyName)) {
+  //           obj.removeAllListeners();
+  //           resolve();
+  //         }
+  //       });
+  //     });
+  //   }
+  //   it("value change", async function (this: Mocha.Context & AppContext & MultiRealmContext) {
+  //     const valuesToInsert = [
+  //       1,
+  //       "string",
+  //       [22, "test"],
+  //       { key1: 10, key2: new Date(1620768552979) },
+  //       new Realm.BSON.ObjectID(),
+  //     ];
+  //     const realm1 = await this.getRealm(realmConfig);
+  //     await setupTest(realm1, true);
+  //     const obId = new Realm.BSON.ObjectID();
+  //     const obj1 = realm1.write(() => {
+  //       return realm1.create(MixedClass, {
+  //         _id: obId,
+  //       });
+  //     });
+  //     await realm1.syncSession?.uploadAllLocalChanges();
+  //     const realm2 = await this.getRealm(realmConfig);
+  //     await setupTest(realm2, true);
+  //     const obj2 = await new Promise<MixedClass>((resolve) => {
+  //       realm2
+  //         .objects<MixedClass>("MixedClass")
+  //         .filtered("_id = $0", obId)
+  //         .addListener(([obj]) => {
+  //           if (obj) {
+  //             resolve(obj);
+  //           }
+  //         });
+  //     });
+  //     expect(obj2.value).equals(obj1.value);
+  //     for (const val of valuesToInsert) {
+  //       console.log(val);
+  //       realm1.write(() => {
+  //         obj1.value = val;
+  //       });
+  //       defaultTester(obj1.value, val);
+  //       const waitPromise = getWaiter(obj2, "value");
+  //       await realm1.syncSession?.uploadAllLocalChanges();
+  //       await realm2.syncSession?.downloadAllServerChanges();
+  //       await waitPromise;
+  //       defaultTester(obj2.value, val);
+  //     }
+  //   });
+  //   it.skip("list modifications", async function (this: Mocha.Context & AppContext & MultiRealmContext) {
+  //     const valuesToInsert = [
+  //       1,
+  //       "string",
+  //       [22, "test"],
+  //       { key1: 10, key2: new Date(1620768552979) },
+  //       new Realm.BSON.ObjectID(),
+  //     ];
+  //     const realm1 = await this.getRealm(realmConfig);
+  //     await setupTest(realm1, true);
+  //     const obId = new Realm.BSON.ObjectID();
+  //     const obj1 = realm1.write(() => {
+  //       return realm1.create(MixedClass, {
+  //         _id: obId,
+  //         value: [],
+  //       });
+  //     });
+  //     await realm1.syncSession?.uploadAllLocalChanges();
+  //     const realm2 = await this.getRealm(realmConfig);
+  //     await setupTest(realm2, true);
+  //     const obj2 = await new Promise<MixedClass>((resolve) => {
+  //       realm2
+  //         .objects<MixedClass>("MixedClass")
+  //         .filtered("_id = $0", obId)
+  //         .addListener(([obj]) => {
+  //           if (obj) {
+  //             resolve(obj);
+  //           }
+  //         });
+  //     });
+  //     expect(obj2.value).equals(obj1.value);
+  //     for (const val of valuesToInsert) {
+  //       console.log(val);
+  //       realm1.write(() => {
+  //         obj1.value = val;
+  //       });
+  //       defaultTester(obj1.value, val);
+  //       await realm1.syncSession?.uploadAllLocalChanges();
+  //       await realm2.syncSession?.downloadAllServerChanges();
+  //       await realm1.syncSession?.uploadAllLocalChanges(); //TODO Need to find a way to wait for this reasonably
+  //       await realm2.syncSession?.downloadAllServerChanges();
+  //       await realm1.syncSession?.uploadAllLocalChanges();
+  //       await realm2.syncSession?.downloadAllServerChanges();
+  //       defaultTester(obj2.value, val);
+  //     }
+  //   });
+  // });
 });
