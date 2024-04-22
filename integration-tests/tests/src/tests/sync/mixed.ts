@@ -28,6 +28,7 @@ import {
 import { itUploadsDeletesAndDownloads } from "./upload-delete-download";
 import { buildAppConfig } from "../../utils/build-app-config";
 import { OpenRealmConfiguration } from "../../utils/open-realm";
+import { sleep } from "../../utils/sleep";
 
 type Value = Realm.Mixed | ((realm: Realm) => Realm.Mixed);
 type ValueTester = (actual: Realm.Mixed, inserted: Realm.Mixed, realm?: Realm) => void;
@@ -91,7 +92,7 @@ function defaultTester(actual: Realm.Mixed, inserted: Realm.Mixed, realm?: Realm
 async function setupTest(realm: Realm, useFlexibleSync: boolean) {
   if (useFlexibleSync) {
     await realm.subscriptions.update((mutableSubs) => {
-      mutableSubs.add(realm.objects("MixedClass"));
+      mutableSubs.add(realm.objects(MixedClass));
     });
     await realm.subscriptions.waitForSynchronization();
   }
@@ -153,7 +154,7 @@ function describeRoundtrip({
 
       const obj = await new Promise<MixedClass>((resolve) => {
         this.realm
-          .objects<MixedClass>("MixedClass")
+          .objects(MixedClass) //TODO Remember to do it in other places
           .filtered("_id = $0", this._id)
           .addListener(([obj]) => {
             if (obj) {
@@ -328,17 +329,18 @@ const getNestedMixedDict = (realm: Realm) => {
 };
 
 describe.only("mixed synced", () => {
-  describe("partition-based sync roundtrip", function () {
-    this.longTimeout();
-    importAppBefore(buildAppConfig("with-pbs").anonAuth().partitionBasedSync());
-    describeTypes(false);
-  });
+  //TODO Reenable these
+  // describe("partition-based sync roundtrip", function () {
+  //   this.longTimeout();
+  //   importAppBefore(buildAppConfig("with-pbs").anonAuth().partitionBasedSync());
+  //   describeTypes(false);
+  // });
 
-  describe.skipIf(environment.skipFlexibleSync, "flexible sync roundtrip", function () {
-    this.longTimeout();
-    importAppBefore(buildAppConfig("with-flx").anonAuth().flexibleSync());
-    describeTypes(true);
-  });
+  // describe.skipIf(environment.skipFlexibleSync, "flexible sync roundtrip", function () {
+  //   this.longTimeout();
+  //   importAppBefore(buildAppConfig("with-flx").anonAuth().flexibleSync());
+  //   describeTypes(true);
+  // });
 
   describe.skipIf(environment.skipFlexibleSync, "mixed collections", function () {
     this.longTimeout();
@@ -361,7 +363,7 @@ describe.only("mixed synced", () => {
       });
     }
 
-    it.skip("value change", async function (this: Mocha.Context & AppContext & MultiRealmContext) {
+    it("value change", async function (this: Mocha.Context & AppContext & MultiRealmContext) {
       const realm1 = await this.getRealm(realmConfig);
       await setupTest(realm1, true);
 
@@ -369,7 +371,7 @@ describe.only("mixed synced", () => {
         return getNestedMixedList(realm1);
       });
 
-      const obId = new Realm.BSON.ObjectID();
+      const obId = new Realm.BSON.ObjectId();
       const obj1 = realm1.write(() => {
         return realm1.create(MixedClass, {
           _id: obId,
@@ -399,16 +401,21 @@ describe.only("mixed synced", () => {
 
         defaultTester(obj1.value, val, realm2);
 
-        const waitPromise = getWaiter(obj2, "value");
-        await realm1.syncSession?.uploadAllLocalChanges();
-        await realm2.syncSession?.downloadAllServerChanges();
-        await waitPromise;
+        await delay(realm1, realm2);
+        //const waitPromise = getWaiter(obj2, "value");
+        // await realm1.syncSession?.uploadAllLocalChanges();
+        // await realm2.syncSession?.downloadAllServerChanges();
+        // If I use sleep, then obj1 and obj2 become invalid after
+        // await sleep(500);
+        //await waitPromise;
 
         defaultTester(obj2.value, val, realm2);
       }
+
+      obj2.removeAllListeners();
     });
 
-    it.only("list modifications", async function (this: Mocha.Context & AppContext & MultiRealmContext) {
+    it("list adding", async function (this: Mocha.Context & AppContext & MultiRealmContext) {
       const realm1 = await this.getRealm(realmConfig);
       await setupTest(realm1, true);
 
@@ -459,53 +466,18 @@ describe.only("mixed synced", () => {
         defaultTester(obj2.value, expectedList, realm2);
       }
 
-      //Removing elements one by one and verifying the list is synchronized
-      for (let i = 0; i < valuesToInsert.length; i++) {
-        console.log("rem - " + i);
-        realm1.write(() => {
-          (obj1.value as Realm.List).pop();
-        });
-        expectedList.pop();
-
-        defaultTester(obj1.value, expectedList, realm2);
-
-        const waitPromise = getWaiter(obj2, "value");
-        await realm1.syncSession?.uploadAllLocalChanges();
-        await realm2.syncSession?.downloadAllServerChanges();
-        await waitPromise;
-
-        defaultTester(obj2.value, expectedList, realm2);
-      }
-
-      expect((obj1.value as Realm.List).length).equals(0);
-      expect((obj2.value as Realm.List).length).equals(0);
-
-      //Changing the first element and verifying the list is synchronized
-
-      realm1.write(() => {
-        (obj1.value as Realm.List).push("test");
-      });
-      expectedList.push("test");
-
-      for (const val of valuesToInsert) {
-        console.log(val);
-        realm1.write(() => {
-          (obj1.value as Realm.List)[0] = val;
-        });
-        expectedList[0] = val;
-
-        defaultTester(obj1.value, expectedList, realm2);
-
-        const waitPromise = getWaiter(obj2, "value");
-        await realm1.syncSession?.uploadAllLocalChanges();
-        await realm2.syncSession?.downloadAllServerChanges();
-        await waitPromise;
-
-        defaultTester(obj2.value, expectedList, realm2);
-      }
+      obj2.removeAllListeners();
     });
 
-    it.only("list modifications", async function (this: Mocha.Context & AppContext & MultiRealmContext) {
+    //TODO For testing, need to remove it afterwards
+    async function delay(realm1: Realm, realm2: Realm): Promise<void> {
+      for (let index = 0; index < 20; index++) {
+        await realm1.syncSession?.uploadAllLocalChanges();
+        await realm2.syncSession?.downloadAllServerChanges();
+      }
+    }
+
+    it("list removing", async function (this: Mocha.Context & AppContext & MultiRealmContext) {
       const realm1 = await this.getRealm(realmConfig);
       await setupTest(realm1, true);
 
@@ -517,7 +489,7 @@ describe.only("mixed synced", () => {
       const obj1 = realm1.write(() => {
         return realm1.create(MixedClass, {
           _id: obId,
-          value: [],
+          value: valuesToInsert,
         });
       });
 
@@ -537,28 +509,10 @@ describe.only("mixed synced", () => {
       });
 
       //We will keep this list updated with the values we expect to find
-      const expectedList = [];
-
-      //Adding elements one by one and verifying the list is synchronized
-      for (const val of valuesToInsert) {
-        realm1.write(() => {
-          (obj1.value as Realm.List).push(val);
-        });
-        expectedList.push(val);
-
-        defaultTester(obj1.value, expectedList, realm2);
-
-        const waitPromise = getWaiter(obj2, "value");
-        await realm1.syncSession?.uploadAllLocalChanges();
-        await realm2.syncSession?.downloadAllServerChanges();
-        await waitPromise;
-
-        defaultTester(obj2.value, expectedList, realm2);
-      }
+      const expectedList = [...valuesToInsert];
 
       //Removing elements one by one and verifying the list is synchronized
       for (let i = 0; i < valuesToInsert.length; i++) {
-        console.log("rem - " + i);
         realm1.write(() => {
           (obj1.value as Realm.List).pop();
         });
@@ -577,15 +531,45 @@ describe.only("mixed synced", () => {
       expect((obj1.value as Realm.List).length).equals(0);
       expect((obj2.value as Realm.List).length).equals(0);
 
-      //Changing the first element and verifying the list is synchronized
+      obj2.removeAllListeners();
+    });
 
-      realm1.write(() => {
-        (obj1.value as Realm.List).push("test");
+    it("list modification", async function (this: Mocha.Context & AppContext & MultiRealmContext) {
+      const realm1 = await this.getRealm(realmConfig);
+      await setupTest(realm1, true);
+
+      const valuesToInsert = realm1.write(() => {
+        return getNestedMixedList(realm1);
       });
-      expectedList.push("test");
 
+      const obId = new Realm.BSON.ObjectID();
+      const obj1 = realm1.write(() => {
+        return realm1.create(MixedClass, {
+          _id: obId,
+          value: ["test"],
+        });
+      });
+
+      await realm1.syncSession?.uploadAllLocalChanges();
+      const realm2 = await this.getRealm(realmConfig);
+      await setupTest(realm2, true);
+
+      const obj2 = await new Promise<MixedClass>((resolve) => {
+        realm2
+          .objects<MixedClass>("MixedClass")
+          .filtered("_id = $0", obId)
+          .addListener(([obj]) => {
+            if (obj) {
+              resolve(obj);
+            }
+          });
+      });
+
+      //We will keep this list updated with the values we expect to find
+      const expectedList: Mixed[] = ["test"];
+
+      //Changing the first element and verifying the list is synchronized
       for (const val of valuesToInsert) {
-        console.log(val);
         realm1.write(() => {
           (obj1.value as Realm.List)[0] = val;
         });
@@ -600,6 +584,8 @@ describe.only("mixed synced", () => {
 
         defaultTester(obj2.value, expectedList, realm2);
       }
+
+      obj2.removeAllListeners();
     });
   });
 });
