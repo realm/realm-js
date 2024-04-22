@@ -95,7 +95,7 @@ export async function setupRealmHook(this: AppContext & MultiRealmContext): Prom
     return realmAndConfig.realm;
   };
 
-  this.closeAllRealms = async () => {
+  this.closeAllRealms = () => {
     this.openedInfo?.forEach(({ realm, config }) => {
       if (!realm?.isClosed) {
         realm.close();
