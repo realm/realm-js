@@ -401,18 +401,15 @@ describe.only("mixed synced", () => {
 
         defaultTester(obj1.value, val, realm2);
 
-        await delay(realm1, realm2);
-        //const waitPromise = getWaiter(obj2, "value");
-        // await realm1.syncSession?.uploadAllLocalChanges();
-        // await realm2.syncSession?.downloadAllServerChanges();
+        const waitPromise = getWaiter(obj2, "value");
+        await realm1.syncSession?.uploadAllLocalChanges();
+        await realm2.syncSession?.downloadAllServerChanges();
         // If I use sleep, then obj1 and obj2 become invalid after
         // await sleep(500);
-        //await waitPromise;
+        await waitPromise;
 
         defaultTester(obj2.value, val, realm2);
       }
-
-      obj2.removeAllListeners();
     });
 
     it("list adding", async function (this: Mocha.Context & AppContext & MultiRealmContext) {
@@ -465,17 +462,7 @@ describe.only("mixed synced", () => {
 
         defaultTester(obj2.value, expectedList, realm2);
       }
-
-      obj2.removeAllListeners();
     });
-
-    //TODO For testing, need to remove it afterwards
-    async function delay(realm1: Realm, realm2: Realm): Promise<void> {
-      for (let index = 0; index < 20; index++) {
-        await realm1.syncSession?.uploadAllLocalChanges();
-        await realm2.syncSession?.downloadAllServerChanges();
-      }
-    }
 
     it("list removing", async function (this: Mocha.Context & AppContext & MultiRealmContext) {
       const realm1 = await this.getRealm(realmConfig);
@@ -530,8 +517,6 @@ describe.only("mixed synced", () => {
 
       expect((obj1.value as Realm.List).length).equals(0);
       expect((obj2.value as Realm.List).length).equals(0);
-
-      obj2.removeAllListeners();
     });
 
     it("list modification", async function (this: Mocha.Context & AppContext & MultiRealmContext) {
@@ -586,6 +571,165 @@ describe.only("mixed synced", () => {
       }
 
       obj2.removeAllListeners();
+    });
+
+    it.only("dictionary adding", async function (this: Mocha.Context & AppContext & MultiRealmContext) {
+      const realm1 = await this.getRealm(realmConfig);
+      await setupTest(realm1, true);
+
+      const valuesToInsert: { [key: string]: any } = realm1.write(() => {
+        return getNestedMixedDict(realm1);
+      });
+
+      const obId = new Realm.BSON.ObjectID();
+      const obj1 = realm1.write(() => {
+        return realm1.create(MixedClass, {
+          _id: obId,
+          value: {},
+        });
+      });
+
+      await realm1.syncSession?.uploadAllLocalChanges();
+      const realm2 = await this.getRealm(realmConfig);
+      await setupTest(realm2, true);
+
+      const obj2 = await new Promise<MixedClass>((resolve) => {
+        realm2
+          .objects<MixedClass>("MixedClass")
+          .filtered("_id = $0", obId)
+          .addListener(([obj]) => {
+            if (obj) {
+              resolve(obj);
+            }
+          });
+      });
+
+      //We will keep this dictionary updated with the values we expect to find
+      const expectedDict: { [key: string]: any } = {};
+
+      //Adding elements one by one and verifying the dictionary is synchronized
+      for (const key in valuesToInsert) {
+        const val = valuesToInsert[key];
+        realm1.write(() => {
+          (obj1.value as Realm.Dictionary)[key] = val;
+        });
+        expectedDict[key] = val;
+
+        defaultTester(obj1.value, expectedDict, realm2);
+
+        const waitPromise = getWaiter(obj2, "value");
+        await realm1.syncSession?.uploadAllLocalChanges();
+        await realm2.syncSession?.downloadAllServerChanges();
+        await waitPromise;
+
+        defaultTester(obj2.value, expectedDict, realm2);
+      }
+    });
+
+    it("dictionary removing", async function (this: Mocha.Context & AppContext & MultiRealmContext) {
+      const realm1 = await this.getRealm(realmConfig);
+      await setupTest(realm1, true);
+
+      const valuesToInsert: { [key: string]: any } = realm1.write(() => {
+        return getNestedMixedDict(realm1);
+      });
+
+      const obId = new Realm.BSON.ObjectID();
+      const obj1 = realm1.write(() => {
+        return realm1.create(MixedClass, {
+          _id: obId,
+          value: valuesToInsert,
+        });
+      });
+
+      await realm1.syncSession?.uploadAllLocalChanges();
+      const realm2 = await this.getRealm(realmConfig);
+      await setupTest(realm2, true);
+
+      const obj2 = await new Promise<MixedClass>((resolve) => {
+        realm2
+          .objects<MixedClass>("MixedClass")
+          .filtered("_id = $0", obId)
+          .addListener(([obj]) => {
+            if (obj) {
+              resolve(obj);
+            }
+          });
+      });
+
+      //We will keep this dictionary updated with the values we expect to find
+      const expectedDict = { ...valuesToInsert };
+
+      //Removing elements one by one and verifying the dictionary is synchronized
+      for (const key in valuesToInsert) {
+        realm1.write(() => {
+          (obj1.value as Realm.Dictionary).remove(key);
+        });
+        delete expectedDict[key];
+
+        defaultTester(obj1.value, expectedDict, realm2);
+
+        const waitPromise = getWaiter(obj2, "value");
+        await realm1.syncSession?.uploadAllLocalChanges();
+        await realm2.syncSession?.downloadAllServerChanges();
+        await waitPromise;
+
+        defaultTester(obj2.value, expectedDict, realm2);
+      }
+    });
+
+    it("dictionary modification", async function (this: Mocha.Context & AppContext & MultiRealmContext) {
+      const realm1 = await this.getRealm(realmConfig);
+      await setupTest(realm1, true);
+
+      const valuesToInsert: { [key: string]: any } = realm1.write(() => {
+        return getNestedMixedDict(realm1);
+      });
+
+      const keyString = "keyString";
+      const obId = new Realm.BSON.ObjectID();
+      const obj1 = realm1.write(() => {
+        return realm1.create(MixedClass, {
+          _id: obId,
+          value: { [keyString]: 1 },
+        });
+      });
+
+      await realm1.syncSession?.uploadAllLocalChanges();
+      const realm2 = await this.getRealm(realmConfig);
+      await setupTest(realm2, true);
+
+      const obj2 = await new Promise<MixedClass>((resolve) => {
+        realm2
+          .objects<MixedClass>("MixedClass")
+          .filtered("_id = $0", obId)
+          .addListener(([obj]) => {
+            if (obj) {
+              resolve(obj);
+            }
+          });
+      });
+
+      //We will keep this dictionary updated with the values we expect to find
+      const expectedDict: { [key: string]: any } = {};
+
+      //Modifying elements one by one and verifying the dictionary is synchronized
+      for (const key in valuesToInsert) {
+        const val = valuesToInsert[key];
+        realm1.write(() => {
+          (obj1.value as Realm.Dictionary)[keyString] = val;
+        });
+        expectedDict[keyString] = val;
+
+        defaultTester(obj1.value, expectedDict, realm2);
+
+        const waitPromise = getWaiter(obj2, "value");
+        await realm1.syncSession?.uploadAllLocalChanges();
+        await realm2.syncSession?.downloadAllServerChanges();
+        await waitPromise;
+
+        defaultTester(obj2.value, expectedDict, realm2);
+      }
     });
   });
 });
