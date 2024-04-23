@@ -64,6 +64,7 @@
 * File format: generates Realms with format v24 (reads and upgrades file format v10 or later).
 
 ### Internal
+* Upgraded React Native from 0.73.6 to 0.74.0. ([#6636](https://github.com/realm/realm-js/pull/6636))
 * Upgraded Realm Core from v14.5.1 to v14.5.2. ([#6628](https://github.com/realm/realm-js/issues/6628))
 * Update URLs to documentation.
 
