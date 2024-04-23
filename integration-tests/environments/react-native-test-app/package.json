@@ -37,7 +37,7 @@
         },
         "ORG_GRADLE_PROJECT_bridgelessEnabled": {
           "external": true,
-          "default": "false"
+          "default": "true"
         }
       }
     },
