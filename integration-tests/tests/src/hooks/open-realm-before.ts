@@ -96,12 +96,12 @@ export async function setupRealmHook(this: AppContext & MultiRealmContext): Prom
   };
 
   this.closeAllRealms = () => {
-    this.openedInfo?.forEach(({ realm, config }) => {
-      if (!realm?.isClosed) {
-        realm.close();
-      }
-      Realm.deleteFile(config);
-    });
+    // this.openedInfo?.forEach(({ realm, config }) => {
+    //   if (!realm?.isClosed) {
+    //     realm.close();
+    //   }
+    //   Realm.deleteFile(config);
+    // });
 
     Realm.clearTestState();
   };

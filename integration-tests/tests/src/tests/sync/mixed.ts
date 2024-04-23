@@ -154,7 +154,7 @@ function describeRoundtrip({
 
       const obj = await new Promise<MixedClass>((resolve) => {
         this.realm
-          .objects(MixedClass) //TODO Remember to do it in other places
+          .objects(MixedClass)
           .filtered("_id = $0", this._id)
           .addListener(([obj]) => {
             if (obj) {
@@ -381,17 +381,7 @@ describe("mixed synced", () => {
       const realm2 = await this.getRealm(realmConfig);
       await setupTest(realm2, true);
 
-      const obj2 = await new Promise<MixedClass>((resolve) => {
-        realm2
-          .objects<MixedClass>("MixedClass")
-          .filtered("_id = $0", obId)
-          .addListener(([obj]) => {
-            if (obj) {
-              resolve(obj);
-            }
-          });
-      });
-      expect(obj2.value).equals(obj1.value);
+      const obj2 = await waitForMixedClassObj(realm2, obId);
 
       for (const val of valuesToInsert) {
         realm1.write(() => {
@@ -431,16 +421,7 @@ describe("mixed synced", () => {
       const realm2 = await this.getRealm(realmConfig);
       await setupTest(realm2, true);
 
-      const obj2 = await new Promise<MixedClass>((resolve) => {
-        realm2
-          .objects<MixedClass>("MixedClass")
-          .filtered("_id = $0", obId)
-          .addListener(([obj]) => {
-            if (obj) {
-              resolve(obj);
-            }
-          });
-      });
+      const obj2 = await waitForMixedClassObj(realm2, obId);
 
       //We will keep this list updated with the values we expect to find
       const expectedList = [];
@@ -483,16 +464,7 @@ describe("mixed synced", () => {
       const realm2 = await this.getRealm(realmConfig);
       await setupTest(realm2, true);
 
-      const obj2 = await new Promise<MixedClass>((resolve) => {
-        realm2
-          .objects<MixedClass>("MixedClass")
-          .filtered("_id = $0", obId)
-          .addListener(([obj]) => {
-            if (obj) {
-              resolve(obj);
-            }
-          });
-      });
+      const obj2 = await waitForMixedClassObj(realm2, obId);
 
       //We will keep this list updated with the values we expect to find
       const expectedList = [...valuesToInsert];
@@ -538,16 +510,7 @@ describe("mixed synced", () => {
       const realm2 = await this.getRealm(realmConfig);
       await setupTest(realm2, true);
 
-      const obj2 = await new Promise<MixedClass>((resolve) => {
-        realm2
-          .objects<MixedClass>("MixedClass")
-          .filtered("_id = $0", obId)
-          .addListener(([obj]) => {
-            if (obj) {
-              resolve(obj);
-            }
-          });
-      });
+      const obj2 = await waitForMixedClassObj(realm2, obId);
 
       //We will keep this list updated with the values we expect to find
       const expectedList: Mixed[] = ["test"];
@@ -592,16 +555,7 @@ describe("mixed synced", () => {
       const realm2 = await this.getRealm(realmConfig);
       await setupTest(realm2, true);
 
-      const obj2 = await new Promise<MixedClass>((resolve) => {
-        realm2
-          .objects<MixedClass>("MixedClass")
-          .filtered("_id = $0", obId)
-          .addListener(([obj]) => {
-            if (obj) {
-              resolve(obj);
-            }
-          });
-      });
+      const obj2 = await waitForMixedClassObj(realm2, obId);
 
       //We will keep this dictionary updated with the values we expect to find
       const expectedDict: { [key: string]: any } = {};
@@ -645,16 +599,7 @@ describe("mixed synced", () => {
       const realm2 = await this.getRealm(realmConfig);
       await setupTest(realm2, true);
 
-      const obj2 = await new Promise<MixedClass>((resolve) => {
-        realm2
-          .objects<MixedClass>("MixedClass")
-          .filtered("_id = $0", obId)
-          .addListener(([obj]) => {
-            if (obj) {
-              resolve(obj);
-            }
-          });
-      });
+      const obj2 = await waitForMixedClassObj(realm2, obId);
 
       //We will keep this dictionary updated with the values we expect to find
       const expectedDict = { ...valuesToInsert };
@@ -698,16 +643,7 @@ describe("mixed synced", () => {
       const realm2 = await this.getRealm(realmConfig);
       await setupTest(realm2, true);
 
-      const obj2 = await new Promise<MixedClass>((resolve) => {
-        realm2
-          .objects<MixedClass>("MixedClass")
-          .filtered("_id = $0", obId)
-          .addListener(([obj]) => {
-            if (obj) {
-              resolve(obj);
-            }
-          });
-      });
+      const obj2 = await waitForMixedClassObj(realm2, obId);
 
       //We will keep this dictionary updated with the values we expect to find
       const expectedDict: { [key: string]: any } = {};
@@ -730,5 +666,18 @@ describe("mixed synced", () => {
         defaultTester(obj2.value, expectedDict, realm2);
       }
     });
+
+    function waitForMixedClassObj(realm: Realm, obId: Realm.BSON.ObjectId): Promise<MixedClass> {
+      return new Promise<MixedClass>((resolve) => {
+        realm
+          .objects(MixedClass)
+          .filtered("_id = $0", obId)
+          .addListener(([obj]) => {
+            if (obj) {
+              resolve(obj);
+            }
+          });
+      });
+    }
   });
 });
