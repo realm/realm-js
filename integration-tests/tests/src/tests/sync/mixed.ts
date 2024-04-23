@@ -328,19 +328,18 @@ const getNestedMixedDict = (realm: Realm) => {
   };
 };
 
-describe.only("mixed synced", () => {
-  //TODO Reenable these
-  // describe("partition-based sync roundtrip", function () {
-  //   this.longTimeout();
-  //   importAppBefore(buildAppConfig("with-pbs").anonAuth().partitionBasedSync());
-  //   describeTypes(false);
-  // });
+describe("mixed synced", () => {
+  describe("partition-based sync roundtrip", function () {
+    this.longTimeout();
+    importAppBefore(buildAppConfig("with-pbs").anonAuth().partitionBasedSync());
+    describeTypes(false);
+  });
 
-  // describe.skipIf(environment.skipFlexibleSync, "flexible sync roundtrip", function () {
-  //   this.longTimeout();
-  //   importAppBefore(buildAppConfig("with-flx").anonAuth().flexibleSync());
-  //   describeTypes(true);
-  // });
+  describe.skipIf(environment.skipFlexibleSync, "flexible sync roundtrip", function () {
+    this.longTimeout();
+    importAppBefore(buildAppConfig("with-flx").anonAuth().flexibleSync());
+    describeTypes(true);
+  });
 
   describe.skipIf(environment.skipFlexibleSync, "mixed collections", function () {
     this.longTimeout();
@@ -573,7 +572,7 @@ describe.only("mixed synced", () => {
       obj2.removeAllListeners();
     });
 
-    it.only("dictionary adding", async function (this: Mocha.Context & AppContext & MultiRealmContext) {
+    it("dictionary adding", async function (this: Mocha.Context & AppContext & MultiRealmContext) {
       const realm1 = await this.getRealm(realmConfig);
       await setupTest(realm1, true);
 
