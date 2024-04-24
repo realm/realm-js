@@ -30,7 +30,6 @@ class MixedClass extends Realm.Object<MixedClass> {
   _id!: Realm.BSON.ObjectId;
   value: Realm.Mixed;
   list!: Realm.List<Realm.Mixed>;
-  dict!: Realm.Dictionary<Realm.Mixed>;
 
   static schema: ObjectSchema = {
     name: "MixedClass",
@@ -38,7 +37,6 @@ class MixedClass extends Realm.Object<MixedClass> {
       _id: "objectId",
       value: "mixed",
       list: "mixed[]",
-      dict: "mixed{}",
     },
     primaryKey: "_id",
   };
