@@ -148,10 +148,6 @@ export function importAppBefore(config: AppConfig | { config: AppConfig }, sdkCo
 
         console.log(`${magentaTime}: ${greenLogLevel}:\t${whiteMessage}`);
       });
-
-      this.getUser = async (cred: Realm.Credentials): Promise<Realm.User> => {
-        return this.app.logIn(cred);
-      };
     }
   });
 

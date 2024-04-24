@@ -157,11 +157,6 @@ type RealmContext = {
    */
   closeRealm(options?: Partial<CloseRealmOptions>): Promise<void>;
 } & Mocha.Context;
-type MultiRealmContext = {
-  openedInfo: { realm: Realm; config: Realm.Configuration }[];
-  getRealm: (config: any) => Promise<Realm>; //any should be OpenRealmConfiguration
-  closeAllRealms: () => void;
-} & Mocha.Context;
 type RealmObjectContext<T = Record<string, unknown>> = {
   object: Realm.Object<T> & T;
 } & RealmContext;
