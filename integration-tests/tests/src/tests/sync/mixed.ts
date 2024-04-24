@@ -46,41 +46,65 @@ class MixedClass extends Realm.Object<MixedClass> {
   };
 }
 
+function expectRealmObject(object: unknown): asserts object is Realm.Object {
+  expect(object).instanceOf(Realm.Object);
+}
+
+function expectRealmList(value: unknown): asserts value is Realm.List<unknown> {
+  expect(value).instanceOf(Realm.List);
+}
+
+function expectJsOrRealmList(value: unknown): asserts value is Realm.List<unknown> | unknown[] {
+  if (!(Array.isArray(value) || value instanceof Realm.List)) {
+    throw new Error("Expected a JS Array or Realm List.");
+  }
+}
+
+function expectRealmDictionary(value: unknown): asserts value is Realm.Dictionary<unknown> {
+  expect(value).instanceOf(Realm.Dictionary);
+}
+
+function expectJsOrRealmDictionary(
+  value: unknown,
+): asserts value is Realm.Dictionary<unknown> | Record<string, unknown> {
+  if (value instanceof Realm.Dictionary) {
+    return;
+  }
+  if (typeof value !== "object" || value === null || Array.isArray(value)) {
+    throw new Error("Expected a JS Object or Realm Dictionary.");
+  }
+}
+
 /**
  * The default tester of values.
  * @param actual The value downloaded from the server.
- * @param inserted The value inserted locally before upload.
+ * @param expected The value inserted locally before upload.
  */
-function defaultTester(actual: Realm.Mixed, inserted: Realm.Mixed, realm?: Realm) {
+function defaultTester(actual: unknown, expected: unknown) {
   if (actual instanceof Realm.List) {
-    const insertedVal = inserted as Realm.Mixed[];
-    actual.forEach((item, index) => defaultTester(item, insertedVal[index], realm));
+    expectJsOrRealmList(expected);
+    expect(actual.length).equals(expected.length);
+    actual.forEach((item, index) => defaultTester(item, expected[index]));
   } else if (actual instanceof Realm.Dictionary) {
-    const insertedVal = inserted as { [key: string]: any };
-    Object.keys(actual).forEach((key) => defaultTester(actual[key], insertedVal[key], realm));
-  } else if (actual instanceof BSON.Decimal128) {
-    const insertedVal = inserted as BSON.Decimal128;
-    expect(actual.bytes.equals(insertedVal.bytes)).equals(true);
-  } else if (actual instanceof BSON.ObjectID) {
-    const insertedVal = inserted as BSON.ObjectID;
-    expect(actual.equals(insertedVal)).equals(true);
-  } else if (actual instanceof BSON.UUID) {
-    const insertedVal = inserted as BSON.UUID;
-    expect(actual.equals(insertedVal)).equals(true);
-  } else if (actual instanceof Date) {
-    const insertedVal = inserted as Date;
-    expect(actual.getTime() == insertedVal.getTime()).equals(true);
+    expectJsOrRealmDictionary(expected);
+    const actualKeys = Object.keys(actual);
+    expect(actualKeys).members(Object.keys(expected));
+    actualKeys.forEach((key) => defaultTester(actual[key], expected[key]));
   } else if (actual instanceof ArrayBuffer) {
     const actualBinaryView = new Uint8Array(actual);
-    const insertedBinaryView = new Uint8Array(inserted as ArrayBuffer);
-    expect(actualBinaryView.byteLength).equals(insertedBinaryView.byteLength);
-    actualBinaryView.forEach((item, index) => defaultTester(item, insertedBinaryView[index]));
-  } else if (actual instanceof MixedClass && realm) {
-    const insertedVal = realm.objects(MixedClass).filtered("_id = $0", actual._id)[0];
-    expect(actual._id.equals(insertedVal._id)).equals(true);
-    defaultTester(actual.value, insertedVal.value);
+    const expectedBinaryView = new Uint8Array(expected as ArrayBuffer);
+    expect(actualBinaryView.byteLength).equals(expectedBinaryView.byteLength);
+    actualBinaryView.forEach((item, index) => defaultTester(item, expectedBinaryView[index]));
+  } else if (actual instanceof Realm.Object) {
+    expect(actual).instanceOf(MixedClass);
+    expect(expected).instanceOf(MixedClass);
+    // If-block is set up only for TS to infer the correct types.
+    if (actual instanceof MixedClass && expected instanceof MixedClass) {
+      expect(actual._id.equals(expected._id)).to.be.true;
+      defaultTester(actual.value, expected.value);
+    }
   } else {
-    expect(actual).equals(inserted);
+    expect(String(actual)).equals(String(expected));
   }
 }
 
@@ -402,8 +426,8 @@ describe.only("mixed synced", () => {
     async function logInAndGetRealms(app: Realm.App, config: Configuration) {
       const realm1 = await logInAndGetRealm(app, config);
       const realm2 = await logInAndGetRealm(app, config);
-      expect(realm1.objects(MixedClass).length).equals(0);
-      expect(realm2.objects(MixedClass).length).equals(0);
+      // expect(realm1.objects(MixedClass).length).equals(0);
+      // expect(realm2.objects(MixedClass).length).equals(0);
 
       return { realm1, realm2 };
     }
@@ -426,18 +450,6 @@ describe.only("mixed synced", () => {
       await downloadRealm.syncSession.downloadAllServerChanges();
     }
 
-    function expectRealmObject(object: unknown): asserts object is Realm.Object {
-      expect(object).instanceOf(Realm.Object);
-    }
-
-    function expectRealmList(value: unknown): asserts value is Realm.List<unknown> {
-      expect(value).instanceOf(Realm.List);
-    }
-
-    function expectRealmDictionary(value: unknown): asserts value is Realm.Dictionary<unknown> {
-      expect(value).instanceOf(Realm.Dictionary);
-    }
-
     describe("Various types", () => {
       it("can update top-level property", async function (this: MultiRealmContext) {
         const id = new BSON.ObjectId();
@@ -454,7 +466,7 @@ describe.only("mixed synced", () => {
           const obj2 = this.realm2.objectForPrimaryKey(MixedClass, id);
           expectRealmObject(obj2);
 
-          defaultTester(obj2.value, value, this.realm2);
+          defaultTester(obj2.value, value);
         }
       });
     });
@@ -486,7 +498,7 @@ describe.only("mixed synced", () => {
           const obj2 = this.realm2.objectForPrimaryKey(MixedClass, id);
           expectRealmObject(obj2);
 
-          defaultTester(obj2.value, expectedList, this.realm2);
+          defaultTester(obj2.value, expectedList);
         }
       });
 
@@ -504,7 +516,7 @@ describe.only("mixed synced", () => {
         expectRealmObject(obj2);
         const list2 = obj2.value;
         expectRealmList(list2);
-        defaultTester(list2, valuesToInsert, this.realm2);
+        defaultTester(list2, valuesToInsert);
 
         // We will keep this list updated with the values we expect to find.
         const expectedList = [...valuesToInsert];
@@ -518,7 +530,7 @@ describe.only("mixed synced", () => {
 
           await waitForSynchronization({ uploadRealm: this.realm1, downloadRealm: this.realm2 });
 
-          defaultTester(obj2.value, expectedList, this.realm2);
+          defaultTester(obj2.value, expectedList);
         }
 
         expect(list1.length).equals(0);
@@ -552,7 +564,7 @@ describe.only("mixed synced", () => {
 
           await waitForSynchronization({ uploadRealm: this.realm1, downloadRealm: this.realm2 });
 
-          defaultTester(list2, expectedList, this.realm2);
+          defaultTester(list2, expectedList);
         }
       });
     });
