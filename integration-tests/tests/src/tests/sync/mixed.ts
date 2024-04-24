@@ -181,7 +181,6 @@ function describeRoundtrip({
 
     it("writes", async function (this: RealmContext) {
       await setupTest(this.realm, useFlexibleSync);
-      //TODO Maybe I could also check that the dictionary can change value
       this._id = new Realm.BSON.ObjectId();
       this.realm.write(() => {
         this.value = typeof value === "function" ? value(this.realm) : value;
