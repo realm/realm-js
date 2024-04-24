@@ -49,3 +49,11 @@ export function randomDatabaseName() {
   const uuid = new BSON.UUID().toHexString();
   return `db-${uuid}`;
 }
+
+export function generateRandomPathAndNonce(): { path: string; nonce: string } {
+  const nonce = new BSON.ObjectId().toHexString();
+  return {
+    path: `temp-${nonce}.realm`,
+    nonce,
+  };
+}

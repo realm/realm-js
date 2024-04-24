@@ -22,7 +22,8 @@ export type LocalConfiguration = Omit<Configuration, "sync"> & { sync?: never };
 export type SyncedConfiguration = Omit<Configuration, "sync"> & {
   sync?: Partial<SyncConfiguration>;
 };
-import Realm, { Configuration, BSON, ConfigurationWithSync, ConfigurationWithoutSync, SyncConfiguration } from "realm";
+import Realm, { Configuration, ConfigurationWithSync, ConfigurationWithoutSync, SyncConfiguration } from "realm";
+import { generateRandomPathAndNonce } from "./generators";
 
 type ConfigurationWithSyncPartial = Omit<ConfigurationWithSync, "sync"> & {
   sync: Partial<SyncConfiguration>;
@@ -74,7 +75,7 @@ export async function openRealm(
 }
 
 export function createSyncConfig(partialConfig: SyncedConfiguration = {}, user: Realm.User): Configuration {
-  const { path, nonce } = getRandomPathAndNonce();
+  const { path, nonce } = generateRandomPathAndNonce();
 
   return {
     path,
@@ -89,16 +90,7 @@ export function createSyncConfig(partialConfig: SyncedConfiguration = {}, user: 
 }
 
 export function createLocalConfig(partialConfig: LocalConfiguration = {}): Configuration {
-  const path = getRandomPathAndNonce().path;
+  const path = generateRandomPathAndNonce().path;
 
   return { path, ...partialConfig };
-}
-
-//TODO When bindgen is rebased on master, it could be worth moving this method to /src/utils/generators.ts that deals with generating random values
-function getRandomPathAndNonce(): { path: string; nonce: string } {
-  const nonce = new BSON.ObjectId().toHexString();
-  return {
-    path: `temp-${nonce}.realm`,
-    nonce,
-  };
 }
