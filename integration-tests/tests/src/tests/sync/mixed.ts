@@ -426,8 +426,8 @@ describe.only("mixed synced", () => {
     async function logInAndGetRealms(app: Realm.App, config: Configuration) {
       const realm1 = await logInAndGetRealm(app, config);
       const realm2 = await logInAndGetRealm(app, config);
-      // expect(realm1.objects(MixedClass).length).equals(0);
-      // expect(realm2.objects(MixedClass).length).equals(0);
+      expect(realm1.objects(MixedClass).length).equals(0);
+      expect(realm2.objects(MixedClass).length).equals(0);
 
       return { realm1, realm2 };
     }
