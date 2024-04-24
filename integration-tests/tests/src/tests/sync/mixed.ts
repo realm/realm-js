@@ -362,6 +362,19 @@ describe("mixed synced", () => {
       });
     }
 
+    function waitForMixedClassObj(realm: Realm, obId: Realm.BSON.ObjectId): Promise<MixedClass> {
+      return new Promise<MixedClass>((resolve) => {
+        realm
+          .objects(MixedClass)
+          .filtered("_id = $0", obId)
+          .addListener(([obj]) => {
+            if (obj) {
+              resolve(obj);
+            }
+          });
+      });
+    }
+
     it("value change", async function (this: Mocha.Context & AppContext & MultiRealmContext) {
       const realm1 = await this.getRealm(realmConfig);
       await setupTest(realm1, true);
@@ -666,18 +679,5 @@ describe("mixed synced", () => {
         defaultTester(obj2.value, expectedDict, realm2);
       }
     });
-
-    function waitForMixedClassObj(realm: Realm, obId: Realm.BSON.ObjectId): Promise<MixedClass> {
-      return new Promise<MixedClass>((resolve) => {
-        realm
-          .objects(MixedClass)
-          .filtered("_id = $0", obId)
-          .addListener(([obj]) => {
-            if (obj) {
-              resolve(obj);
-            }
-          });
-      });
-    }
   });
 });
