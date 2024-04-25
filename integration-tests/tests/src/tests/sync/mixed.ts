@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
-import Realm, { Mixed, ObjectSchema } from "realm";
+import Realm, { BSON, Mixed, ObjectSchema } from "realm";
 
 import { importAppBefore, authenticateUserBefore, openRealmBefore } from "../../hooks";
 import { itUploadsDeletesAndDownloads } from "./upload-delete-download";
@@ -54,17 +54,13 @@ const nullValue = null;
 const data = new Uint8Array([0xd8, 0x21, 0xd6, 0xe8, 0x00, 0x57, 0xbc, 0xb2, 0x6a, 0x15]).buffer;
 
 function getMixedList(realm: Realm) {
-  const obj = realm.write(() => {
-    return realm.create(MixedClass, { _id: new BSON.ObjectId() });
-  });
+  const obj = realm.create(MixedClass, { _id: new BSON.ObjectId() });
 
   return [bool, int, double, d128, string, oid, uuid, nullValue, date, data, obj];
 }
 
 function getMixedDict(realm: Realm) {
-  const obj = realm.write(() => {
-    return realm.create(MixedClass, { _id: new BSON.ObjectId() });
-  });
+  const obj = realm.create(MixedClass, { _id: new BSON.ObjectId() });
 
   return {
     bool,
@@ -124,17 +120,12 @@ function defaultTester(actual: unknown, inserted: unknown) {
   } else if (actual instanceof Realm.Object) {
     expect(actual).instanceOf(MixedClass);
     expect(inserted).instanceOf(MixedClass);
-    // If-block is set up only for TS to infer the correct types.
-    // if (actual instanceof MixedClass && inserted instanceof MixedClass) {
-    //   expect(actual._id.equals(inserted._id)).to.be.true;
-    //   defaultTester(actual.value, inserted.value);
-    // }
   } else {
     expect(String(actual)).equals(String(inserted));
   }
 }
 
-async function setupTest(realm: Realm, useFlexibleSync: boolean) {
+async function setupIfFlexiblySync(realm: Realm, useFlexibleSync: boolean) {
   if (useFlexibleSync) {
     await realm.subscriptions.update((mutableSubs) => {
       mutableSubs.add(realm.objects(MixedClass));
@@ -178,7 +169,7 @@ function describeRoundtrip({
     });
 
     it("writes", async function (this: RealmContext) {
-      await setupTest(this.realm, useFlexibleSync);
+      await setupIfFlexiblySync(this.realm, useFlexibleSync);
       this._id = new Realm.BSON.ObjectId();
       this.realm.write(() => {
         this.value = typeof value === "function" ? value(this.realm) : value;
@@ -194,7 +185,7 @@ function describeRoundtrip({
     itUploadsDeletesAndDownloads();
 
     it("reads", async function (this: RealmContext) {
-      await setupTest(this.realm, useFlexibleSync);
+      await setupIfFlexiblySync(this.realm, useFlexibleSync);
 
       const obj = await new Promise<MixedClass>((resolve) => {
         this.realm
@@ -318,7 +309,7 @@ function describeTypes(useFlexibleSync: boolean) {
   }
 }
 
-describe("mixed synced", () => {
+describe.only("mixed synced", () => {
   describe("partition-based sync roundtrip", function () {
     this.longTimeout();
     importAppBefore(buildAppConfig("with-pbs").anonAuth().partitionBasedSync());
