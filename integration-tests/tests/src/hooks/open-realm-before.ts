@@ -84,34 +84,3 @@ export function openRealmBefore(config: OpenRealmConfiguration = {}): void {
   before(openRealmBefore.name, openRealmHook(config));
   after("closeRealmAfter", closeThisRealm);
 }
-
-// export async function setupRealmHook(this: AppContext & MultiRealmContext): Promise<void> {
-//   this.openedInfo = [];
-
-//   this.getRealm = async (config: OpenRealmConfiguration): Promise<Realm> => {
-//     const user = await this.getUser(Realm.Credentials.anonymous(false));
-//     const realmAndConfig = await openRealm(config, user);
-//     this.openedInfo.push(realmAndConfig);
-//     return realmAndConfig.realm;
-//   };
-
-//   this.closeAllRealms = () => {
-//     this.openedInfo?.forEach(({ realm, config }) => {
-//       if (!realm?.isClosed) {
-//         realm.close();
-//       }
-//       Realm.deleteFile(config);
-//     });
-
-//     Realm.clearTestState();
-//   };
-// }
-
-// export function closeMultiRealms(this: AppContext & MultiRealmContext): void {
-//   this.closeAllRealms?.();
-// }
-
-// export function setupMultiRealmsBeforeAndAfterEach(): void {
-//   beforeEach("openMultiRealmsBeforeEach", setupRealmHook);
-//   afterEach("closeMultiRealmsAfterEach", closeMultiRealms);
-// }

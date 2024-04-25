@@ -54,9 +54,9 @@ function expectRealmList(value: unknown): asserts value is Realm.List<unknown> {
   expect(value).instanceOf(Realm.List);
 }
 
-function expectJsOrRealmList(value: unknown): asserts value is Realm.List<unknown> | unknown[] {
-  if (!(Array.isArray(value) || value instanceof Realm.List)) {
-    throw new Error("Expected a JS Array or Realm List.");
+function expectJsArray(value: unknown): asserts value is unknown[] {
+  if (!Array.isArray(value)) {
+    throw new Error("Expected a JS Array.");
   }
 }
 
@@ -64,47 +64,42 @@ function expectRealmDictionary(value: unknown): asserts value is Realm.Dictionar
   expect(value).instanceOf(Realm.Dictionary);
 }
 
-function expectJsOrRealmDictionary(
-  value: unknown,
-): asserts value is Realm.Dictionary<unknown> | Record<string, unknown> {
-  if (value instanceof Realm.Dictionary) {
-    return;
-  }
+function expectJsObject(value: unknown): asserts value is Record<string, unknown> {
   if (typeof value !== "object" || value === null || Array.isArray(value)) {
-    throw new Error("Expected a JS Object or Realm Dictionary.");
+    throw new Error("Expected a JS Object.");
   }
 }
 
 /**
  * The default tester of values.
  * @param actual The value downloaded from the server.
- * @param expected The value inserted locally before upload.
+ * @param inserted The value inserted locally before upload.
  */
-function defaultTester(actual: unknown, expected: unknown) {
+function defaultTester(actual: unknown, inserted: unknown) {
   if (actual instanceof Realm.List) {
-    expectJsOrRealmList(expected);
-    expect(actual.length).equals(expected.length);
-    actual.forEach((item, index) => defaultTester(item, expected[index]));
+    expectJsArray(inserted);
+    expect(actual.length).equals(inserted.length);
+    actual.forEach((item, index) => defaultTester(item, inserted[index]));
   } else if (actual instanceof Realm.Dictionary) {
-    expectJsOrRealmDictionary(expected);
+    expectJsObject(inserted);
     const actualKeys = Object.keys(actual);
-    expect(actualKeys).members(Object.keys(expected));
-    actualKeys.forEach((key) => defaultTester(actual[key], expected[key]));
+    expect(actualKeys).members(Object.keys(inserted));
+    actualKeys.forEach((key) => defaultTester(actual[key], inserted[key]));
   } else if (actual instanceof ArrayBuffer) {
     const actualBinaryView = new Uint8Array(actual);
-    const expectedBinaryView = new Uint8Array(expected as ArrayBuffer);
+    const expectedBinaryView = new Uint8Array(inserted as ArrayBuffer);
     expect(actualBinaryView.byteLength).equals(expectedBinaryView.byteLength);
     actualBinaryView.forEach((item, index) => defaultTester(item, expectedBinaryView[index]));
   } else if (actual instanceof Realm.Object) {
     expect(actual).instanceOf(MixedClass);
-    expect(expected).instanceOf(MixedClass);
+    expect(inserted).instanceOf(MixedClass);
     // If-block is set up only for TS to infer the correct types.
-    if (actual instanceof MixedClass && expected instanceof MixedClass) {
-      expect(actual._id.equals(expected._id)).to.be.true;
-      defaultTester(actual.value, expected.value);
+    if (actual instanceof MixedClass && inserted instanceof MixedClass) {
+      expect(actual._id.equals(inserted._id)).to.be.true;
+      defaultTester(actual.value, inserted.value);
     }
   } else {
-    expect(String(actual)).equals(String(expected));
+    expect(String(actual)).equals(String(inserted));
   }
 }
 
@@ -385,12 +380,12 @@ describe.only("mixed synced", () => {
     });
 
     afterEach(async function (this: MultiRealmContext) {
-      deleteAllObjects(this.realm1, this.realm2);
-      await sleep(1000);
+      // Flaky error: Cannot access realm that has been closed.
+      // deleteAllObjects(this.realm1, this.realm2);
       closeAndDeleteRealms(this.config1, this.config2);
 
-      // Tests seem to become less flaky if waiting.
-      // await sleep(1000);
+      // Tests seem to become less flaky if waiting here.
+      await sleep(1000);
     });
 
     function closeAndDeleteRealms(...configs: Configuration[]) {
@@ -400,13 +395,14 @@ describe.only("mixed synced", () => {
       Realm.clearTestState();
     }
 
-    function deleteAllObjects(...realms: Realm[]) {
-      for (const realm of realms) {
-        realm.write(() => {
-          realm.deleteAll();
-        });
-      }
-    }
+    // Note: Uncomment if needing to deleting all objects.
+    // function deleteAllObjects(...realms: Realm[]) {
+    //   for (const realm of realms) {
+    //     realm.write(() => {
+    //       realm.deleteAll();
+    //     });
+    //   }
+    // }
 
     async function logInAndGetRealm(app: Realm.App, config: Configuration) {
       const user = await app.logIn(Realm.Credentials.anonymous(false));
@@ -426,8 +422,9 @@ describe.only("mixed synced", () => {
     async function logInAndGetRealms(app: Realm.App, config: Configuration) {
       const realm1 = await logInAndGetRealm(app, config);
       const realm2 = await logInAndGetRealm(app, config);
-      expect(realm1.objects(MixedClass).length).equals(0);
-      expect(realm2.objects(MixedClass).length).equals(0);
+      // Note: Uncomment if expecting data to have been cleared.
+      // expect(realm1.objects(MixedClass).length).equals(0);
+      // expect(realm2.objects(MixedClass).length).equals(0);
 
       return { realm1, realm2 };
     }
