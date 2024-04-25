@@ -436,7 +436,7 @@ function convertToJsi(addon: JsiAddon, type: Type, expr: string): string {
       const inner = type.args[0];
       switch (type.name) {
         case "std::shared_ptr":
-          if (inner.kind == "Class" && inner.sharedPtrWrapped) return `JS_FROM_SHARED_${inner.name}(_env, ${expr})`;
+          if (inner.kind == "Class" && inner.sharedPtrWrapped) return `JS_FROM_SHARED_${inner.name}(_env, std::dynamic_pointer_cast<${inner.cppName}>(${expr}))`;
           return c(new Pointer(inner), expr);
         case "Nullable":
           return `[&] (auto&& val) { return !val ? jsi::Value::null() : ${c(inner, "FWD(val)")}; }(${expr})`;

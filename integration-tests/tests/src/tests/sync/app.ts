@@ -144,7 +144,7 @@ describe("App", () => {
       expect(MetadataMode).deep.equals({
         NoEncryption: "noEncryption",
         Encryption: "encryption",
-        NoMetadata: "noMetadata",
+        NoMetadata: "inMemory",
       });
     });
 
