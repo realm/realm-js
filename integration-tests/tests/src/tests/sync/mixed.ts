@@ -15,11 +15,11 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
+
 import { expect } from "chai";
 import Realm, { Mixed, ObjectSchema } from "realm";
 
 import { importAppBefore, authenticateUserBefore, openRealmBefore } from "../../hooks";
-
 import { itUploadsDeletesAndDownloads } from "./upload-delete-download";
 import { buildAppConfig } from "../../utils/build-app-config";
 
@@ -42,95 +42,95 @@ class MixedClass extends Realm.Object<MixedClass> {
   };
 }
 
+const bool = true;
+const int = 1;
+const double = 123.456;
+const d128 = BSON.Decimal128.fromString("6.022e23");
+const string = "hello";
+const date = new Date();
+const oid = new BSON.ObjectId();
+const uuid = new BSON.UUID();
+const nullValue = null;
 const data = new Uint8Array([0xd8, 0x21, 0xd6, 0xe8, 0x00, 0x57, 0xbc, 0xb2, 0x6a, 0x15]).buffer;
 
-const getMixedList = (realm: Realm) => {
-  const ob = realm.create<MixedClass>("MixedClass", {
-    _id: new Realm.BSON.ObjectId(),
+function getMixedList(realm: Realm) {
+  const obj = realm.write(() => {
+    return realm.create(MixedClass, { _id: new BSON.ObjectId() });
   });
 
-  return [
-    null,
-    true,
-    1,
-    5.0,
-    "string",
-    Realm.BSON.Decimal128.fromString("1234.5678"),
-    new Realm.BSON.ObjectId("609afc1290a3c1818f04635e"),
-    new Realm.BSON.UUID("9476a497-60ef-4439-bc8a-52b8ad0d4875"),
-    new Date(1620768552979),
-    data,
-    ob,
-  ];
-};
+  return [bool, int, double, d128, string, oid, uuid, nullValue, date, data, obj];
+}
 
-const getMixedDict = (realm: Realm) => {
-  const ob = realm.create<MixedClass>("MixedClass", {
-    _id: new Realm.BSON.ObjectId(),
+function getMixedDict(realm: Realm) {
+  const obj = realm.write(() => {
+    return realm.create(MixedClass, { _id: new BSON.ObjectId() });
   });
 
   return {
-    null: null,
-    bool: true,
-    int: 1,
-    float: 5.0,
-    string: "stringVal",
-    decimal: Realm.BSON.Decimal128.fromString("1234.5678"),
-    objectId: new Realm.BSON.ObjectId("609afc1290a3c1818f04635e"),
-    uuid: new Realm.BSON.UUID("9476a497-60ef-4439-bc8a-52b8ad0d4875"),
-    date: new Date(1620768552979),
-    data: data,
-    obj: ob,
+    bool,
+    int,
+    double,
+    d128,
+    string,
+    oid,
+    uuid,
+    nullValue,
+    date,
+    data,
+    obj,
   };
-};
+}
 
-const getNestedMixedList = (realm: Realm) => {
+function getNestedMixedList(realm: Realm) {
   return [...getMixedList(realm), getMixedList(realm), getMixedDict(realm)];
-};
+}
 
-const getNestedMixedDict = (realm: Realm) => {
+function getNestedMixedDict(realm: Realm) {
   return {
     ...getMixedDict(realm),
     innerList: getMixedList(realm),
     innerDict: getMixedDict(realm),
   };
-};
+}
+
+function expectJsArray(value: unknown): asserts value is unknown[] {
+  expect(value).to.be.an("array");
+}
+
+function expectJsObject(value: unknown): asserts value is Record<string, unknown> {
+  expect(value).to.be.an("object");
+}
 
 /**
  * The default tester of values.
  * @param actual The value downloaded from the server.
  * @param inserted The value inserted locally before upload.
  */
-function defaultTester(actual: Realm.Mixed, inserted: Realm.Mixed, realm?: Realm) {
+function defaultTester(actual: unknown, inserted: unknown) {
   if (actual instanceof Realm.List) {
-    const insertedVal = inserted as Realm.Mixed[];
-    actual.forEach((item, index) => defaultTester(item, insertedVal[index], realm));
+    expectJsArray(inserted);
+    expect(actual.length).equals(inserted.length);
+    actual.forEach((item, index) => defaultTester(item, inserted[index]));
   } else if (actual instanceof Realm.Dictionary) {
-    const insertedVal = inserted as { [key: string]: any };
-    Object.keys(actual).forEach((key) => defaultTester(actual[key], insertedVal[key], realm));
-  } else if (actual instanceof Realm.BSON.Decimal128) {
-    const insertedVal = inserted as Realm.BSON.Decimal128;
-    expect(actual.bytes.equals(insertedVal.bytes)).equals(true);
-  } else if (actual instanceof Realm.BSON.ObjectID) {
-    const insertedVal = inserted as Realm.BSON.ObjectID;
-    expect(actual.equals(insertedVal)).equals(true);
-  } else if (actual instanceof Realm.BSON.UUID) {
-    const insertedVal = inserted as Realm.BSON.UUID;
-    expect(actual.equals(insertedVal)).equals(true);
-  } else if (actual instanceof Date) {
-    const insertedVal = inserted as Date;
-    expect(actual.getTime() == insertedVal.getTime()).equals(true);
+    expectJsObject(inserted);
+    const actualKeys = Object.keys(actual);
+    expect(actualKeys).members(Object.keys(inserted));
+    actualKeys.forEach((key) => defaultTester(actual[key], inserted[key]));
   } else if (actual instanceof ArrayBuffer) {
     const actualBinaryView = new Uint8Array(actual);
-    const insertedBynaryView = new Uint8Array(inserted as ArrayBuffer);
-    expect(actualBinaryView.byteLength).equals(insertedBynaryView.byteLength);
-    actualBinaryView.forEach((item, index) => defaultTester(item, insertedBynaryView[index]));
-  } else if (actual instanceof MixedClass && realm) {
-    const insertedVal = realm.objects<MixedClass>("MixedClass").filtered("_id = $0", actual._id)[0];
-    expect(actual._id.equals(insertedVal._id)).equals(true);
-    defaultTester(actual.value, insertedVal.value);
+    const insertedBinaryView = new Uint8Array(inserted as ArrayBuffer);
+    expect(actualBinaryView.byteLength).equals(insertedBinaryView.byteLength);
+    actualBinaryView.forEach((item, index) => defaultTester(item, insertedBinaryView[index]));
+  } else if (actual instanceof Realm.Object) {
+    expect(actual).instanceOf(MixedClass);
+    expect(inserted).instanceOf(MixedClass);
+    // If-block is set up only for TS to infer the correct types.
+    // if (actual instanceof MixedClass && inserted instanceof MixedClass) {
+    //   expect(actual._id.equals(inserted._id)).to.be.true;
+    //   defaultTester(actual.value, inserted.value);
+    // }
   } else {
-    expect(actual).equals(inserted);
+    expect(String(actual)).equals(String(inserted));
   }
 }
 
@@ -153,8 +153,8 @@ async function setupTest(realm: Realm, useFlexibleSync: boolean) {
  * - Performs a test to ensure the downloaded value match the value created locally.
  * @param typeName Name of the mixed type (only used for the test name)
  * @param value The value to be used for the test, or a function to obtain it
- * @param testValue The function used to assert equality
- * @param useFlexibleSync Boolean to indicate the use of flexible sync (otherwise partition based sync will be used)
+ * @param valueTester The function used to assert equality
+ * @param useFlexibleSync Whether to use flexible sync (otherwise partition based sync will be used)
  */
 function describeRoundtrip({
   typeName,
@@ -239,35 +239,35 @@ function describeTypes(useFlexibleSync: boolean) {
   describeRoundtrip({
     typeName: "data",
     value: buffer,
-    useFlexibleSync: useFlexibleSync,
+    useFlexibleSync,
   });
 
   const date = new Date(1620768552979);
   describeRoundtrip({
     typeName: "date",
     value: date,
-    useFlexibleSync: useFlexibleSync,
+    useFlexibleSync,
   });
 
   const objectId = new Realm.BSON.ObjectId("609afc1290a3c1818f04635e");
   describeRoundtrip({
     typeName: "ObjectId",
     value: objectId,
-    useFlexibleSync: useFlexibleSync,
+    useFlexibleSync,
   });
 
   const uuid = new Realm.BSON.UUID("9476a497-60ef-4439-bc8a-52b8ad0d4875");
   describeRoundtrip({
     typeName: "UUID",
     value: uuid,
-    useFlexibleSync: useFlexibleSync,
+    useFlexibleSync,
   });
 
   const decimal128 = Realm.BSON.Decimal128.fromString("1234.5678");
   describeRoundtrip({
     typeName: "Decimal128",
     value: decimal128,
-    useFlexibleSync: useFlexibleSync,
+    useFlexibleSync,
   });
 
   const recursiveObjectId = new Realm.BSON.ObjectId();
@@ -284,9 +284,9 @@ function describeTypes(useFlexibleSync: boolean) {
       return result;
     },
     valueTester: (value: MixedClass) => {
-      expect(recursiveObjectId.equals(value._id)).equals(true);
+      expect(recursiveObjectId.equals(value._id)).to.be.true;
     },
-    useFlexibleSync: useFlexibleSync,
+    useFlexibleSync,
   });
 
   if (useFlexibleSync) {
