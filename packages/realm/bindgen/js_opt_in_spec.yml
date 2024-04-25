@@ -444,6 +444,21 @@ classes:
       - function
       - api_key
 
+  SyncUser:
+    methods:
+      - is_logged_in
+      - user_id
+      - app_id
+      - legacy_identities
+      - access_token
+      - refresh_token
+      - state
+      - access_token_refresh_required
+      - request_refresh_user
+      - request_refresh_location
+      - request_access_token
+      - track_realm
+
   User:
     methods:
       - has_device_id
@@ -453,11 +468,6 @@ classes:
       - custom_data
       - subscribe
       - unsubscribe
-      - is_logged_in
-      - access_token
-      - refresh_token
-      - state
-      - user_id
       - path_for_realm
       - app
 
@@ -487,7 +497,6 @@ classes:
       - unsubscribe
       - call_function
       - make_streaming_request
-      - immediately_run_file_actions
 
   WatchStream:
     methods:
