@@ -295,7 +295,10 @@ export class App<
       baseFilePath: baseFilePath ? baseFilePath : fs.getDefaultDirectoryPath(),
       metadataMode: metadata ? toBindingMetadataMode(metadata.mode) : binding.MetadataMode.NoEncryption,
       customEncryptionKey: metadata?.encryptionKey,
-      syncClientConfig,
+      syncClientConfig: {
+        multiplexSessions,
+        userAgentBindingInfo: App.userAgent,
+      }
     });
   }
 
