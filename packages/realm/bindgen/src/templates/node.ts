@@ -373,7 +373,7 @@ function convertToNode(addon: NodeAddon, type: Type, expr: string): string {
       const inner = type.args[0];
       switch (type.name) {
         case "std::shared_ptr":
-          if (inner.kind == "Class" && inner.sharedPtrWrapped) return `NODE_FROM_SHARED_${inner.name}(${env}, std::dynamic_pointer_cast<${inner.cppName}>(${expr}))`;
+          if (inner.kind == "Class" && inner.sharedPtrWrapped) return `NODE_FROM_SHARED_${inner.name}(${env}, ${expr})`;
           return c(new Pointer(inner), expr);
         case "Nullable":
           return `[&] (auto&& val) { return !val ? ${env}.Null() : ${c(inner, "FWD(val)")}; }(${expr})`;
@@ -709,11 +709,6 @@ class NodeCppDecls extends CppDecls {
     }
 
     for (const cls of spec.classes) {
-      assert(
-        !cls.sharedPtrWrapped || (!cls.base && cls.subclasses.length == 0),
-        `We don't support mixing sharedPtrWrapped and class hierarchies. ${cls.name} requires this.`,
-      );
-
       this.addon.addClass(cls);
 
       // TODO look into using enabled_shared_from for all shared thingies so we can just store T*.
