@@ -305,7 +305,7 @@ export class SyncSession {
    */
   get config(): SyncConfiguration {
     return this.withInternal((internal) => {
-      const user = new User(internal.user, mockApp);
+      const user = new User(internal.config.user, mockApp);
       const { partitionValue, flxSyncRequested, customHttpHeaders, clientValidateSsl, sslTrustCertificatePath } =
         internal.config;
       if (flxSyncRequested) {
@@ -349,8 +349,9 @@ export class SyncSession {
    * Gets the User that this session was created with.
    */
   get user() {
-    return User.get(this.withInternal((internal) => internal.user));
+    return User.get(this.withInternal((internal) => internal.config.user));
   }
+
   /**
    * Gets the current state of the connection to the server. Multiple sessions might share the same underlying
    * connection. In that case, any connection change is sent to all sessions.

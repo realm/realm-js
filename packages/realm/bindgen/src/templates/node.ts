@@ -373,7 +373,7 @@ function convertToNode(addon: NodeAddon, type: Type, expr: string): string {
       const inner = type.args[0];
       switch (type.name) {
         case "std::shared_ptr":
-          if (inner.kind == "Class" && inner.sharedPtrWrapped) return `NODE_FROM_SHARED_${inner.name}(${env}, ${expr})`;
+          if (inner.kind == "Class" && inner.sharedPtrWrapped) return `NODE_FROM_SHARED_${inner.name}(${env}, std::dynamic_pointer_cast<${inner.cppName}>(${expr}))`;
           return c(new Pointer(inner), expr);
         case "Nullable":
           return `[&] (auto&& val) { return !val ? ${env}.Null() : ${c(inner, "FWD(val)")}; }(${expr})`;
@@ -721,6 +721,7 @@ class NodeCppDecls extends CppDecls {
       const derivedType = cls.sharedPtrWrapped ? `std::shared_ptr<${cls.cppName}>` : cls.cppName;
       const ptr = (expr: string) => `${expr}.As<Napi::External<${baseType}>>().Data()`;
       const casted = (expr: string) => (cls.base ? `static_cast<${derivedType}*>(${ptr(expr)})` : ptr(expr));
+
       const self = `(${cls.needsDeref ? "**" : "*"}${casted("info[0]")})`;
 
       const selfCheck = (isStatic: boolean) => {
