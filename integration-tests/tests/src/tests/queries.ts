@@ -1052,11 +1052,9 @@ describe("Queries", () => {
         expect(aged14Or15.length).to.equal(2);
 
         const aged17 = persons.filtered("age IN $0", [17]);
-        console.log({ aged17 });
         expect(aged17.length).to.equal(1);
 
         const dennis = persons.filtered("name in {'Dennis'}");
-        console.log({ dennis });
         expect(dennis.length).to.equal(0);
 
         const bobs = persons.filtered("name in $0", ["Bob"]);
