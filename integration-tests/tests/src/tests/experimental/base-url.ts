@@ -23,11 +23,11 @@ import "realm/experimental/base-url";
 describe("Experimental", () => {
   it("updates base URL", function (this: Mocha.Context) {
     const app = new App("12345");
-    expect(app.baseUrl).equals("https://realm.mongodb.com");
+    expect(app.baseUrl).equals("https://services.cloud.mongodb.com");
 
     // @ts-expect-error Assigning to read-only property.
     expect(() => (app.baseUrl = "new URL")).to.throw("Cannot assign the base URL, please use `updateBaseUrl()`");
-    expect(app.baseUrl).equals("https://realm.mongodb.com");
+    expect(app.baseUrl).equals("https://services.cloud.mongodb.com");
 
     // Update to a URL that will not work.
     expect(app.updateBaseUrl("https://example")).to.be.rejectedWith("Error: request to https://example/");
