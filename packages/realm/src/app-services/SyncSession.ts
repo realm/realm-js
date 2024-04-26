@@ -305,7 +305,11 @@ export class SyncSession {
    */
   get config(): SyncConfiguration {
     return this.withInternal((internal) => {
-      const user = new User(binding.Helpers.syncUserAsAppUser(internal.user), mockApp);
+      const appUser = binding.Helpers.syncUserAsAppUser(internal.user);
+      if (!appUser) {
+        throw new Error("User is null");
+      }
+      const user = new User(appUser, mockApp);
       const { partitionValue, flxSyncRequested, customHttpHeaders, clientValidateSsl, sslTrustCertificatePath } =
         internal.config;
       if (flxSyncRequested) {
@@ -349,7 +353,11 @@ export class SyncSession {
    * Gets the User that this session was created with.
    */
   get user() {
-    return User.get(this.withInternal((internal) => binding.Helpers.syncUserAsAppUser(internal.user)));
+    const appUser = this.withInternal((internal) => binding.Helpers.syncUserAsAppUser(internal.user));
+    if (!appUser) {
+      throw new Error("User is null");
+    }
+    return User.get(appUser);
   }
 
   /**
