@@ -21,13 +21,13 @@ import { App } from "../app-services/App";
 declare module "../app-services/App" {
   interface App {
     /**
-     * Get the base URL.
+     * Get the current base URL used for sending requests to Atlas App Services.
      * @experimental This feature is experimental and may be changed or removed.
      */
     get baseUrl(): string;
 
     /**
-     * Update the base URL.
+     * Update the base URL used for sending requests to Atlas App Services.
      * @experimental This feature is experimental and may be changed or removed.
      */
     updateBaseUrl(url: string): Promise<void>;
