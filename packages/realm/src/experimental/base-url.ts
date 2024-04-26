@@ -43,6 +43,6 @@ Object.defineProperty(App.prototype, "baseUrl", {
   },
 });
 
-App.prototype.updateBaseUrl = async function (this: App, url: string) {
-  await this.internal.updateBaseUrl(url);
+App.prototype.updateBaseUrl = function (this: App, url: string) {
+  return this.internal.updateBaseUrl(url);
 };
