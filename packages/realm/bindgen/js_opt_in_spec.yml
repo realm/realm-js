@@ -264,6 +264,7 @@ classes:
       - feed_buffer
       - make_ssl_verify_callback
       - needs_file_format_upgrade
+      - sync_user_as_app_user
 
   LogCategoryRef:
     methods:
@@ -445,19 +446,19 @@ classes:
       - api_key
 
   SyncUser:
-    methods:
-      - is_logged_in
-      - user_id
-      - app_id
-      - legacy_identities
-      - access_token
-      - refresh_token
-      - state
-      - access_token_refresh_required
-      - request_refresh_user
-      - request_refresh_location
-      - request_access_token
-      - track_realm
+    methods: []
+  #     - is_logged_in
+  #     - user_id
+  #     - app_id
+  #     - legacy_identities
+  #     - access_token
+  #     - refresh_token
+  #     - state
+  #     - access_token_refresh_required
+  #     - request_refresh_user
+  #     - request_refresh_location
+  #     - request_access_token
+  #     - track_realm
 
   User:
     methods:
@@ -470,6 +471,18 @@ classes:
       - unsubscribe
       - path_for_realm
       - app
+      - is_logged_in
+      - user_id
+      - app_id
+      - legacy_identities
+      - access_token
+      - refresh_token
+      - state
+      - access_token_refresh_required
+      - request_refresh_user
+      - request_refresh_location
+      - request_access_token
+      - track_realm
 
   UserProfile:
     methods:
@@ -563,6 +576,7 @@ classes:
       - revive_if_needed
       - force_close
       - handle_reconnect
+      - user
       # JS-specific
       - DOLLAR_resetSharedPtr
 

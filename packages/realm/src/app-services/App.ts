@@ -279,11 +279,6 @@ export class App<
       assert.function(fetch, "fetch");
     }
 
-    const syncClientConfig: binding.SyncClientConfig_Relaxed = {
-      multiplexSessions,
-      userAgentBindingInfo: App.userAgent,
-    };
-
     fs.ensureDirectoryForFile(fs.joinPaths(baseFilePath || fs.getDefaultDirectoryPath(), "mongodb-realm"));
     // TODO: This used getSharedApp in the legacy SDK, but it's failing AppTests
     this.internal = binding.App.getApp(binding.AppCacheMode.Disabled, {
@@ -298,7 +293,7 @@ export class App<
       syncClientConfig: {
         multiplexSessions,
         userAgentBindingInfo: App.userAgent,
-      }
+      },
     });
   }
 
