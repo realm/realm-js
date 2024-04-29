@@ -23,8 +23,6 @@ import { importAppBefore, authenticateUserBefore, openRealmBefore } from "../../
 import { itUploadsDeletesAndDownloads } from "./upload-delete-download";
 import { buildAppConfig } from "../../utils/build-app-config";
 import { OpenRealmConfiguration, openRealm } from "../../utils/open-realm";
-import { sleep } from "../../utils/sleep";
-import { LogEntry, LoggerCallback2 } from "realm/dist/public-types/Logger";
 
 type Value = Realm.Mixed | ((realm: Realm) => Realm.Mixed);
 type ValueTester = (actual: Realm.Mixed, inserted: Realm.Mixed, realm?: Realm) => void;
@@ -468,7 +466,7 @@ describe.only("mixed synced", () => {
         await waitForSynchronization({ uploadRealm: realm1, downloadRealm: realm2 });
         await waitPromise;
 
-        defaultTester(obj2.value, val, realm2);
+        defaultTester(obj2.value, val);
       }
     });
 
@@ -495,7 +493,7 @@ describe.only("mixed synced", () => {
         await waitForSynchronization({ uploadRealm: realm1, downloadRealm: realm2 });
         await waitPromise;
 
-        defaultTester(obj2.value, expectedList, realm2);
+        defaultTester(obj2.value, expectedList);
       }
     });
 
@@ -523,7 +521,7 @@ describe.only("mixed synced", () => {
         await waitForSynchronization({ uploadRealm: realm1, downloadRealm: realm2 });
         await waitPromise;
 
-        defaultTester(obj2.value, expectedList, realm2);
+        defaultTester(obj2.value, expectedList);
       }
 
       expect((obj1.value as Realm.List).length).equals(0);
@@ -554,7 +552,7 @@ describe.only("mixed synced", () => {
         await waitForSynchronization({ uploadRealm: realm1, downloadRealm: realm2 });
         await waitPromise;
 
-        defaultTester(obj2.value, expectedList, realm2);
+        defaultTester(obj2.value, expectedList);
       }
 
       obj2.removeAllListeners();
@@ -585,7 +583,7 @@ describe.only("mixed synced", () => {
         await waitForSynchronization({ uploadRealm: realm1, downloadRealm: realm2 });
         await waitPromise;
 
-        defaultTester(obj2.value, expectedDict, realm2);
+        defaultTester(obj2.value, expectedDict);
       }
     });
 
@@ -643,7 +641,7 @@ describe.only("mixed synced", () => {
         await waitForSynchronization({ uploadRealm: realm1, downloadRealm: realm2 });
         await waitPromise;
 
-        defaultTester(obj2.value, expectedDict, realm2);
+        defaultTester(obj2.value, expectedDict);
       }
     });
   });
