@@ -24,7 +24,7 @@ import { itUploadsDeletesAndDownloads } from "./upload-delete-download";
 import { buildAppConfig } from "../../utils/build-app-config";
 
 type Value = Realm.Mixed | ((realm: Realm) => Realm.Mixed);
-type ValueTester = (actual: Realm.Mixed, inserted: Realm.Mixed, realm?: Realm) => void;
+type ValueTester = (actual: Realm.Mixed, inserted: Realm.Mixed) => void;
 
 class MixedClass extends Realm.Object<MixedClass> {
   _id!: Realm.BSON.ObjectId;
