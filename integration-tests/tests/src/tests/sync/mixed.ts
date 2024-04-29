@@ -364,7 +364,7 @@ function describeTypes(useFlexibleSync: boolean) {
   }
 }
 
-describe.only("mixed synced", () => {
+describe("mixed synced", () => {
   describe("partition-based sync roundtrip", function () {
     this.longTimeout();
     importAppBefore(buildAppConfig("with-pbs").anonAuth().partitionBasedSync());
