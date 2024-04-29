@@ -23,7 +23,16 @@ import { importAppBefore, authenticateUserBefore, openRealmBefore } from "../../
 import { itUploadsDeletesAndDownloads } from "./upload-delete-download";
 import { buildAppConfig } from "../../utils/build-app-config";
 
-type Value = Realm.Mixed | ((realm: Realm) => Realm.Mixed) | ((realm: Realm) => { values: Mixed; expected: Mixed });
+/**
+ * A function type that generates values to inserted and expected values used with the default tester.
+ * The input realm is necessary to create and add objects to the realm before using them in the tests.
+ * The distinction between "values" and "expected" is necessary because most tests here close the realm after using
+ * the objects in "values", so they can't be used with the default tester (that happens at a later time).
+ * "expected" contains just an object instead of a RealmObject that can be used for testing.
+ */
+type ValueAndExpectedGenerator = (realm: Realm) => { values: Mixed; expected: Mixed };
+
+type Value = Realm.Mixed | ((realm: Realm) => Realm.Mixed) | ValueAndExpectedGenerator;
 type ValueTester = (actual: Realm.Mixed, inserted: Realm.Mixed) => void;
 
 class MixedClass extends Realm.Object<MixedClass> {
