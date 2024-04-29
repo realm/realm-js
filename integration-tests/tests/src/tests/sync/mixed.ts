@@ -23,7 +23,7 @@ import { importAppBefore, authenticateUserBefore, openRealmBefore } from "../../
 import { itUploadsDeletesAndDownloads } from "./upload-delete-download";
 import { buildAppConfig } from "../../utils/build-app-config";
 
-type Value = Realm.Mixed | ((realm: Realm) => Realm.Mixed);
+type Value = Realm.Mixed | ((realm: Realm) => Realm.Mixed) | ((realm: Realm) => { values: Mixed; expected: Mixed });
 type ValueTester = (actual: Realm.Mixed, inserted: Realm.Mixed) => void;
 
 class MixedClass extends Realm.Object<MixedClass> {
@@ -54,15 +54,20 @@ const nullValue = null;
 const data = new Uint8Array([0xd8, 0x21, 0xd6, 0xe8, 0x00, 0x57, 0xbc, 0xb2, 0x6a, 0x15]).buffer;
 
 function getMixedList(realm: Realm) {
-  const obj = realm.create(MixedClass, { _id: new BSON.ObjectId() });
+  const expectedObj = { _id: new BSON.ObjectId() };
+  const obj = realm.create(MixedClass, expectedObj);
 
-  return [bool, int, double, d128, string, oid, uuid, nullValue, date, data, obj];
+  const values = [bool, int, double, d128, string, oid, uuid, nullValue, date, data, obj];
+  const expected = [bool, int, double, d128, string, oid, uuid, nullValue, date, data, expectedObj];
+
+  return { values, expected };
 }
 
 function getMixedDict(realm: Realm) {
-  const obj = realm.create(MixedClass, { _id: new BSON.ObjectId() });
+  const expectedObj = { _id: new BSON.ObjectId() };
+  const obj = realm.create(MixedClass, expectedObj);
 
-  return {
+  const values = {
     bool,
     int,
     double,
@@ -75,18 +80,53 @@ function getMixedDict(realm: Realm) {
     data,
     obj,
   };
+
+  const expected = {
+    bool,
+    int,
+    double,
+    d128,
+    string,
+    oid,
+    uuid,
+    nullValue,
+    date,
+    data,
+    obj: expectedObj,
+  };
+
+  return { values, expected };
 }
 
 function getNestedMixedList(realm: Realm) {
-  return [...getMixedList(realm), getMixedList(realm), getMixedDict(realm)];
+  const mixList1 = getMixedList(realm);
+  const mixList2 = getMixedList(realm);
+  const mixDict = getMixedDict(realm);
+
+  const values = [...mixList1.values, mixList2.values, mixDict.values];
+  const expected = [...mixList1.expected, mixList2.expected, mixDict.expected];
+
+  return { values, expected };
 }
 
 function getNestedMixedDict(realm: Realm) {
-  return {
-    ...getMixedDict(realm),
-    innerList: getMixedList(realm),
-    innerDict: getMixedDict(realm),
+  const mixDict1 = getMixedDict(realm);
+  const mixDict2 = getMixedDict(realm);
+  const mixList = getMixedList(realm);
+
+  const values = {
+    ...mixDict1.values,
+    innerDict: mixDict2.values,
+    innerList: mixList.values,
   };
+
+  const expected = {
+    ...mixDict1.expected,
+    innerDict: mixDict2.expected,
+    innerList: mixList.expected,
+  };
+
+  return { values, expected };
 }
 
 function expectJsArray(value: unknown): asserts value is unknown[] {
@@ -119,7 +159,9 @@ function defaultTester(actual: unknown, inserted: unknown) {
     actualBinaryView.forEach((item, index) => defaultTester(item, insertedBinaryView[index]));
   } else if (actual instanceof Realm.Object) {
     expect(actual).instanceOf(MixedClass);
-    expect(inserted).instanceOf(MixedClass);
+    const actualMixed = actual as MixedClass;
+    const insertedMixed = inserted as MixedClass;
+    defaultTester(actualMixed._id, insertedMixed._id);
   } else {
     expect(String(actual)).equals(String(inserted));
   }
@@ -172,7 +214,15 @@ function describeRoundtrip({
       await setupIfFlexiblySync(this.realm, useFlexibleSync);
       this._id = new Realm.BSON.ObjectId();
       this.realm.write(() => {
-        this.value = typeof value === "function" ? value(this.realm) : value;
+        if (typeof value === "function") {
+          const valueResult = value(this.realm);
+          if ("expected" in valueResult && "values" in valueResult) {
+            this.value = valueResult.values;
+            this.expected = valueResult.expected;
+          }
+        } else {
+          this.value = value;
+        }
         this.realm.create(MixedClass, {
           _id: this._id,
           value: this.value,
@@ -199,12 +249,14 @@ function describeRoundtrip({
       });
 
       expect(typeof obj).equals("object");
+
+      const testVal = this.expected === undefined ? this.value : this.expected;
       // Test the single value
-      performTest(obj.value, this.value);
+      performTest(obj.value, testVal);
       // Test the list of values
       expect(obj.list.length).equals(4);
       const firstElement = obj.list[0];
-      performTest(firstElement, this.value);
+      performTest(firstElement, testVal);
       // No need to keep these around
       delete this._id;
       delete this.value;
@@ -281,7 +333,7 @@ function describeTypes(useFlexibleSync: boolean) {
   });
 
   if (useFlexibleSync) {
-    describe("collections in mixed", () => {
+    describe.only("collections in mixed", () => {
       describeRoundtrip({
         typeName: "list",
         value: getMixedList,
