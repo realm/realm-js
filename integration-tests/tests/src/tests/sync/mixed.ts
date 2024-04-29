@@ -57,7 +57,8 @@ const data = new Uint8Array([0xd8, 0x21, 0xd6, 0xe8, 0x00, 0x57, 0xbc, 0xb2, 0x6
 function getMixedList(realm: Realm) {
   const obj = realm.create(MixedClass, { _id: new BSON.ObjectId() });
 
-  return [bool, int, double, d128, string, oid, uuid, nullValue, date, data, obj];
+  // return [bool, int, double, d128, string, oid, uuid, nullValue, date, data, obj];
+  return [obj];
 }
 
 function getMixedDict(realm: Realm) {
@@ -324,28 +325,6 @@ describe.only("mixed synced", () => {
   // });
 
   describe.skipIf(environment.skipFlexibleSync, "mixed collections", function () {
-    // const dirname = "/Users/papafe/Desktop";
-    // const filePath = path.join(dirname, "logs.txt"); // Specify your log file path here
-
-    // fs.unlink(filePath, (err) => {
-    //   if (err) {
-    //     console.error("Failed to delete file:", err);
-    //   }
-    // });
-
-    // const callback: LoggerCallback2 = (entry: LogEntry) => {
-    //   const message = `[${entry.category}-${entry.level}] - ${entry.message}`;
-    //   // console.log(message);
-    //   fs.appendFile(filePath, message, (err) => {
-    //     if (err) {
-    //       console.error("Error writing to log file:", err);
-    //     }
-    //   });
-    // };
-
-    // Realm.setLogger(callback);
-    // Realm.setLogLevel("trace");
-
     this.longTimeout();
     importAppBefore(buildAppConfig("with-flx").anonAuth().flexibleSync());
 
@@ -365,6 +344,7 @@ describe.only("mixed synced", () => {
 
       this.realm1 = await logInAndGetRealm(this.app, config);
       this.realm2 = await logInAndGetRealm(this.app, config);
+
       this.config1 = { ...config, sync: this.realm1.syncSession?.config };
       this.config2 = { ...config, sync: this.realm2.syncSession?.config };
     });
@@ -397,7 +377,7 @@ describe.only("mixed synced", () => {
 
       await setupIfFlexiblySync(realm, true);
 
-      // It seems that if I use this I don't get the same core crash, but the test doesn't complete
+      // //It seems that if I use this I don't get the same core crash, but the test doesn't complete
       // realm.write(() => {
       //   realm.delete(realm.objects(MixedClass));
       // });

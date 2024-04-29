@@ -138,18 +138,18 @@ export function importAppBefore(config: AppConfig | { config: AppConfig }, sdkCo
         throw new Error("Expected at most 1 database name in the config");
       }
 
-      const dirName = "/Users/papafe/Desktop/";
-      const filePath = path.join(dirName, "logs.txt"); // Specify your log file path here
+      // const dirName = "/Users/papafe/Desktop/";
+      // const filePath = path.join(dirName, "logs.txt"); // Specify your log file path here
 
-      fs.unlink(filePath, (err) => {
-        if (err) {
-          console.error("Failed to delete file:", err);
-        } else {
-          console.log("File successfully deleted.");
-        }
-      });
+      // fs.unlink(filePath, (err) => {
+      //   if (err) {
+      //     console.error("Failed to delete file:", err);
+      //   } else {
+      //     console.log("File successfully deleted.");
+      //   }
+      // });
 
-      Realm.App.Sync.setLogLevel(this.app, "trace");
+      Realm.App.Sync.setLogLevel(this.app, "warn");
       // Set a default logger as Android does not forward stdout
       Realm.App.Sync.setLogger(this.app, (level, message) => {
         const time = new Date().toISOString().split("T")[1].replace("Z", "");
@@ -157,13 +157,13 @@ export function importAppBefore(config: AppConfig | { config: AppConfig }, sdkCo
         const greenLogLevel = `\x1b[32m${REALM_LOG_LEVELS[level].toUpperCase()}`;
         const whiteMessage = `\x1b[37m${message}}`;
         const logMessage = `${time}: ${REALM_LOG_LEVELS[level].toUpperCase()}:\t${message}\n`;
-        fs.appendFile(filePath, logMessage, (err) => {
-          if (err) {
-            console.error("Error writing to log file:", err);
-          }
-        });
+        // fs.appendFile(filePath, logMessage, (err) => {
+        //   if (err) {
+        //     console.error("Error writing to log file:", err);
+        //   }
+        // });
 
-        // console.log(`${magentaTime}: ${greenLogLevel}:\t${whiteMessage}`);
+        console.log(`${magentaTime}: ${greenLogLevel}:\t${whiteMessage}`);
       });
     }
   });
