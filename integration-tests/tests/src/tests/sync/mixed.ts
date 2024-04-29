@@ -129,12 +129,12 @@ function getNestedMixedDict(realm: Realm) {
   return { values, expected };
 }
 
-function expectJsArray(value: unknown): asserts value is unknown[] {
-  expect(value).to.be.an("array");
+function expectRealmList(value: unknown): asserts value is Realm.List<unknown> {
+  expect(value).instanceOf(Realm.List);
 }
 
-function expectJsObject(value: unknown): asserts value is Record<string, unknown> {
-  expect(value).to.be.an("object");
+function expectRealmDictionary(value: unknown): asserts value is Realm.Dictionary<unknown> {
+  expect(value).instanceOf(Realm.Dictionary);
 }
 
 /**
@@ -143,21 +143,22 @@ function expectJsObject(value: unknown): asserts value is Record<string, unknown
  * @param inserted The value inserted locally before upload.
  */
 function defaultTester(actual: unknown, inserted: unknown) {
-  if (actual instanceof Realm.List) {
-    expectJsArray(inserted);
+  if (inserted instanceof Array) {
+    expectRealmList(actual);
     expect(actual.length).equals(inserted.length);
-    actual.forEach((item, index) => defaultTester(item, inserted[index]));
-  } else if (actual instanceof Realm.Dictionary) {
-    expectJsObject(inserted);
+    inserted.forEach((item, index) => defaultTester(actual[index], item));
+  } else if (inserted != null && typeof inserted === "object" && "d128" in inserted) {
+    expectRealmDictionary(actual);
+    const insertedKeys = Object.keys(actual);
     const actualKeys = Object.keys(actual);
-    expect(actualKeys).members(Object.keys(inserted));
-    actualKeys.forEach((key) => defaultTester(actual[key], inserted[key]));
-  } else if (actual instanceof ArrayBuffer) {
-    const actualBinaryView = new Uint8Array(actual);
+    expect(insertedKeys).members(actualKeys);
+    insertedKeys.forEach((key) => defaultTester(actual[key], (inserted as Record<string, unknown>)[key]));
+  } else if (inserted instanceof ArrayBuffer) {
+    const actualBinaryView = new Uint8Array(actual as ArrayBuffer);
     const insertedBinaryView = new Uint8Array(inserted as ArrayBuffer);
     expect(actualBinaryView.byteLength).equals(insertedBinaryView.byteLength);
-    actualBinaryView.forEach((item, index) => defaultTester(item, insertedBinaryView[index]));
-  } else if (actual instanceof Realm.Object) {
+    insertedBinaryView.forEach((item, index) => defaultTester(item, actualBinaryView[index]));
+  } else if (inserted != null && typeof inserted === "object" && "_id" in inserted) {
     expect(actual).instanceOf(MixedClass);
     const actualMixed = actual as MixedClass;
     const insertedMixed = inserted as MixedClass;
@@ -219,6 +220,8 @@ function describeRoundtrip({
           if ("expected" in valueResult && "values" in valueResult) {
             this.value = valueResult.values;
             this.expected = valueResult.expected;
+          } else {
+            this.value = valueResult;
           }
         } else {
           this.value = value;
@@ -333,7 +336,7 @@ function describeTypes(useFlexibleSync: boolean) {
   });
 
   if (useFlexibleSync) {
-    describe.only("collections in mixed", () => {
+    describe("collections in mixed", () => {
       describeRoundtrip({
         typeName: "list",
         value: getMixedList,
