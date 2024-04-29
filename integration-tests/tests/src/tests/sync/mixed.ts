@@ -158,8 +158,8 @@ function describeRoundtrip({
   valueTester?: ValueTester;
   useFlexibleSync: boolean;
 }) {
-  function performTest(actual: Realm.Mixed, inserted: Realm.Mixed, realm: Realm) {
-    valueTester(actual, inserted, realm);
+  function performTest(actual: Realm.Mixed, inserted: Realm.Mixed) {
+    valueTester(actual, inserted);
   }
 
   describe(`roundtrip of '${typeName}'`, () => {
@@ -200,11 +200,11 @@ function describeRoundtrip({
 
       expect(typeof obj).equals("object");
       // Test the single value
-      performTest(obj.value, this.value, this.realm);
+      performTest(obj.value, this.value);
       // Test the list of values
       expect(obj.list.length).equals(4);
       const firstElement = obj.list[0];
-      performTest(firstElement, this.value, this.realm);
+      performTest(firstElement, this.value);
       // No need to keep these around
       delete this._id;
       delete this.value;
