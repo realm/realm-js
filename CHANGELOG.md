@@ -16,9 +16,7 @@
 * File format: generates Realms with format v24 (reads and upgrades file format v10.
 
 ### Internal
-<!-- * Either mention core version or upgrade -->
-<!-- * Using Realm Core vX.Y.Z -->
-<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
+* Upgraded Realm Core from v14.5.1 to v14.6.0.
 
 ## 12.7.1 (2024-04-19)
 
