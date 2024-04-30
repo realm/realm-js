@@ -30,7 +30,7 @@ declare module "../app-services/App" {
      * Update the base URL used for sending requests to Atlas App Services.
      * @experimental This feature is experimental and may be changed or removed.
      */
-    updateBaseUrl(url: string): Promise<void>;
+    updateBaseUrl(newUrl: string): Promise<void>;
   }
 }
 
@@ -39,10 +39,10 @@ Object.defineProperty(App.prototype, "baseUrl", {
     return this.internal.getBaseUrl();
   },
   set() {
-    throw new Error("Cannot assign the base URL, please use `updateBaseUrl()`.");
+    throw new Error("Cannot assign the base URL, please use 'updateBaseUrl()'.");
   },
 });
 
-App.prototype.updateBaseUrl = function (this: App, url: string) {
-  return this.internal.updateBaseUrl(url);
+App.prototype.updateBaseUrl = function (this: App, newUrl: string) {
+  return this.internal.updateBaseUrl(newUrl);
 };
