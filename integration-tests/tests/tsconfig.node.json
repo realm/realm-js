@@ -2,7 +2,7 @@
   "extends": "@tsconfig/node-lts",
   "compilerOptions": {
     "composite": true,
-    "module": "node16",
+    "module": "es2022",
     "moduleResolution": "Bundler",
     "outDir": "dist",
     "strictFunctionTypes": false,

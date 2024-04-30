@@ -16,15 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-const { makeMetroConfig } = require("@rnx-kit/metro-config");
-module.exports = makeMetroConfig({
-  transformer: {
-    getTransformOptions: async () => ({
-      transform: {
-        experimentalImportSupport: false,
-        inlineRequires: false,
-        unstable_enablePackageExports: true,
-      },
-    }),
-  },
-});
+// This file is needed as a workaround for Metro unexpectedly failing
+// to use the entry point defined in the package.json `exports` field,
+// despite enabling `unstable_enablePackageExports`.
+
+/* eslint-env commonjs */
+module.exports = require("../dist/experimental/base-url");

@@ -2,8 +2,8 @@
 	"compilerOptions": {
 		"composite": true,
 		"target": "es2022",
-		"module": "node16",
-		"moduleResolution": "node16",
+		"module": "es2022",
+		"moduleResolution": "Bundler",
 		"useDefineForClassFields": false,
 		"strict": true,
 		"strictFunctionTypes": false,
