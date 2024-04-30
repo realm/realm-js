@@ -17,19 +17,30 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
-import { App } from "realm";
 import "realm/experimental/base-url";
 
-describe("Experimental", () => {
-  it("updates base URL", function (this: Mocha.Context) {
-    const app = new App("12345");
-    expect(app.baseUrl).equals("https://services.cloud.mongodb.com");
+import { baseUrl as originalBaseUrl, importAppBefore } from "../../hooks";
+import { buildAppConfig } from "../../utils/build-app-config";
 
+describe.skipIf(environment.missingServer, "Base URL", () => {
+  importAppBefore(buildAppConfig("with-anon").anonAuth());
+
+  it.skip("updates the URL", async function (this: AppContext) {
+    // TODO
+  });
+
+  it("throws when assigning via setter", function (this: AppContext) {
     // @ts-expect-error Assigning to read-only property.
-    expect(() => (app.baseUrl = "new URL")).to.throw("Cannot assign the base URL, please use `updateBaseUrl()`");
-    expect(app.baseUrl).equals("https://services.cloud.mongodb.com");
+    expect(() => (this.app.baseUrl = "new URL")).to.throw("Cannot assign the base URL, please use 'updateBaseUrl()'");
 
-    // Update to a URL that will not work.
-    expect(app.updateBaseUrl("https://example")).to.be.rejectedWith("Error: request to https://example/");
+    expect(this.app.baseUrl).equals(originalBaseUrl);
+  });
+
+  it("rejects when updating to invalid URL", async function (this: AppContext) {
+    await expect(this.app.updateBaseUrl("https://invalid")).to.be.rejectedWith(
+      "request to https://invalid/api/client/",
+    );
+
+    expect(this.app.baseUrl).equals(originalBaseUrl);
   });
 });

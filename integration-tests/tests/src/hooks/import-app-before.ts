@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import Realm from "realm";
+import Realm, { AppConfiguration } from "realm";
 
 import { AppConfig, AppImporter, Credentials } from "@realm/app-importer";
 import { mongodbServiceType } from "../utils/ExtendedAppConfigBuilder";
@@ -38,14 +38,6 @@ const {
 export { baseUrl };
 
 const allowSkippingServerTests = typeof environment.baseUrl === "undefined" && missingServer !== false;
-
-export type AppConfigurationRelaxed = {
-  id?: string;
-  baseUrl?: string;
-  timeout?: number;
-  multiplexSessions?: boolean;
-  baseFilePath?: string;
-};
 
 const credentials: Credentials =
   typeof publicKey === "string" && typeof privateKey === "string"
@@ -94,7 +86,10 @@ function ensureSkippedAppImportAfterHook() {
  * If the `missingServer` context is set the suite will be skipped.
  * If the import fails due to a connection refusal, the suite will be skipped and a warning printed at the end of the test run.
  */
-export function importAppBefore(config: AppConfig | { config: AppConfig }, sdkConfig?: AppConfigurationRelaxed): void {
+export function importAppBefore(
+  config: AppConfig | { config: AppConfig },
+  sdkConfig?: Partial<AppConfiguration>,
+): void {
   // Unwrap when passed a builder directly
   if ("config" in config) {
     return importAppBefore(config.config, sdkConfig);
