@@ -25,6 +25,10 @@ import { buildAppConfig } from "../../utils/build-app-config";
 describe.skipIf(environment.missingServer, "Base URL", () => {
   importAppBefore(buildAppConfig("with-anon").anonAuth());
 
+  it("returns the base URL used", function (this: AppContext) {
+    expect(this.app.baseUrl).equals(originalBaseUrl);
+  });
+
   it.skip("updates the URL", async function (this: AppContext) {
     // TODO
   });
