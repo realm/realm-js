@@ -447,18 +447,6 @@ classes:
 
   SyncUser:
     methods: []
-  #     - is_logged_in
-  #     - user_id
-  #     - app_id
-  #     - legacy_identities
-  #     - access_token
-  #     - refresh_token
-  #     - state
-  #     - access_token_refresh_required
-  #     - request_refresh_user
-  #     - request_refresh_location
-  #     - request_access_token
-  #     - track_realm
 
   User:
     methods:
@@ -479,7 +467,6 @@ classes:
       - refresh_token
       - state
       - access_token_refresh_required
-      - request_refresh_user
       - request_refresh_location
       - request_access_token
       - track_realm
