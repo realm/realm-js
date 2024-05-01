@@ -50,9 +50,13 @@ export enum MetadataMode {
   Encryption = "encryption",
   /**
    * Do not persist {@link User} objects.
-   * @deprecated will be renamed to `InMemory`
+   * @deprecated will be removed; use `InMemory` instead.
    */
-  NoMetadata = "inMemory",
+  NoMetadata = "noMetadata",
+  /**
+   * Do not persist {@link User} objects.
+   */
+  InMemory = "inMemory",
 }
 
 /**
@@ -83,12 +87,15 @@ function toBindingMetadataMode(arg: MetadataMode): binding.MetadataMode {
 const translationTable: Record<binding.MetadataMode, MetadataMode> = {
   [binding.MetadataMode.NoEncryption]: MetadataMode.NoEncryption,
   [binding.MetadataMode.Encryption]: MetadataMode.Encryption,
-  [binding.MetadataMode.InMemory]: MetadataMode.NoMetadata, // TODO: should we rename NoMetadata to InMemory?
+  [binding.MetadataMode.InMemory]: MetadataMode.InMemory,
 };
 
-const inverseTranslationTable: Record<MetadataMode, binding.MetadataMode> = Object.fromEntries(
-  Object.entries(translationTable).map(([key, val]) => [val, Number(key)]),
-) as Record<MetadataMode, binding.MetadataMode>;
+const inverseTranslationTable: Record<MetadataMode, binding.MetadataMode> = {
+  [MetadataMode.Encryption]: binding.MetadataMode.Encryption,
+  [MetadataMode.NoEncryption]: binding.MetadataMode.NoEncryption,
+  [MetadataMode.NoMetadata]: binding.MetadataMode.InMemory,
+  [MetadataMode.InMemory]: binding.MetadataMode.InMemory,
+} as Record<MetadataMode, binding.MetadataMode>;
 
 /** @internal */
 export function fromBindingMetadataModeToMetaDataMode(arg: binding.MetadataMode): MetadataMode {
@@ -295,13 +302,6 @@ export class App<
         userAgentBindingInfo: App.userAgent,
       },
     });
-  }
-
-  /**
-   * @internal
-   */
-  public get syncManager(): binding.SyncManager {
-    return this.internal.syncManager;
   }
 
   /**
