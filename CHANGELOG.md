@@ -1,4 +1,4 @@
-## vNext (TBD)
+## 12.8.0 (2024-05-01)
 
 ### Deprecations
 * `MetadataMode.NoMetadata` is deprecated and will be removed. The new name is `MetadataMode.InMemory`.
