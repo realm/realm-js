@@ -4,7 +4,7 @@
 * None
 
 ### Enhancements
-* None
+* Experimental feature: The new instance members `App.baseUrl` and `App.updateBaseUrl()` allow for retrieving and updating the base URL currently used for requests sent to Atlas App Services. These APIs are only available after importing `"realm/experimental/base-url"`. ([#6518](https://github.com/realm/realm-js/pull/6518))
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
