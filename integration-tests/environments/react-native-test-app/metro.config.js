@@ -23,7 +23,6 @@ module.exports = makeMetroConfig({
       transform: {
         experimentalImportSupport: false,
         inlineRequires: false,
-        unstable_enablePackageExports: true,
       },
     }),
   },
