@@ -497,6 +497,8 @@ classes:
       - unsubscribe
       - call_function
       - make_streaming_request
+      - update_base_url
+      - get_base_url
 
   WatchStream:
     methods:

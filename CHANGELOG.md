@@ -4,6 +4,7 @@
 * `MetadataMode.NoMetadata` is deprecated and will be removed. The new name is `MetadataMode.InMemory`.
 
 ### Enhancements
+* Experimental feature: The new instance members `App.baseUrl` and `App.updateBaseUrl()` allow for retrieving and updating the base URL currently used for requests sent to Atlas App Services. These APIs are only available after importing `"realm/experimental/base-url"`. ([#6518](https://github.com/realm/realm-js/pull/6518))
 * Improved perfomance of "chained OR equality" queries for `uuid`/`objectId` types and RQL parsed `IN` queries on `string`/`int`/`uuid`/`objectId` types. ([realm/realm-dotnet#3566](https://github.com/realm/realm-dotnet/issues/3566), since the introduction of these types)
 
 ### Fixed
