@@ -19,6 +19,7 @@
 <!-- * Either mention core version or upgrade -->
 <!-- * Using Realm Core vX.Y.Z -->
 <!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
+* Added privacy manifest for Apple App Store. ([#6638](https://github.com/realm/realm-js/issues/6638))
 
 ## 12.8.0 (2024-05-01)
 

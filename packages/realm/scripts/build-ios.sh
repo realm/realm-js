@@ -123,3 +123,6 @@ rm -rf ../realm-js-ios.xcframework
 xcodebuild -create-xcframework \
     "${LIBRARIES[@]}" \
     -output ../realm-js-ios.xcframework
+
+# Add the privacy manifest to the generated framework
+cp "${PROJECT_ROOT}/PrivacyInfo.xcprivacy" ../realm-js-ios.xcframework
