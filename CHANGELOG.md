@@ -5,7 +5,7 @@
 
 ### Enhancements
 * Experimental feature: The new instance members `App.baseUrl` and `App.updateBaseUrl()` allow for retrieving and updating the base URL currently used for requests sent to Atlas App Services. These APIs are only available after importing `"realm/experimental/base-url"`. ([#6518](https://github.com/realm/realm-js/pull/6518))
-* Improved perfomance of "chained OR equality" queries for `uuid`/`objectId` types and RQL parsed `IN` queries on `string`/`int`/`uuid`/`objectId` types. ([realm/realm-dotnet#3566](https://github.com/realm/realm-dotnet/issues/3566), since the introduction of these types)
+* Improved performance of "chained OR equality" queries for `uuid`/`objectId` types and RQL parsed `IN` queries on `string`/`int`/`uuid`/`objectId` types. ([realm/realm-dotnet#3566](https://github.com/realm/realm-dotnet/issues/3566), since the introduction of these types)
 
 ### Fixed
 * Fixed a bug when running an `IN` query (or a query of the pattern `x == 1 OR x == 2 OR x == 3`) when evaluating on a string property with an empty string in the search condition. Matches with an empty string would have been evaluated as if searching for a null string instead. ([realm/realm-core#7628](https://github.com/realm/realm-core/pull/7628), since v10.0.0)

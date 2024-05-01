@@ -30,6 +30,9 @@ describe("email-password credentials", () => {
     await this.app.emailPasswordAuth.registerUser(credentialsBlob);
     const user = await this.app.logIn(Credentials.emailPassword(credentialsBlob));
     expect(user).instanceOf(User);
+    await user.logOut();
+    expect(user.isLoggedIn).be.false;
+    expect(this.app.currentUser).to.be.null;
   });
 
   it("invalid token on confirmation throws", async function (this: AppContext) {
