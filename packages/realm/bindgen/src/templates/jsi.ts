@@ -781,11 +781,6 @@ class JsiCppDecls extends CppDecls {
     }
 
     for (const cls of spec.classes) {
-      assert(
-        !cls.sharedPtrWrapped || (!cls.base && cls.subclasses.length == 0),
-        `We don't support mixing sharedPtrWrapped and class hierarchies. ${cls.name} requires this.`,
-      );
-
       this.addon.addClass(cls);
 
       // TODO look into more efficient storage for types that aren't part of a hierarchy

@@ -1,14 +1,25 @@
 ## vNext (TBD)
 
 ### Deprecations
-* None
+* `MetadataMode.NoMetadata` is deprecated and will be removed. The new name is `MetadataMode.InMemory`.
 
 ### Enhancements
 * Experimental feature: The new instance members `App.baseUrl` and `App.updateBaseUrl()` allow for retrieving and updating the base URL currently used for requests sent to Atlas App Services. These APIs are only available after importing `"realm/experimental/base-url"`. ([#6518](https://github.com/realm/realm-js/pull/6518))
+* Improved performance of "chained OR equality" queries for `uuid`/`objectId` types and RQL parsed `IN` queries on `string`/`int`/`uuid`/`objectId` types. ([realm/realm-dotnet#3566](https://github.com/realm/realm-dotnet/issues/3566), since the introduction of these types)
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None
+* Fixed a bug when running an `IN` query (or a query of the pattern `x == 1 OR x == 2 OR x == 3`) when evaluating on a string property with an empty string in the search condition. Matches with an empty string would have been evaluated as if searching for a null string instead. ([realm/realm-core#7628](https://github.com/realm/realm-core/pull/7628), since v10.0.0)
+* `App.allUsers()` included logged out users only if they were logged out while the `App` instance existed. It now always includes all logged out users. ([realm/realm-core#7300](https://github.com/realm/realm-core/pull/7300))
+* Deleting the active user left the active user unset rather than selecting another logged-in user as the active user like logging out and removing users did. ([realm/realm-core#7300](https://github.com/realm/realm-core/pull/7300))
+* Fixed several issues around encrypted file portability (copying a "bundled" encrypted Realm from one device to another):
+  * Fixed `Assertion failed: new_size % (1ULL << m_page_shift) == 0` when opening an encrypted Realm less than 64Mb that was generated on a platform with a different page size than the current platform. ([#realm/realm-core#7322](https://github.com/realm/realm-core/issues/7322), since v12.0.0-rc.3)
+  * Fixed an exception thrown when opening a small (<4k of data) Realm generated on a device with a page size of 4k if it was bundled and opened on a device with a larger page size. (since v1.0.0)
+  * Fixed an issue during a subsequent open of an encrypted Realm for some rare allocation patterns when the top ref was within ~50 bytes of the end of a page. This could manifest as an exception or as an assertion `encrypted_file_mapping.hpp:183: Assertion failed: local_ndx < m_page_state.size()`. ([realm/realm-core#7319](https://github.com/realm/realm-core/issues/7319))
+* Schema initialization could hit an assertion failure if the sync client applied a downloaded changeset while the Realm file was in the process of being opened. ([realm/realm-core#7041](https://github.com/realm/realm-core/issues/7041), since v10.8.0)
+* Queries using query paths on `mixed` values returns inconsistent results. ([realm/realm-core#7587](https://github.com/realm/realm-core/issues/7587), since v12.7.0-rc.0)
+
+### Known issues
+* Missing initial download progress notification when there is no active downloads. ([realm/realm-core#7627](https://github.com/realm/realm-core/issues/7627))
 
 ### Compatibility
 * React Native >= v0.71.4
@@ -16,9 +27,8 @@
 * File format: generates Realms with format v24 (reads and upgrades file format v10.
 
 ### Internal
-<!-- * Either mention core version or upgrade -->
-<!-- * Using Realm Core vX.Y.Z -->
-<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
+* Upgraded Realm Core from v14.5.1 to v14.6.1.
+* The metadata disabled mode (`MetadataMode.NoMetadata`) has been replaced with an in-memory metadata mode (`MetadataMode.InMemory`) which performs similarly and doesn't work weirdly differently from the normal mode. The new mode is intended for testing purposes, but should be suitable for production usage if there is a scenario where metadata persistence is not needed. ([realm/realm-core#7300](https://github.com/realm/realm-core/pull/7300))
 
 ## 12.7.1 (2024-04-19)
 

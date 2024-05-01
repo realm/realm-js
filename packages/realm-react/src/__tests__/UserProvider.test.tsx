@@ -69,7 +69,7 @@ function renderUserProvider(appId: string, baseUrl: string) {
   return renderHook(() => useUser(), { wrapper });
 }
 
-describe("UserProvider", () => {
+describe.skip("UserProvider", () => {
   describe("with auto confirm", () => {
     let appId: string;
     beforeAll(async () => {

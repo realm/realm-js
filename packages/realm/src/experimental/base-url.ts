@@ -53,5 +53,5 @@ Object.defineProperty(App.prototype, "baseUrl", {
 });
 
 App.prototype.updateBaseUrl = function (this: App, newUrl: string | null) {
-  return this.internal.updateBaseUrl(newUrl ?? undefined);
+  return this.internal.updateBaseUrl(newUrl ? newUrl : "");
 };

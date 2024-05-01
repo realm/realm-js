@@ -50,8 +50,13 @@ export enum MetadataMode {
   Encryption = "encryption",
   /**
    * Do not persist {@link User} objects.
+   * @deprecated will be removed; use `InMemory` instead.
    */
   NoMetadata = "noMetadata",
+  /**
+   * Do not persist {@link User} objects.
+   */
+  InMemory = "inMemory",
 }
 
 /**
@@ -82,12 +87,15 @@ function toBindingMetadataMode(arg: MetadataMode): binding.MetadataMode {
 const translationTable: Record<binding.MetadataMode, MetadataMode> = {
   [binding.MetadataMode.NoEncryption]: MetadataMode.NoEncryption,
   [binding.MetadataMode.Encryption]: MetadataMode.Encryption,
-  [binding.MetadataMode.NoMetadata]: MetadataMode.NoMetadata,
+  [binding.MetadataMode.InMemory]: MetadataMode.InMemory,
 };
 
-const inverseTranslationTable: Record<MetadataMode, binding.MetadataMode> = Object.fromEntries(
-  Object.entries(translationTable).map(([key, val]) => [val, Number(key)]),
-) as Record<MetadataMode, binding.MetadataMode>;
+const inverseTranslationTable: Record<MetadataMode, binding.MetadataMode> = {
+  [MetadataMode.Encryption]: binding.MetadataMode.Encryption,
+  [MetadataMode.NoEncryption]: binding.MetadataMode.NoEncryption,
+  [MetadataMode.NoMetadata]: binding.MetadataMode.InMemory,
+  [MetadataMode.InMemory]: binding.MetadataMode.InMemory,
+} as Record<MetadataMode, binding.MetadataMode>;
 
 /** @internal */
 export function fromBindingMetadataModeToMetaDataMode(arg: binding.MetadataMode): MetadataMode {
@@ -217,17 +225,17 @@ export class App<
   public static userAgent = `RealmJS/${App.deviceInfo.sdkVersion} (v${App.deviceInfo.platformVersion})`;
 
   /** @internal */
-  public static getAppByUser(userInternal: binding.SyncUser): App {
-    const app = App.appByUserId.get(userInternal.identity)?.deref();
+  public static getAppByUser(userInternal: binding.User): App {
+    const app = App.appByUserId.get(userInternal.userId)?.deref();
     if (!app) {
-      throw new Error(`Cannot determine which app is associated with user (id = ${userInternal.identity})`);
+      throw new Error(`Cannot determine which app is associated with user (id = ${userInternal.userId})`);
     }
     return app;
   }
 
   /** @internal */
-  public static setAppByUser(userInternal: binding.SyncUser, currentApp: AnyApp): void {
-    App.appByUserId.set(userInternal.identity, new binding.WeakRef(currentApp));
+  public static setAppByUser(userInternal: binding.User, currentApp: AnyApp): void {
+    App.appByUserId.set(userInternal.userId, new binding.WeakRef(currentApp));
   }
 
   /** @internal */
@@ -280,23 +288,20 @@ export class App<
 
     fs.ensureDirectoryForFile(fs.joinPaths(baseFilePath || fs.getDefaultDirectoryPath(), "mongodb-realm"));
     // TODO: This used getSharedApp in the legacy SDK, but it's failing AppTests
-    this.internal = binding.App.getApp(
-      binding.AppCacheMode.Disabled,
-      {
-        appId: id,
-        deviceInfo: App.deviceInfo,
-        transport: createNetworkTransport(fetch),
-        baseUrl,
-        defaultRequestTimeoutMs: timeout ? binding.Int64.numToInt(timeout) : undefined,
-      },
-      {
-        baseFilePath: baseFilePath ? baseFilePath : fs.getDefaultDirectoryPath(),
-        metadataMode: metadata ? toBindingMetadataMode(metadata.mode) : binding.MetadataMode.NoEncryption,
-        customEncryptionKey: metadata?.encryptionKey,
-        userAgentBindingInfo: App.userAgent,
+    this.internal = binding.App.getApp(binding.AppCacheMode.Disabled, {
+      appId: id,
+      deviceInfo: App.deviceInfo,
+      transport: createNetworkTransport(fetch),
+      baseUrl,
+      defaultRequestTimeoutMs: timeout ? binding.Int64.numToInt(timeout) : undefined,
+      baseFilePath: baseFilePath ? baseFilePath : fs.getDefaultDirectoryPath(),
+      metadataMode: metadata ? toBindingMetadataMode(metadata.mode) : binding.MetadataMode.NoEncryption,
+      customEncryptionKey: metadata?.encryptionKey,
+      syncClientConfig: {
         multiplexSessions,
+        userAgentBindingInfo: App.userAgent,
       },
-    );
+    });
   }
 
   /**
@@ -341,7 +346,7 @@ export class App<
    * @returns A mapping from user ID to user.
    */
   public get allUsers(): Readonly<Record<string, User<FunctionsFactoryType, CustomDataType>>> {
-    return Object.fromEntries(this.internal.allUsers.map((user) => [user.identity, User.get(user, this)]));
+    return Object.fromEntries(this.internal.allUsers.map((user) => [user.userId, User.get(user, this)]));
   }
 
   /**

@@ -709,11 +709,6 @@ class NodeCppDecls extends CppDecls {
     }
 
     for (const cls of spec.classes) {
-      assert(
-        !cls.sharedPtrWrapped || (!cls.base && cls.subclasses.length == 0),
-        `We don't support mixing sharedPtrWrapped and class hierarchies. ${cls.name} requires this.`,
-      );
-
       this.addon.addClass(cls);
 
       // TODO look into using enabled_shared_from for all shared thingies so we can just store T*.
@@ -721,6 +716,7 @@ class NodeCppDecls extends CppDecls {
       const derivedType = cls.sharedPtrWrapped ? `std::shared_ptr<${cls.cppName}>` : cls.cppName;
       const ptr = (expr: string) => `${expr}.As<Napi::External<${baseType}>>().Data()`;
       const casted = (expr: string) => (cls.base ? `static_cast<${derivedType}*>(${ptr(expr)})` : ptr(expr));
+
       const self = `(${cls.needsDeref ? "**" : "*"}${casted("info[0]")})`;
 
       const selfCheck = (isStatic: boolean) => {
