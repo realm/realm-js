@@ -29,7 +29,12 @@ describe.skipIf(environment.missingServer, "Base URL", () => {
     expect(this.app.baseUrl).equals(originalBaseUrl);
   });
 
+  // TODO: Should implement when I've got a working fetch mock.
   it.skip("updates the URL", async function (this: AppContext) {
+    // TODO
+  });
+
+  it.skip("resets to default URL", async function (this: AppContext) {
     // TODO
   });
 
