@@ -22,7 +22,8 @@ declare module "../app-services/App" {
   interface App {
     /**
      * Get the current base URL used for sending requests to Atlas App Services.
-     * If an {@link App.updateBaseUrl | updateBaseUrl } operation is currently in
+     *
+     * If an {@link App.updateBaseUrl | updateBaseUrl} operation is currently in
      * progress, this value will not be updated with the new value until that
      * operation has completed.
      * @experimental This feature is experimental and may be changed or removed.
@@ -30,13 +31,15 @@ declare module "../app-services/App" {
     get baseUrl(): string;
 
     /**
-     * Update the base URL used for sending requests to Atlas App Services.
+     * Update the base URL used for sending requests to Atlas App Services. If this is
+     * set to an empty string or `null`, it will reset the base URL to the default one.
+     *
      * If this operation fails, the app will continue to use the original base URL.
      * If another {@link App} operation is started while this function is in progress,
      * that request will use the original base URL location information.
      * @experimental This feature is experimental and may be changed or removed.
      */
-    updateBaseUrl(newUrl: string): Promise<void>;
+    updateBaseUrl(newUrl: string | null): Promise<void>;
   }
 }
 
@@ -49,6 +52,6 @@ Object.defineProperty(App.prototype, "baseUrl", {
   },
 });
 
-App.prototype.updateBaseUrl = function (this: App, newUrl: string) {
-  return this.internal.updateBaseUrl(newUrl);
+App.prototype.updateBaseUrl = function (this: App, newUrl: string | null) {
+  return this.internal.updateBaseUrl(newUrl ?? undefined);
 };
