@@ -22,12 +22,18 @@ declare module "../app-services/App" {
   interface App {
     /**
      * Get the current base URL used for sending requests to Atlas App Services.
+     * If an {@link App.updateBaseUrl | updateBaseUrl } operation is currently in
+     * progress, this value will not be updated with the new value until that
+     * operation has completed.
      * @experimental This feature is experimental and may be changed or removed.
      */
     get baseUrl(): string;
 
     /**
      * Update the base URL used for sending requests to Atlas App Services.
+     * If this operation fails, the app will continue to use the original base URL.
+     * If another {@link App} operation is started while this function is in progress,
+     * that request will use the original base URL location information.
      * @experimental This feature is experimental and may be changed or removed.
      */
     updateBaseUrl(newUrl: string): Promise<void>;
