@@ -16,9 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-// This file is needed as a workaround for Metro unexpectedly failing
-// to use the entry point defined in the package.json `exports` field,
-// despite enabling `unstable_enablePackageExports`.
+// Our use of `exports` in `packages/realm/package.json` is not enabled by
+// default when using Metro and RN. In these cases, modules imported from
+// "realm/experimental" will search for the file in the same path, rather
+// than what is pointed to under `exports`. Thus, we use this .js file to
+// in turn import the necessary module.
+
+// (Enabling `unstable_enablePackageExports` in the metro config unexpectedly
+// does not work.)
 
 /* eslint-env commonjs */
 module.exports = require("../dist/experimental/base-url");
