@@ -155,18 +155,24 @@ function defaultTester(actual: unknown, inserted: unknown) {
   if (inserted instanceof Array) {
     expectRealmList(actual);
     expect(actual.length).equals(inserted.length);
-    inserted.forEach((item, index) => defaultTester(actual[index], item));
+    for (let index = 0; index < actual.length; index++) {
+      defaultTester(actual[index], inserted[index]);
+    }
   } else if (inserted != null && typeof inserted === "object" && "d128" in inserted) {
     expectRealmDictionary(actual);
     const insertedKeys = Object.keys(actual);
     const actualKeys = Object.keys(actual);
     expect(insertedKeys).members(actualKeys);
-    insertedKeys.forEach((key) => defaultTester(actual[key], (inserted as Record<string, unknown>)[key]));
+    for (const key of insertedKeys) {
+      defaultTester(actual[key], (inserted as Record<string, unknown>)[key]);
+    }
   } else if (inserted instanceof ArrayBuffer) {
     const actualBinaryView = new Uint8Array(actual as ArrayBuffer);
     const insertedBinaryView = new Uint8Array(inserted as ArrayBuffer);
     expect(actualBinaryView.byteLength).equals(insertedBinaryView.byteLength);
-    insertedBinaryView.forEach((item, index) => defaultTester(item, actualBinaryView[index]));
+    for (let index = 0; index < insertedBinaryView.length; index++) {
+      expect(actualBinaryView[index]).equals(insertedBinaryView[index]);
+    }
   } else if (inserted != null && typeof inserted === "object" && "_id" in inserted) {
     expect(actual).instanceOf(MixedClass);
     const actualMixed = actual as MixedClass;
