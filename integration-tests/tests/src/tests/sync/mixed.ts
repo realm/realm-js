@@ -52,20 +52,6 @@ class MixedClass extends Realm.Object<MixedClass> {
   };
 }
 
-class InnerClass extends Realm.Object<InnerClass> {
-  _id!: Realm.BSON.ObjectId;
-  intValue!: number;
-
-  static schema: ObjectSchema = {
-    name: "InnerClass",
-    properties: {
-      _id: "objectId",
-      floatValue: "float",
-    },
-    primaryKey: "_id",
-  };
-}
-
 const bool = true;
 const int = 1;
 const double = 123.456;
@@ -419,7 +405,7 @@ describe("mixed synced", () => {
 
     beforeEach(async function (this: MultiRealmContext) {
       const config = {
-        schema: [MixedClass, InnerClass],
+        schema: [MixedClass],
         sync: { flexible: true },
       } satisfies OpenRealmConfiguration;
 
@@ -458,7 +444,6 @@ describe("mixed synced", () => {
 
       await realm.subscriptions.update((mutableSubs) => {
         mutableSubs.add(realm.objects(MixedClass));
-        mutableSubs.add(realm.objects(InnerClass));
       });
 
       await realm.subscriptions.waitForSynchronization();

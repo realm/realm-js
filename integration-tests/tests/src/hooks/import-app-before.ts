@@ -138,7 +138,7 @@ export function importAppBefore(config: AppConfig | { config: AppConfig }, sdkCo
         throw new Error("Expected at most 1 database name in the config");
       }
 
-      Realm.App.Sync.setLogLevel(this.app, "warn");
+      Realm.App.Sync.setLogLevel(this.app, syncLogLevel);
       // Set a default logger as Android does not forward stdout
       Realm.App.Sync.setLogger(this.app, (level, message) => {
         const time = new Date().toISOString().split("T")[1].replace("Z", "");
