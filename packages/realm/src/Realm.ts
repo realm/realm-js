@@ -1276,9 +1276,12 @@ export namespace Realm {
   export import InitialSubscriptions = internal.InitialSubscriptions;
   export import List = internal.List;
   export import LocalAppConfiguration = internal.LocalAppConfiguration;
+  export import LogCategory = internal.LogCategory;
   export import LogEntry = internal.LogEntry;
   export import Logger = internal.Logger;
   export import LoggerCallback = internal.LoggerCallback;
+  export import LoggerCallback1 = internal.LoggerCallback1;
+  export import LoggerCallback2 = internal.LoggerCallback2;
   export import MapToDecorator = internal.MapToDecorator;
   export import Metadata = internal.Metadata;
   export import MetadataMode = internal.MetadataMode;
@@ -1305,6 +1308,7 @@ export namespace Realm {
   export import ProgressRealmPromise = internal.ProgressRealmPromise;
   export import PropertiesTypes = internal.PropertiesTypes;
   export import PropertySchema = internal.PropertySchema;
+  export import PropertySchemaCommon = internal.PropertySchemaCommon;
   export import PropertySchemaParseError = internal.PropertySchemaParseError;
   export import PropertySchemaShorthand = internal.PropertySchemaShorthand;
   export import PropertySchemaStrict = internal.PropertySchemaStrict;
@@ -1337,6 +1341,7 @@ export namespace Realm {
   export import UserChangeCallback = internal.UserChangeCallback;
   export import UserIdentity = internal.UserIdentity;
   export import UserState = internal.UserState;
+  export import UserTypeName = internal.UserTypeName;
   export import WaitForSync = internal.WaitForSync;
   export import WatchOptionsFilter = internal.WatchOptionsFilter;
   export import WatchOptionsIds = internal.WatchOptionsIds;
