@@ -360,7 +360,7 @@ export class User<
 
   /**
    * @param serviceName - The name of the MongoDB service to connect to.
-   * @returns A client enabling access to a {@link MongoDB} service.
+   * @returns A client enabling access to a MongoDB service.
    * @example
    * let blueWidgets = user.mongoClient("myService")
    *                       .db("myDb")
