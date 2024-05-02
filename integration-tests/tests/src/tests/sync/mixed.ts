@@ -392,18 +392,18 @@ function describeTypes(useFlexibleSync: boolean) {
   }
 }
 
-describe.only("mixed synced", () => {
-  // describe("partition-based sync roundtrip", function () {
-  //   this.longTimeout();
-  //   importAppBefore(buildAppConfig("with-pbs").anonAuth().partitionBasedSync());
-  //   describeTypes(false);
-  // });
+describe("mixed synced", () => {
+  describe("partition-based sync roundtrip", function () {
+    this.longTimeout();
+    importAppBefore(buildAppConfig("with-pbs").anonAuth().partitionBasedSync());
+    describeTypes(false);
+  });
 
-  // describe.skipIf(environment.skipFlexibleSync, "flexible sync roundtrip", function () {
-  //   this.longTimeout();
-  //   importAppBefore(buildAppConfig("with-flx").anonAuth().flexibleSync());
-  //   describeTypes(true);
-  // });
+  describe.skipIf(environment.skipFlexibleSync, "flexible sync roundtrip", function () {
+    this.longTimeout();
+    importAppBefore(buildAppConfig("with-flx").anonAuth().flexibleSync());
+    describeTypes(true);
+  });
 
   describe.skipIf(environment.skipFlexibleSync, "mixed collections", function () {
     this.longTimeout();
