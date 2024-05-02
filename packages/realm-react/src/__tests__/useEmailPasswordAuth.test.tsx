@@ -27,7 +27,6 @@ import { useEmailPasswordAuth } from "../useEmailPasswordAuth";
 import { baseUrl, importApp, testAuthOperation } from "./helpers";
 
 function renderEmailPasswordAuth(appId: string, baseUrl: string) {
-  console.log({ appId, baseUrl });
   const wrapper = ({ children }: { children: React.ReactNode }) => (
     <AppProvider id={appId} baseUrl={baseUrl}>
       {children}
