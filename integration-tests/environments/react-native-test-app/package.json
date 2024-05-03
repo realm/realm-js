@@ -140,7 +140,7 @@
     "prettier": "2.8.8",
     "react-native-fs": "^2.20.0",
     "react-native-polyfill-globals": "^3.1.0",
-    "react-native-test-app": "^3.2.16",
+    "react-native-test-app": "^3.7.0",
     "react-test-renderer": "18.2.0",
     "typescript": "5.0.4"
   }
