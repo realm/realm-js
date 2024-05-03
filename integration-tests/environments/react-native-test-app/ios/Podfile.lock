@@ -1165,15 +1165,34 @@ PODS:
     - React-logger (= 0.74.0)
     - React-perflogger (= 0.74.0)
     - React-utils (= 0.74.0)
-  - ReactNativeHost (0.4.5):
+  - ReactNativeHost (0.4.8):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.01.01.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Codegen
     - React-Core
     - React-cxxreact
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTAppDelegate
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-  - ReactTestApp-DevSupport (3.4.0):
+    - Yoga
+  - ReactTestApp-DevSupport (3.7.0):
     - React-Core
     - React-jsi
   - ReactTestApp-Resources (1.0.0-dev)
-  - RealmJS (12.7.1):
+  - RealmJS (12.8.0):
     - React
   - RNFS (2.20.0):
     - React-Core
@@ -1408,9 +1427,9 @@ SPEC CHECKSUMS:
   React-perflogger: 271f1111779fef70f9502d1d38da5132e5585230
   React-RCTActionSheet: 5d6fb9adb11ab1bfbce6695a2b785767e4658c53
   React-RCTAnimation: 86ace32c56e69b3822e7e5184ea83a79d47fc7b9
-  React-RCTAppDelegate: 74b45c4e3c1c23db88385d74cf4f5a8500694527
+  React-RCTAppDelegate: 72f997b4e418d9db8715f12b2edc002fd583e9ec
   React-RCTBlob: fb91c62a549f004e251235c65c665c6890a923a3
-  React-RCTFabric: af6b9bc4aa9dfa0af1a1bcf5d8e5c5b1f17ae99c
+  React-RCTFabric: 593660526e2b6b59857acf9585de1247660e9b68
   React-RCTImage: b482f07cfdbe8e413edbf9d85953cecdb569472c
   React-RCTLinking: fbd73a66cab34df69b2389c17f200e4722890fd9
   React-RCTNetwork: fbdd716fbd6e53feb6d8e00eeb85e8184ad42ac8
@@ -1426,10 +1445,10 @@ SPEC CHECKSUMS:
   React-runtimescheduler: 7fe561d179b97cecd0c2bec0bbd08f9fd8581c26
   React-utils: f013537c3371270d2095bff1d594d00d4bc9261b
   ReactCommon: 2cde697fd80bd31da1d6448d25a5803088585219
-  ReactNativeHost: c1d8204d9f443ce2adbf0d2b4bac6765bc9d466a
-  ReactTestApp-DevSupport: 5cd1b02b4d146811d29dc2455a249f0743fda504
+  ReactNativeHost: c883f7a06ce2d920f9a920dea2a652f397e78c96
+  ReactTestApp-DevSupport: 0a10a887d4de1b16dee5d836998da6b9b90bf535
   ReactTestApp-Resources: d200e68756fa45c648f369210bd7ee0c14759f5a
-  RealmJS: 3fdc3b6cb6d4ff67eaf0e5f7f861be51304e7525
+  RealmJS: 3e6010ae878227830e947f40f996e13ccab4c8ba
   RNFS: 4ac0f0ea233904cb798630b3c077808c06931688
   SocketRocket: abac6f5de4d4d62d24e11868d7a2f427e0ef940d
   Yoga: 56f906bf6c11c931588191dde1229fd3e4e3d557
