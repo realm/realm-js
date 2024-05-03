@@ -10,9 +10,8 @@
 * File format: generates Realms with format v24 (reads and upgrades file format v10.
 
 ### Internal
-<!-- * Either mention core version or upgrade -->
-<!-- * Using Realm Core vX.Y.Z -->
-<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
+* Using Realm Core v14.6.1.
+* Added privacy manifest for Apple App Store. ([#6638](https://github.com/realm/realm-js/issues/6638))
 
 ## 12.8.0 (2024-05-01)
 
