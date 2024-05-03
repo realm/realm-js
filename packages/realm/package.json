@@ -46,7 +46,7 @@
       "types": "./dist/public-types/experimental/base-url.d.ts",
       "default": "./dist/experimental/base-url.js"
     },
-    "./scripts/submit-analytics": "./scripts/submit-analytics.mjs",
+    "./scripts/submit-analytics": "./dist/scripts/submit-analytics.js",
     "./react-native.config.js": "./react-native.config.js",
     "./package.json": "./package.json"
   },
@@ -95,7 +95,7 @@
     "install": "prebuild-install --runtime napi || echo 'Failed to download prebuild for Realm'",
     "docs": "wireit",
     "realm-core": "node ./scripts/realm-core.mjs",
-    "postinstall": "node ./scripts/submit-analytics.mjs"
+    "postinstall": "node ./dist/scripts/submit-analytics.js"
   },
   "wireit": {
     "test": {
@@ -315,7 +315,7 @@
   "dependencies": {
     "@realm/fetch": "^0.1.1",
     "bson": "^4.7.2",
-    "commander": "^11",
+    "commander": "^12",
     "debug": "^4.3.4",
     "glob": "^10.3.12",
     "node-machine-id": "^1.1.12",
