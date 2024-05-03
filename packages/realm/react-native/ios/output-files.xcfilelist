@@ -1,8 +1,5 @@
-$(SRCROOT)/react-native/ios/build/lib/librealm.a
-$(SRCROOT)/react-native/ios/build/lib/librealm-sync.a
-$(SRCROOT)/react-native/ios/build/lib/librealm-parser.a
-$(SRCROOT)/react-native/ios/build/lib/librealm-object-store.a
-$(SRCROOT)/react-native/ios/lib/librealm.a
-$(SRCROOT)/react-native/ios/lib/librealm-sync.a
-$(SRCROOT)/react-native/ios/lib/librealm-parser.a
-$(SRCROOT)/react-native/ios/lib/librealm-object-store.a
+$(SRCROOT)/react-native/ios/realm-js.xcframework/Info.plist
+$(SRCROOT)/react-native/ios/realm-js.xcframework/ios-arm64/librealm-combined.a
+$(SRCROOT)/react-native/ios/realm-js.xcframework/ios-arm64_x86_64-maccatalyst/librealm-combined.a
+$(SRCROOT)/react-native/ios/realm-js.xcframework/ios-arm64_x86_64-simulator/librealm-combined.a
+$(SRCROOT)/react-native/ios/include/

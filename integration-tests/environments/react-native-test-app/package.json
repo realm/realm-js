@@ -21,7 +21,6 @@
     "test:android": {
       "command": "mocha-remote --reporter @realm/mocha-reporter -- concurrently --kill-others-on-fail npm:metro npm:runner",
       "dependencies": [
-        "../../../packages/realm:build:android",
         "../../../packages/realm:build:ts",
         "../../../packages/mocha-reporter:bundle"
       ],
@@ -70,7 +69,7 @@
     "pod-install": {
       "command": "pod-install",
       "dependencies": [
-        "../../../packages/realm:prepare:ios",
+        "../../../packages/realm:build:ts",
         "../../../packages/realm:bindgen:generate:jsi"
       ],
       "clean": "if-file-deleted",
@@ -90,6 +89,10 @@
         "REALM_BUILD_FROM_SOURCE": {
           "external": true,
           "default": "1"
+        },
+        "REALM_BUILD_CONFIGURATION": {
+          "external": true,
+          "default": "Debug"
         },
         "USE_HERMES": {
           "external": true,
