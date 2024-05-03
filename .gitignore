@@ -116,7 +116,8 @@ coverage/
 /packages/realm/prebuilds/
 /packages/realm/react-native/android/src/main/java/io/realm/react/Version.java
 /packages/realm/react-native/android/src/main/jniLibs/
-/packages/realm/react-native/ios/lib/
+/packages/realm/react-native/ios/include/
+/packages/realm/react-native/ios/*.xcframework
 /packages/realm/react-native/ios/input-files.xcfilelist
 
 # Wireit repo caches

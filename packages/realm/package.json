@@ -53,6 +53,9 @@
   "imports": {
     "#realm.node": "./binding/build/realm.node"
   },
+  "bin": {
+    "build-realm": "./build-realm-cli.js"
+  },
   "files": [
     "dependencies.list",
     "dist",
@@ -91,10 +94,9 @@
     "build:node:prebuild:ia32": "wireit",
     "bindgen:generate:jsi": "wireit",
     "check-types": "wireit",
-    "prepare:ios": "wireit",
     "install": "prebuild-install --runtime napi || echo 'Failed to download prebuild for Realm'",
     "docs": "wireit",
-    "realm-core": "node ./scripts/realm-core.mjs",
+    "build-cli": "tsx ./src/scripts/build.ts",
     "postinstall": "node ./dist/scripts/submit-analytics.js"
   },
   "wireit": {
@@ -286,16 +288,6 @@
         "PREBUILD_ARCH": "ia32"
       }
     },
-    "prepare:ios": {
-      "command": "./scripts/realm-core.mjs podspec-prepare",
-      "files": [
-        "scripts/realm-core.mjs"
-      ],
-      "output": [
-        "react-native/ios/input-files.xcfilelist",
-        "react-native/ios/lib"
-      ]
-    },
     "check-types": {
       "command": "tsc --project tsconfig.public-types-check.json",
       "dependencies": [
@@ -309,10 +301,8 @@
       ]
     }
   },
-  "bin": {
-    "realm-core": "./scripts/realm-core.mjs"
-  },
   "dependencies": {
+    "@commander-js/extra-typings": "^12",
     "@realm/fetch": "^0.1.1",
     "bson": "^4.7.2",
     "commander": "^12",

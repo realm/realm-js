@@ -3,6 +3,7 @@ require 'json'
 
 # Reads REALM_BUILD_FROM_SOURCE environment variable
 BUILD_FROM_SOURCE = ENV['REALM_BUILD_FROM_SOURCE'] === 'true' || ENV['REALM_BUILD_FROM_SOURCE'] === '1'
+BUILD_CONFIGURATION = ENV['REALM_BUILD_CONFIGURATION'] || 'Release'
 CMAKE_PATH = Pod::Executable::which('cmake')
 
 package = JSON.parse(File.read(File.expand_path('package.json', __dir__)))
@@ -63,24 +64,26 @@ Pod::Spec.new do |s|
                                 'CMAKE_PATH' => cmake_path,
                                 'GCC_PREPROCESSOR_DEFINITIONS' => '$(inherited) REALM_ENABLE_SYNC=1',
                                 'GCC_SYMBOLS_PRIVATE_EXTERN' => 'YES',
+                                'REALM_BUILD_CONFIGURATION' => BUILD_CONFIGURATION,
                                 # Header search paths are prefixes to the path specified in #include macros
                                 'HEADER_SEARCH_PATHS' => [
-                                  '"$(PODS_TARGET_SRCROOT)/react-native/ios/RealmReact/"',
-                                  '"$(PODS_TARGET_SRCROOT)/react-native/ios/build/include/"',
-                                  '"$(PODS_TARGET_SRCROOT)/binding/"',
-                                  '"$(PODS_TARGET_SRCROOT)/bindgen/src/"',
-                                  '"$(PODS_TARGET_SRCROOT)/bindgen/vendor/realm-core/bindgen/src/"'
-                                ].join(' ')
+                                  '"${PODS_TARGET_SRCROOT}/react-native/ios/RealmReact/"',
+                                  '"${PODS_TARGET_SRCROOT}/react-native/ios/include/"',
+                                  '"${PODS_TARGET_SRCROOT}/binding/"',
+                                  '"${PODS_TARGET_SRCROOT}/bindgen/src/"',
+                                  '"${PODS_TARGET_SRCROOT}/bindgen/vendor/realm-core/src/"',
+                                  '"${PODS_TARGET_SRCROOT}/bindgen/vendor/realm-core/bindgen/src/"',
+                                ]
                               }
 
-  s.vendored_libraries = "react-native/ios/lib/*.a"
+  s.vendored_frameworks = 'react-native/ios/realm-js.xcframework'
 
   s.dependency 'React'
 
-  # We can rely on 'node' resolving correctly, since the command is executed by CocoaPods directly
-  s.prepare_command = "node '#{__dir__}/scripts/realm-core.mjs' podspec-prepare #{BUILD_FROM_SOURCE ? "--assert-cmake '#{CMAKE_PATH}'" : '--assert-prebuilds'}"
 
   if BUILD_FROM_SOURCE
+    # We can rely on 'node' resolving correctly, since the command is executed by CocoaPods directly
+    s.prepare_command = "node '#{__dir__}/build-realm-cli.js' podspec-prepare --generate-input-files --assert-cmake '#{CMAKE_PATH}'"
     s.script_phase = {
       :name => 'Build Realm Core',
       :execution_position => :before_compile,
@@ -88,18 +91,7 @@ Pod::Spec.new do |s|
       :output_file_lists => ["$(PODS_TARGET_SRCROOT)/react-native/ios/output-files.xcfilelist"],
       :script => <<-EOS
         source "${REACT_NATIVE_PATH}/scripts/xcode/with-environment.sh"
-        $NODE_BINARY "${PODS_TARGET_SRCROOT}/scripts/realm-core.mjs" build --platform ios
-      EOS
-    }
-  else
-    s.script_phase = {
-      :name => 'Download Realm Core prebuilds',
-      :execution_position => :before_compile,
-      :input_file_lists => ["$(PODS_TARGET_SRCROOT)/react-native/ios/input-files.xcfilelist"],
-      :output_file_lists => ["$(PODS_TARGET_SRCROOT)/react-native/ios/output-files.xcfilelist"],
-      :script => <<-EOS
-        source "${REACT_NATIVE_PATH}/scripts/xcode/with-environment.sh"
-        $NODE_BINARY "${PODS_TARGET_SRCROOT}/scripts/realm-core.mjs" download --platform ios
+        $NODE_BINARY "${PODS_TARGET_SRCROOT}/build-realm-cli.js" build-apple --configuration ${REALM_BUILD_CONFIGURATION}
       EOS
     }
   end
