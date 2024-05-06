@@ -158,6 +158,7 @@ function defaultTester(actual: unknown, inserted: unknown) {
     for (let index = 0; index < actual.length; index++) {
       defaultTester(actual[index], inserted[index]);
     }
+    // This is used to find the "dictionary" value
   } else if (inserted != null && typeof inserted === "object" && "d128" in inserted) {
     expectRealmDictionary(actual);
     const insertedKeys = Object.keys(inserted);
@@ -173,6 +174,7 @@ function defaultTester(actual: unknown, inserted: unknown) {
     for (let index = 0; index < insertedBinaryView.length; index++) {
       expect(actualBinaryView[index]).equals(insertedBinaryView[index]);
     }
+    // This is used to find the "realm object" value
   } else if (inserted !== null && typeof inserted === "object" && "_id" in inserted) {
     expect(actual).instanceOf(MixedClass);
     defaultTester((actual as MixedClass)._id, inserted._id);
