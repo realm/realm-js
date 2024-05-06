@@ -69,15 +69,10 @@ type RedirectResult = {
 };
 
 const REDIRECT_HASH_TO_RESULT: { [k: string]: keyof RedirectResult } = {
-  _stitch_client_app_id: "appId",
   _baas_client_app_id: "appId",
-  _stitch_ua: "userAuth",
   _baas_ua: "userAuth",
-  _stitch_link: "link",
   _baas_link: "link",
-  _stitch_error: "error",
   _baas_error: "error",
-  _stitch_state: "state",
   _baas_state: "state",
 };
 
