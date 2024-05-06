@@ -114,6 +114,8 @@ program
   .option("--assert-cmake <path>", "Assert the availability of cmake", false)
   .action(
     actionWrapper(async ({ assertCmake, generateInputFiles }) => {
+      assert(fs.existsSync(REALM_CORE_PATH), `Expected Realm Core at '${REALM_CORE_PATH}'`);
+
       if (assertCmake !== false) {
         console.log("Asserting cmake");
         checkCmakeVersion(assertCmake);

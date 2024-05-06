@@ -163,6 +163,8 @@ function buildXcframework({ platforms, configuration }: BuildXcframeworkOptions)
 }
 
 export function buildApple(platforms: readonly XcodeSDKName[], configuration: BuildConfiguration) {
+  assert(fs.existsSync(REALM_CORE_PATH), `Expected Realm Core at '${REALM_CORE_PATH}'`);
+
   const { CMAKE_PATH: cmakePath = execSync("which cmake", { encoding: "utf8" }).trim() } = env;
   const developerDir = getDeveloperDir();
   console.log(`Building for Apple platforms: ${platforms.join(", ")} using`, {
