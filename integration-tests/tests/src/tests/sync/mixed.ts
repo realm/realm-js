@@ -152,7 +152,7 @@ function expectRealmDictionary(value: unknown): asserts value is Realm.Dictionar
  * @param inserted The value inserted locally before upload.
  */
 function defaultTester(actual: unknown, inserted: unknown) {
-  if (inserted instanceof Array) {
+  if (Array.isArray(inserted)) {
     expectRealmList(actual);
     expect(actual.length).equals(inserted.length);
     for (let index = 0; index < actual.length; index++) {
@@ -160,24 +160,22 @@ function defaultTester(actual: unknown, inserted: unknown) {
     }
   } else if (inserted != null && typeof inserted === "object" && "d128" in inserted) {
     expectRealmDictionary(actual);
-    const insertedKeys = Object.keys(actual);
+    const insertedKeys = Object.keys(inserted);
     const actualKeys = Object.keys(actual);
-    expect(insertedKeys).members(actualKeys);
+    expect(actualKeys).members(insertedKeys);
     for (const key of insertedKeys) {
       defaultTester(actual[key], (inserted as Record<string, unknown>)[key]);
     }
   } else if (inserted instanceof ArrayBuffer) {
     const actualBinaryView = new Uint8Array(actual as ArrayBuffer);
-    const insertedBinaryView = new Uint8Array(inserted as ArrayBuffer);
+    const insertedBinaryView = new Uint8Array(inserted);
     expect(actualBinaryView.byteLength).equals(insertedBinaryView.byteLength);
     for (let index = 0; index < insertedBinaryView.length; index++) {
       expect(actualBinaryView[index]).equals(insertedBinaryView[index]);
     }
-  } else if (inserted != null && typeof inserted === "object" && "_id" in inserted) {
+  } else if (inserted !== null && typeof inserted === "object" && "_id" in inserted) {
     expect(actual).instanceOf(MixedClass);
-    const actualMixed = actual as MixedClass;
-    const insertedMixed = inserted as MixedClass;
-    defaultTester(actualMixed._id, insertedMixed._id);
+    defaultTester((actual as MixedClass)._id, inserted._id);
   } else {
     expect(String(actual)).equals(String(inserted));
   }
