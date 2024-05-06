@@ -1,4 +1,4 @@
-## vNext (TBD)
+## 0.7.0 (2024-05-06)
 
 ### Deprecations
 * Deprecated calling `useQuery` with three positional arguments. ([#6360](https://github.com/realm/realm-js/pull/6360))
