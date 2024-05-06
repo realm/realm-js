@@ -15,6 +15,7 @@
 
 ### Internal
 * The base URL used to communicate with the Atlas App Services was changed from "https://realm.mongodb.com" to "https://services.cloud.mongodb.com". ([#6591](https://github.com/realm/realm-js/pull/6591))
+* Avoid falling back to `_stitch_` prefixed values when parsing the querystring response from an OAuth2 redirection. ([#6659](https://github.com/realm/realm-js/pull/6659))
 
 2.0.0 Release notes (2022-10-18)
 =============================================================
