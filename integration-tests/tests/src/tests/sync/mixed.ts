@@ -31,8 +31,9 @@ import { buildAppConfig } from "../../utils/build-app-config";
  * "expected" contains just an object instead of a RealmObject that can be used for testing.
  */
 type ValueAndExpectedGenerator = (realm: Realm) => { values: Mixed; expected: Mixed };
+type ValueGenerator = (realm: Realm) => Realm.Mixed;
 
-type Value = Realm.Mixed | ((realm: Realm) => Realm.Mixed) | ValueAndExpectedGenerator;
+type Value = Realm.Mixed | ValueGenerator | ValueAndExpectedGenerator;
 type ValueTester = (actual: Realm.Mixed, inserted: Realm.Mixed) => void;
 
 class MixedClass extends Realm.Object<MixedClass> {
@@ -233,12 +234,15 @@ function describeRoundtrip({
         if (typeof value === "function") {
           const valueResult = value(this.realm);
           if ("expected" in valueResult && "values" in valueResult) {
+            // Value is ValueAndExpectedGenerator
             this.value = valueResult.values;
             this.expected = valueResult.expected;
           } else {
+            //Value is ValueGenerator
             this.value = valueResult;
           }
         } else {
+          //Value is Mixed
           this.value = value;
         }
         this.realm.create(MixedClass, {
