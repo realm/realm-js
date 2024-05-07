@@ -17,11 +17,12 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
-import Realm, { BSON, Mixed, ObjectSchema } from "realm";
+import Realm, { BSON, Configuration, Mixed, ObjectSchema } from "realm";
 
 import { importAppBefore, authenticateUserBefore, openRealmBefore } from "../../hooks";
 import { itUploadsDeletesAndDownloads } from "./upload-delete-download";
 import { buildAppConfig } from "../../utils/build-app-config";
+import { OpenRealmConfiguration, openRealm } from "../../utils/open-realm";
 
 /**
  * A function type that generates values to inserted and expected values used with the default tester.
@@ -63,8 +64,12 @@ const uuid = new BSON.UUID();
 const nullValue = null;
 const data = new Uint8Array([0xd8, 0x21, 0xd6, 0xe8, 0x00, 0x57, 0xbc, 0xb2, 0x6a, 0x15]).buffer;
 
+function getInnerObj(): any {
+  return { _id: new BSON.ObjectId() };
+}
+
 function getMixedList(realm: Realm) {
-  const expectedObj = { _id: new BSON.ObjectId() };
+  const expectedObj = getInnerObj();
   const obj = realm.create(MixedClass, expectedObj);
 
   const values = [bool, int, double, d128, string, oid, uuid, nullValue, date, data, obj];
@@ -74,7 +79,7 @@ function getMixedList(realm: Realm) {
 }
 
 function getMixedDict(realm: Realm) {
-  const expectedObj = { _id: new BSON.ObjectId() };
+  const expectedObj = getInnerObj();
   const obj = realm.create(MixedClass, expectedObj);
 
   const values = {
@@ -400,5 +405,324 @@ describe("mixed synced", () => {
     this.longTimeout();
     importAppBefore(buildAppConfig("with-flx").anonAuth().flexibleSync());
     describeTypes(true);
+  });
+
+  describe.skipIf(environment.skipFlexibleSync, "mixed collections", function () {
+    this.longTimeout();
+    importAppBefore(buildAppConfig("with-flx").anonAuth().flexibleSync());
+
+    type MultiRealmContext = {
+      realm1: Realm;
+      realm2: Realm;
+      config1: Configuration;
+      config2: Configuration;
+    } & AppContext &
+      Mocha.Context;
+
+    beforeEach(async function (this: MultiRealmContext) {
+      const config = {
+        schema: [MixedClass],
+        sync: { flexible: true },
+      } satisfies OpenRealmConfiguration;
+
+      this.realm1 = await logInAndGetRealm(this.app, config);
+      this.realm2 = await logInAndGetRealm(this.app, config);
+
+      this.config1 = { ...config, sync: this.realm1.syncSession?.config };
+      this.config2 = { ...config, sync: this.realm2.syncSession?.config };
+    });
+
+    afterEach(async function (this: MultiRealmContext) {
+      closeAndDeleteRealms(this.config1, this.config2);
+    });
+
+    function closeAndDeleteRealms(...configs: Configuration[]) {
+      for (const config of configs) {
+        Realm.deleteFile(config);
+      }
+      Realm.clearTestState();
+    }
+
+    async function waitForSynchronization({
+      uploadRealm,
+      downloadRealm,
+    }: {
+      uploadRealm: Realm;
+      downloadRealm: Realm;
+    }) {
+      await uploadRealm.syncSession?.uploadAllLocalChanges();
+      await downloadRealm.syncSession?.downloadAllServerChanges();
+    }
+
+    async function logInAndGetRealm(app: Realm.App, config: OpenRealmConfiguration) {
+      const user = await app.logIn(Realm.Credentials.anonymous(false));
+      const realm = (await openRealm(config, user)).realm;
+
+      await realm.subscriptions.update((mutableSubs) => {
+        mutableSubs.add(realm.objects(MixedClass));
+      });
+
+      await realm.subscriptions.waitForSynchronization();
+
+      // //It seems that if I use this I don't get the same core crash, but the test doesn't complete
+      // realm.write(() => {
+      //   realm.delete(realm.objects(MixedClass));
+      // });
+
+      // await realm.syncSession?.uploadAllLocalChanges();
+
+      return realm;
+    }
+
+    function getWaiter(obj: MixedClass, propertyName: keyof MixedClass): Promise<void> {
+      return new Promise((resolve) => {
+        obj.addListener((_, changes) => {
+          if (changes.changedProperties.includes(propertyName)) {
+            obj.removeAllListeners();
+            resolve();
+          }
+        });
+      });
+    }
+
+    function waitForMixedClassObj(realm: Realm, obId: Realm.BSON.ObjectId): Promise<MixedClass> {
+      return new Promise<MixedClass>((resolve) => {
+        realm
+          .objects(MixedClass)
+          .filtered("_id = $0", obId)
+          .addListener(([obj]) => {
+            if (obj) {
+              resolve(obj);
+            }
+          });
+      });
+    }
+
+    async function getObjects(
+      realm1: Realm,
+      realm2: Realm,
+      initialVal: Mixed,
+    ): Promise<{ obj1: MixedClass; obj2: MixedClass }> {
+      const obId = new Realm.BSON.ObjectId();
+      const obj1 = realm1.write(() => {
+        return realm1.create(MixedClass, {
+          _id: obId,
+          value: initialVal,
+        });
+      });
+
+      const obj2 = await waitForMixedClassObj(realm2, obId);
+      return { obj1, obj2 };
+    }
+
+    it("value change", async function (this: MultiRealmContext) {
+      const realm1 = this.realm1;
+      const realm2 = this.realm2;
+      const { obj1, obj2 } = await getObjects(this.realm1, this.realm2, null);
+
+      const { values, expected } = realm1.write(() => {
+        return getNestedMixedList(realm1);
+      });
+
+      for (let index = 0; index < values.length; index++) {
+        const val = values[index];
+        const exp = expected[index];
+
+        realm1.write(() => {
+          obj1.value = val;
+        });
+
+        const waitPromise = getWaiter(obj2, "value");
+        await waitForSynchronization({ uploadRealm: realm1, downloadRealm: realm2 });
+        await waitPromise;
+
+        defaultTester(obj2.value, exp);
+      }
+    });
+
+    it("list adding", async function (this: MultiRealmContext) {
+      const realm1 = this.realm1;
+      const realm2 = this.realm2;
+      const { obj1, obj2 } = await getObjects(this.realm1, this.realm2, []);
+
+      const { values, expected } = realm1.write(() => {
+        return getNestedMixedList(realm1);
+      });
+
+      //We will keep this list updated with the values we expect to find
+      const expectedList = [];
+
+      //Adding elements one by one and verifying the list is synchronized
+      for (let index = 0; index < values.length; index++) {
+        const val = values[index];
+        const exp = expected[index];
+
+        realm1.write(() => {
+          (obj1.value as Realm.List).push(val);
+        });
+        expectedList.push(exp);
+
+        const waitPromise = getWaiter(obj2, "value");
+        await waitForSynchronization({ uploadRealm: realm1, downloadRealm: realm2 });
+        await waitPromise;
+
+        defaultTester(obj2.value, expectedList);
+      }
+    });
+
+    it("list removing", async function (this: MultiRealmContext) {
+      const realm1 = this.realm1;
+      const realm2 = this.realm2;
+
+      const { values, expected } = realm1.write(() => {
+        return getNestedMixedList(realm1);
+      });
+
+      const { obj1, obj2 } = await getObjects(this.realm1, this.realm2, values);
+
+      //We will keep this list updated with the values we expect to find
+      const expectedList = [...expected];
+
+      //Removing elements one by one and verifying the list is synchronized
+      for (let index = 0; index < values.length; index++) {
+        realm1.write(() => {
+          (obj1.value as Realm.List).pop();
+        });
+        expectedList.pop();
+
+        const waitPromise = getWaiter(obj2, "value");
+        await waitForSynchronization({ uploadRealm: realm1, downloadRealm: realm2 });
+        await waitPromise;
+
+        defaultTester(obj2.value, expectedList);
+      }
+
+      expect((obj1.value as Realm.List).length).equals(0);
+      expect((obj2.value as Realm.List).length).equals(0);
+    });
+
+    it("list modification", async function (this: MultiRealmContext) {
+      const realm1 = this.realm1;
+      const realm2 = this.realm2;
+
+      const { values, expected } = realm1.write(() => {
+        return getNestedMixedList(realm1);
+      });
+
+      const { obj1, obj2 } = await getObjects(this.realm1, this.realm2, ["test"]);
+
+      //We will keep this list updated with the values we expect to find
+      const expectedList: Mixed[] = ["test"];
+
+      //Changing the first element and verifying the list is synchronized
+      for (let index = 0; index < values.length; index++) {
+        const val = values[index];
+        const exp = expected[index];
+
+        realm1.write(() => {
+          (obj1.value as Realm.List)[0] = val;
+        });
+        expectedList[0] = exp;
+
+        const waitPromise = getWaiter(obj2, "value");
+        await waitForSynchronization({ uploadRealm: realm1, downloadRealm: realm2 });
+        await waitPromise;
+
+        defaultTester(obj2.value, expectedList);
+      }
+
+      obj2.removeAllListeners();
+    });
+
+    it("dictionary adding", async function (this: MultiRealmContext) {
+      const realm1 = this.realm1;
+      const realm2 = this.realm2;
+
+      const { values, expected }: { [key: string]: any } = realm1.write(() => {
+        return getNestedMixedDict(realm1);
+      });
+
+      const { obj1, obj2 } = await getObjects(this.realm1, this.realm2, {});
+
+      //We will keep this dictionary updated with the values we expect to find
+      const expectedDict: { [key: string]: any } = {};
+
+      //Adding elements one by one and verifying the dictionary is synchronized
+      for (const key in values) {
+        const val = values[key];
+        const exp = expected[key];
+
+        realm1.write(() => {
+          (obj1.value as Realm.Dictionary)[key] = val;
+        });
+        expectedDict[key] = exp;
+
+        const waitPromise = getWaiter(obj2, "value");
+        await waitForSynchronization({ uploadRealm: realm1, downloadRealm: realm2 });
+        await waitPromise;
+
+        defaultTester(obj2.value, expectedDict);
+      }
+    });
+
+    it("dictionary removing", async function (this: MultiRealmContext) {
+      const realm1 = this.realm1;
+      const realm2 = this.realm2;
+
+      const { values, expected }: { [key: string]: any } = realm1.write(() => {
+        return getNestedMixedDict(realm1);
+      });
+
+      const { obj1, obj2 } = await getObjects(this.realm1, this.realm2, values);
+
+      //We will keep this dictionary updated with the values we expect to find
+      const expectedDict = { ...expected };
+
+      //Removing elements one by one and verifying the dictionary is synchronized
+      for (const key in values) {
+        realm1.write(() => {
+          (obj1.value as Realm.Dictionary).remove(key);
+        });
+        delete expectedDict[key];
+
+        const waitPromise = getWaiter(obj2, "value");
+        await waitForSynchronization({ uploadRealm: realm1, downloadRealm: realm2 });
+        await waitPromise;
+
+        defaultTester(obj2.value, expectedDict);
+      }
+    });
+
+    it("dictionary modification", async function (this: MultiRealmContext) {
+      const realm1 = this.realm1;
+      const realm2 = this.realm2;
+
+      const { values, expected }: { [key: string]: any } = realm1.write(() => {
+        return getNestedMixedDict(realm1);
+      });
+
+      const keyString = "keyString";
+      const { obj1, obj2 } = await getObjects(this.realm1, this.realm2, { [keyString]: 1 });
+
+      //We will keep this dictionary updated with the values we expect to find
+      const expectedDict: { [key: string]: any } = {};
+
+      //Modifying elements one by one and verifying the dictionary is synchronized
+      for (const key in values) {
+        const val = values[key];
+        const exp = expected[key];
+
+        realm1.write(() => {
+          (obj1.value as Realm.Dictionary)[keyString] = val;
+        });
+        expectedDict[keyString] = exp;
+
+        const waitPromise = getWaiter(obj2, "value");
+        await waitForSynchronization({ uploadRealm: realm1, downloadRealm: realm2 });
+        await waitPromise;
+
+        defaultTester(obj2.value, expectedDict);
+      }
+    });
   });
 });
