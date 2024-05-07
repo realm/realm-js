@@ -30,6 +30,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       id-token: write
+      contents: write
+      pull-requests: write
     steps:
     - run: echo "Publishing release for ${{inputs.package}}"
     - uses: kanga333/variable-mapper@v0.3.0
