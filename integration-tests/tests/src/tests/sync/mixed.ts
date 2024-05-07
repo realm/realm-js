@@ -232,8 +232,14 @@ function describeRoundtrip({
       this._id = new Realm.BSON.ObjectId();
       this.realm.write(() => {
         if (typeof value === "function") {
-          const valueResult = value(this.realm) as ValueGenerator | ValueAndExpectedGenerator;
-          if ("expected" in valueResult && "values" in valueResult) {
+          const valueCast = value as ValueGenerator | ValueAndExpectedGenerator;
+          const valueResult = valueCast(this.realm);
+          if (
+            !!valueResult &&
+            typeof valueResult === "object" &&
+            "expected" in valueResult &&
+            "values" in valueResult
+          ) {
             // Value is ValueAndExpectedGenerator
             this.value = valueResult.values;
             this.expected = valueResult.expected;
