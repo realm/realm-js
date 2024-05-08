@@ -12,8 +12,7 @@
 
 ### Compatibility
 * React Native >= v0.71.4
-* Realm Studio v15.0.0.
-* File format: generates Realms with format v24 (reads and upgrades file format v10.
+* See "Compatibility" for a specific Realm version in [Realm's CHANGELOG](https://github.com/realm/realm-js/blob/main/CHANGELOG.md).
 
 ### Internal
 <!-- * Either mention core version or upgrade -->
