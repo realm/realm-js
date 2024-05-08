@@ -66,13 +66,20 @@ Pod::Spec.new do |s|
                                 'GCC_SYMBOLS_PRIVATE_EXTERN' => 'YES',
                                 'REALM_BUILD_CONFIGURATION' => BUILD_CONFIGURATION,
                                 # Header search paths are prefixes to the path specified in #include macros
-                                'HEADER_SEARCH_PATHS' => [
+                                # Using 'USER_HEADER_SEARCH_PATHS', because recursive matching isn't needed
+                                'USER_HEADER_SEARCH_PATHS' => [
+                                  # Bootstrapper for React Native
                                   '"${PODS_TARGET_SRCROOT}/react-native/ios/RealmReact/"',
+                                  # Copy of the Realm Core headers
                                   '"${PODS_TARGET_SRCROOT}/react-native/ios/include/"',
+                                  # Logger and JS-SDK specific helpers
                                   '"${PODS_TARGET_SRCROOT}/binding/"',
+                                  # Platform specific helpers used by the generated binding code
                                   '"${PODS_TARGET_SRCROOT}/bindgen/src/"',
-                                  '"${PODS_TARGET_SRCROOT}/bindgen/vendor/realm-core/src/"',
+                                  # Platform independent helpers
                                   '"${PODS_TARGET_SRCROOT}/bindgen/vendor/realm-core/bindgen/src/"',
+                                  # No need for the Realm Core src, because these are coppied to 'react-native/ios/include'
+                                  # '"${PODS_TARGET_SRCROOT}/bindgen/vendor/realm-core/src/"',
                                 ]
                               }
 
