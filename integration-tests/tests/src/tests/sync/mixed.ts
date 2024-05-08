@@ -448,13 +448,6 @@ describe("mixed synced", () => {
 
       await realm.subscriptions.waitForSynchronization();
 
-      // //It seems that if I use this I don't get the same core crash, but the test doesn't complete
-      // realm.write(() => {
-      //   realm.delete(realm.objects(MixedClass));
-      // });
-
-      // await realm.syncSession?.uploadAllLocalChanges();
-
       return realm;
     }
 
