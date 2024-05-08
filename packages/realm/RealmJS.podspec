@@ -57,8 +57,7 @@ Pod::Spec.new do |s|
                                 'GCC_PREPROCESSOR_DEFINITIONS' => '$(inherited) REALM_ENABLE_SYNC=1',
                                 'GCC_SYMBOLS_PRIVATE_EXTERN' => 'YES',
                                 # Header search paths are prefixes to the path specified in #include macros
-                                # Using 'USER_HEADER_SEARCH_PATHS', because recursive matching isn't needed
-                                'USER_HEADER_SEARCH_PATHS' => [
+                                'HEADER_SEARCH_PATHS' => [
                                   # Bootstrapper for React Native
                                   '"${PODS_TARGET_SRCROOT}/react-native/ios/RealmReact/"',
                                   # Copy of the Realm Core headers
