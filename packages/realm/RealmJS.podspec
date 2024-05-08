@@ -1,13 +1,7 @@
 # coding: utf-8
 require 'json'
 
-# Reads REALM_BUILD_FROM_SOURCE environment variable
-BUILD_FROM_SOURCE = ENV['REALM_BUILD_FROM_SOURCE'] === 'true' || ENV['REALM_BUILD_FROM_SOURCE'] === '1'
-BUILD_CONFIGURATION = ENV['REALM_BUILD_CONFIGURATION'] || 'Release'
-CMAKE_PATH = Pod::Executable::which('cmake')
-
 package = JSON.parse(File.read(File.expand_path('package.json', __dir__)))
-
 app_path = File.expand_path('../..', __dir__)
 
 # There is no API to detect the use of "use_frameworks!" in the Podfile which depends on this Podspec.
@@ -61,8 +55,6 @@ Pod::Spec.new do |s|
                                 # Setting up clang
                                 'CLANG_CXX_LANGUAGE_STANDARD' => 'c++20',
                                 'CLANG_CXX_LIBRARY' => 'libc++',
-                                'REALM_BUILD_CORE' => ENV["REALM_BUILD_CORE"] == "1",
-                                'CMAKE_PATH' => cmake_path,
                                 'GCC_PREPROCESSOR_DEFINITIONS' => '$(inherited) REALM_ENABLE_SYNC=1',
                                 'GCC_SYMBOLS_PRIVATE_EXTERN' => 'YES',
                                 'REALM_BUILD_CONFIGURATION' => BUILD_CONFIGURATION,
@@ -87,20 +79,4 @@ Pod::Spec.new do |s|
   s.vendored_frameworks = 'react-native/ios/realm-js.xcframework'
 
   s.dependency 'React'
-
-
-  if BUILD_FROM_SOURCE
-    # We can rely on 'node' resolving correctly, since the command is executed by CocoaPods directly
-    s.prepare_command = "node '#{__dir__}/build-realm-cli.js' podspec-prepare --generate-input-files --assert-cmake '#{CMAKE_PATH}'"
-    s.script_phase = {
-      :name => 'Build Realm Core',
-      :execution_position => :before_compile,
-      :input_file_lists => ["$(PODS_TARGET_SRCROOT)/react-native/ios/input-files.xcfilelist"],
-      :output_file_lists => ["$(PODS_TARGET_SRCROOT)/react-native/ios/output-files.xcfilelist"],
-      :script => <<-EOS
-        source "${REACT_NATIVE_PATH}/scripts/xcode/with-environment.sh"
-        $NODE_BINARY "${PODS_TARGET_SRCROOT}/build-realm-cli.js" build-apple --configuration ${REALM_BUILD_CONFIGURATION}
-      EOS
-    }
-  end
 end

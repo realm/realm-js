@@ -20,12 +20,11 @@
 /* eslint-env node */
 
 import assert from "node:assert";
-import { execSync, spawnSync } from "node:child_process";
+import { execSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 
 import { Option, program } from "@commander-js/extra-typings";
-import { globSync } from "glob";
 
 import { XcodeSDKName } from "./xcode";
 import {
@@ -35,7 +34,7 @@ import {
   createXCFramework,
   ensureBuildDirectory,
   generateXcodeProject,
-} from "./apple";
+} from "./react-native-apple";
 
 export { program };
 
@@ -76,24 +75,8 @@ function validatePlatforms(values: readonly (XcodeSDKName | "all" | "none")[]): 
 }
 
 const PACKAGE_PATH = path.resolve(__dirname, "../..");
-
 const REALM_CORE_RELATIVE_PATH = "bindgen/vendor/realm-core";
 const REALM_CORE_PATH = path.resolve(PACKAGE_PATH, REALM_CORE_RELATIVE_PATH);
-
-const IOS_INPUT_FILES_PATH = path.resolve(PACKAGE_PATH, "react-native/ios/input-files.xcfilelist");
-
-function checkCmakeVersion(cmakePath: string) {
-  try {
-    assert.notEqual(cmakePath.length, 0, "Expected a path to cmake");
-    const result = spawnSync(cmakePath, ["--version"], { encoding: "utf8" });
-    assert.equal(result.status, 0, `Failed getting cmake version (status was ${result.status}): ${result.output}`);
-    const [firstLine] = result.stdout.split("\n");
-    const version = firstLine.split(" ").pop();
-    console.log("Using cmake version", version);
-  } catch (cause) {
-    throw new Error("You need to install cmake to build Realm from source", { cause });
-  }
-}
 
 function actionWrapper<Args extends unknown[]>(action: (...args: Args) => Promise<void> | void) {
   return async (...args: Args) => {
@@ -131,47 +114,7 @@ function group<ReturnType>(title: string, callback: () => ReturnType) {
 program.name("build-realm");
 
 program
-  .command("podspec-prepare")
-  .description("Prepares the package for either prebuild or download")
-  .option("--generate-input-files", "Generate input and output lists", false)
-  .option("--assert-cmake <path>", "Assert the availability of cmake", false)
-  .action(
-    actionWrapper(async ({ assertCmake, generateInputFiles }) => {
-      assert(fs.existsSync(REALM_CORE_PATH), `Expected Realm Core at '${REALM_CORE_PATH}'`);
-
-      if (assertCmake !== false) {
-        console.log("Asserting cmake");
-        checkCmakeVersion(assertCmake);
-      }
-
-      if (generateInputFiles) {
-        console.log("Generating input list");
-        const inputFiles = globSync(
-          [
-            "dependencies.yml",
-            "tools/build-apple-device.sh",
-            "**/*.h",
-            "**/*.cpp",
-            "**/*.hpp",
-            "**/*.cmake",
-            "**/CMakeLists.txt",
-          ],
-          {
-            cwd: REALM_CORE_PATH,
-            ignore: ["test/**", "_CPack_Packages/**"],
-          },
-        );
-        fs.writeFileSync(
-          IOS_INPUT_FILES_PATH,
-          inputFiles.map((filePath) => path.join("$(SRCROOT)", REALM_CORE_RELATIVE_PATH, filePath)).join("\n"),
-          "utf-8",
-        );
-      }
-    }),
-  );
-
-program
-  .command("build-apple")
+  .command("build-react-native-apple")
   .description("Build native code for Apple platforms")
   .addOption(applePlatformOption)
   .addOption(configurationOption)
