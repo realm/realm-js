@@ -57,7 +57,6 @@ Pod::Spec.new do |s|
                                 'CLANG_CXX_LIBRARY' => 'libc++',
                                 'GCC_PREPROCESSOR_DEFINITIONS' => '$(inherited) REALM_ENABLE_SYNC=1',
                                 'GCC_SYMBOLS_PRIVATE_EXTERN' => 'YES',
-                                'REALM_BUILD_CONFIGURATION' => BUILD_CONFIGURATION,
                                 # Header search paths are prefixes to the path specified in #include macros
                                 # Using 'USER_HEADER_SEARCH_PATHS', because recursive matching isn't needed
                                 'USER_HEADER_SEARCH_PATHS' => [
