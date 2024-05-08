@@ -12,8 +12,7 @@
 
 ### Compatibility
 * React Native >= v0.71.4
-* Realm Studio v15.0.0.
-* File format: generates Realms with format v24 (reads and upgrades file format v10.
+* See "Compatibility" for a specific Realm version in [Realm's CHANGELOG](https://github.com/realm/realm-js/blob/main/CHANGELOG.md).
 
 ### Internal
 <!-- * Either mention core version or upgrade -->
@@ -43,13 +42,7 @@
 
 ### Compatibility
 * React Native >= v0.71.4
-* Realm Studio v14.0.0.
-* File format: generates Realms with format v23 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
-
-### Internal
-<!-- * Either mention core version or upgrade -->
-<!-- * Using Realm Core vX.Y.Z -->
-<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
+* See "Compatibility" for a specific Realm version in [Realm's CHANGELOG](https://github.com/realm/realm-js/blob/main/CHANGELOG.md).
 
 ## 0.6.2 (2023-11-15)
 
@@ -61,11 +54,6 @@
 ### Compatibility
 * React Native >= v0.71.4
 * Realm >= 11.0.0
-
-### Internal
-<!-- * Either mention core version or upgrade -->
-<!-- * Using Realm Core vX.Y.Z -->
-<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
 
 ## 0.6.1 (2023-10-06)
 
@@ -103,11 +91,6 @@
 * React Native >= v0.71.4
 * Realm Studio v14.0.0.
 * File format: generates Realms with format v23 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
-
-### Internal
-<!-- * Either mention core version or upgrade -->
-<!-- * Using Realm Core vX.Y.Z -->
-<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
 
 ## 0.5.1 (2023-06-21)
 
