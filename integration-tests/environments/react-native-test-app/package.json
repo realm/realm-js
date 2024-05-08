@@ -60,7 +60,7 @@
     "test:ci:ios": {
       "command": "mocha-remote -- concurrently --kill-others-on-fail npm:metro npm:runner",
       "dependencies": [
-        "pod-install"
+        "pod-install:ci"
       ],
       "env": {
         "PLATFORM": "ios"
@@ -75,8 +75,7 @@
       "clean": "if-file-deleted",
       "files": [
         "ios/Podfile",
-        "../../../packages/realm/RealmJS.podspec",
-        "../../../packages/realm/scripts/*"
+        "../../../packages/realm/RealmJS.podspec"
       ],
       "output": [
         "ios/Pods",
@@ -86,14 +85,28 @@
         "USE_CCACHE": {
           "external": true
         },
-        "REALM_BUILD_FROM_SOURCE": {
+        "USE_HERMES": {
           "external": true,
           "default": "1"
         },
-        "REALM_BUILD_CONFIGURATION": {
+        "RCT_NEW_ARCH_ENABLED": {
           "external": true,
-          "default": "Debug"
-        },
+          "default": "1"
+        }
+      }
+    },
+    "pod-install:ci": {
+      "command": "pod-install",
+      "clean": "if-file-deleted",
+      "files": [
+        "ios/Podfile",
+        "../../../packages/realm/RealmJS.podspec"
+      ],
+      "output": [
+        "ios/Pods",
+        "ios/Podfile.lock"
+      ],
+      "env": {
         "USE_HERMES": {
           "external": true,
           "default": "1"
