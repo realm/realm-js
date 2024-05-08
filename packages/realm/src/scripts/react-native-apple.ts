@@ -145,13 +145,10 @@ export function collectHeaders() {
   const sourceHeaderPaths = globSync(["**/*.h", "**/*.hpp"], {
     cwd: srcPath,
     ignore: [
-      "external/**",
       "win32/**",
       /* c-api */
       "realm.h",
       "realm/object-store/c_api/**",
-      /* executables */
-      "realm/exec/**",
       /* executables */
       "realm/exec/**",
     ],
