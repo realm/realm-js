@@ -219,6 +219,87 @@ jobs:
             README.md
             ${{ matrix.variant.artifact-path }}
 
+  build-react-native-apple-archives:
+    name: Build 'apple/{{ matrix.platform }}' archive for React Native
+    runs-on: macos-latest-large
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - iphonesimulator
+          - iphoneos
+          - macos
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: "recursive"
+      - name: Setup node version
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Setup CMake
+        uses: jwlawson/actions-setup-cmake@v2
+        with:
+          cmake-version: '3.29.2'
+      - name: Setup Ccache
+        uses: hendrikmuhs/ccache-action@v1
+        with:
+          key: ${{ runner.os }}-${{ matrix.platform }}
+          max-size: '2.0G'
+      # On CI, file timestamps change with every run so instead rely on file content hashing
+      # https://reactnative.dev/docs/build-speed#using-this-approach-on-a-ci
+      - name: Configure ccache
+        run: ccache --set-config="compiler_check=content"
+      - name: Install dependencies
+        run: npm ci
+      - name: Build archive
+        run: npm run build:react-native:apple --workspace realm -- --platform ${{ matrix.platform }} --skip-creating-xcframework
+      - name: Upload archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: react-native-${{ matrix.platform }}-archive
+          # Including README.md to pin paths to the root of the repository
+          path: |
+            README.md
+            packages/realm/react-native/ios/include/
+            packages/realm/bindgen/vendor/realm-core/build-xcode/${{ matrix.platform }}.xcarchive/Products/usr/local/lib/librealm-combined.a
+          if-no-files-found: error
+
+  create-react-native-xcframework:
+    name: Create Xcframework for React Native
+    runs-on: macos-latest-large
+    needs: [build-react-native-apple-archives]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: "recursive"
+      - name: Setup node version
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Download archives
+        uses: actions/download-artifact@v4
+        with:
+          pattern: react-native-*-archive
+          merge-multiple: true
+      - name: Create Xcframework
+        run: npm run build:react-native:apple --workspace realm -- --platform none --skip-collecting-headers
+      - uses: actions/upload-artifact@v4
+        with:
+          name: react-native-xcframework
+          # Including README.md to pin paths to the root of the repository
+          path: |
+            README.md
+            packages/realm/react-native/ios/include/
+            packages/realm/react-native/ios/realm-js.xcframework/
+          if-no-files-found: error
+
   integration-tests:
     name: Test ${{ matrix.variant.environment }} on ${{ matrix.variant.os }} (${{matrix.variant.target}})
     needs: [generate-jsi, generate-ts, build]
