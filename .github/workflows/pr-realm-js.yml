@@ -220,7 +220,7 @@ jobs:
             ${{ matrix.variant.artifact-path }}
 
   build-react-native-apple-archives:
-    name: Build 'apple/{{ matrix.platform }}' archive for React Native
+    name: Build 'apple/${{ matrix.platform }}' archive for React Native
     runs-on: macos-latest-large
     strategy:
       fail-fast: false
