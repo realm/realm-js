@@ -54,7 +54,10 @@
     "test:ci:android": {
       "command": "mocha-remote -- concurrently --kill-others-on-fail npm:metro npm:runner",
       "env": {
-        "PLATFORM": "android"
+        "PLATFORM": "android",
+        "SKIP_RUNNER": {
+          "external": true
+        }
       }
     },
     "test:ci:ios": {
@@ -63,7 +66,10 @@
         "pod-install:ci"
       ],
       "env": {
-        "PLATFORM": "ios"
+        "PLATFORM": "ios",
+        "SKIP_RUNNER": {
+          "external": true
+        }
       }
     },
     "pod-install": {
