@@ -94,6 +94,7 @@
     "build:node:prebuild:x64": "wireit",
     "build:node:prebuild:ia32": "wireit",
     "build:react-native:apple": "npm run build-cli -- build-react-native-apple",
+    "build:react-native:iphonesimulator": "wireit",
     "bindgen:generate:jsi": "wireit",
     "check-types": "wireit",
     "install": "prebuild-install --runtime napi || echo 'Failed to download prebuild for Realm'",
@@ -289,6 +290,17 @@
       "env": {
         "PREBUILD_ARCH": "ia32"
       }
+    },
+    "build:react-native:iphonesimulator": {
+      "command": "tsx ./src/scripts/build.ts build-react-native-apple --platform iphonesimulator --configuration Debug",
+      "files": [
+        "src/scripts",
+        "bindgen/vendor/realm-core/src"
+      ],
+      "output": [
+        "react-native/ios/include",
+        "react-native/ios/realm-js.xcframework"
+      ]
     },
     "check-types": {
       "command": "tsc --project tsconfig.public-types-check.json",
