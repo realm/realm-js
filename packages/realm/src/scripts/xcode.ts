@@ -25,6 +25,7 @@ const PACKAGE_PATH = path.resolve(__dirname, "../..");
 
 export type XcodeSDKName = "macosx" | "iphoneos" | "iphonesimulator"; // | "tvos" | "tvos";
 export type BuildConfiguration = "Release" | "Debug" | "MinSizeRel" | "RelWithDebInfo";
+export const ARCHIVE_INSTALL_PATH = "/usr/local/lib";
 
 type XcodeArchiveOptions = {
   cwd: string;
@@ -80,7 +81,7 @@ export const xcode = {
         "BUILD_LIBRARY_FOR_DISTRIBUTION=YES",
         "SKIP_INSTALL=NO",
         // This setting is needed to make XCode emit .a files into the "Products" build directory
-        `INSTALL_PATH=/usr/local/lib`,
+        `INSTALL_PATH=${ARCHIVE_INSTALL_PATH}`,
         // Pass CC and CXX to use ccache if available (these will pass-through if ccache isn't installed)
         `CC=${path.join(PACKAGE_PATH, "scripts/ccache-clang.sh")}`,
         `CXX=${path.join(PACKAGE_PATH, "scripts/ccache-clang++.sh")}`,

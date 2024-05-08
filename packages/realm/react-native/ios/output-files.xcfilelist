@@ -1,5 +1,0 @@
-$(SRCROOT)/react-native/ios/realm-js.xcframework/Info.plist
-$(SRCROOT)/react-native/ios/realm-js.xcframework/ios-arm64/librealm-combined.a
-$(SRCROOT)/react-native/ios/realm-js.xcframework/ios-arm64_x86_64-maccatalyst/librealm-combined.a
-$(SRCROOT)/react-native/ios/realm-js.xcframework/ios-arm64_x86_64-simulator/librealm-combined.a
-$(SRCROOT)/react-native/ios/include/

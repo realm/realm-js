@@ -20,15 +20,13 @@
 /* eslint-env node */
 
 import assert from "node:assert";
-import { execSync, spawnSync } from "node:child_process";
+import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 
 import { globSync } from "glob";
 
-import { BuildConfiguration, XcodeSDKName, xcode } from "./xcode";
-
-const { env } = process;
+import { ARCHIVE_INSTALL_PATH, XcodeSDKName, xcode } from "./xcode";
 
 const PACKAGE_PATH = path.resolve(__dirname, "../..");
 
@@ -49,7 +47,7 @@ const REALM_CORE_DEPENDENCIES = fs.readFileSync(REALM_CORE_DEPENDENCIES_PATH, "u
 const REALM_CORE_VERSION_MATCH = REALM_CORE_DEPENDENCIES.match(/^VERSION: ?(.+)$/m);
 assert(REALM_CORE_VERSION_MATCH, "Failed to determine Realm Core version");
 const REALM_CORE_VERSION = REALM_CORE_VERSION_MATCH[1];
-const REALM_CORE_PRODUCTS_INSTALL_PATH = "Products/usr/local/lib";
+const REALM_CORE_PRODUCTS_INSTALL_PATH = `Products${ARCHIVE_INSTALL_PATH}`;
 
 const INCLUDE_PATH = path.resolve(PACKAGE_PATH, "react-native/ios/include");
 const XCFRAMEWORK_PATH = path.resolve(PACKAGE_PATH, "react-native/ios/realm-js.xcframework");
@@ -140,6 +138,7 @@ export function buildFramework({ platform, configuration }: BuildFrameworkOption
 }
 
 export function collectHeaders() {
+  // Delete any existing files
   fs.rmSync(INCLUDE_PATH, { recursive: true, force: true });
 
   const srcPath = path.join(REALM_CORE_PATH, "src");
@@ -157,7 +156,7 @@ export function collectHeaders() {
       "realm/exec/**",
     ],
   });
-  console.log(`Copying ${sourceHeaderPaths.length} headers from ${srcPath} into ${INCLUDE_PATH}`);
+  console.log(`Copying ${sourceHeaderPaths.length} headers\n\tfrom ${srcPath}\n\tinto ${INCLUDE_PATH}`);
   for (const headerPath of sourceHeaderPaths) {
     // Create any parent directories
     fs.mkdirSync(path.join(INCLUDE_PATH, path.dirname(headerPath)), { recursive: true });
@@ -170,7 +169,7 @@ export function collectHeaders() {
     cwd: buildSrcPath,
     ignore: ["external/**"],
   });
-  console.log(`Copying ${buildHeaderPaths.length} generated headers from ${buildSrcPath} into ${INCLUDE_PATH}`);
+  console.log(`Copying ${buildHeaderPaths.length} generated headers\n\tfrom ${buildSrcPath}\n\tinto ${INCLUDE_PATH}`);
   for (const headerPath of buildHeaderPaths) {
     // Create any parent directories
     fs.mkdirSync(path.join(INCLUDE_PATH, path.dirname(headerPath)), { recursive: true });
