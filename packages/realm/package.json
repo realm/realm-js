@@ -99,7 +99,7 @@
     "install": "prebuild-install --runtime napi || echo 'Failed to download prebuild for Realm'",
     "docs": "wireit",
     "build-cli": "tsx ./src/scripts/build.ts",
-    "postinstall": "node ./dist/scripts/submit-analytics.js"
+    "postinstall": "node ./scripts/submit-analytics.js"
   },
   "wireit": {
     "test": {

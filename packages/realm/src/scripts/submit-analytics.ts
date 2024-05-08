@@ -55,9 +55,7 @@ import machineId from "node-machine-id";
 import createDebug from "debug";
 export const debug = createDebug("realm:submit-analytics");
 
-export { collectPlatformData };
-
-const realmPackagePath = path.resolve(__dirname, "..");
+const realmPackagePath = path.resolve(__dirname, "../..");
 const realmCorePackagePath = path.resolve(realmPackagePath, "bindgen", "vendor", "realm-core");
 
 /**
@@ -172,7 +170,7 @@ function getInstallationMethod() {
   if (userAgent) {
     return userAgent.split(" ")[0].split("/");
   } else {
-    return "unknown";
+    return ["unknown", "?.?.?"];
   }
 }
 
@@ -180,7 +178,7 @@ function getInstallationMethod() {
  * Collect analytics data from the runtime system
  * @returns Analytics payload
  */
-async function collectPlatformData(packagePath = getProjectRoot()) {
+export async function collectPlatformData(packagePath = getProjectRoot()) {
   // node-machine-id returns the ID SHA-256 hashed, if we cannot get the ID we send hostname instead
   let identifier;
   try {
@@ -306,7 +304,7 @@ async function collectPlatformData(packagePath = getProjectRoot()) {
  * Collect and send analytics data to MongoDB over HTTPS
  * If `REALM_DISABLE_ANALYTICS` is set, no data is submitted to MongoDB
  */
-async function submitAnalytics() {
+export async function submitAnalytics() {
   const data = await collectPlatformData();
   const payload = {
     event: "install",
@@ -343,8 +341,4 @@ async function submitAnalytics() {
         reject(err);
       });
   });
-}
-
-if (require.main === module) {
-  submitAnalytics().catch(console.error);
 }
