@@ -70,6 +70,7 @@
       "command": "pod-install",
       "dependencies": [
         "../../../packages/realm:build:ts",
+        "../../../packages/realm:build:react-native:iphonesimulator",
         "../../../packages/realm:bindgen:generate:jsi"
       ],
       "clean": "if-file-deleted",
