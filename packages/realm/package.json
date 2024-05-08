@@ -93,6 +93,7 @@
     "build:node:prebuild:arm64": "wireit",
     "build:node:prebuild:x64": "wireit",
     "build:node:prebuild:ia32": "wireit",
+    "build:react-native:apple": "npm run build-cli -- build-react-native-apple",
     "bindgen:generate:jsi": "wireit",
     "check-types": "wireit",
     "install": "prebuild-install --runtime napi || echo 'Failed to download prebuild for Realm'",
