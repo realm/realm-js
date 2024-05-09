@@ -7,8 +7,8 @@
 * None
 
 ### Fixed
+* Fixed a crash experienced on React Native when accessing `Realm.deleteFile`, `Realm.exists`, `Realm.schemaVersion`, `Realm.determinePath`, `Realm.transformConfig` and `User#isLoggedIn`. ([PR #6662](https://github.com/realm/realm-js/pull/6662), since v12.8.0)
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None
 
 ### Compatibility
 * React Native >= v0.71.4

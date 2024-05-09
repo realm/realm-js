@@ -337,8 +337,11 @@ export function toBindingSyncConfig(config: SyncConfiguration): binding.SyncConf
     proxyConfig,
   } = config;
 
+  const syncUser = binding.Helpers.appUserAsSyncUser(user.internal);
+  assert(syncUser);
+
   return {
-    user: user.internal,
+    user: syncUser,
     partitionValue: flexible ? undefined : EJSON.stringify(partitionValue),
     flxSyncRequested: !!flexible,
     stopPolicy: _sessionStopPolicy

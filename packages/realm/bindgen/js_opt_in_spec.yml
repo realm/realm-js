@@ -265,6 +265,7 @@ classes:
       - make_ssl_verify_callback
       - needs_file_format_upgrade
       - sync_user_as_app_user
+      - app_user_as_sync_user
 
   LogCategoryRef:
     methods:
@@ -446,7 +447,8 @@ classes:
       - api_key
 
   SyncUser:
-    methods: []
+    methods:
+      - is_logged_in
 
   User:
     methods:
@@ -459,7 +461,6 @@ classes:
       - unsubscribe
       - path_for_realm
       - app
-      - is_logged_in
       - user_id
       - app_id
       - legacy_identities
