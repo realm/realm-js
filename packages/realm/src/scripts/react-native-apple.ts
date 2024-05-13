@@ -26,12 +26,9 @@ import path from "node:path";
 
 import { globSync } from "glob";
 
-import { ARCHIVE_INSTALL_PATH, XcodeSDKName, xcode } from "./xcode";
+import { ARCHIVE_INSTALL_PATH, SUPPORTED_PLATFORMS, XcodeSDKName, xcode } from "./xcode";
+import { PACKAGE_PATH, REALM_CORE_PATH, REALM_CORE_VERSION } from "./common";
 
-const PACKAGE_PATH = path.resolve(__dirname, "../..");
-
-const REALM_CORE_RELATIVE_PATH = "bindgen/vendor/realm-core";
-const REALM_CORE_PATH = path.resolve(PACKAGE_PATH, REALM_CORE_RELATIVE_PATH);
 const REALM_CORE_BUILD_PATH = path.resolve(REALM_CORE_PATH, "build-xcode");
 const REALM_CORE_CMAKE_TOOLCHAIN_PATH = path.resolve(REALM_CORE_PATH, "tools/cmake/xcode.toolchain.cmake");
 const REALM_CORE_COMBINED_LIBRARY_NAME = "librealm-combined.a";
@@ -41,12 +38,6 @@ const REALM_CORE_LIBRARY_NAMES_DENYLIST = [
   REALM_CORE_COMBINED_LIBRARY_NAME,
 ];
 
-const REALM_CORE_DEPENDENCIES_PATH = path.resolve(REALM_CORE_PATH, "dependencies.yml");
-const REALM_CORE_DEPENDENCIES = fs.readFileSync(REALM_CORE_DEPENDENCIES_PATH, "utf8");
-// We could add a dependency on 'yaml', but it seems a bit overkill for this
-const REALM_CORE_VERSION_MATCH = REALM_CORE_DEPENDENCIES.match(/^VERSION: ?(.+)$/m);
-assert(REALM_CORE_VERSION_MATCH, "Failed to determine Realm Core version");
-const REALM_CORE_VERSION = REALM_CORE_VERSION_MATCH[1];
 const REALM_CORE_PRODUCTS_INSTALL_PATH = `Products${ARCHIVE_INSTALL_PATH}`;
 
 const INCLUDE_PATH = path.resolve(PACKAGE_PATH, "react-native/ios/include");
@@ -66,11 +57,18 @@ function getDestinations(platform: XcodeSDKName) {
   return destinations;
 }
 
-type GenerateXcodeProjectOptions = {
-  cmakePath: string;
-};
+export function validatePlatforms(values: readonly (XcodeSDKName | "all" | "none")[]): readonly XcodeSDKName[] {
+  if (values.includes("none")) {
+    assert(values.length === 1, "Expected 'none' to be the only platform");
+    return [];
+  } else if (values.includes("all")) {
+    return SUPPORTED_PLATFORMS;
+  } else {
+    return values as readonly XcodeSDKName[];
+  }
+}
 
-export function ensureBuildDirectory() {
+function ensureBuildDirectory() {
   // Ensure the build directory exists
   if (!fs.existsSync(REALM_CORE_BUILD_PATH)) {
     console.log("Creating build directory:", REALM_CORE_BUILD_PATH);
@@ -78,8 +76,12 @@ export function ensureBuildDirectory() {
   }
 }
 
+type GenerateXcodeProjectOptions = {
+  cmakePath: string;
+};
+
 export function generateXcodeProject({ cmakePath }: GenerateXcodeProjectOptions) {
-  assert(fs.existsSync(REALM_CORE_BUILD_PATH), `Expected Xcode project in '${REALM_CORE_BUILD_PATH}'`);
+  ensureBuildDirectory();
   // Generate Xcode project
   spawnSync(
     cmakePath,
@@ -107,7 +109,7 @@ type BuildFrameworkOptions = {
 };
 
 export function buildFramework({ platform, configuration }: BuildFrameworkOptions) {
-  assert(fs.existsSync(REALM_CORE_BUILD_PATH), `Expected Xcode project in '${REALM_CORE_BUILD_PATH}'`);
+  ensureBuildDirectory();
 
   console.log(`Building archive for '${platform}'`);
   const archivePath = path.join(REALM_CORE_BUILD_PATH, platform + ".xcarchive");

@@ -26,53 +26,29 @@ import path from "node:path";
 
 import { Option, program } from "@commander-js/extra-typings";
 
-import { XcodeSDKName } from "./xcode";
-import {
-  buildFramework,
-  collectArchivePaths,
-  collectHeaders,
-  createXCFramework,
-  ensureBuildDirectory,
-  generateXcodeProject,
-} from "./react-native-apple";
+import * as apple from "./react-native-apple";
+import * as android from "./react-native-android";
+import * as xcode from "./xcode";
+import { SUPPORTED_CONFIGURATIONS } from "./common";
 
 export { program };
-
-const SUPPORTED_APPLE_PLATFORMS = [
-  "iphoneos",
-  "iphonesimulator",
-  "macosx",
-  // "tvos",
-  // "tvsimulator",
-  // "watchos",
-  // "watchsimulator",
-  // "xros",
-  // "xrsimulator",
-  // "maccatalyst",
-] as const satisfies readonly XcodeSDKName[];
 
 const { env } = process;
 
 const applePlatformOption = new Option("--platform <name...>", "Platform to build for")
   .makeOptionMandatory()
-  .choices([...SUPPORTED_APPLE_PLATFORMS, "all", "none"] as const)
+  .choices([...xcode.SUPPORTED_PLATFORMS, "all", "none"] as const)
   .default(["all"] as const);
 
 const configurationOption = new Option("--configuration <name>", "Build configuration")
   .makeOptionMandatory()
-  .choices(["Release", "Debug", "MinSizeRel", "RelWithDebInfo"] as const)
+  .choices(SUPPORTED_CONFIGURATIONS)
   .default("Release" as const);
 
-function validatePlatforms(values: readonly (XcodeSDKName | "all" | "none")[]): readonly XcodeSDKName[] {
-  if (values.includes("none")) {
-    assert(values.length === 1, "Expected 'none' to be the only platform");
-    return [];
-  } else if (values.includes("all")) {
-    return SUPPORTED_APPLE_PLATFORMS;
-  } else {
-    return values as readonly XcodeSDKName[];
-  }
-}
+const androidArchOption = new Option("--architecture <name...>", "Architecture to build for")
+  .makeOptionMandatory()
+  .choices([...android.SUPPORTED_ARCHITECTURES, "all"] as const)
+  .default(["all"] as const);
 
 const PACKAGE_PATH = path.resolve(__dirname, "../..");
 const REALM_CORE_RELATIVE_PATH = "bindgen/vendor/realm-core";
@@ -124,13 +100,11 @@ program
     actionWrapper(({ platform: rawPlatforms, configuration, skipCollectingHeaders, skipCreatingXcframework }) => {
       assert(fs.existsSync(REALM_CORE_PATH), `Expected Realm Core at '${REALM_CORE_PATH}'`);
       const { CMAKE_PATH: cmakePath = execSync("which cmake", { encoding: "utf8" }).trim() } = env;
-      const platforms = validatePlatforms(rawPlatforms);
-
-      ensureBuildDirectory();
+      const platforms = apple.validatePlatforms(rawPlatforms);
 
       group("Generate Xcode project", () => {
         if (platforms.length > 0) {
-          generateXcodeProject({ cmakePath });
+          apple.generateXcodeProject({ cmakePath });
         } else {
           console.log("Skipped generating Xcode project (no platforms to build for)");
         }
@@ -138,7 +112,7 @@ program
 
       const producedArchivePaths = platforms.map((platform) => {
         return group(`Build ${platform} / ${configuration}`, () => {
-          return buildFramework({ platform, configuration });
+          return apple.buildFramework({ platform, configuration });
         });
       });
 
@@ -146,13 +120,13 @@ program
         if (skipCollectingHeaders) {
           console.log("Skipped collecting headers");
         } else {
-          collectHeaders();
+          apple.collectHeaders();
         }
       });
 
       // Collect the absolute paths of all available archives in the build directory
       // This allows for splitting up the invocation of the build command
-      const archivePaths = collectArchivePaths();
+      const archivePaths = apple.collectArchivePaths();
       for (const producedArchivePath of producedArchivePaths) {
         // As a sanity check, we ensure all produced archives are passed as input for the creation of the xcframework
         assert(
@@ -165,12 +139,72 @@ program
         if (skipCreatingXcframework) {
           console.log("Skipped creating Xcframework");
         } else {
-          createXCFramework({ archivePaths });
+          apple.createXCFramework({ archivePaths });
         }
       });
 
       console.log("Great success! 🥳");
     }),
+  );
+
+program
+  .command("build-react-native-android")
+  .description("Build native code for Android platforms")
+  .addOption(androidArchOption)
+  .addOption(configurationOption)
+  .option("--ndk-version <version>", "The NDK version used when building", android.DEFAULT_NDK_VERSION)
+  .option("--skip-collecting-headers", "Skip collecting headers from the build directory and copy them to the SDK")
+  // .option("--skip-generating-version-file", "Skip generating a Version.java file")
+  .action(
+    actionWrapper(
+      ({
+        architecture: rawArchitectures,
+        configuration,
+        skipCollectingHeaders,
+        // skipGeneratingVersionFile,
+        ndkVersion,
+      }) => {
+        assert(fs.existsSync(REALM_CORE_PATH), `Expected Realm Core at '${REALM_CORE_PATH}'`);
+        const { ANDROID_HOME, CMAKE_PATH: cmakePath = execSync("which cmake", { encoding: "utf8" }).trim() } = env;
+        assert(typeof ANDROID_HOME === "string", "Missing env variable ANDROID_HOME");
+        assert(fs.existsSync(ANDROID_HOME), `Expected the Android SDK at ${ANDROID_HOME}`);
+        const installNdkCommand = `sdkmanager --install "ndk;${ndkVersion}"`;
+        const ndkPath = path.resolve(ANDROID_HOME, "ndk", ndkVersion);
+        assert(
+          fs.existsSync(ndkPath),
+          `Missing Android NDK v${ndkVersion} (at ${ndkPath}) - run: ${installNdkCommand}`,
+        );
+
+        const architectures = android.validateArchitectures(rawArchitectures);
+
+        // group("Configure Cmake build directory", () => {
+        // });
+
+        architectures.map((architecture) => {
+          return group(`Build ${architecture} / ${configuration}`, () => {
+            return android.buildArchive({ cmakePath, architecture, configuration, ndkPath });
+          });
+        });
+
+        // group("Writing version source file", () => {
+        //   if (skipGeneratingVersionFile) {
+        //     console.log("Skipped generating version file");
+        //   } else {
+        //     android.generateVersionFile();
+        //   }
+        // });
+
+        group(`Collecting headers`, () => {
+          if (skipCollectingHeaders) {
+            console.log("Skipped collecting headers");
+          } else {
+            android.collectHeaders();
+          }
+        });
+
+        console.log("Great success! 🥳");
+      },
+    ),
   );
 
 if (require.main === module) {

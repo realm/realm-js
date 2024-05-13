@@ -23,7 +23,21 @@ import path from "node:path";
 const { env } = process;
 const PACKAGE_PATH = path.resolve(__dirname, "../..");
 
-export type XcodeSDKName = "macosx" | "iphoneos" | "iphonesimulator"; // | "tvos" | "tvos";
+export const SUPPORTED_PLATFORMS = [
+  "iphoneos",
+  "iphonesimulator",
+  "macosx",
+  // "tvos",
+  // "tvsimulator",
+  // "watchos",
+  // "watchsimulator",
+  // "xros",
+  // "xrsimulator",
+  // "maccatalyst",
+] as const;
+
+export type XcodeSDKName = (typeof SUPPORTED_PLATFORMS)[number];
+
 export type BuildConfiguration = "Release" | "Debug" | "MinSizeRel" | "RelWithDebInfo";
 export const ARCHIVE_INSTALL_PATH = "/usr/local/lib";
 
