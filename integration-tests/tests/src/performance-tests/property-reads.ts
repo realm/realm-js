@@ -16,53 +16,52 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import Realm, { ObjectSchema, PropertySchema } from "realm";
+import { expect } from "chai";
+import Realm, { BSON, ObjectSchema, PropertySchema, PropertySchemaShorthand } from "realm";
 
 import { describePerformance } from "../utils/benchmark";
 
 type Value = ((realm: Realm) => unknown) | unknown;
 
-function getTypeName(type: Realm.PropertySchemaShorthand | Realm.PropertySchema) {
-  if (typeof type === "object") {
-    const prefix = type.optional ? "optional " : "";
-    if (type.objectType) {
-      return prefix + `${type.type}<${type.objectType}>`;
-    } else {
-      return prefix + type.type;
-    }
-  } else {
-    return type;
+const COLLECTION_MARKERS: Readonly<Record<string, string>> = {
+  list: "[]",
+  dictionary: "{}",
+  set: "<>",
+};
+
+function getTypeDisplayName(schema: PropertySchemaShorthand | PropertySchema) {
+  const isShorthand = typeof schema === "string";
+  if (isShorthand) {
+    return schema;
   }
+
+  const optionalMarker = schema.optional ? "?" : "";
+  const collectionMarker = COLLECTION_MARKERS[schema.type] ?? "";
+
+  return (schema.objectType || schema.type) + optionalMarker + collectionMarker;
 }
 
 type TestParameters = {
-  name?: string;
-  type: Realm.PropertySchemaShorthand | Realm.PropertySchema;
+  propertySchema: PropertySchemaShorthand | PropertySchema;
   value: Value;
-  schema?: Realm.ObjectSchema[];
+  extraObjectSchemas?: ObjectSchema[];
 };
 
-function describeTypeRead({ type, value, schema = [] }: TestParameters) {
-  const typeName = getTypeName(type);
-  const objectSchemaName = type + "Class";
-  const propertyName = type + "Prop";
+function describeTypeRead({ propertySchema, value, extraObjectSchemas = [] }: TestParameters) {
+  const typeDisplayName = getTypeDisplayName(propertySchema);
+  const objectSchemaName = typeDisplayName + "Class";
+  const propertyName = typeDisplayName + "Prop";
 
   const defaultSchema: ObjectSchema = {
     name: objectSchemaName,
     properties: {
-      [propertyName]:
-        typeof type === "object"
-          ? type
-          : ({
-              type,
-              optional: true,
-            } as PropertySchema),
+      [propertyName]: propertySchema,
     },
   };
 
-  describePerformance(`reading property of type '${typeName}'`, {
-    schema: [defaultSchema, ...schema],
-    benchmarkTitle: `reads ${typeName}`,
+  describePerformance(`reading property of type '${typeDisplayName}'`, {
+    schema: [defaultSchema, ...extraObjectSchemas],
+    benchmarkTitle: `reads ${typeDisplayName}`,
     before(this: Partial<RealmObjectContext> & RealmContext & Mocha.Context) {
       this.realm.write(() => {
         this.object = this.realm.create(objectSchemaName, {
@@ -76,15 +75,17 @@ function describeTypeRead({ type, value, schema = [] }: TestParameters) {
     },
     test(this: RealmObjectContext) {
       const value = this.object[propertyName];
+      // Performing a check to avoid the get of the property to be optimized away.
       if (typeof value === "undefined") {
-        // Performing a check to avoid the get of the property to be optimized away
         throw new Error("Expected a value");
       }
     },
   });
 }
 
-const cases: Array<TestParameters | [Realm.PropertySchemaShorthand | Realm.PropertySchema, Value]> = [
+type SchemaValuePair = [PropertySchemaShorthand | PropertySchema, Value];
+
+const cases: (TestParameters | SchemaValuePair)[] = [
   ["bool?", true],
   ["bool", true],
   ["int?", 123],
@@ -93,15 +94,15 @@ const cases: Array<TestParameters | [Realm.PropertySchemaShorthand | Realm.Prope
   ["double?", 123.456],
   ["double", 123.456],
   ["string?", "Hello!"],
-  ["decimal128?", new Realm.BSON.Decimal128("123")],
-  ["objectId?", new Realm.BSON.ObjectId("0000002a9a7969d24bea4cf4")],
-  ["uuid?", new Realm.BSON.UUID()],
+  ["decimal128?", new BSON.Decimal128("123")],
+  ["objectId?", new BSON.ObjectId("0000002a9a7969d24bea4cf4")],
+  ["uuid?", new BSON.UUID()],
   ["date?", new Date("2000-01-01")],
   ["data?", new Uint8Array([0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09])],
   {
-    type: "Car",
-    schema: [{ name: "Car", properties: { model: "string" } }],
+    propertySchema: "Car",
     value: (realm: Realm) => realm.create("Car", { model: "VW Touran" }),
+    extraObjectSchemas: [{ name: "Car", properties: { model: "string" } }],
   },
   ["bool?[]", []],
   ["bool?<>", []],
@@ -111,10 +112,26 @@ const cases: Array<TestParameters | [Realm.PropertySchemaShorthand | Realm.Prope
 describe.skipIf(environment.performance !== true, "Property read performance", () => {
   for (const c of cases) {
     if (Array.isArray(c)) {
-      const [type, value] = c;
-      describeTypeRead({ type, value });
+      const [propertySchema, value] = c;
+      describeTypeRead({ propertySchema, value });
     } else {
       describeTypeRead(c);
     }
   }
+
+  describe("Helpers", () => {
+    it("getTypeDisplayName()", function () {
+      expect(getTypeDisplayName("int")).equals("int");
+      expect(getTypeDisplayName("int?")).equals("int?");
+      expect(getTypeDisplayName("int?[]")).equals("int?[]");
+      expect(getTypeDisplayName("Car")).equals("Car");
+      expect(getTypeDisplayName({ type: "int" })).equals("int");
+      expect(getTypeDisplayName({ type: "list", objectType: "int" })).equals("int[]");
+      expect(getTypeDisplayName({ type: "list", objectType: "int", optional: true })).equals("int?[]");
+      expect(getTypeDisplayName({ type: "dictionary", objectType: "int" })).equals("int{}");
+      expect(getTypeDisplayName({ type: "set", objectType: "int" })).equals("int<>");
+      expect(getTypeDisplayName({ type: "object", objectType: "Car" })).equals("Car");
+      expect(getTypeDisplayName({ type: "object", objectType: "Car", optional: true })).equals("Car?");
+    });
+  });
 });
