@@ -74,7 +74,7 @@ Pod::Spec.new do |s|
                                 ]
                               }
 
-  s.vendored_frameworks = 'react-native/ios/realm-js.xcframework'
+  s.vendored_frameworks = 'react-native/ios/realm-core.xcframework'
 
   s.dependency 'React'
 end

@@ -297,7 +297,7 @@ jobs:
           path: |
             README.md
             packages/realm/react-native/ios/include/
-            packages/realm/react-native/ios/realm-js.xcframework/
+            packages/realm/react-native/ios/realm-core.xcframework/
           if-no-files-found: error
 
   integration-tests:
