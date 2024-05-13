@@ -29,6 +29,13 @@ const COLLECTION_MARKERS: Readonly<Record<string, string>> = {
   set: "<>",
 };
 
+/**
+ * Get a representative consistent name of the type depending on the schema.
+ *
+ * @example
+ * "int?[]"                                            -> "int?[]"
+ * { type: "list", objectType: "int", optional: true } -> "int?[]"
+ */
 function getTypeDisplayName(schema: PropertySchemaShorthand | PropertySchema) {
   const isShorthand = typeof schema === "string";
   if (isShorthand) {
