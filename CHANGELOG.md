@@ -4,9 +4,14 @@
 * None
 
 ### Enhancements
-* None
+* Nested collections have full support for automatic client reset ([realm/realm-core#7683](https://github.com/realm/realm-core/pull/7683)).
 
 ### Fixed
+* Fixed a crash experienced on React Native when accessing `Realm.deleteFile`, `Realm.exists`, `Realm.schemaVersion`, `Realm.determinePath`, `Realm.transformConfig` and `User#isLoggedIn`. ([PR #6662](https://github.com/realm/realm-js/pull/6662), since v12.8.0)
+* Accessing `App#currentUser` from within a notification produced by `App#switchUser` or `App#logIn` would deadlock ([realm/realm-core#7670](https://github.com/realm/realm-core/issues/7670), since v12.8.0).
+* Inserting the same typed link to the same key in a dictionary more than once would incorrectly create multiple backlinks to the object. This did not appear to cause any crashes later, but would have affecting explicit backlink count queries (eg: `...@links.@count`) and possibly notifications ([realm/realm-core#7676](https://github.com/realm/realm-core/issues/7676) since v12.7.1).
+* Having links in a nested collections would leave the file inconsistent if the top object is removed. ([realm/realm-core#7657](https://github.com/realm/realm-core/issues/7657), since v12.7.0)
+* Automatic client reset recovery would crash when recovering AddInteger instructions on a Mixed property if its type was changed to non-integer ([realm/realm-core#7683](https://github.com/realm/realm-core/pull/7683), since v10.18.0).
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
 * None
 
