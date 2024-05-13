@@ -298,7 +298,7 @@
       ],
       "output": [
         "react-native/ios/include",
-        "react-native/ios/realm-js.xcframework"
+        "react-native/ios/realm-core.xcframework"
       ]
     },
     "check-types": {

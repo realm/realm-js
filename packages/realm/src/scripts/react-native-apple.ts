@@ -50,7 +50,7 @@ const REALM_CORE_VERSION = REALM_CORE_VERSION_MATCH[1];
 const REALM_CORE_PRODUCTS_INSTALL_PATH = `Products${ARCHIVE_INSTALL_PATH}`;
 
 const INCLUDE_PATH = path.resolve(PACKAGE_PATH, "react-native/ios/include");
-const XCFRAMEWORK_PATH = path.resolve(PACKAGE_PATH, "react-native/ios/realm-js.xcframework");
+const XCFRAMEWORK_PATH = path.resolve(PACKAGE_PATH, "react-native/ios/realm-core.xcframework");
 
 const APPLE_DESTINATIONS_PR_PLATFORM = new Map<XcodeSDKName, string[]>([
   ["iphoneos", ["generic/platform=iOS"]],
