@@ -33,7 +33,7 @@
 
 ### Internal
 * Using Realm Core v14.6.1.
-* Added privacy manifest for Apple App Store. ([#6638](https://github.com/realm/realm-js/issues/6638))
+* Added [privacy manifest](https://developer.apple.com/documentation/bundleresources/privacy_manifest_files)  for Apple App Store. ([#6638](https://github.com/realm/realm-js/issues/6638))
 
 ## 12.8.0 (2024-05-01)
 
