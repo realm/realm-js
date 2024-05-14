@@ -7,8 +7,10 @@
 * None
 
 ### Fixed
-* Fixed a crash experienced on React Native when accessing `Realm.deleteFile`, `Realm.exists`, `Realm.schemaVersion`, `Realm.determinePath`, `Realm.transformConfig` and `User#isLoggedIn`. ([PR #6662](https://github.com/realm/realm-js/pull/6662), since v12.8.0)
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
+* Fixed a crash experienced on React Native when accessing `Realm.deleteFile`, `Realm.exists`, `Realm.schemaVersion`, `Realm.determinePath`, `Realm.transformConfig` and `User#isLoggedIn`. ([#6662](https://github.com/realm/realm-js/pull/6662), since v12.8.0)
+* Accessing `Realm.App#currentUser` from within a notification produced by `Realm.App.switchUser` (which includes notifications for a newly logged in user) would deadlock. ([realm/realm-core#7670](https://github.com/realm/realm-core/issues/7670), since v12.8.0)
+* Fixed a bug when running an `IN` query on a `string`/`int`/`uuid`/`objectId` property that was indexed. ([realm/realm-core#7642](https://github.com/realm/realm-core/issues/7642) since v12.8.0)
+* Fixed a bug when running an `IN` query on an `int` property where `double`/`float` parameters were ignored. ([realm/realm-core#7642](https://github.com/realm/realm-core/issues/7642) since v12.8.0)
 
 ### Compatibility
 * React Native >= v0.71.4
@@ -16,9 +18,7 @@
 * File format: generates Realms with format v24 (reads and upgrades file format v10.
 
 ### Internal
-<!-- * Either mention core version or upgrade -->
-<!-- * Using Realm Core vX.Y.Z -->
-<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
+* Upgraded Realm Core from v14.6.1 to v14.6.2 + commits `5ba02142131efa3d97eda770ce33a85a2a085202` and `5462d47998b86459d328648c8057790a7b92af20`.
 
 ## 12.8.0 (2024-05-01)
 
