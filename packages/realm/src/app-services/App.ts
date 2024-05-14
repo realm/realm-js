@@ -288,7 +288,7 @@ export class App<
 
     fs.ensureDirectoryForFile(fs.joinPaths(baseFilePath || fs.getDefaultDirectoryPath(), "mongodb-realm"));
     // TODO: This used getSharedApp in the legacy SDK, but it's failing AppTests
-    this.internal = binding.App.getApp(binding.AppCacheMode.Disabled, {
+    this.internal = binding.App.getApp(binding.AppCacheMode.Enabled, {
       appId: id,
       deviceInfo: App.deviceInfo,
       transport: createNetworkTransport(fetch),
