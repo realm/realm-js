@@ -73,7 +73,7 @@ describe("useEmailPassword", () => {
       expect(user).not.toBeNull();
 
       await testAuthOperation({
-        authOperation: () => result.current.logOut(),
+        authOperation: result.current.logOut,
         expectedResult: () => {
           expect(result.current.result.success).toEqual(true);
         },
