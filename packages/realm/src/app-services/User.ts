@@ -204,7 +204,9 @@ export class User<
    * @returns `true` if the user is logged in, `false` otherwise.
    */
   get isLoggedIn(): boolean {
-    return this.internal.isLoggedIn;
+    const syncUser = binding.Helpers.appUserAsSyncUser(this.internal);
+    assert(syncUser);
+    return syncUser.isLoggedIn;
   }
 
   /**

@@ -35,7 +35,7 @@ function renderEmailPasswordAuth(appId: string, baseUrl: string) {
   return renderHook(() => useEmailPasswordAuth(), { wrapper });
 }
 
-describe.skip("useEmailPassword", () => {
+describe("useEmailPassword", () => {
   describe("with auto confirm", () => {
     let appId: string;
     beforeAll(async () => {
@@ -72,8 +72,11 @@ describe.skip("useEmailPassword", () => {
       const user = realmApp.currentUser;
       expect(user).not.toBeNull();
 
-      await act(async () => {
-        await result.current.logOut();
+      await testAuthOperation({
+        authOperation: result.current.logOut,
+        expectedResult: () => {
+          expect(result.current.result.success).toEqual(true);
+        },
       });
       expect(realmApp.currentUser).toBeNull();
     });
