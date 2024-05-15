@@ -1,10 +1,4 @@
-## vNext (TBD)
-
-### Deprecations
-* None
-
-### Enhancements
-* None
+## 12.8.1 (2024-05-15)
 
 ### Fixed
 * Fixed a crash experienced on React Native when accessing `Realm.deleteFile`, `Realm.exists`, `Realm.schemaVersion`, `Realm.determinePath`, `Realm.transformConfig` and `User#isLoggedIn`. ([#6662](https://github.com/realm/realm-js/pull/6662), since v12.8.0)
