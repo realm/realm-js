@@ -47,8 +47,8 @@ const configurationOption = new Option("--configuration <name>", "Build configur
 
 const androidArchOption = new Option("--architecture <name...>", "Architecture to build for")
   .makeOptionMandatory()
-  .choices([...android.SUPPORTED_ARCHITECTURES, "all"] as const)
-  .default(["all"] as const);
+  .choices([...android.SUPPORTED_ARCHITECTURES, "all", "infer"] as const)
+  .default(["infer"] as const);
 
 const PACKAGE_PATH = path.resolve(__dirname, "../..");
 const REALM_CORE_RELATIVE_PATH = "bindgen/vendor/realm-core";
@@ -61,7 +61,7 @@ function actionWrapper<Args extends unknown[]>(action: (...args: Args) => Promis
     } catch (err) {
       process.exitCode = 1;
       if (err instanceof Error) {
-        console.error(`ERROR: ${err.message}`);
+        console.error(`ERROR: ${err.stack}`);
         if (err.cause instanceof Error) {
           console.error(`CAUSE: ${err.cause.message}`);
         }
@@ -186,6 +186,12 @@ program
           });
         });
 
+        architectures.map((architecture) => {
+          return group(`Copy SSL archives for ${architecture}`, () => {
+            return android.copySSLArchives({ architecture });
+          });
+        });
+
         // group("Writing version source file", () => {
         //   if (skipGeneratingVersionFile) {
         //     console.log("Skipped generating version file");
@@ -198,7 +204,9 @@ program
           if (skipCollectingHeaders) {
             console.log("Skipped collecting headers");
           } else {
-            android.collectHeaders();
+            const [firstArchitecture] = architectures;
+            assert(firstArchitecture, "Expected at least one architecture");
+            android.collectHeaders({ architecture: firstArchitecture });
           }
         });
 

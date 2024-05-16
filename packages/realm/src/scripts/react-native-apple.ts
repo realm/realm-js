@@ -27,14 +27,19 @@ import path from "node:path";
 import { globSync } from "glob";
 
 import { ARCHIVE_INSTALL_PATH, SUPPORTED_PLATFORMS, XcodeSDKName, xcode } from "./xcode";
-import { PACKAGE_PATH, REALM_CORE_PATH, REALM_CORE_VERSION } from "./common";
+import {
+  REALM_CORE_LIBRARY_NAMES_DENYLIST as COMMON_REALM_CORE_LIBRARY_NAMES_DENYLIST,
+  PACKAGE_PATH,
+  REALM_CORE_PATH,
+  REALM_CORE_VERSION,
+  collectHeaders as commonCollectHeaders,
+} from "./common";
 
 const REALM_CORE_BUILD_PATH = path.resolve(REALM_CORE_PATH, "build-xcode");
 const REALM_CORE_CMAKE_TOOLCHAIN_PATH = path.resolve(REALM_CORE_PATH, "tools/cmake/xcode.toolchain.cmake");
 const REALM_CORE_COMBINED_LIBRARY_NAME = "librealm-combined.a";
 const REALM_CORE_LIBRARY_NAMES_DENYLIST = [
-  "librealm-ffi-static.a",
-  "librealm-ffi-static-dbg.a",
+  ...COMMON_REALM_CORE_LIBRARY_NAMES_DENYLIST,
   REALM_CORE_COMBINED_LIBRARY_NAME,
 ];
 
@@ -140,40 +145,7 @@ export function buildFramework({ platform, configuration }: BuildFrameworkOption
 }
 
 export function collectHeaders() {
-  // Delete any existing files
-  fs.rmSync(INCLUDE_PATH, { recursive: true, force: true });
-
-  const srcPath = path.join(REALM_CORE_PATH, "src");
-  const sourceHeaderPaths = globSync(["**/*.h", "**/*.hpp"], {
-    cwd: srcPath,
-    ignore: [
-      "win32/**",
-      /* c-api */
-      "realm.h",
-      "realm/object-store/c_api/**",
-      /* executables */
-      "realm/exec/**",
-    ],
-  });
-  console.log(`Copying ${sourceHeaderPaths.length} headers\n\tfrom ${srcPath}\n\tinto ${INCLUDE_PATH}`);
-  for (const headerPath of sourceHeaderPaths) {
-    // Create any parent directories
-    fs.mkdirSync(path.join(INCLUDE_PATH, path.dirname(headerPath)), { recursive: true });
-    fs.copyFileSync(path.join(srcPath, headerPath), path.join(INCLUDE_PATH, headerPath));
-  }
-
-  // Collect generated headers from the build directory
-  const buildSrcPath = path.join(REALM_CORE_BUILD_PATH, "src");
-  const buildHeaderPaths = globSync(["**/*.h", "**/*.hpp"], {
-    cwd: buildSrcPath,
-    ignore: ["external/**"],
-  });
-  console.log(`Copying ${buildHeaderPaths.length} generated headers\n\tfrom ${buildSrcPath}\n\tinto ${INCLUDE_PATH}`);
-  for (const headerPath of buildHeaderPaths) {
-    // Create any parent directories
-    fs.mkdirSync(path.join(INCLUDE_PATH, path.dirname(headerPath)), { recursive: true });
-    fs.copyFileSync(path.join(buildSrcPath, headerPath), path.join(INCLUDE_PATH, headerPath));
-  }
+  commonCollectHeaders({ buildPath: REALM_CORE_BUILD_PATH, includePath: INCLUDE_PATH });
 }
 
 export function collectArchivePaths() {
