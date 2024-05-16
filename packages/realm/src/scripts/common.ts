@@ -16,9 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+/* eslint-disable no-console */
+/* eslint-env node */
+
 import assert from "node:assert";
 import fs from "node:fs";
 import path from "node:path";
+
+import { globSync } from "glob";
 
 export const SUPPORTED_CONFIGURATIONS = ["Release", "Debug", "MinSizeRel", "RelWithDebInfo"] as const;
 export type Configuration = (typeof SUPPORTED_CONFIGURATIONS)[number];
@@ -39,3 +44,54 @@ const REALM_CORE_DEPENDENCIES = fs.readFileSync(REALM_CORE_DEPENDENCIES_PATH, "u
 const REALM_CORE_VERSION_MATCH = REALM_CORE_DEPENDENCIES.match(/^VERSION: ?(.+)$/m);
 assert(REALM_CORE_VERSION_MATCH, "Failed to determine Realm Core version");
 export const REALM_CORE_VERSION = REALM_CORE_VERSION_MATCH[1];
+
+export const REALM_CORE_LIBRARY_NAMES_DENYLIST = ["librealm-ffi-static.a", "librealm-ffi-static-dbg.a"];
+
+export function copyFiles(basePath: string, relativeFilePaths: string[], destinationPath: string) {
+  console.log(`Copying ${relativeFilePaths.length} files\n\tfrom ${basePath}\n\tinto ${destinationPath}`);
+  for (const filePath of relativeFilePaths) {
+    // Create any parent directories
+    fs.mkdirSync(path.join(destinationPath, path.dirname(filePath)), { recursive: true });
+    fs.copyFileSync(path.join(basePath, filePath), path.join(destinationPath, filePath));
+  }
+}
+
+type CollectHeadersOptions = {
+  buildPath: string;
+  includePath: string;
+};
+
+export function collectHeaders({ buildPath, includePath }: CollectHeadersOptions) {
+  // Delete any existing files
+  fs.rmSync(includePath, { recursive: true, force: true });
+
+  const srcPath = path.join(REALM_CORE_PATH, "src");
+  const sourceHeaderPaths = globSync(["**/*.h", "**/*.hpp"], {
+    cwd: srcPath,
+    ignore: [
+      "win32/**",
+      /* c-api */
+      "realm.h",
+      "realm/object-store/c_api/**",
+      /* executables */
+      "realm/exec/**",
+    ],
+  });
+  copyFiles(srcPath, sourceHeaderPaths, includePath);
+
+  // Collect generated headers from the build directory
+  const buildSrcPath = path.join(buildPath, "src");
+  const buildHeaderPaths = globSync(["**/*.h", "**/*.hpp"], {
+    cwd: buildSrcPath,
+    ignore: ["external/**"],
+  });
+  copyFiles(buildSrcPath, buildHeaderPaths, includePath);
+
+  // Collect OpenSSL headers
+  const buildOpenSSLPath = path.join(buildPath, "openssl/include");
+  const buildOpenSSLHeaderPaths = globSync(["**/*.h"], {
+    cwd: buildOpenSSLPath,
+    ignore: ["external/**"],
+  });
+  copyFiles(buildOpenSSLPath, buildOpenSSLHeaderPaths, includePath);
+}
