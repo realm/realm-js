@@ -19,6 +19,7 @@
 <!-- * Either mention core version or upgrade -->
 <!-- * Using Realm Core vX.Y.Z -->
 <!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
+* Upgraded `@trunk/launcher` from v1.3.0 to v1.3.1 to support Apple's versioning scheme for macOS.
 
 ## 12.8.1 (2024-05-15)
 
