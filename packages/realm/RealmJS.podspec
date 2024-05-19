@@ -62,7 +62,7 @@ Pod::Spec.new do |s|
                                   # Bootstrapper for React Native
                                   '"${PODS_TARGET_SRCROOT}/react-native/ios/RealmReact/"',
                                   # Copy of the Realm Core headers
-                                  '"${PODS_TARGET_SRCROOT}/react-native/ios/include/"',
+                                  '"${PODS_TARGET_SRCROOT}/prebuilds/ios/include/"',
                                   # Logger and JS-SDK specific helpers
                                   '"${PODS_TARGET_SRCROOT}/binding/"',
                                   # Platform specific helpers used by the generated binding code
@@ -74,7 +74,7 @@ Pod::Spec.new do |s|
                                 ]
                               }
 
-  s.vendored_frameworks = 'react-native/ios/realm-core.xcframework'
+  s.vendored_frameworks = 'prebuilds/apple/realm-core.xcframework'
 
   s.dependency 'React'
 end

@@ -46,7 +46,7 @@ const REALM_CORE_HEADERS_PATH = path.resolve(REALM_CORE_BUILD_PATH, "include");
 
 const REALM_CORE_PRODUCTS_INSTALL_PATH = `Products${ARCHIVE_INSTALL_PATH}`;
 
-const XCFRAMEWORK_PATH = path.resolve(PACKAGE_PATH, "prebuilds/ios/realm-core.xcframework");
+const XCFRAMEWORK_PATH = path.resolve(PACKAGE_PATH, "prebuilds/apple/realm-core.xcframework");
 
 const APPLE_DESTINATIONS_PR_PLATFORM = new Map<XcodeSDKName, string[]>([
   ["iphoneos", ["generic/platform=iOS"]],
