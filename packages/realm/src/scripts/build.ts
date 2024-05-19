@@ -160,7 +160,7 @@ program
       ({
         architecture: rawArchitectures,
         configuration,
-        skipCollectingHeaders,
+        // skipCollectingHeaders,
         // skipGeneratingVersionFile,
         ndkVersion,
       }) => {
@@ -186,11 +186,11 @@ program
           });
         });
 
-        architectures.map((architecture) => {
-          return group(`Copy SSL archives for ${architecture}`, () => {
-            return android.copySSLArchives({ architecture });
-          });
-        });
+        // architectures.map((architecture) => {
+        //   return group(`Copy SSL archives for ${architecture}`, () => {
+        //     return android.copySSLArchives({ architecture });
+        //   });
+        // });
 
         // group("Writing version source file", () => {
         //   if (skipGeneratingVersionFile) {
@@ -200,15 +200,15 @@ program
         //   }
         // });
 
-        group(`Collecting headers`, () => {
-          if (skipCollectingHeaders) {
-            console.log("Skipped collecting headers");
-          } else {
-            const [firstArchitecture] = architectures;
-            assert(firstArchitecture, "Expected at least one architecture");
-            android.collectHeaders({ architecture: firstArchitecture });
-          }
-        });
+        // group(`Collecting headers`, () => {
+        //   if (skipCollectingHeaders) {
+        //     console.log("Skipped collecting headers");
+        //   } else {
+        //     const [firstArchitecture] = architectures;
+        //     assert(firstArchitecture, "Expected at least one architecture");
+        //     android.collectHeaders({ architecture: firstArchitecture });
+        //   }
+        // });
 
         console.log("Great success! 🥳");
       },
