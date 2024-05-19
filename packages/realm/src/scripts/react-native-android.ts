@@ -24,24 +24,18 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 import assert from "node:assert";
 
-import { globSync } from "glob";
-
 import {
   Configuration,
   PACKAGE_PATH,
   REALM_CORE_LIBRARY_NAMES_DENYLIST,
-  // PACKAGE_VERSION,
   REALM_CORE_PATH,
   REALM_CORE_VERSION,
-  collectHeaders as commonCollectHeaders,
-  copyFiles,
 } from "./common";
 
 export const DEFAULT_NDK_VERSION = "25.1.8937393";
 export const ANDROID_API_LEVEL = "16";
 
-const INCLUDE_PATH = path.resolve(PACKAGE_PATH, "react-native/android/include");
-const ARCHIVES_PATH = path.resolve(PACKAGE_PATH, "react-native/android/libs");
+const INSTALL_PATH = path.resolve(PACKAGE_PATH, "prebuilds/android");
 
 type AndroidArchitecture = "x86" | "armeabi-v7a" | "arm64-v8a" | "x86_64";
 
@@ -79,8 +73,8 @@ function ensureDirectory(directoryPath: string) {
   }
 }
 
-function ensureBuildDirectory(architecture: AndroidArchitecture) {
-  const buildPath = path.join(REALM_CORE_PATH, "build-android", architecture);
+function ensureBuildDirectory(architecture: AndroidArchitecture, configuration: Configuration) {
+  const buildPath = path.join(REALM_CORE_PATH, "build-android-" + architecture + "-" + configuration);
   ensureDirectory(buildPath);
   return buildPath;
 }
@@ -94,8 +88,9 @@ type BuildArchiveOptions = {
 
 export function buildArchive({ cmakePath, ndkPath, architecture, configuration }: BuildArchiveOptions) {
   // Ensure a per architecture build directory
-  const buildPath = ensureBuildDirectory(architecture);
-  const archiveOutputDirectory = path.join(ARCHIVES_PATH, architecture);
+  const buildPath = ensureBuildDirectory(architecture, configuration);
+  const installPath = path.join(INSTALL_PATH, architecture);
+  // TODO: Consider using the "./tools/cmake/android.toolchain.cmake" from Realm Core instead?
   const toolchainPath = path.join(ndkPath, "build/cmake/android.toolchain.cmake");
   spawnSync(
     cmakePath,
@@ -109,16 +104,23 @@ export function buildArchive({ cmakePath, ndkPath, architecture, configuration }
       "--toolchain",
       toolchainPath,
       "-D",
+      "CMAKE_SYSTEM_NAME=Android",
+      "-D",
+      `CPACK_SYSTEM_NAME=Android-${architecture}`,
+      "-D",
+      `CMAKE_INSTALL_PREFIX=${installPath}`,
+      "-D",
       `CMAKE_BUILD_TYPE=${configuration}`,
       "-D",
       "CMAKE_MAKE_PROGRAM=ninja",
-      "-D",
-      `CMAKE_ARCHIVE_OUTPUT_DIRECTORY=${archiveOutputDirectory}`,
       "-D",
       `ANDROID_NDK=${ndkPath}`,
       "-D",
       // TODO: Does this take more than one value?
       `ANDROID_ABI=${architecture}`,
+      // TODO: Do we need both the above and below?
+      "-D",
+      `CMAKE_ANDROID_ARCH_ABI=${architecture}`,
       "-D",
       "ANDROID_TOOLCHAIN=clang",
       "-D",
@@ -130,20 +132,26 @@ export function buildArchive({ cmakePath, ndkPath, architecture, configuration }
       `REALM_VERSION=${REALM_CORE_VERSION}`,
       "-D",
       "REALM_BUILD_LIB_ONLY=ON",
+      // "-D",
+      // "REALM_ENABLE_ENCRYPTION=ON",
       // TODO: Consider if REALM_ANDROID_ABI, REALM_ANDROID, REALM_PLATFORM needs to be passed
     ],
     { stdio: "inherit" },
   );
   // Invoke the native build tool (Ninja) to build the generated project
-  spawnSync(cmakePath, ["--build", buildPath], { stdio: "inherit" });
+  spawnSync(cmakePath, ["--build", buildPath, "--", "install"], { stdio: "inherit" });
   // Delete unwanted build artifacts
   for (const name of REALM_CORE_LIBRARY_NAMES_DENYLIST) {
-    const libraryPath = path.join(archiveOutputDirectory, name);
+    const libraryPath = path.join(installPath, "lib", name);
     if (fs.existsSync(libraryPath)) {
       console.log("Deleting unwanted library archive file", libraryPath);
       fs.rmSync(libraryPath);
     }
   }
+  // Delete the docs directory
+  const installedDocsPath = path.join(installPath, "doc");
+  console.log("Deleting unwanted docs directory", installedDocsPath);
+  fs.rmSync(installedDocsPath, { recursive: true, force: true });
 }
 
 // TODO: Determine if this could happen all natively by passing a declaration through Cmake instead
@@ -169,22 +177,3 @@ export function buildArchive({ cmakePath, ndkPath, architecture, configuration }
 
 //   fs.writeFileSync(targetFile, versionFileContents);
 // }
-
-type CollectHeadersOptions = {
-  architecture: AndroidArchitecture;
-};
-
-export function collectHeaders({ architecture }: CollectHeadersOptions) {
-  const buildPath = ensureBuildDirectory(architecture);
-  commonCollectHeaders({ buildPath, includePath: INCLUDE_PATH });
-}
-
-export function copySSLArchives({ architecture }: CollectHeadersOptions) {
-  const buildPath = ensureBuildDirectory(architecture);
-  const sslLibsPath = path.join(buildPath, "openssl/lib");
-  const sslArchivePaths = globSync(["*.a"], {
-    cwd: sslLibsPath,
-  });
-  const archiveOutputDirectory = path.join(ARCHIVES_PATH, architecture);
-  copyFiles(sslLibsPath, sslArchivePaths, archiveOutputDirectory);
-}
