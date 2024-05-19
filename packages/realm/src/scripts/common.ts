@@ -86,12 +86,4 @@ export function collectHeaders({ buildPath, includePath }: CollectHeadersOptions
     ignore: ["external/**"],
   });
   copyFiles(buildSrcPath, buildHeaderPaths, includePath);
-
-  // Collect OpenSSL headers
-  const buildOpenSSLPath = path.join(buildPath, "openssl/include");
-  const buildOpenSSLHeaderPaths = globSync(["**/*.h"], {
-    cwd: buildOpenSSLPath,
-    ignore: ["external/**"],
-  });
-  copyFiles(buildOpenSSLPath, buildOpenSSLHeaderPaths, includePath);
 }

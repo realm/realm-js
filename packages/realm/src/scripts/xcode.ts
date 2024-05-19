@@ -60,7 +60,7 @@ type CreateXcframeworkOptions = {
   archivePaths: string[];
   outputPath: string;
   libraryNames: string[];
-  headers?: string[];
+  headerPaths?: string[];
 };
 
 let developerDir = env.DEVELOPER_DIR;
@@ -117,7 +117,7 @@ export const xcode = {
     });
     assert.equal(status, 0, `Expected a clean exit (got status = ${status})`);
   },
-  createXcframework({ archivePaths, outputPath, libraryNames, headers = [] }: CreateXcframeworkOptions) {
+  createXcframework({ archivePaths, outputPath, libraryNames, headerPaths = [] }: CreateXcframeworkOptions) {
     const { status } = spawnSync(
       "xcodebuild",
       [
@@ -128,7 +128,7 @@ export const xcode = {
           "-archive",
           archivePath,
           ...libraryNames.flatMap((libraryName) => ["-library", libraryName]),
-          ...headers.flatMap((header) => ["-headers", header]),
+          ...headerPaths.flatMap((headerPath) => ["-headers", headerPath]),
         ]),
       ],
       {

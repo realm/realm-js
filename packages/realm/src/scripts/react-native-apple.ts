@@ -42,11 +42,11 @@ const REALM_CORE_LIBRARY_NAMES_DENYLIST = [
   ...COMMON_REALM_CORE_LIBRARY_NAMES_DENYLIST,
   REALM_CORE_COMBINED_LIBRARY_NAME,
 ];
+const REALM_CORE_HEADERS_PATH = path.resolve(REALM_CORE_BUILD_PATH, "include");
 
 const REALM_CORE_PRODUCTS_INSTALL_PATH = `Products${ARCHIVE_INSTALL_PATH}`;
 
-const INCLUDE_PATH = path.resolve(PACKAGE_PATH, "react-native/ios/include");
-const XCFRAMEWORK_PATH = path.resolve(PACKAGE_PATH, "react-native/ios/realm-core.xcframework");
+const XCFRAMEWORK_PATH = path.resolve(PACKAGE_PATH, "prebuilds/ios/realm-core.xcframework");
 
 const APPLE_DESTINATIONS_PR_PLATFORM = new Map<XcodeSDKName, string[]>([
   ["iphoneos", ["generic/platform=iOS"]],
@@ -145,7 +145,7 @@ export function buildFramework({ platform, configuration }: BuildFrameworkOption
 }
 
 export function collectHeaders() {
-  commonCollectHeaders({ buildPath: REALM_CORE_BUILD_PATH, includePath: INCLUDE_PATH });
+  commonCollectHeaders({ buildPath: REALM_CORE_BUILD_PATH, includePath: REALM_CORE_HEADERS_PATH });
 }
 
 export function collectArchivePaths() {
@@ -171,6 +171,7 @@ type CreateXCFrameworkOptions = {
 
 export function createXCFramework({ archivePaths }: CreateXCFrameworkOptions) {
   console.log(`Creating an xcframework from ${archivePaths.length} archives`);
+  assert(fs.existsSync(REALM_CORE_HEADERS_PATH), "Collect headers before creating XCFramework");
   // Delete any existing xcframework to prevent
   // “librealm-combined.a” couldn’t be copied to “...” because an item with the same name already exists
   // Ideally, it would only be necessary to delete the specific platform+arch, to allow selectively building from source.
@@ -179,5 +180,6 @@ export function createXCFramework({ archivePaths }: CreateXCFrameworkOptions) {
     archivePaths,
     libraryNames: [REALM_CORE_COMBINED_LIBRARY_NAME],
     outputPath: XCFRAMEWORK_PATH,
+    headerPaths: [REALM_CORE_HEADERS_PATH],
   });
 }
