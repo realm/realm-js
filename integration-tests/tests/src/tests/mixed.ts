@@ -2146,9 +2146,8 @@ describe("Mixed", () => {
           filtered = objects.filtered(`mixed[*] == $0`, nonExistentValue);
           expect(filtered.length).equals(0);
 
-          // TODO: Enable after https://github.com/realm/realm-core/issues/7587. (When `itemToMatch` is `null`, this returns all objects.)
-          // filtered = objects.filtered(`mixed[${nonExistentIndex}][*] == $0`, itemToMatch);
-          // expect(filtered.length).equals(0);
+          filtered = objects.filtered(`mixed[${nonExistentIndex}][*] == $0`, itemToMatch);
+          expect(filtered.length).equals(0);
 
           index++;
         }
@@ -2247,29 +2246,25 @@ describe("Mixed", () => {
         for (const itemToMatch of nestedList) {
           // Objects with a nested list item that matches the `itemToMatch` at the GIVEN index.
 
-          // TODO: Enable after https://github.com/realm/realm-core/issues/7587. (When `itemToMatch` is `null`, this returns all objects.)
           let filtered = objects.filtered(`mixed[0][0][${index}] == $0`, itemToMatch);
-          // expect(filtered.length).equals(expectedFilteredCount);
+          expect(filtered.length).equals(expectedFilteredCount);
 
           filtered = objects.filtered(`mixed[0][0][${index}] == $0`, nonExistentValue);
           expect(filtered.length).equals(0);
 
-          // TODO: Enable after https://github.com/realm/realm-core/issues/7587. (When `itemToMatch` is `null`, this returns 2 objects -- the objects whose mixed fields are strings.)
-          // filtered = objects.filtered(`mixed[0][0][${nonExistentIndex}] == $0`, itemToMatch);
-          // expect(filtered.length).equals(0);
+          filtered = objects.filtered(`mixed[0][0][${nonExistentIndex}] == $0`, itemToMatch);
+          expect(filtered.length).equals(0);
 
           // Objects with a nested list item that matches the `itemToMatch` at ANY index.
 
-          // TODO: Enable after https://github.com/realm/realm-core/issues/7587. (When `itemToMatch` is `null`, this returns all objects.)
-          // filtered = objects.filtered(`mixed[0][0][*] == $0`, itemToMatch);
-          // expect(filtered.length).equals(expectedFilteredCount);
+          filtered = objects.filtered(`mixed[0][0][*] == $0`, itemToMatch);
+          expect(filtered.length).equals(expectedFilteredCount);
 
           filtered = objects.filtered(`mixed[0][0][*] == $0`, nonExistentValue);
           expect(filtered.length).equals(0);
 
-          // TODO: Enable after https://github.com/realm/realm-core/issues/7587. (When `itemToMatch` is `null`, this returns all objects.)
-          // filtered = objects.filtered(`mixed[0][${nonExistentIndex}][*] == $0`, itemToMatch);
-          // expect(filtered.length).equals(0);
+          filtered = objects.filtered(`mixed[0][${nonExistentIndex}][*] == $0`, itemToMatch);
+          expect(filtered.length).equals(0);
 
           index++;
         }
@@ -2301,9 +2296,8 @@ describe("Mixed", () => {
 
         // Objects with a nested list containing an item of the given type.
 
-        // TODO: Enable after https://github.com/realm/realm-core/issues/7587. (This returns all objects.)
-        // filtered = objects.filtered(`mixed[0][0][*].@type == 'null'`);
-        // expect(filtered.length).equals(expectedFilteredCount);
+        filtered = objects.filtered(`mixed[0][0][*].@type == 'null'`);
+        expect(filtered.length).equals(expectedFilteredCount);
 
         filtered = objects.filtered(`mixed[0][0][*].@type == 'bool'`);
         expect(filtered.length).equals(expectedFilteredCount);
@@ -2409,7 +2403,9 @@ describe("Mixed", () => {
 
           // Objects with a dictionary value at the given key matching any of the values inserted.
 
-          // TODO: Enable after https://github.com/realm/realm-core/issues/7587. (For all keys, this returns 0 objects.)
+          // TODO: Bug or feature in Core? (For all keys, this returns 0 objects.)
+          //       Was reported as part of https://github.com/realm/realm-core/issues/7587,
+          //       but the issue remains for `IN`. They could be treating argument lists special.
           // filtered = objects.filtered(`mixed.${key} IN $0`, insertedValues);
           // expect(filtered.length).equals(expectedFilteredCount);
 
@@ -2514,35 +2510,30 @@ describe("Mixed", () => {
 
           // Objects with a nested dictionary value that matches the `valueToMatch` at the GIVEN key.
 
-          // TODO: Enable after https://github.com/realm/realm-core/issues/7587. (When `valueToMatch` is `null`, this returns all objects.)
           let filtered = objects.filtered(`mixed['depth1']['depth2']['${key}'] == $0`, valueToMatch);
-          // expect(filtered.length).equals(expectedFilteredCount);
+          expect(filtered.length).equals(expectedFilteredCount);
 
           filtered = objects.filtered(`mixed['depth1']['depth2']['${key}'] == $0`, nonExistentValue);
           expect(filtered.length).equals(0);
 
-          // TODO: Enable after https://github.com/realm/realm-core/issues/7587. (When `valueToMatch` is `null`, this returns all objects.)
-          // filtered = objects.filtered(`mixed['depth1']['depth2']['${nonExistentKey}'] == $0`, valueToMatch);
+          filtered = objects.filtered(`mixed['depth1']['depth2']['${nonExistentKey}'] == $0`, valueToMatch);
           // Core treats missing keys as `null` in queries.
-          // expect(filtered.length).equals(valueToMatch === null ? expectedFilteredCount : 0);
+          expect(filtered.length).equals(valueToMatch === null ? expectedFilteredCount : 0);
 
-          // TODO: Enable after https://github.com/realm/realm-core/issues/7587. (When `valueToMatch` is `null`, this returns all objects.)
-          // filtered = objects.filtered(`mixed.depth1.depth2.${key} == $0`, valueToMatch);
-          // expect(filtered.length).equals(expectedFilteredCount);
+          filtered = objects.filtered(`mixed.depth1.depth2.${key} == $0`, valueToMatch);
+          expect(filtered.length).equals(expectedFilteredCount);
 
           filtered = objects.filtered(`mixed.depth1.depth2.${key} == $0`, nonExistentValue);
           expect(filtered.length).equals(0);
 
-          // TODO: Enable after https://github.com/realm/realm-core/issues/7587. (When `valueToMatch` is `null`, this returns all objects.)
-          // filtered = objects.filtered(`mixed.depth1.depth2.${nonExistentKey} == $0`, valueToMatch);
+          filtered = objects.filtered(`mixed.depth1.depth2.${nonExistentKey} == $0`, valueToMatch);
           // Core treats missing keys as `null` in queries.
-          // expect(filtered.length).equals(valueToMatch === null ? expectedFilteredCount : 0);
+          expect(filtered.length).equals(valueToMatch === null ? expectedFilteredCount : 0);
 
           // Objects with a nested dictionary value that matches the `valueToMatch` at ANY key.
 
-          // TODO: Enable after https://github.com/realm/realm-core/issues/7587. (When `valueToMatch` is `null`, this returns all objects.)
-          // filtered = objects.filtered(`mixed.depth1.depth2[*] == $0`, valueToMatch);
-          // expect(filtered.length).equals(expectedFilteredCount);
+          filtered = objects.filtered(`mixed.depth1.depth2[*] == $0`, valueToMatch);
+          expect(filtered.length).equals(expectedFilteredCount);
 
           filtered = objects.filtered(`mixed.depth1.depth2[*] == $0`, nonExistentValue);
           expect(filtered.length).equals(0);
@@ -2557,7 +2548,9 @@ describe("Mixed", () => {
 
           // Objects with a nested dictionary value at the given key matching any of the values inserted.
 
-          // TODO: Enable after https://github.com/realm/realm-core/issues/7587. (For all keys, this returns 2 objects -- the objects whose mixed fields are strings.)
+          // TODO: Bug or feature in Core? (For all keys, this returns 0 objects.)
+          //       Was reported as part of https://github.com/realm/realm-core/issues/7587,
+          //       but the issue remains for `IN`. They could be treating argument lists special.
           // filtered = objects.filtered(`mixed.depth1.depth2.${key} IN $0`, insertedValues);
           // expect(filtered.length).equals(expectedFilteredCount);
 
@@ -2592,9 +2585,8 @@ describe("Mixed", () => {
 
         // Objects with a nested dictionary containing a property of the given type.
 
-        // TODO: Enable after https://github.com/realm/realm-core/issues/7587. (This returns all objects.)
-        // filtered = objects.filtered(`mixed.depth1.depth2[*].@type == 'null'`);
-        // expect(filtered.length).equals(expectedFilteredCount);
+        filtered = objects.filtered(`mixed.depth1.depth2[*].@type == 'null'`);
+        expect(filtered.length).equals(expectedFilteredCount);
 
         filtered = objects.filtered(`mixed.depth1.depth2[*].@type == 'bool'`);
         expect(filtered.length).equals(expectedFilteredCount);
