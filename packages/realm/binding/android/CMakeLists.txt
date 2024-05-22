@@ -3,10 +3,11 @@ cmake_minimum_required(VERSION 3.18.1)
 # TODO: Add a target for the prebuilt .so of Realm Core + headers
 
 add_library(realm-js-android-binding SHARED
-    hack.cpp
-    platform.cpp
-    jni_utils.cpp
-    io_realm_react_RealmReactModule.cpp
+    ../jsi/jsi_init.cpp
+    src/main/cpp/hack.cpp
+    src/main/cpp/platform.cpp
+    src/main/cpp/jni_utils.cpp
+    src/main/cpp/io_realm_react_RealmReactModule.cpp
 )
 
 set_target_properties(realm-js-android-binding PROPERTIES
@@ -32,6 +33,9 @@ target_link_options(realm-js-android-binding PUBLIC -fvisibility=hidden)
 
 target_include_directories(realm-js-android-binding PRIVATE
     "${REACT_NATIVE_ROOT_DIR}/ReactCommon/callinvoker"
+    "${CMAKE_CURRENT_SOURCE_DIR}/.."
+    "${CMAKE_CURRENT_SOURCE_DIR}/../../bindgen/src"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../../bindgen/vendor/realm-core/bindgen/src"
 )
 
 find_library(android-lib android)
@@ -40,10 +44,16 @@ find_library(log-lib log)
 find_package(fbjni REQUIRED CONFIG)
 find_package(ReactAndroid REQUIRED CONFIG)
 
+set(Realm_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../prebuilds/android/${ANDROID_ABI}/share/cmake/Realm")
+find_package(Realm REQUIRED CONFIG)
+
 target_link_libraries(realm-js-android-binding
-    realm-js-jsi
     ${android-lib}
     ${log-lib}
+    Realm::Storage
+    Realm::QueryParser
+    Realm::ObjectStore
+    Realm::Sync
     ReactAndroid::jsi
     ReactAndroid::reactnativejni
     ReactAndroid::turbomodulejsijni
