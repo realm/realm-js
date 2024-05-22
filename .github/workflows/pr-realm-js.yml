@@ -85,21 +85,35 @@ jobs:
             packages/realm/binding/generated
 
   prebuild-node:
-    name: Build for ${{ matrix.variant.os }} ${{ matrix.variant.arch }} (Node.js)
-    runs-on: ${{ matrix.variant.runner }}
+    name: Build for ${{ matrix.os }} ${{ matrix.arch }} (Node.js)
+    runs-on: ${{ matrix.runner }}
     env:
       REALM_DISABLE_ANALYTICS: 1
     strategy:
       fail-fast: false
       matrix:
-        variant:
-          - { os: linux, runner: ubuntu-latest, arch: x64 }
-          - { os: linux, runner: ubuntu-latest, arch: arm }
-          - { os: linux, runner: ubuntu-latest, arch: arm64 }
-          - { os: windows, runner: windows-latest, arch: x64  }
-          - { os: windows, runner: windows-2019, arch: ia32 }
-          - { os: darwin, runner: macos-latest, arch: x64  }
-          - { os: darwin, runner: macos-latest, arch: arm64 }
+        include:
+          - os: linux
+            runner: ubuntu-latest
+            arch: x64
+          - os: linux
+            runner: ubuntu-latest
+            arch: arm
+          - os: linux
+            runner: ubuntu-latest
+            arch: arm64
+          - os: windows
+            runner: windows-latest
+            arch: x64
+          - os: windows
+            runner: windows-2019
+            arch: ia32
+          - os: darwin
+            runner: macos-latest
+            arch: x64
+          - os: darwin
+            runner: macos-latest
+            arch: arm64
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -142,7 +156,7 @@ jobs:
       # On linux, electron requires a connected display.  We fake this by giving it a headless environment using xvfb
       # Relevant issue: https://github.com/juliangruber/browser-run/issues/147
       - name: Linux Environment setup
-        if: ${{ matrix.variant.runner == 'ubuntu-latest' }}
+        if: ${{ matrix.runner == 'ubuntu-latest' }}
         run: sudo apt-get install ccache ninja-build
 
 
@@ -158,7 +172,7 @@ jobs:
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1
         with:
-          key: ${{ runner.os }}-${{ matrix.variant.os }}-${{ matrix.variant.arch }}
+          key: ${{ runner.os }}-${{ matrix.os }}-${{ matrix.arch }}
           max-size: '2.0G'
 
       - name: Prepend ccache executables to the PATH
@@ -182,7 +196,7 @@ jobs:
           cl_exe=$(which cl.exe)
           cl_dir=$(dirname "$cl_exe")
           # For 32-bit it uses a different compiler than the one in the path
-          if [ ${{ matrix.variant.arch }} = ia32 ]; then
+          if [ ${{ matrix.arch }} = ia32 ]; then
               cl_dir=$(dirname "$cl_dir")/x86
               cl_exe="$cl_dir/cl.exe"
           fi
@@ -201,7 +215,7 @@ jobs:
           echo 'VCPKG_KEEP_ENV_VARS=CCACHE_COMPILER;CCACHE_STATSLOG;CCACHE_LOGFILE;CCACHE_COMPILERTYPE;UseMultiToolTask' >> $GITHUB_ENV
 
       - name: Build native module
-        run: npm run build:node:prebuild:${{matrix.variant.arch}} --workspace realm
+        run: npm run build:node:prebuild:${{matrix.arch}} --workspace realm
 
       - name: Upload prebuild artifact
         uses: actions/upload-artifact@v3
