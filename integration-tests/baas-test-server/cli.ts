@@ -84,7 +84,11 @@ yargs(hideBin(process.argv))
   .command(
     ["docker [githash]"],
     "Runs the BaaS test image using Docker",
-    (yargs) => yargs.positional("githash", { type: "string" }).option("branch", { default: "master" }),
+    (yargs) =>
+      yargs
+        .positional("githash", { type: "string" })
+        .option("branch", { default: "master" })
+        .option("latest-local", { default: false, boolean: true }),
     wrapCommand(async (argv) => {
       const { AWS_PROFILE, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY } = process.env;
       assert(AWS_ACCESS_KEY_ID && AWS_SECRET_ACCESS_KEY, "Missing AWS_ACCESS_KEY_ID or AWS_SECRET_ACCESS_KEY env");
@@ -95,12 +99,19 @@ yargs(hideBin(process.argv))
       docker.ensureNoBaas();
 
       if (argv.githash) {
-        docker.spawnBaaS({ tag: argv.githash, accessKeyId: AWS_ACCESS_KEY_ID, secretAccessKey: AWS_SECRET_ACCESS_KEY });
+        docker.spawnBaaS({
+          image: argv.githash,
+          accessKeyId: AWS_ACCESS_KEY_ID,
+          secretAccessKey: AWS_SECRET_ACCESS_KEY,
+        });
+      } else if (argv["latest-local"]) {
+        const id = docker.getLatestLocalId();
+        docker.spawnBaaS({ image: id, accessKeyId: AWS_ACCESS_KEY_ID, secretAccessKey: AWS_SECRET_ACCESS_KEY });
       } else {
         const tag = await docker.fetchBaasTag(argv.branch);
         assert(AWS_PROFILE, "Missing AWS_PROFILE env");
         docker.pullBaas({ profile: AWS_PROFILE, tag });
-        docker.spawnBaaS({ tag, accessKeyId: AWS_ACCESS_KEY_ID, secretAccessKey: AWS_SECRET_ACCESS_KEY });
+        docker.spawnBaaS({ image: tag, accessKeyId: AWS_ACCESS_KEY_ID, secretAccessKey: AWS_SECRET_ACCESS_KEY });
       }
     }),
   )
