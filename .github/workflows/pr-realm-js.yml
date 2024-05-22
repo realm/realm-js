@@ -255,7 +255,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Build archive
-        run: npm run build:react-native:apple --workspace realm -- --platform ${{ matrix.platform }} --skip-creating-xcframework
+        run: npm run build-cli --workspace realm -- build-react-native-apple --platform ${{ matrix.platform }} --skip-creating-xcframework
       - name: Upload archive
         uses: actions/upload-artifact@v4
         with:
@@ -263,7 +263,6 @@ jobs:
           # Including README.md to pin paths to the root of the repository
           path: |
             README.md
-            packages/realm/binding/apple/include/
             packages/realm/bindgen/vendor/realm-core/build-xcode/${{ matrix.platform }}.xcarchive/Products/usr/local/lib/librealm-combined.a
           if-no-files-found: error
 
@@ -289,15 +288,14 @@ jobs:
           pattern: react-native-*-archive
           merge-multiple: true
       - name: Create Xcframework
-        run: npm run build:react-native:apple --workspace realm -- --platform none --skip-collecting-headers
+        run: npm run build-cli --workspace realm -- build-react-native-apple --platform none --skip-collecting-headers
       - uses: actions/upload-artifact@v4
         with:
           name: react-native-xcframework
           # Including README.md to pin paths to the root of the repository
           path: |
             README.md
-            packages/realm/binding/apple/include/
-            packages/realm/binding/apple/realm-core.xcframework/
+            packages/realm/prebuilds/apple/realm-core.xcframework/
           if-no-files-found: error
 
   integration-tests:
