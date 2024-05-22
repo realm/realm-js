@@ -18,6 +18,9 @@ on:
       - "packages/realm-web/**"
   workflow_dispatch:
 
+env:
+  CMAKE_VERSION: 3.29.2
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -140,7 +143,7 @@ jobs:
       - name: Setup CMake
         uses: jwlawson/actions-setup-cmake@v2
         with:
-          cmake-version: '3.29.2'
+          cmake-version: ${{ env.CMAKE_VERSION }}
 
       # ninja-build is used by default if available and results in faster build times
       # On linux, electron requires a connected display.  We fake this by giving it a headless environment using xvfb
@@ -219,7 +222,7 @@ jobs:
             README.md
             ${{ matrix.variant.artifact-path }}
 
-  build-react-native-apple-archives:
+  prebuild-react-native-apple-archives:
     name: Build for ${{ matrix.platform }} (React Native)
     runs-on: macos-latest-large
     strategy:
@@ -242,7 +245,7 @@ jobs:
       - name: Setup CMake
         uses: jwlawson/actions-setup-cmake@v2
         with:
-          cmake-version: '3.29.2'
+          cmake-version: ${{ env.CMAKE_VERSION }}
       - name: Setup Ccache
         uses: hendrikmuhs/ccache-action@v1
         with:
@@ -266,10 +269,10 @@ jobs:
             packages/realm/bindgen/vendor/realm-core/build-xcode/${{ matrix.platform }}.xcarchive/Products/usr/local/lib/librealm-combined.a
           if-no-files-found: error
 
-  create-react-native-xcframework:
+  prebuild-react-native-apple:
     name: Create Xcframework for React Native
     runs-on: macos-latest-large
-    needs: [build-react-native-apple-archives]
+    needs: [prebuild-react-native-apple-archives]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -291,16 +294,64 @@ jobs:
         run: npm run build-cli --workspace realm -- build-react-native-apple --platform none --skip-collecting-headers
       - uses: actions/upload-artifact@v4
         with:
-          name: react-native-xcframework
+          name: react-native-apple-prebuild
           # Including README.md to pin paths to the root of the repository
           path: |
             README.md
             packages/realm/prebuilds/apple/realm-core.xcframework/
           if-no-files-found: error
 
+  prebuild-react-native-android:
+    name: Build for Android ${{ matrix.architecture }} (React Native)
+    runs-on: macos-latest-large
+    strategy:
+      fail-fast: false
+      matrix:
+        architecture:
+          - arm64-v8a
+          - armeabi-v7a
+          - x86
+          - x86_64
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: "recursive"
+      - name: Setup node version
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Setup CMake
+        uses: jwlawson/actions-setup-cmake@v2
+        with:
+          cmake-version: ${{ env.CMAKE_VERSION }}
+      - name: Setup Ccache
+        uses: hendrikmuhs/ccache-action@v1
+        with:
+          key: ${{ runner.os }}-android-${{ matrix.architecture }}
+          max-size: '2.0G'
+      # On CI, file timestamps change with every run so instead rely on file content hashing
+      # https://reactnative.dev/docs/build-speed#using-this-approach-on-a-ci
+      - name: Configure ccache
+        run: ccache --set-config="compiler_check=content"
+      - name: Install dependencies
+        run: npm ci
+      - name: Build archive
+        run: npm run build-cli --workspace realm -- build-react-native-android --architecture ${{ matrix.architecture }} --configuration Release
+      - name: Upload archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: react-native-android-${{ matrix.architecture }}-prebuild
+          # Including README.md to pin paths to the root of the repository
+          path: |
+            README.md
+            packages/realm/prebuilds/android/${{ matrix.architecture }}/
+          if-no-files-found: error
+        
   integration-tests:
     name: Test ${{ matrix.variant.environment }} on ${{ matrix.variant.os }} (${{matrix.variant.target}})
-    needs: [generate-jsi, generate-ts, build]
+    needs: [generate-jsi, generate-ts, build, prebuild-react-native-apple, prebuild-react-native-android]
     if: ${{ success() || failure() }}
     env:
       REALM_DISABLE_ANALYTICS: 1
@@ -395,7 +446,7 @@ jobs:
         if: ${{ matrix.variant.os != 'android' }}
         uses: jwlawson/actions-setup-cmake@v2
         with:
-          cmake-version: '3.29.2'
+          cmake-version: ${{ env.CMAKE_VERSION }}
 
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1
@@ -445,11 +496,17 @@ jobs:
         with:
           name: realm-js-prebuilds
 
-      - name: Download Xcframework
+      - name: Download Apple prebuild
         if: ${{ matrix.variant.os == 'ios' }}
         uses: actions/download-artifact@v4
         with:
-          name: react-native-xcframework
+          name: react-native-apple-prebuild
+
+      - name: Download Android prebuild
+        if: ${{ matrix.variant.os == 'android' }}
+        uses: actions/download-artifact@v4
+        with:
+          name: react-native-android-prebuild
 
       - name: Install dependencies
         run: npm ci
