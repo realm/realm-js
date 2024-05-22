@@ -27,7 +27,7 @@ concurrency:
 
 jobs:
   generate-jsi:
-    name: Generate JSI
+    name: Generate JSI binding source-code
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -45,18 +45,17 @@ jobs:
       - name: Generate JSI
         run: |
           npm run bindgen:jsi --workspace realm
-      # Due to a limitation in upload-artifact a redundant file is needed to force
-      # preserving paths (https://github.com/actions/upload-artifact/issues/174)
       - name: Upload dist artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: realm-js-jsi
+          name: jsi-binding-source
+          # Including README.md to pin paths to the root of the repository
           path: |
             README.md
             packages/realm/binding/jsi/jsi_init.cpp
 
-  generate-ts:
-    name: Generate TS Bundle
+  build-ts:
+    name: Build TypeScript files
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -73,12 +72,11 @@ jobs:
         run: npm ci --ignore-scripts
       - name: Bundle all packages
         run: npm run bundle
-      # Due to a limitation in upload-artifact a redundant file is needed to force
-      # preserving paths (https://github.com/actions/upload-artifact/issues/174)
       - name: Upload dist artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: realm-js-ts
+          name: ts-build
+          # Including README.md to pin paths to the root of the repository
           path: |
             README.md
             packages/*/dist
@@ -94,13 +92,13 @@ jobs:
       fail-fast: false
       matrix:
         variant:
-          - { os: linux, runner: ubuntu-latest, arch: x64, artifact-path: packages/realm/prebuilds }
-          - { os: linux, runner: ubuntu-latest, arch: arm, artifact-path: packages/realm/prebuilds }
-          - { os: linux, runner: ubuntu-latest, arch: arm64, artifact-path: packages/realm/prebuilds }
-          - { os: windows, runner: windows-latest, arch: x64, artifact-path: packages/realm/prebuilds  }
-          - { os: windows, runner: windows-2019, arch: ia32, artifact-path: packages/realm/prebuilds }
-          - { os: darwin, runner: macos-latest, arch: x64, artifact-path: packages/realm/prebuilds  }
-          - { os: darwin, runner: macos-latest, arch: arm64, artifact-path: packages/realm/prebuilds  }
+          - { os: linux, runner: ubuntu-latest, arch: x64 }
+          - { os: linux, runner: ubuntu-latest, arch: arm }
+          - { os: linux, runner: ubuntu-latest, arch: arm64 }
+          - { os: windows, runner: windows-latest, arch: x64  }
+          - { os: windows, runner: windows-2019, arch: ia32 }
+          - { os: darwin, runner: macos-latest, arch: x64  }
+          - { os: darwin, runner: macos-latest, arch: arm64 }
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -126,11 +124,6 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
-
-      - name: Download TS Bundle
-        uses: actions/download-artifact@v3
-        with:
-          name: realm-js-ts
 
       - name: Setup Wireit cache
         uses: google/wireit@setup-github-actions-caching/v1
@@ -206,20 +199,17 @@ jobs:
           echo 'UseMultiToolTask=true' >> $GITHUB_ENV
           echo 'VCPKG_KEEP_ENV_VARS=CCACHE_COMPILER;CCACHE_STATSLOG;CCACHE_LOGFILE;CCACHE_COMPILERTYPE;UseMultiToolTask' >> $GITHUB_ENV
 
-      # build the c++ library for standard targets
-      - name: Build node
-        if: ${{ matrix.variant.os != 'ios' && matrix.variant.os != 'android' }}
+      - name: Build native module
         run: npm run build:node:prebuild:${{matrix.variant.arch}} --workspace realm
 
-      # Due to a limitation in upload-artifact a redundant file is needed to force
-      # preserving paths (https://github.com/actions/upload-artifact/issues/174)
       - name: Upload prebuild artifact
         uses: actions/upload-artifact@v3
         with:
-          name: realm-js-prebuilds
+          name: node-prebuild
+          # Including README.md to pin paths to the root of the repository
           path: |
             README.md
-            ${{ matrix.variant.artifact-path }}
+            prebuilds/realm-*-napi-*.tar.gz
 
   prebuild-react-native-apple-archives:
     name: Prebuild for ${{ matrix.platform }} (React Native)
@@ -350,7 +340,7 @@ jobs:
         
   integration-tests:
     name: Test ${{ matrix.variant.environment }} on ${{ matrix.variant.os }} (${{matrix.variant.target}})
-    needs: [generate-jsi, generate-ts, build, prebuild-react-native-apple, prebuild-react-native-android]
+    needs: [generate-jsi, build-ts, prebuild-node, prebuild-react-native-apple, prebuild-react-native-android]
     if: ${{ success() || failure() }}
     env:
       REALM_DISABLE_ANALYTICS: 1
@@ -483,17 +473,17 @@ jobs:
         uses: actions/download-artifact@v3
         if: ${{ matrix.variant.environment == 'react-native' }}
         with:
-          name: realm-js-jsi
+          name: jsi-binding-source
 
-      - name: Download TS Bundle
+      - name: Download TypeScript build
         uses: actions/download-artifact@v3
         with:
-          name: realm-js-ts
+          name: ts-build
 
       - name: Download prebuilds
         uses: actions/download-artifact@v3
         with:
-          name: realm-js-prebuilds
+          name: node-prebuild
 
       - name: Download Apple prebuild
         if: ${{ matrix.variant.os == 'ios' }}
