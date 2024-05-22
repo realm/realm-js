@@ -86,7 +86,7 @@ jobs:
             packages/realm/binding/generated
 
   prebuild-node:
-    name: Build for ${{ matrix.os }} ${{ matrix.arch }} (Node.js)
+    name: Prebuild ${{ matrix.os }} ${{ matrix.arch }} (Node.js)
     runs-on: ${{ matrix.runner }}
     env:
       REALM_DISABLE_ANALYTICS: 1
@@ -228,7 +228,7 @@ jobs:
             prebuilds/realm-*-napi-*.tar.gz
 
   prebuild-react-native-apple-archives:
-    name: Prebuild for ${{ matrix.platform }} (React Native)
+    name: Prebuild ${{ matrix.platform }} (Apple React Native)
     runs-on: macos-latest-large
     strategy:
       fail-fast: false
@@ -275,7 +275,7 @@ jobs:
           if-no-files-found: error
 
   prebuild-react-native-apple:
-    name: Create Xcframework for React Native
+    name: Combine Xcframework (Apple React Native)
     runs-on: macos-latest-large
     needs: [prebuild-react-native-apple-archives]
     steps:
@@ -307,7 +307,7 @@ jobs:
           if-no-files-found: error
 
   prebuild-react-native-android:
-    name: Prebuild for Android ${{ matrix.architecture }} (React Native)
+    name: Prebuild ${{ matrix.architecture }} (Android React Native)
     runs-on: macos-latest-large
     strategy:
       fail-fast: false
