@@ -20,6 +20,7 @@ on:
 
 env:
   CMAKE_VERSION: 3.29.2
+  NDK_VERSION: 25.1.8937393
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -311,6 +312,8 @@ jobs:
         with:
           node-version: 20
           cache: npm
+      - name: Install NDK
+        run: sdkmanager --install "ndk;${{ env.NDK_VERSION }}"
       - name: Setup CMake
         uses: jwlawson/actions-setup-cmake@v2
         with:
@@ -344,7 +347,6 @@ jobs:
     if: ${{ success() || failure() }}
     env:
       REALM_DISABLE_ANALYTICS: 1
-      NDK_VERSION: 25.1.8937393
       JAVA_VERSION: 17
       MOCHA_REMOTE_TIMEOUT: 60000
       LONG_TIMEOUT: 300000 # 5 minutes
