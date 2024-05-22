@@ -69,13 +69,10 @@
     "index.node.js",
     "index.react-native.js",
     "types.d.cts",
-    "react-native/android/**/*{.gradle,.java,.xml}",
-    "react-native/ios/RealmReact",
-    "react-native/ios/output-files.xcfilelist",
+    "binding/android/**/*{.gradle,.java,.xml}",
+    "binding/apple",
     "react-native/shared",
     "binding",
-    "bindgen",
-    "!bindgen/vendor/realm-core/build-xcode-platforms",
     "scripts",
     "react-native.config.js",
     "RealmJS.podspec",
@@ -95,7 +92,7 @@
     "build:node:prebuild:ia32": "wireit",
     "build:react-native:apple": "npm run build-cli -- build-react-native-apple",
     "build:react-native:iphonesimulator": "wireit",
-    "bindgen:generate:jsi": "wireit",
+    "bindgen:jsi": "wireit",
     "check-types": "wireit",
     "install": "prebuild-install --runtime napi || echo 'Failed to download prebuild for Realm'",
     "docs": "wireit",
@@ -162,7 +159,7 @@
         "binding/dist/core.d.ts"
       ]
     },
-    "bindgen:generate:jsi": {
+    "bindgen:jsi": {
       "command": "realm-bindgen --template bindgen/src/templates/jsi.ts --spec bindgen/vendor/realm-core/bindgen/spec.yml --spec bindgen/js_spec.yml --opt-in bindgen/js_opt_in_spec.yml --output ./binding/jsi",
       "dependencies": [
         "bindgen:generate:spec-schema"
@@ -298,8 +295,7 @@
         "bindgen/vendor/realm-core/src"
       ],
       "output": [
-        "react-native/ios/include",
-        "react-native/ios/realm-core.xcframework"
+        "binding/apple/realm-core.xcframework"
       ]
     },
     "check-types": {

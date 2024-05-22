@@ -41,7 +41,7 @@ jobs:
         run: npm ci --ignore-scripts
       - name: Generate JSI
         run: |
-          npm run bindgen:generate:jsi --workspace realm
+          npm run bindgen:jsi --workspace realm
       # Due to a limitation in upload-artifact a redundant file is needed to force
       # preserving paths (https://github.com/actions/upload-artifact/issues/174)
       - name: Upload dist artifacts
@@ -263,7 +263,7 @@ jobs:
           # Including README.md to pin paths to the root of the repository
           path: |
             README.md
-            packages/realm/react-native/ios/include/
+            packages/realm/binding/apple/include/
             packages/realm/bindgen/vendor/realm-core/build-xcode/${{ matrix.platform }}.xcarchive/Products/usr/local/lib/librealm-combined.a
           if-no-files-found: error
 
@@ -296,8 +296,8 @@ jobs:
           # Including README.md to pin paths to the root of the repository
           path: |
             README.md
-            packages/realm/react-native/ios/include/
-            packages/realm/react-native/ios/realm-core.xcframework/
+            packages/realm/binding/apple/include/
+            packages/realm/binding/apple/realm-core.xcframework/
           if-no-files-found: error
 
   integration-tests:

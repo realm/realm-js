@@ -202,7 +202,7 @@ Other editors should also be able to be configured to use the `compile_commands.
 You can build and bundle for iOS by running the following command from the root directory:
 
 ```sh
-npm run bindgen:generate:jsi  --workspace realm
+npm run bindgen:jsi  --workspace realm
 npm run bundle --workspace realm
 ```
 
@@ -217,7 +217,7 @@ REALM_BUILD_FROM_SOURCE=1 pod install
 You can build and bundle for Android by running the following command from the root directory:
 
 ```sh
-npm run bindgen:generate:jsi  --workspace realm
+npm run bindgen:jsi  --workspace realm
 npm run build:android --workspace realm
 npm run bundle --workspace realm
 ```
