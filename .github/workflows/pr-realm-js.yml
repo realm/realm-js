@@ -308,7 +308,7 @@ jobs:
 
   prebuild-react-native-android:
     name: Prebuild ${{ matrix.architecture }} (Android React Native)
-    runs-on: macos-latest-large
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
@@ -332,6 +332,9 @@ jobs:
         uses: jwlawson/actions-setup-cmake@v2
         with:
           cmake-version: ${{ env.CMAKE_VERSION }}
+
+      - name: Install ninja
+        run: sudo apt-get install ninja-build
 
       - name: Setup Ccache
         uses: hendrikmuhs/ccache-action@v1
@@ -358,8 +361,10 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
       - name: Build archive
         run: npm run build-cli --workspace realm -- build-react-native-android --architecture ${{ matrix.architecture }} --configuration Release
+
       - name: Upload archive
         uses: actions/upload-artifact@v4
         with:
