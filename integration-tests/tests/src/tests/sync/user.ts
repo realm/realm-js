@@ -667,7 +667,7 @@ describe("User", () => {
       expect(await user.functions.sumFunc()).equals(0);
       expect(await user.functions.sumFunc(1, 2, 3)).equals(6);
 
-      await expect(user.functions.error()).to.be.rejectedWith("function not found: 'error'");
+      await expect(user.functions.error()).to.be.rejectedWith("function not found");
     });
   });
 

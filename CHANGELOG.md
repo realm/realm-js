@@ -4,21 +4,20 @@
 * None
 
 ### Enhancements
-* None
-
+* None.
+  
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None
+* Inserting the same typed link to the same key in a dictionary more than once would incorrectly create multiple backlinks to the object. This did not appear to cause any crashes later, but would have affecting explicit backlink count queries (eg: `...@links.@count`) and possibly notifications ([realm/realm-core#7676](https://github.com/realm/realm-core/issues/7676) since v12.7.1).
+* Having links in a nested collections would leave the file inconsistent if the top object is removed. ([realm/realm-core#7657](https://github.com/realm/realm-core/issues/7657), since v12.7.0)
+* Automatic client reset recovery would crash when recovering AddInteger instructions on a Mixed property if its type was changed to non-integer ([realm/realm-core#7683](https://github.com/realm/realm-core/pull/7683), since v10.18.0).
 
 ### Compatibility
 * React Native >= v0.71.4
 * Realm Studio v15.0.0.
-* File format: generates Realms with format v24 (reads and upgrades file format v10.
+* File format: generates Realms with format v24 (reads and upgrades file format v10).
 
 ### Internal
-<!-- * Either mention core version or upgrade -->
-<!-- * Using Realm Core vX.Y.Z -->
-<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
+* Upgraded Realm Core from v14.6.2 to v14.7.0.
 * Upgraded `@trunk/launcher` from v1.3.0 to v1.3.1 to support Apple's versioning scheme for macOS.
 
 ## 12.8.1 (2024-05-15)
@@ -32,7 +31,7 @@
 ### Compatibility
 * React Native >= v0.71.4
 * Realm Studio v15.0.0.
-* File format: generates Realms with format v24 (reads and upgrades file format v10.
+* File format: generates Realms with format v24 (reads and upgrades file format v10).
 
 ### Internal
 * Upgraded Realm Core from v14.6.1 to v14.6.2 + commits `5ba02142131efa3d97eda770ce33a85a2a085202` and `5462d47998b86459d328648c8057790a7b92af20`.
