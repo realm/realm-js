@@ -40,11 +40,10 @@ Pod::Spec.new do |s|
   # @see https://github.com/react-native-community/cli/blob/master/docs/autolinking.md#platform-ios
   s.source                 = { :http => 'https://github.com/realm/realm-js/blob/main/CONTRIBUTING.md#how-to-debug-react-native-podspec' }
 
-  s.source_files           = 'react-native/ios/RealmReact/*.mm',
-                             'binding/jsi/*.cpp',
-                             'binding/ios/platform.mm'
+  s.source_files           = 'binding/jsi/*.cpp',
+                             'binding/apple/*.mm'
 
-  s.public_header_files    = 'react-native/ios/RealmReact/*.h'
+  s.public_header_files    = 'binding/apple/*.h'
 
   s.frameworks             = uses_frameworks ? ['React'] : []
 
@@ -59,9 +58,9 @@ Pod::Spec.new do |s|
                                 # Header search paths are prefixes to the path specified in #include macros
                                 'HEADER_SEARCH_PATHS' => [
                                   # Bootstrapper for React Native
-                                  '"${PODS_TARGET_SRCROOT}/react-native/ios/RealmReact/"',
-                                  # Copy of the Realm Core headers
-                                  '"${PODS_TARGET_SRCROOT}/prebuilds/ios/include/"',
+                                  '"${PODS_TARGET_SRCROOT}/binding/apple/"',
+                                  # Copy of the Realm Core headers (no longer needed as these are included in the XCFramework)
+                                  # '"${PODS_TARGET_SRCROOT}/prebuilds/ios/include/"',
                                   # Logger and JS-SDK specific helpers
                                   '"${PODS_TARGET_SRCROOT}/binding/"',
                                   # Platform specific helpers used by the generated binding code
