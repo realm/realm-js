@@ -21,6 +21,7 @@ on:
 env:
   CMAKE_VERSION: 3.29.2
   NDK_VERSION: 25.1.8937393
+  JAVA_VERSION: 17
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -326,21 +327,35 @@ jobs:
         with:
           node-version: 20
           cache: npm
-      - name: Install NDK
-        run: sdkmanager --install "ndk;${{ env.NDK_VERSION }}"
+
       - name: Setup CMake
         uses: jwlawson/actions-setup-cmake@v2
         with:
           cmake-version: ${{ env.CMAKE_VERSION }}
+
       - name: Setup Ccache
         uses: hendrikmuhs/ccache-action@v1
         with:
           key: ${{ runner.os }}-android-${{ matrix.architecture }}
           max-size: '2.0G'
+
       # On CI, file timestamps change with every run so instead rely on file content hashing
       # https://reactnative.dev/docs/build-speed#using-this-approach-on-a-ci
       - name: Configure ccache
         run: ccache --set-config="compiler_check=content"
+
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu' # See 'Supported distributions' for available options
+          java-version: '${{ env.JAVA_VERSION }}'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v2
+
+      - name: Install NDK
+        run: sdkmanager --install "ndk;${{ env.NDK_VERSION }}"
+
       - name: Install dependencies
         run: npm ci
       - name: Build archive
@@ -361,7 +376,6 @@ jobs:
     if: ${{ success() || failure() }}
     env:
       REALM_DISABLE_ANALYTICS: 1
-      JAVA_VERSION: 17
       MOCHA_REMOTE_TIMEOUT: 60000
       LONG_TIMEOUT: 300000 # 5 minutes
       MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
@@ -432,7 +446,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: 'zulu' # See 'Supported distributions' for available options
-          java-version: '${{env.JAVA_VERSION }}'
+          java-version: '${{ env.JAVA_VERSION }}'
 
       - name: Setup Android SDK
         if: ${{ matrix.variant.os == 'android' }}
