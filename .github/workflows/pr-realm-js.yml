@@ -85,23 +85,22 @@ jobs:
             packages/realm/binding/dist
             packages/realm/binding/generated
 
-  build:
-    name: Build for ${{ matrix.variant.os }} ${{ matrix.variant.arch }}
+  prebuild-node:
+    name: Build for ${{ matrix.variant.os }} ${{ matrix.variant.arch }} (Node.js)
     runs-on: ${{ matrix.variant.runner }}
-    needs: [generate-ts]
     env:
       REALM_DISABLE_ANALYTICS: 1
     strategy:
       fail-fast: false
       matrix:
         variant:
-          - { os: linux, runner: ubuntu-latest, arch: x64, artifact-path: packages/realm/prebuilds, test-node: true, test-electron: true }
+          - { os: linux, runner: ubuntu-latest, arch: x64, artifact-path: packages/realm/prebuilds }
           - { os: linux, runner: ubuntu-latest, arch: arm, artifact-path: packages/realm/prebuilds }
           - { os: linux, runner: ubuntu-latest, arch: arm64, artifact-path: packages/realm/prebuilds }
-          - { os: windows, runner: windows-latest, arch: x64, artifact-path: packages/realm/prebuilds, test-node: true, test-electron: true }
+          - { os: windows, runner: windows-latest, arch: x64, artifact-path: packages/realm/prebuilds  }
           - { os: windows, runner: windows-2019, arch: ia32, artifact-path: packages/realm/prebuilds }
-          - { os: darwin, runner: macos-latest, arch: x64, artifact-path: packages/realm/prebuilds, test-node: true, test-electron: true }
-          - { os: darwin, runner: macos-latest, arch: arm64, artifact-path: packages/realm/prebuilds, test-node: true, test-electron: true }
+          - { os: darwin, runner: macos-latest, arch: x64, artifact-path: packages/realm/prebuilds  }
+          - { os: darwin, runner: macos-latest, arch: arm64, artifact-path: packages/realm/prebuilds  }
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -223,7 +222,7 @@ jobs:
             ${{ matrix.variant.artifact-path }}
 
   prebuild-react-native-apple-archives:
-    name: Build for ${{ matrix.platform }} (React Native)
+    name: Prebuild for ${{ matrix.platform }} (React Native)
     runs-on: macos-latest-large
     strategy:
       fail-fast: false
@@ -302,7 +301,7 @@ jobs:
           if-no-files-found: error
 
   prebuild-react-native-android:
-    name: Build for Android ${{ matrix.architecture }} (React Native)
+    name: Prebuild for Android ${{ matrix.architecture }} (React Native)
     runs-on: macos-latest-large
     strategy:
       fail-fast: false

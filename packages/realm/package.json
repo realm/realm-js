@@ -51,7 +51,7 @@
     "./package.json": "./package.json"
   },
   "imports": {
-    "#realm.node": "./binding/build/realm.node"
+    "#realm.node": "./prebuilds/node/realm.node"
   },
   "bin": {
     "build-realm": "./build-realm-cli.js"
@@ -136,10 +136,10 @@
       ]
     },
     "bindgen:configure": {
-      "command": "cmake-js configure --debug --directory bindgen"
+      "command": "cmake-js configure --debug --directory binding/node"
     },
     "bindgen:build:node": {
-      "command": "cmake --build bindgen/build --target realm-js-node",
+      "command": "cmake --build binding/node/build --target realm-js-node",
       "dependencies": [
         "bindgen:configure"
       ]
@@ -255,7 +255,7 @@
       ]
     },
     "build:node:prebuild": {
-      "command": "cross-env-shell prebuild --runtime napi --arch $PREBUILD_ARCH -- --directory bindgen",
+      "command": "cross-env-shell prebuild --runtime napi --arch $PREBUILD_ARCH -- --directory binding/node",
       "env": {
         "PREBUILD_ARCH": {
           "external": true
@@ -356,7 +356,7 @@
   },
   "binary": {
     "module_name": "realm",
-    "module_path": "binding/build",
+    "module_path": "prebuilds/node",
     "host": "https://static.realm.io",
     "remote_path": "realm-js-prebuilds/{version}",
     "napi_versions": [
