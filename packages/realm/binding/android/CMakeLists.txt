@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.18.1)
+project(RealmJS)
 
 # TODO: Add a target for the prebuilt .so of Realm Core + headers
 
