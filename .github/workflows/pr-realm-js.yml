@@ -516,11 +516,13 @@ jobs:
         with:
           name: ts-build
 
-      - name: Download prebuilds
+      - name: Download Node prebuilds
+        if: ${{ matrix.variant.environment == 'node' || matrix.variant.environment == 'electron' }}
         uses: actions/download-artifact@v4
         with:
           # TODO: This pattern could be narrowed further with the architecture
           pattern: node-${{ matrix.variant.os }}-*-prebuild
+          merge-multiple: true
 
       - name: Download Apple prebuild
         if: ${{ matrix.variant.os == 'ios' }}
@@ -533,6 +535,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           pattern: android-*-prebuild
+          merge-multiple: true
 
       - name: Install dependencies
         run: npm ci
