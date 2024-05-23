@@ -74,7 +74,7 @@ type CreationContext = {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type AnyRealmObject = RealmObject<any>;
+export type AnyRealmObject = RealmObject<any, any>;
 
 export const KEY_ARRAY = Symbol("Object#keys");
 export const KEY_SET = Symbol("Object#keySet");
