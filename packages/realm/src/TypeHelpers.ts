@@ -430,6 +430,7 @@ export function toItemType(type: binding.PropertyType) {
   return type & ~binding.PropertyType.Flags;
 }
 
+/** @internal */
 export function getTypeHelpers(type: binding.PropertyType, options: TypeOptions): TypeHelpers {
   const helpers = TYPES_MAPPING[type];
   assert(helpers, `Unexpected type ${type}`);
