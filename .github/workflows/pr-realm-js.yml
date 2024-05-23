@@ -271,6 +271,7 @@ jobs:
           # Including README.md to pin paths to the root of the repository
           path: |
             README.md
+            packages/realm/bindgen/vendor/realm-core/build-xcode/include/
             packages/realm/bindgen/vendor/realm-core/build-xcode/${{ matrix.platform }}.xcarchive/Products/usr/local/lib/librealm-combined.a
           if-no-files-found: error
 
