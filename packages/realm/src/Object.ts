@@ -67,7 +67,7 @@ export enum UpdateMode {
 }
 
 /** @internal */
-export type ObjCreator = () => [binding.Obj, boolean];
+export type ObjCreator = () => [binding.Obj, boolean, binding.TableRef?];
 
 type CreationContext = {
   helpers: ClassHelpers;
@@ -214,27 +214,27 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
     } = context;
 
     // Create the underlying object
-    const [obj, created] = createObj ? createObj() : this.createObj(realm, values, mode, context);
-    const result = wrapObject(obj);
-    assert(result);
-    // Persist any values provided
-    // TODO: Consider using the property helpers directly to improve performance
-    for (const property of persistedProperties) {
-      const propertyName = property.publicName || property.name;
-      const { default: defaultValue } = properties.get(propertyName);
-      if (property.isPrimary) {
-        continue; // Skip setting this, as we already provided it on object creation
-      }
-      const propertyValue = values[propertyName];
-      if (typeof propertyValue !== "undefined") {
-        if (mode !== UpdateMode.Modified || result[propertyName] !== propertyValue) {
-          // This will call into the property setter in PropertyHelpers.ts.
-          // (E.g. the setter for [binding.PropertyType.Array] in the case of lists.)
-          result[propertyName] = propertyValue;
+    const [obj, created, table] = createObj ? createObj() : this.createObj(realm, values, mode, context);
+    try {
+      const result = wrapObject(obj);
+      assert(result);
+      // Persist any values provided
+      // TODO: Consider using the property helpers directly to improve performance
+      for (const property of persistedProperties) {
+        const propertyName = property.publicName || property.name;
+        const { default: defaultValue } = properties.get(propertyName);
+        if (property.isPrimary) {
+          continue; // Skip setting this, as we already provided it on object creation
         }
-      } else {
-        if (created) {
-          if (typeof defaultValue !== "undefined") {
+        const propertyValue = values[propertyName];
+        if (propertyValue !== undefined) {
+          if (mode !== UpdateMode.Modified || result[propertyName] !== propertyValue) {
+            // This will call into the property setter in PropertyHelpers.ts.
+            // (E.g. the setter for [binding.PropertyType.Array] in the case of lists.)
+            result[propertyName] = propertyValue;
+          }
+        } else if (created) {
+          if (defaultValue !== undefined) {
             result[propertyName] = typeof defaultValue === "function" ? defaultValue() : defaultValue;
           } else if (
             !(property.type & binding.PropertyType.Collection) &&
@@ -244,8 +244,24 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
           }
         }
       }
+      return result as RealmObject;
+    } catch (err) {
+      // Currently, `table` will only be defined for non-embedded objects. Invalid embedded
+      // objects created on a parent as part of `realm.create()` will still be removed through
+      // cascaded delete in Core. However, an invalid embedded object created by only setting
+      // a property (not through `realm.create()`) will not enter this if-block and be removed.
+      // We could remove the check for `table` then get it via `binding.Helpers.getTable(..)`,
+      // but removing the embedded object in this case would cause the parent's embedded object
+      // field to be set to `null` (overwriting the previous value). Not removing the object
+      // (as in the current implementation) instead causes Core to overwrite the values of
+      // the embedded object with default values. That is the same behavior as before this
+      // commit. Ideally, the valid embedded object should remain unchanged, see issue:
+      // https://github.com/realm/realm-js/issues/6355
+      if (created && table) {
+        table.removeObject(obj.key);
+      }
+      throw err;
     }
-    return result as RealmObject;
   }
 
   /**
@@ -257,7 +273,7 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
     values: DefaultObject,
     mode: UpdateMode,
     context: CreationContext,
-  ): [binding.Obj, boolean] {
+  ): [binding.Obj, boolean, binding.TableRef] {
     const {
       helpers: {
         objectSchema: { name, tableKey, primaryKey },
@@ -284,16 +300,15 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
           : primaryKeyHelpers.default,
       );
 
-      const result = binding.Helpers.getOrCreateObjectWithPrimaryKey(table, pk);
-      const [, created] = result;
+      const [obj, created] = binding.Helpers.getOrCreateObjectWithPrimaryKey(table, pk);
       if (mode === UpdateMode.Never && !created) {
         throw new Error(
           `Attempting to create an object of type '${name}' with an existing primary key value '${primaryKeyValue}'.`,
         );
       }
-      return result;
+      return [obj, created, table];
     } else {
-      return [table.createObject(), true];
+      return [table.createObject(), true, table];
     }
   }
 

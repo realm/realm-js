@@ -734,7 +734,6 @@ export class Realm {
   }
 
   // TODO: Support embedded objects
-  // TODO: Rollback by deleting the object if any property assignment fails (fixing #2638)
   /**
    * Create a new {@link RealmObject} of the given type and with the specified properties. For objects marked asymmetric,
    * `undefined` is returned. The API for asymmetric objects is subject to changes in the future.
@@ -1038,6 +1037,9 @@ export class Realm {
    * More precisely, {@link beginTransaction} and {@link commitTransaction} will be called
    * automatically. If any exception is thrown during the transaction {@link cancelTransaction} will
    * be called instead of {@link commitTransaction} and the exception will be re-thrown to the caller of {@link write}.
+   *
+   * Note that if you choose to catch an exception within the callback and not rethrow it, the transaction
+   * will not be cancelled. However, the individual operation that failed will be rolled back automatically.
    *
    * Nested transactions (calling {@link write} within {@link write}) is not possible.
    * @param callback - Function to be called inside a write transaction.
