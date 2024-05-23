@@ -91,10 +91,6 @@ endif()
 set(REALM_BUILD_LIB_ONLY ON)
 set(REALM_ENABLE_SYNC ON)
 
-if(ANDROID)
-    set(REALM_ANDROID ON)
-endif()
-
 add_subdirectory(${BINDGEN_DIR}/vendor/realm-core realm-core EXCLUDE_FROM_ALL)
 
 add_library(realm-js OBJECT)
