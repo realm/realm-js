@@ -219,9 +219,9 @@ jobs:
         run: npm run build:node:prebuild:${{matrix.arch}} --workspace realm
 
       - name: Upload prebuild artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: node-prebuild
+          name: node-${{ matrix.os }}-${{ matrix.arch }}-prebuild
           # Including README.md to pin paths to the root of the repository
           path: |
             README.md
@@ -517,9 +517,10 @@ jobs:
           name: ts-build
 
       - name: Download prebuilds
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
-          name: node-prebuild
+          # TODO: This pattern could be narrowed further with the architecture
+          pattern: node-${{ matrix.variant.os }}-*-prebuild
 
       - name: Download Apple prebuild
         if: ${{ matrix.variant.os == 'ios' }}
