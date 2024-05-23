@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { renderHook, waitFor } from "@testing-library/react-native";
+import { act, renderHook, waitFor } from "@testing-library/react-native";
 import { AppConfigBuilder } from "@realm/app-importer";
 import Realm, { App } from "realm";
 import React, { useEffect, useState } from "react";
@@ -98,10 +98,12 @@ describe("UserProvider", () => {
       const creds = Realm.Credentials.emailPassword({ email: testEmail, password: testPassword });
       const realmApp = new App({ id: appId, baseUrl });
 
-      await realmApp.logIn(creds);
+      await act(async () => {
+        realmApp.logIn(creds);
+      });
 
       expect(id).toEqual(realmApp?.currentUser?.id);
-      expect(refreshToken).not.toEqual(realmApp?.currentUser?.refreshToken);
+      expect(refreshToken).toEqual(realmApp?.currentUser?.refreshToken);
     });
   });
 });

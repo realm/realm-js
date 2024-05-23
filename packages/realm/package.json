@@ -1,6 +1,6 @@
 {
   "name": "realm",
-  "version": "12.7.1",
+  "version": "12.9.0",
   "description": "Realm by MongoDB is an offline-first mobile database: an alternative to SQLite and key-value stores",
   "license": "apache-2.0",
   "homepage": "https://www.mongodb.com/docs/realm/",
@@ -41,6 +41,10 @@
       "types": "./dist/public-types/index.d.ts",
       "node": "./dist/platform/node/index.js",
       "react-native": "./index.react-native.js"
+    },
+    "./experimental/base-url": {
+      "types": "./dist/public-types/experimental/base-url.d.ts",
+      "default": "./dist/experimental/base-url.js"
     },
     "./scripts/submit-analytics": "./scripts/submit-analytics.mjs",
     "./react-native.config.js": "./react-native.config.js",

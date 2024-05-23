@@ -56,7 +56,7 @@ export class Sync {
    * @since 10.0.0
    */
   static getAllSyncSessions(user: User): SyncSession[] {
-    return user.internal.allSessions.map((session) => new SyncSession(session));
+    return user.internal.app.syncManager.getAllSessionsFor(user.internal).map((session) => new SyncSession(session));
   }
   /**
    * Get the session associated with a particular user and partition value.
@@ -65,8 +65,8 @@ export class Sync {
   static getSyncSession(user: User, partitionValue: PartitionValue): SyncSession | null {
     validateSyncConfiguration({ user, partitionValue });
     const config = toBindingSyncConfig({ user, partitionValue });
-    const path = user.app.internal.syncManager.pathForRealm(config, undefined);
-    const session = user.internal.sessionForOnDiskPath(path);
+    const path = user.internal.pathForRealm(config, undefined);
+    const session = user.internal.app.syncManager.getExistingActiveSession(path);
     if (session) {
       return new SyncSession(session);
     } else {
@@ -139,7 +139,7 @@ export class Sync {
    * }
    */
   static initiateClientReset(app: App, path: string) {
-    const success = app.internal.syncManager.immediatelyRunFileActions(path);
+    const success = app.internal.immediatelyRunFileActions(path);
     // TODO: Consider a better error message
     assert(success, `Realm was not configured correctly. Client Reset could not be run for Realm at: ${path}`);
   }

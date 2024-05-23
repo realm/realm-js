@@ -1107,7 +1107,7 @@ PODS:
     - React-Core
     - React-jsi
   - ReactTestApp-Resources (1.0.0-dev)
-  - RealmJS (12.7.0-rc.0):
+  - RealmJS (12.7.1):
     - React
   - RNFS (2.20.0):
     - React-Core
@@ -1356,7 +1356,7 @@ SPEC CHECKSUMS:
   ReactNativeHost: 446b46cbfc2d16420bfd249e9064802e929fa9b7
   ReactTestApp-DevSupport: 5cd1b02b4d146811d29dc2455a249f0743fda504
   ReactTestApp-Resources: d200e68756fa45c648f369210bd7ee0c14759f5a
-  RealmJS: 0c85b5fd6406447f4526d7b73d0a8025cd8b342a
+  RealmJS: 3fdc3b6cb6d4ff67eaf0e5f7f861be51304e7525
   RNFS: 4ac0f0ea233904cb798630b3c077808c06931688
   SocketRocket: f32cd54efbe0f095c4d7594881e52619cfe80b17
   Yoga: 805bf71192903b20fc14babe48080582fee65a80

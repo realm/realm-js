@@ -23,12 +23,12 @@ import { binding } from "../internal";
  */
 export class PushClient {
   /** @internal */
-  private user: binding.SyncUser;
+  private user: binding.User;
   /** @internal */
   public internal: binding.PushClient;
 
   /** @internal */
-  public constructor(user: binding.SyncUser, internal: binding.PushClient) {
+  public constructor(user: binding.User, internal: binding.PushClient) {
     this.user = user;
     this.internal = internal;
   }

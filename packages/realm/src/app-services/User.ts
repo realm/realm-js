@@ -76,7 +76,7 @@ export interface UserIdentity {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type AnyUser = User<any, any, any>;
 
-type UserListenerToken = binding.SyncUserSubscriptionToken;
+type UserListenerToken = binding.UserSubscriptionToken;
 
 /**
  * Representation of an authenticated user of an {@link App}.
@@ -90,7 +90,7 @@ export class User<
   public readonly app: App;
 
   /** @internal */
-  public readonly internal: binding.SyncUser;
+  public readonly internal: binding.User;
 
   /** @internal */
   private cachedProfile: UserProfileDataType | undefined;
@@ -110,7 +110,7 @@ export class User<
     FunctionsFactoryType extends DefaultFunctionsFactory = DefaultFunctionsFactory,
     CustomDataType extends DefaultObject = DefaultObject,
     UserProfileDataType extends DefaultUserProfileData = DefaultUserProfileData,
-  >(internal: binding.SyncUser, app?: AnyApp) {
+  >(internal: binding.User, app?: AnyApp) {
     // Update the static user reference to the current app
     if (app) {
       App.setAppByUser(internal, app);
@@ -120,7 +120,7 @@ export class User<
   }
 
   /** @internal */
-  constructor(internal: binding.SyncUser, app: App) {
+  constructor(internal: binding.User, app: App) {
     this.internal = internal;
     this.app = app;
     this.cachedProfile = undefined;
@@ -152,7 +152,7 @@ export class User<
    * @returns The user ID as a string.
    */
   get id(): string {
-    return this.internal.identity;
+    return this.internal.userId;
   }
 
   /**
@@ -204,7 +204,9 @@ export class User<
    * @returns `true` if the user is logged in, `false` otherwise.
    */
   get isLoggedIn(): boolean {
-    return this.internal.isLoggedIn;
+    const syncUser = binding.Helpers.appUserAsSyncUser(this.internal);
+    assert(syncUser);
+    return syncUser.isLoggedIn;
   }
 
   /**
@@ -360,7 +362,7 @@ export class User<
 
   /**
    * @param serviceName - The name of the MongoDB service to connect to.
-   * @returns A client enabling access to a {@link MongoDB} service.
+   * @returns A client enabling access to a MongoDB service.
    * @example
    * let blueWidgets = user.mongoClient("myService")
    *                       .db("myDb")

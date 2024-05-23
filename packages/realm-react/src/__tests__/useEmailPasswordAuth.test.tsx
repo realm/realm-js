@@ -72,8 +72,11 @@ describe("useEmailPassword", () => {
       const user = realmApp.currentUser;
       expect(user).not.toBeNull();
 
-      await act(async () => {
-        await result.current.logOut();
+      await testAuthOperation({
+        authOperation: result.current.logOut,
+        expectedResult: () => {
+          expect(result.current.result.success).toEqual(true);
+        },
       });
       expect(realmApp.currentUser).toBeNull();
     });

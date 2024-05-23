@@ -1,5 +1,27 @@
 ## vNext (TBD)
 
+### Deprecations
+* None
+
+### Enhancements
+* None
+
+### Fixed
+* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
+* None
+
+### Compatibility
+* React Native >= v0.71.4
+* Realm Studio v15.0.0.
+* File format: generates Realms with format v24 (reads and upgrades file format v10).
+
+### Internal
+<!-- * Either mention core version or upgrade -->
+<!-- * Using Realm Core vX.Y.Z -->
+<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
+
+## 12.9.0 (2024-05-23)
+
 ### Enhancements
 * A `mixed` value can now hold a `Realm.List` and `Realm.Dictionary` with nested collections. Note that `Realm.Set` is not supported as a `mixed` value. ([#6613](https://github.com/realm/realm-js/pull/6613))
 ```typescript
@@ -61,18 +83,66 @@ function expectDictionary(value: unknown): asserts value is Realm.Dictionary {
 ```
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None
+* Inserting the same typed link to the same key in a dictionary more than once would incorrectly create multiple backlinks to the object. This did not appear to cause any crashes later, but would have affecting explicit backlink count queries (eg: `...@links.@count`) and possibly notifications ([realm/realm-core#7676](https://github.com/realm/realm-core/issues/7676) since v12.7.1).
+* Having links in a nested collections would leave the file inconsistent if the top object is removed. ([realm/realm-core#7657](https://github.com/realm/realm-core/issues/7657), since v12.7.0)
+* Automatic client reset recovery would crash when recovering AddInteger instructions on a Mixed property if its type was changed to non-integer ([realm/realm-core#7683](https://github.com/realm/realm-core/pull/7683), since v10.18.0).
 
 ### Compatibility
 * React Native >= v0.71.4
 * Realm Studio v15.0.0.
-* File format: generates Realms with format v24 (reads and upgrades file format v10 or later).
+* File format: generates Realms with format v24 (reads and upgrades file format v10).
 
 ### Internal
-<!-- * Either mention core version or upgrade -->
-<!-- * Using Realm Core vX.Y.Z -->
-<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
+* Upgraded Realm Core from v14.6.2 to v14.7.0.
+* Upgraded `@trunk/launcher` from v1.3.0 to v1.3.1 to support Apple's versioning scheme for macOS.
+
+## 12.8.1 (2024-05-15)
+
+### Fixed
+* Fixed a crash experienced on React Native when accessing `Realm.deleteFile`, `Realm.exists`, `Realm.schemaVersion`, `Realm.determinePath`, `Realm.transformConfig` and `User#isLoggedIn`. ([#6662](https://github.com/realm/realm-js/pull/6662), since v12.8.0)
+* Accessing `Realm.App#currentUser` from within a notification produced by `Realm.App.switchUser` (which includes notifications for a newly logged in user) would deadlock. ([realm/realm-core#7670](https://github.com/realm/realm-core/issues/7670), since v12.8.0)
+* Fixed a bug when running an `IN` query on a `string`/`int`/`uuid`/`objectId` property that was indexed. ([realm/realm-core#7642](https://github.com/realm/realm-core/issues/7642) since v12.8.0)
+* Fixed a bug when running an `IN` query on an `int` property where `double`/`float` parameters were ignored. ([realm/realm-core#7642](https://github.com/realm/realm-core/issues/7642) since v12.8.0)
+
+### Compatibility
+* React Native >= v0.71.4
+* Realm Studio v15.0.0.
+* File format: generates Realms with format v24 (reads and upgrades file format v10).
+
+### Internal
+* Upgraded Realm Core from v14.6.1 to v14.6.2 + commits `5ba02142131efa3d97eda770ce33a85a2a085202` and `5462d47998b86459d328648c8057790a7b92af20`.
+
+## 12.8.0 (2024-05-01)
+
+### Deprecations
+* `MetadataMode.NoMetadata` is deprecated and will be removed. The new name is `MetadataMode.InMemory`.
+
+### Enhancements
+* Experimental feature: The new instance members `App.baseUrl` and `App.updateBaseUrl()` allow for retrieving and updating the base URL currently used for requests sent to Atlas App Services. These APIs are only available after importing `"realm/experimental/base-url"`. ([#6518](https://github.com/realm/realm-js/pull/6518))
+* Improved performance of "chained OR equality" queries for `uuid`/`objectId` types and RQL parsed `IN` queries on `string`/`int`/`uuid`/`objectId` types. ([realm/realm-dotnet#3566](https://github.com/realm/realm-dotnet/issues/3566), since the introduction of these types)
+
+### Fixed
+* Fixed a bug when running an `IN` query (or a query of the pattern `x == 1 OR x == 2 OR x == 3`) when evaluating on a string property with an empty string in the search condition. Matches with an empty string would have been evaluated as if searching for a null string instead. ([realm/realm-core#7628](https://github.com/realm/realm-core/pull/7628), since v10.0.0)
+* `App.allUsers()` included logged out users only if they were logged out while the `App` instance existed. It now always includes all logged out users. ([realm/realm-core#7300](https://github.com/realm/realm-core/pull/7300))
+* Deleting the active user left the active user unset rather than selecting another logged-in user as the active user like logging out and removing users did. ([realm/realm-core#7300](https://github.com/realm/realm-core/pull/7300))
+* Fixed several issues around encrypted file portability (copying a "bundled" encrypted Realm from one device to another):
+  * Fixed `Assertion failed: new_size % (1ULL << m_page_shift) == 0` when opening an encrypted Realm less than 64Mb that was generated on a platform with a different page size than the current platform. ([#realm/realm-core#7322](https://github.com/realm/realm-core/issues/7322), since v12.0.0-rc.3)
+  * Fixed an exception thrown when opening a small (<4k of data) Realm generated on a device with a page size of 4k if it was bundled and opened on a device with a larger page size. (since v1.0.0)
+  * Fixed an issue during a subsequent open of an encrypted Realm for some rare allocation patterns when the top ref was within ~50 bytes of the end of a page. This could manifest as an exception or as an assertion `encrypted_file_mapping.hpp:183: Assertion failed: local_ndx < m_page_state.size()`. ([realm/realm-core#7319](https://github.com/realm/realm-core/issues/7319))
+* Schema initialization could hit an assertion failure if the sync client applied a downloaded changeset while the Realm file was in the process of being opened. ([realm/realm-core#7041](https://github.com/realm/realm-core/issues/7041), since v10.8.0)
+* Queries using query paths on `mixed` values returns inconsistent results. ([realm/realm-core#7587](https://github.com/realm/realm-core/issues/7587), since v12.7.0-rc.0)
+
+### Known issues
+* Missing initial download progress notification when there is no active downloads. ([realm/realm-core#7627](https://github.com/realm/realm-core/issues/7627))
+
+### Compatibility
+* React Native >= v0.71.4
+* Realm Studio v15.0.0.
+* File format: generates Realms with format v24 (reads and upgrades file format v10.
+
+### Internal
+* Upgraded Realm Core from v14.5.1 to v14.6.1.
+* The metadata disabled mode (`MetadataMode.NoMetadata`) has been replaced with an in-memory metadata mode (`MetadataMode.InMemory`) which performs similarly and doesn't work weirdly differently from the normal mode. The new mode is intended for testing purposes, but should be suitable for production usage if there is a scenario where metadata persistence is not needed. ([realm/realm-core#7300](https://github.com/realm/realm-core/pull/7300))
 
 ## 12.7.1 (2024-04-19)
 

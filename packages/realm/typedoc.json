@@ -3,6 +3,7 @@
   "tsconfig": "./tsconfig.docs.json",
   "excludeInternal": true,
   "excludePrivate": true,
+  "excludeReferences": true,
   "customCss": "../../typedoc/style.css",
   "media": "../../media",
   "name": "Realm JavaScript",

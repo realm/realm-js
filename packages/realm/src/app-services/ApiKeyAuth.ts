@@ -53,12 +53,12 @@ export type SecretApiKey = ApiKey & {
  */
 export class ApiKeyAuth {
   /** @internal */
-  private user: binding.SyncUser;
+  private user: binding.User;
   /** @internal */
   private internal: binding.UserApiKeyProviderClient;
 
   /** @internal */
-  constructor(user: binding.SyncUser, internal: binding.UserApiKeyProviderClient) {
+  constructor(user: binding.User, internal: binding.UserApiKeyProviderClient) {
     this.user = user;
     this.internal = internal;
   }

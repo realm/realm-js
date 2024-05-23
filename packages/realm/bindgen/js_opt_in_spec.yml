@@ -138,9 +138,6 @@ records:
 
   SyncClientConfig:
     fields:
-      - base_file_path
-      - metadata_mode
-      - custom_encryption_key
       - user_agent_binding_info
       - multiplex_sessions
       - timeouts
@@ -186,8 +183,13 @@ records:
       - app_id
       - transport
       - base_url
+      - base_file_path
       - default_request_timeout_ms
       - device_info
+      - sync_client_config
+      - metadata_mode
+      - custom_encryption_key
+        # - security_access_group
 
   CompensatingWriteErrorInfo:
    fields:
@@ -262,6 +264,8 @@ classes:
       - feed_buffer
       - make_ssl_verify_callback
       - needs_file_format_upgrade
+      - sync_user_as_app_user
+      - app_user_as_sync_user
 
   LogCategoryRef:
     methods:
@@ -458,20 +462,29 @@ classes:
 
   SyncUser:
     methods:
-      - all_sessions
       - is_logged_in
-      - identity
-      - access_token
-      - refresh_token
+
+  User:
+    methods:
+      - has_device_id
       - device_id
       - user_profile
       - identities
       - custom_data
-      - sync_manager
-      - state
-      - session_for_on_disk_path
       - subscribe
       - unsubscribe
+      - path_for_realm
+      - app
+      - user_id
+      - app_id
+      - legacy_identities
+      - access_token
+      - refresh_token
+      - state
+      - access_token_refresh_required
+      - request_refresh_location
+      - request_access_token
+      - track_realm
 
   UserProfile:
     methods:
@@ -499,6 +512,8 @@ classes:
       - unsubscribe
       - call_function
       - make_streaming_request
+      - update_base_url
+      - get_base_url
 
   WatchStream:
     methods:
@@ -534,13 +549,13 @@ classes:
   SyncManager:
     methods:
       - has_existing_sessions
-      - immediately_run_file_actions
       - set_session_multiplexing
       - set_log_level
       - set_logger_factory
       - set_user_agent
       - reconnect
-      - path_for_realm
+      - get_existing_active_session
+      - get_all_sessions_for
 
   AsyncOpenTask:
     methods:
@@ -554,7 +569,6 @@ classes:
     methods:
       - state
       - connection_state
-      - user
       - config
       - full_realm_url
       - wait_for_upload_completion
@@ -566,6 +580,7 @@ classes:
       - revive_if_needed
       - force_close
       - handle_reconnect
+      - user
       # JS-specific
       - DOLLAR_resetSharedPtr
 

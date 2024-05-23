@@ -26,6 +26,7 @@ const BAAS_CONTAINER_NAME = "baas-test-server";
 const BAAS_PORT = 9090;
 const BAAS_VARIANT = process.arch === "arm64" ? "ubuntu2004-arm64" : "ubuntu2004-docker";
 const ECR_HOSTNAME = "969505754201.dkr.ecr.us-east-1.amazonaws.com";
+const ECR_PATHNAME = "/baas-test-images/test_server-race";
 
 function registerExitListeners(logPrefix: string, child: cp.ChildProcess) {
   function killChild() {
@@ -88,6 +89,19 @@ export async function fetchBaasTag(branch: string) {
   }
 }
 
+export function getLatestLocalId() {
+  const imagesOutput = execSync("docker images --format json", { encoding: "utf8" });
+  for (const line of imagesOutput.split("\n")) {
+    if (line) {
+      const image = JSON.parse(line.trim());
+      if (image.Repository === ECR_HOSTNAME + ECR_PATHNAME && image.Tag.startsWith(BAAS_VARIANT)) {
+        return image.ID;
+      }
+    }
+  }
+  throw new Error("Unable to infer the latest local tag");
+}
+
 export function pullBaas({ profile, tag }: { profile: string; tag: string }) {
   try {
     execSync(`docker pull ${tag}`, { stdio: "inherit" });
@@ -103,15 +117,15 @@ export function pullBaas({ profile, tag }: { profile: string; tag: string }) {
 }
 
 export function spawnBaaS({
-  tag,
+  image,
   accessKeyId,
   secretAccessKey,
 }: {
-  tag: string;
+  image: string;
   accessKeyId: string;
   secretAccessKey: string;
 }) {
-  console.log("Starting server from tag", chalk.dim(tag));
+  console.log("Starting server from tag", chalk.dim(image));
   spawn(chalk.blueBright("baas"), "docker", [
     "run",
     "--name",
@@ -124,6 +138,6 @@ export function spawnBaaS({
     `AWS_SECRET_ACCESS_KEY=${secretAccessKey}`,
     "--publish",
     `${BAAS_PORT}:${BAAS_PORT}`,
-    tag,
+    image,
   ]);
 }
