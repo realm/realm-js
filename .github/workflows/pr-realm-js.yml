@@ -267,7 +267,7 @@ jobs:
       - name: Upload archive
         uses: actions/upload-artifact@v4
         with:
-          name: react-native-${{ matrix.platform }}-archive
+          name: apple-${{ matrix.platform }}-archive
           # Including README.md to pin paths to the root of the repository
           path: |
             README.md
@@ -294,7 +294,7 @@ jobs:
       - name: Download archives
         uses: actions/download-artifact@v4
         with:
-          pattern: react-native-*-archive
+          pattern: apple-*-archive
           merge-multiple: true
       - name: Create Xcframework
         run: npm run build-cli --workspace realm -- build-apple --platform none --skip-collecting-headers
