@@ -102,13 +102,13 @@ program
       const { CMAKE_PATH: cmakePath = execSync("which cmake", { encoding: "utf8" }).trim() } = env;
       const platforms = apple.validatePlatforms(rawPlatforms);
 
-      group("Generate Xcode project", () => {
-        if (platforms.length > 0) {
+      if (platforms.length > 0) {
+        group("Generate Xcode project", () => {
           apple.generateXcodeProject({ cmakePath });
-        } else {
-          console.log("Skipped generating Xcode project (no platforms to build for)");
-        }
-      });
+        });
+      } else {
+        console.log("Skipped generating Xcode project (no platforms to build for)");
+      }
 
       const producedArchivePaths = platforms.map((platform) => {
         return group(`Build ${platform} / ${configuration}`, () => {
@@ -116,13 +116,13 @@ program
         });
       });
 
-      group(`Collecting headers`, () => {
-        if (skipCollectingHeaders) {
-          console.log("Skipped collecting headers");
-        } else {
+      if (skipCollectingHeaders) {
+        group(`Collecting headers`, () => {
           apple.collectHeaders();
-        }
-      });
+        });
+      } else {
+        console.log("Skipped collecting headers");
+      }
 
       // Collect the absolute paths of all available archives in the build directory
       // This allows for splitting up the invocation of the build command
@@ -135,13 +135,13 @@ program
         );
       }
 
-      group(`Creating xcframework`, () => {
-        if (skipCreatingXcframework) {
-          console.log("Skipped creating Xcframework");
-        } else {
+      if (skipCreatingXcframework) {
+        console.log("Skipped creating Xcframework");
+      } else {
+        group(`Creating xcframework`, () => {
           apple.createXCFramework({ archivePaths });
-        }
-      });
+        });
+      }
 
       console.log("Great success! 🥳");
     }),
@@ -156,63 +156,25 @@ program
   .option("--skip-collecting-headers", "Skip collecting headers from the build directory and copy them to the SDK")
   // .option("--skip-generating-version-file", "Skip generating a Version.java file")
   .action(
-    actionWrapper(
-      ({
-        architecture: rawArchitectures,
-        configuration,
-        // skipCollectingHeaders,
-        // skipGeneratingVersionFile,
-        ndkVersion,
-      }) => {
-        assert(fs.existsSync(REALM_CORE_PATH), `Expected Realm Core at '${REALM_CORE_PATH}'`);
-        const { ANDROID_HOME, CMAKE_PATH: cmakePath = execSync("which cmake", { encoding: "utf8" }).trim() } = env;
-        assert(typeof ANDROID_HOME === "string", "Missing env variable ANDROID_HOME");
-        assert(fs.existsSync(ANDROID_HOME), `Expected the Android SDK at ${ANDROID_HOME}`);
-        const installNdkCommand = `sdkmanager --install "ndk;${ndkVersion}"`;
-        const ndkPath = path.resolve(ANDROID_HOME, "ndk", ndkVersion);
-        assert(
-          fs.existsSync(ndkPath),
-          `Missing Android NDK v${ndkVersion} (at ${ndkPath}) - run: ${installNdkCommand}`,
-        );
+    actionWrapper(({ architecture: rawArchitectures, configuration, ndkVersion }) => {
+      assert(fs.existsSync(REALM_CORE_PATH), `Expected Realm Core at '${REALM_CORE_PATH}'`);
+      const { ANDROID_HOME, CMAKE_PATH: cmakePath = execSync("which cmake", { encoding: "utf8" }).trim() } = env;
+      assert(typeof ANDROID_HOME === "string", "Missing env variable ANDROID_HOME");
+      assert(fs.existsSync(ANDROID_HOME), `Expected the Android SDK at ${ANDROID_HOME}`);
+      const installNdkCommand = `sdkmanager --install "ndk;${ndkVersion}"`;
+      const ndkPath = path.resolve(ANDROID_HOME, "ndk", ndkVersion);
+      assert(fs.existsSync(ndkPath), `Missing Android NDK v${ndkVersion} (at ${ndkPath}) - run: ${installNdkCommand}`);
 
-        const architectures = android.validateArchitectures(rawArchitectures);
+      const architectures = android.validateArchitectures(rawArchitectures);
 
-        // group("Configure Cmake build directory", () => {
-        // });
-
-        architectures.map((architecture) => {
-          return group(`Build ${architecture} / ${configuration}`, () => {
-            return android.buildArchive({ cmakePath, architecture, configuration, ndkPath });
-          });
+      architectures.map((architecture) => {
+        return group(`Build ${architecture} / ${configuration}`, () => {
+          return android.buildArchive({ cmakePath, architecture, configuration, ndkPath });
         });
+      });
 
-        // architectures.map((architecture) => {
-        //   return group(`Copy SSL archives for ${architecture}`, () => {
-        //     return android.copySSLArchives({ architecture });
-        //   });
-        // });
-
-        // group("Writing version source file", () => {
-        //   if (skipGeneratingVersionFile) {
-        //     console.log("Skipped generating version file");
-        //   } else {
-        //     android.generateVersionFile();
-        //   }
-        // });
-
-        // group(`Collecting headers`, () => {
-        //   if (skipCollectingHeaders) {
-        //     console.log("Skipped collecting headers");
-        //   } else {
-        //     const [firstArchitecture] = architectures;
-        //     assert(firstArchitecture, "Expected at least one architecture");
-        //     android.collectHeaders({ architecture: firstArchitecture });
-        //   }
-        // });
-
-        console.log("Great success! 🥳");
-      },
-    ),
+      console.log("Great success! 🥳");
+    }),
   );
 
 if (require.main === module) {
