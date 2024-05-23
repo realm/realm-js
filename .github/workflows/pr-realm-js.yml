@@ -531,7 +531,7 @@ jobs:
         if: ${{ matrix.variant.os == 'android' }}
         uses: actions/download-artifact@v4
         with:
-          name: react-native-android-prebuild
+          pattern: react-native-android-*-prebuild
 
       - name: Install dependencies
         run: npm ci
