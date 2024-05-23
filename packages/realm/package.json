@@ -288,7 +288,7 @@
       }
     },
     "build:react-native:iphonesimulator": {
-      "command": "tsx ./src/scripts/build.ts build-react-native-apple --platform iphonesimulator --configuration Debug",
+      "command": "tsx ./src/scripts/build.ts build-apple --platform iphonesimulator --configuration Debug",
       "files": [
         "src/scripts",
         "bindgen/vendor/realm-core/src"
