@@ -225,7 +225,7 @@ jobs:
           # Including README.md to pin paths to the root of the repository
           path: |
             README.md
-            prebuilds/realm-*-napi-*.tar.gz
+            packages/realm/prebuilds/realm-*-napi-*.tar.gz
 
   prebuild-apple-archives:
     name: Prebuild ${{ matrix.platform }} (Apple React Native)
