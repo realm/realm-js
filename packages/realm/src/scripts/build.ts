@@ -90,7 +90,7 @@ function group<ReturnType>(title: string, callback: () => ReturnType) {
 program.name("build-realm");
 
 program
-  .command("build-react-native-apple")
+  .command("build-apple")
   .description("Build native code for Apple platforms")
   .addOption(applePlatformOption)
   .addOption(configurationOption)
@@ -148,7 +148,7 @@ program
   );
 
 program
-  .command("build-react-native-android")
+  .command("build-android")
   .description("Build native code for Android platforms")
   .addOption(androidArchOption)
   .addOption(configurationOption)

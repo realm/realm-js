@@ -227,7 +227,7 @@ jobs:
             README.md
             prebuilds/realm-*-napi-*.tar.gz
 
-  prebuild-react-native-apple-archives:
+  prebuild-apple-archives:
     name: Prebuild ${{ matrix.platform }} (Apple React Native)
     runs-on: macos-latest-large
     strategy:
@@ -263,7 +263,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Build archive
-        run: npm run build-cli --workspace realm -- build-react-native-apple --platform ${{ matrix.platform }} --skip-creating-xcframework
+        run: npm run build-cli --workspace realm -- build-apple --platform ${{ matrix.platform }} --skip-creating-xcframework
       - name: Upload archive
         uses: actions/upload-artifact@v4
         with:
@@ -275,10 +275,10 @@ jobs:
             packages/realm/bindgen/vendor/realm-core/build-xcode/${{ matrix.platform }}.xcarchive/Products/usr/local/lib/librealm-combined.a
           if-no-files-found: error
 
-  prebuild-react-native-apple:
+  prebuild-apple:
     name: Combine Xcframework (Apple React Native)
     runs-on: macos-latest-large
-    needs: [prebuild-react-native-apple-archives]
+    needs: [prebuild-apple-archives]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -297,17 +297,17 @@ jobs:
           pattern: react-native-*-archive
           merge-multiple: true
       - name: Create Xcframework
-        run: npm run build-cli --workspace realm -- build-react-native-apple --platform none --skip-collecting-headers
+        run: npm run build-cli --workspace realm -- build-apple --platform none --skip-collecting-headers
       - uses: actions/upload-artifact@v4
         with:
-          name: react-native-apple-prebuild
+          name: apple-prebuild
           # Including README.md to pin paths to the root of the repository
           path: |
             README.md
             packages/realm/prebuilds/apple/realm-core.xcframework/
           if-no-files-found: error
 
-  prebuild-react-native-android:
+  prebuild-android:
     name: Prebuild ${{ matrix.architecture }} (Android React Native)
     runs-on: ubuntu-latest
     strategy:
@@ -364,12 +364,12 @@ jobs:
         run: npm ci
 
       - name: Build archive
-        run: npm run build-cli --workspace realm -- build-react-native-android --architecture ${{ matrix.architecture }} --configuration Release
+        run: npm run build-cli --workspace realm -- build-android --architecture ${{ matrix.architecture }} --configuration Release
 
       - name: Upload archive
         uses: actions/upload-artifact@v4
         with:
-          name: react-native-android-${{ matrix.architecture }}-prebuild
+          name: android-${{ matrix.architecture }}-prebuild
           # Including README.md to pin paths to the root of the repository
           path: |
             README.md
@@ -378,7 +378,7 @@ jobs:
         
   integration-tests:
     name: Test ${{ matrix.variant.environment }} on ${{ matrix.variant.os }} (${{matrix.variant.target}})
-    needs: [generate-jsi, build-ts, prebuild-node, prebuild-react-native-apple, prebuild-react-native-android]
+    needs: [generate-jsi, build-ts, prebuild-node, prebuild-apple, prebuild-android]
     if: ${{ success() || failure() }}
     env:
       REALM_DISABLE_ANALYTICS: 1
@@ -525,13 +525,13 @@ jobs:
         if: ${{ matrix.variant.os == 'ios' }}
         uses: actions/download-artifact@v4
         with:
-          name: react-native-apple-prebuild
+          name: apple-prebuild
 
       - name: Download Android prebuild
         if: ${{ matrix.variant.os == 'android' }}
         uses: actions/download-artifact@v4
         with:
-          pattern: react-native-android-*-prebuild
+          pattern: android-*-prebuild
 
       - name: Install dependencies
         run: npm ci
