@@ -159,7 +159,7 @@ describe("User", () => {
       throw new Error("Expected an error!");
     } catch (err) {
       if (err instanceof Error) {
-        expect(err.message).contains("invalid username/password");
+        expect(err.message).contains("unauthorized");
       } else {
         throw err;
       }

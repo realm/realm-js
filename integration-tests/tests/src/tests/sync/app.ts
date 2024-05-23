@@ -296,7 +296,7 @@ describe("App", () => {
       const credentials = Realm.Credentials.emailPassword("me", "secret");
       let didFail = false;
       const user = await this.app.logIn(credentials).catch((err) => {
-        expect(err.message).equals("invalid username/password");
+        expect(err.message).equals("unauthorized");
         expect(err.code).equals(4349);
         didFail = true;
       });
