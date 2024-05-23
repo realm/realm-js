@@ -17,12 +17,15 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import {
+  COLLECTION_ACCESSOR as ACCESSOR,
   IllegalConstructorError,
   OrderedCollection,
-  OrderedCollectionHelpers,
   Realm,
+  COLLECTION_TYPE_HELPERS as TYPE_HELPERS,
+  TypeHelpers,
   assert,
   binding,
+  createDefaultGetter,
 } from "./internal";
 
 /**
@@ -39,16 +42,22 @@ import {
  * a user-supplied insertion order.
  * @see https://www.mongodb.com/docs/realm/sdk/react-native/model-data/data-types/sets/
  */
-export class RealmSet<T = unknown> extends OrderedCollection<T, [T, T]> {
+export class RealmSet<T = unknown> extends OrderedCollection<
+  T,
+  [T, T],
   /** @internal */
-  private declare internal: binding.Set;
+  SetAccessor<T>
+> {
+  /** @internal */
+  public declare readonly internal: binding.Set;
 
   /** @internal */
-  constructor(realm: Realm, internal: binding.Set, helpers: OrderedCollectionHelpers) {
+  constructor(realm: Realm, internal: binding.Set, accessor: SetAccessor<T>, typeHelpers: TypeHelpers<T>) {
     if (arguments.length === 0 || !(internal instanceof binding.Set)) {
       throw new IllegalConstructorError("Set");
     }
-    super(realm, internal.asResults(), helpers);
+    super(realm, internal.asResults(), accessor, typeHelpers);
+
     Object.defineProperty(this, "internal", {
       enumerable: false,
       configurable: false,
@@ -56,6 +65,17 @@ export class RealmSet<T = unknown> extends OrderedCollection<T, [T, T]> {
       value: internal,
     });
   }
+
+  /** @internal */
+  public get(index: number): T {
+    return this[ACCESSOR].get(this.internal, index);
+  }
+
+  /** @internal */
+  public set(index: number, value: T): void {
+    this[ACCESSOR].set(this.internal, index, value);
+  }
+
   /**
    * @returns The number of values in the Set.
    */
@@ -79,7 +99,7 @@ export class RealmSet<T = unknown> extends OrderedCollection<T, [T, T]> {
    */
   delete(value: T): boolean {
     assert.inTransaction(this.realm);
-    const [, success] = this.internal.removeAny(this.helpers.toBinding(value));
+    const [, success] = this.internal.removeAny(this[TYPE_HELPERS].toBinding(value));
     return success;
   }
 
@@ -92,8 +112,7 @@ export class RealmSet<T = unknown> extends OrderedCollection<T, [T, T]> {
    * @returns The Set itself, after adding the new value.
    */
   add(value: T): this {
-    assert.inTransaction(this.realm);
-    this.internal.insertAny(this.helpers.toBinding(value));
+    this[ACCESSOR].insert(this.internal, value);
     return this;
   }
 
@@ -128,4 +147,86 @@ export class RealmSet<T = unknown> extends OrderedCollection<T, [T, T]> {
       yield [value, value] as [T, T];
     }
   }
+}
+
+/**
+ * Accessor for getting and setting items in the binding collection.
+ * @internal
+ */
+export type SetAccessor<T = unknown> = {
+  get: (set: binding.Set, index: number) => T;
+  set: (set: binding.Set, index: number, value: T) => void;
+  insert: (set: binding.Set, value: T) => void;
+};
+
+type SetAccessorFactoryOptions<T> = {
+  realm: Realm;
+  typeHelpers: TypeHelpers<T>;
+  itemType: binding.PropertyType;
+};
+
+/** @internal */
+export function createSetAccessor<T>(options: SetAccessorFactoryOptions<T>): SetAccessor<T> {
+  return options.itemType === binding.PropertyType.Mixed
+    ? createSetAccessorForMixed<T>(options)
+    : createSetAccessorForKnownType<T>(options);
+}
+
+function createSetAccessorForMixed<T>({
+  realm,
+  typeHelpers,
+}: Omit<SetAccessorFactoryOptions<T>, "itemType">): SetAccessor<T> {
+  const { fromBinding, toBinding } = typeHelpers;
+  return {
+    get(set, index) {
+      // Core will not return collections within a Set.
+      return fromBinding(set.getAny(index));
+    },
+    // Directly setting by "index" to a Set is a no-op.
+    set: () => {},
+    insert(set, value) {
+      assert.inTransaction(realm);
+
+      try {
+        set.insertAny(toBinding(value));
+      } catch (err) {
+        // Optimize for the valid cases by not guarding for the unsupported nested collections upfront.
+        throw transformError(err);
+      }
+    },
+  };
+}
+
+function createSetAccessorForKnownType<T>({
+  realm,
+  typeHelpers,
+  itemType,
+}: SetAccessorFactoryOptions<T>): SetAccessor<T> {
+  const { fromBinding, toBinding } = typeHelpers;
+  return {
+    get: createDefaultGetter({ fromBinding, itemType }),
+    // Directly setting by "index" to a Set is a no-op.
+    set: () => {},
+    insert(set, value) {
+      assert.inTransaction(realm);
+
+      try {
+        set.insertAny(toBinding(value));
+      } catch (err) {
+        // Optimize for the valid cases by not guarding for the unsupported nested collections upfront.
+        throw transformError(err);
+      }
+    },
+  };
+}
+
+function transformError(err: unknown) {
+  const message = err instanceof Error ? err.message : "";
+  if (message?.includes("'Array' to a Mixed") || message?.includes("'List' to a Mixed")) {
+    return new Error("Lists within a Set are not supported.");
+  }
+  if (message?.includes("'Object' to a Mixed") || message?.includes("'Dictionary' to a Mixed")) {
+    return new Error("Dictionaries within a Set are not supported.");
+  }
+  return err;
 }

@@ -15,49 +15,55 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
+
 import {
+  COLLECTION_ACCESSOR as ACCESSOR,
   AssertionError,
   Collection,
   DefaultObject,
   IllegalConstructorError,
   JSONCacheMap,
+  List,
   Realm,
   RealmObject,
+  Results,
+  COLLECTION_TYPE_HELPERS as TYPE_HELPERS,
   TypeHelpers,
   assert,
   binding,
+  createListAccessor,
+  createResultsAccessor,
+  insertIntoListOfMixed,
+  isJsOrRealmList,
+  toItemType,
 } from "./internal";
 
 /* eslint-disable jsdoc/multiline-blocks -- We need this to have @ts-expect-error located correctly in the .d.ts bundle */
 
 const REALM = Symbol("Dictionary#realm");
 const INTERNAL = Symbol("Dictionary#internal");
-const HELPERS = Symbol("Dictionary#helpers");
 
 export type DictionaryChangeSet = {
   deletions: string[];
   modifications: string[];
   insertions: string[];
 };
-export type DictionaryChangeCallback = (dictionary: Dictionary, changes: DictionaryChangeSet) => void;
+
+export type DictionaryChangeCallback<T = unknown> = (dictionary: Dictionary<T>, changes: DictionaryChangeSet) => void;
 
 const DEFAULT_PROPERTY_DESCRIPTOR: PropertyDescriptor = { configurable: true, enumerable: true };
 const PROXY_HANDLER: ProxyHandler<Dictionary> = {
   get(target, prop, receiver) {
     const value = Reflect.get(target, prop, receiver);
     if (typeof value === "undefined" && typeof prop === "string") {
-      const internal = target[INTERNAL];
-      const fromBinding = target[HELPERS].fromBinding;
-      return fromBinding(internal.tryGetAny(prop));
+      return target[ACCESSOR].get(target[INTERNAL], prop);
     } else {
       return value;
     }
   },
   set(target, prop, value) {
     if (typeof prop === "string") {
-      const internal = target[INTERNAL];
-      const toBinding = target[HELPERS].toBinding;
-      internal.insertAny(prop, toBinding(value));
+      target[ACCESSOR].set(target[INTERNAL], prop, value);
       return true;
     } else {
       assert(typeof prop !== "symbol", "Symbols cannot be used as keys of a dictionary");
@@ -106,16 +112,38 @@ const PROXY_HANDLER: ProxyHandler<Dictionary> = {
  * Dictionaries behave mostly like a JavaScript object i.e., as a key/value pair
  * where the key is a string.
  */
-export class Dictionary<T = unknown> extends Collection<string, T, [string, T], [string, T], DictionaryChangeCallback> {
+export class Dictionary<T = unknown> extends Collection<
+  string,
+  T,
+  [string, T],
+  [string, T],
+  DictionaryChangeCallback<T>,
+  /** @internal */
+  DictionaryAccessor<T>
+> {
+  /** @internal */
+  private declare [REALM]: Realm;
+
+  /**
+   * The representation in the binding.
+   * @internal
+   */
+  private readonly [INTERNAL]: binding.Dictionary;
+
   /**
    * Create a `Results` wrapping a set of query `Results` from the binding.
    * @internal
    */
-  constructor(realm: Realm, internal: binding.Dictionary, helpers: TypeHelpers) {
+  constructor(
+    realm: Realm,
+    internal: binding.Dictionary,
+    accessor: DictionaryAccessor<T>,
+    typeHelpers: TypeHelpers<T>,
+  ) {
     if (arguments.length === 0 || !(internal instanceof binding.Dictionary)) {
       throw new IllegalConstructorError("Dictionary");
     }
-    super((listener, keyPaths) => {
+    super(accessor, typeHelpers, (listener, keyPaths) => {
       return this[INTERNAL].addKeyBasedNotificationCallback(
         ({ deletions, insertions, modifications }) => {
           try {
@@ -145,7 +173,7 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
       );
     });
 
-    const proxied = new Proxy(this, PROXY_HANDLER) as Dictionary<T>;
+    const proxied = new Proxy(this, PROXY_HANDLER as ProxyHandler<this>);
 
     Object.defineProperty(this, REALM, {
       enumerable: false,
@@ -153,36 +181,11 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
       writable: false,
       value: realm,
     });
-    Object.defineProperty(this, INTERNAL, {
-      enumerable: false,
-      configurable: false,
-      writable: false,
-      value: internal,
-    });
-    Object.defineProperty(this, HELPERS, {
-      enumerable: false,
-      configurable: false,
-      writable: false,
-      value: helpers,
-    });
+
+    this[INTERNAL] = internal;
 
     return proxied;
   }
-
-  /**
-   * The representation in the binding.
-   * @internal
-   */
-  private declare [REALM]: Realm;
-
-  /**
-   * The representation in the binding.
-   * @internal
-   */
-  private declare [INTERNAL]: binding.Dictionary;
-
-  /** @internal */
-  private declare [HELPERS]: TypeHelpers;
 
   /** @ts-expect-error We're exposing methods in the end-users namespace of keys */
   [key: string]: T;
@@ -216,12 +219,15 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
    * @since 10.5.0
    * @ts-expect-error We're exposing methods in the end-users namespace of values */
   *values(): Generator<T> {
-    const { fromBinding } = this[HELPERS];
-    const snapshot = this[INTERNAL].values.snapshot();
-    const size = snapshot.size();
-    for (let i = 0; i < size; i++) {
-      const value = snapshot.getAny(i);
-      yield fromBinding(value) as T;
+    const realm = this[REALM];
+    const values = this[INTERNAL].values;
+    const itemType = toItemType(values.type);
+    const typeHelpers = this[TYPE_HELPERS];
+    const accessor = createResultsAccessor({ realm, typeHelpers, itemType });
+    const results = new Results<T>(realm, values, accessor, typeHelpers);
+
+    for (const value of results.values()) {
+      yield value;
     }
   }
 
@@ -231,15 +237,21 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
    * @since 10.5.0
    * @ts-expect-error We're exposing methods in the end-users namespace of entries */
   *entries(): Generator<[string, T]> {
-    const { fromBinding } = this[HELPERS];
     const keys = this[INTERNAL].keys.snapshot();
-    const values = this[INTERNAL].values.snapshot();
+    const snapshot = this[INTERNAL].values.snapshot();
     const size = keys.size();
-    assert(size === values.size(), "Expected keys and values to equal in size");
+    assert(size === snapshot.size(), "Expected keys and values to equal in size");
+
+    const realm = this[REALM];
+    const itemType = toItemType(snapshot.type);
+    const typeHelpers = this[TYPE_HELPERS];
+    const accessor = createResultsAccessor({ realm, typeHelpers, itemType });
+    const results = new Results<T>(realm, snapshot, accessor, typeHelpers);
+
     for (let i = 0; i < size; i++) {
       const key = keys.getAny(i);
-      const value = values.getAny(i);
-      yield [key, fromBinding(value)] as [string, T];
+      const value = results[i];
+      yield [key, value] as [string, T];
     }
   }
 
@@ -278,14 +290,12 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
    * @since 10.6.0
    */
   set(elementsOrKey: string | { [key: string]: T }, value?: T): this {
-    const elements = typeof elementsOrKey === "object" ? elementsOrKey : { [elementsOrKey]: value };
-    assert(Object.getOwnPropertySymbols(elements).length === 0, "Symbols cannot be used as keys of a dictionary");
     assert.inTransaction(this[REALM]);
-    const internal = this[INTERNAL];
-    const toBinding = this[HELPERS].toBinding;
+    const elements = typeof elementsOrKey === "object" ? elementsOrKey : { [elementsOrKey]: value as T };
+    assert(Object.getOwnPropertySymbols(elements).length === 0, "Symbols cannot be used as keys of a dictionary");
 
-    for (const [key, val] of Object.entries(elements)) {
-      internal.insertAny(key, toBinding(val));
+    for (const [key, value] of Object.entries(elements)) {
+      this[key] = value;
     }
     return this;
   }
@@ -321,4 +331,125 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
       Object.entries(this).map(([k, v]) => [k, v instanceof RealmObject ? v.toJSON(k, cache) : v]),
     );
   }
+}
+
+/**
+ * Accessor for getting and setting items in the binding collection.
+ * @internal
+ */
+export type DictionaryAccessor<T = unknown> = {
+  get: (dictionary: binding.Dictionary, key: string) => T;
+  set: (dictionary: binding.Dictionary, key: string, value: T) => void;
+};
+
+type DictionaryAccessorFactoryOptions<T> = {
+  realm: Realm;
+  typeHelpers: TypeHelpers<T>;
+  itemType: binding.PropertyType;
+  isEmbedded?: boolean;
+};
+
+/** @internal */
+export function createDictionaryAccessor<T>(options: DictionaryAccessorFactoryOptions<T>): DictionaryAccessor<T> {
+  return options.itemType === binding.PropertyType.Mixed
+    ? createDictionaryAccessorForMixed<T>(options)
+    : createDictionaryAccessorForKnownType<T>(options);
+}
+
+function createDictionaryAccessorForMixed<T>({
+  realm,
+  typeHelpers,
+}: Pick<DictionaryAccessorFactoryOptions<T>, "realm" | "typeHelpers">): DictionaryAccessor<T> {
+  const { toBinding, fromBinding } = typeHelpers;
+  return {
+    get(dictionary, key) {
+      const value = dictionary.tryGetAny(key);
+      switch (value) {
+        case binding.ListSentinel: {
+          const accessor = createListAccessor<T>({ realm, itemType: binding.PropertyType.Mixed, typeHelpers });
+          return new List<T>(realm, dictionary.getList(key), accessor, typeHelpers) as T;
+        }
+        case binding.DictionarySentinel: {
+          const accessor = createDictionaryAccessor<T>({ realm, itemType: binding.PropertyType.Mixed, typeHelpers });
+          return new Dictionary<T>(realm, dictionary.getDictionary(key), accessor, typeHelpers) as T;
+        }
+        default:
+          return fromBinding(value) as T;
+      }
+    },
+    set(dictionary, key, value) {
+      assert.inTransaction(realm);
+
+      if (isJsOrRealmList(value)) {
+        dictionary.insertCollection(key, binding.CollectionType.List);
+        insertIntoListOfMixed(value, dictionary.getList(key), toBinding);
+      } else if (isJsOrRealmDictionary(value)) {
+        dictionary.insertCollection(key, binding.CollectionType.Dictionary);
+        insertIntoDictionaryOfMixed(value, dictionary.getDictionary(key), toBinding);
+      } else {
+        dictionary.insertAny(key, toBinding(value));
+      }
+    },
+  };
+}
+
+function createDictionaryAccessorForKnownType<T>({
+  realm,
+  typeHelpers,
+  isEmbedded,
+}: Omit<DictionaryAccessorFactoryOptions<T>, "itemType">): DictionaryAccessor<T> {
+  const { fromBinding, toBinding } = typeHelpers;
+  return {
+    get(dictionary, key) {
+      return fromBinding(dictionary.tryGetAny(key));
+    },
+    set(dictionary, key, value) {
+      assert.inTransaction(realm);
+
+      if (isEmbedded) {
+        toBinding(value, { createObj: () => [dictionary.insertEmbedded(key), true] });
+      } else {
+        dictionary.insertAny(key, toBinding(value));
+      }
+    },
+  };
+}
+
+/** @internal */
+export function insertIntoDictionaryOfMixed(
+  dictionary: Dictionary | Record<string, unknown>,
+  internal: binding.Dictionary,
+  toBinding: TypeHelpers["toBinding"],
+) {
+  // TODO: Solve the "removeAll()" case for self-assignment (https://github.com/realm/realm-core/issues/7422).
+  internal.removeAll();
+
+  for (const key in dictionary) {
+    const value = dictionary[key];
+    if (isJsOrRealmList(value)) {
+      internal.insertCollection(key, binding.CollectionType.List);
+      insertIntoListOfMixed(value, internal.getList(key), toBinding);
+    } else if (isJsOrRealmDictionary(value)) {
+      internal.insertCollection(key, binding.CollectionType.Dictionary);
+      insertIntoDictionaryOfMixed(value, internal.getDictionary(key), toBinding);
+    } else {
+      internal.insertAny(key, toBinding(value));
+    }
+  }
+}
+
+/** @internal */
+export function isJsOrRealmDictionary(value: unknown): value is Dictionary | Record<string, unknown> {
+  return isPOJO(value) || value instanceof Dictionary;
+}
+
+/** @internal */
+export function isPOJO(value: unknown): value is Record<string, unknown> {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    // Lastly check for the absence of a prototype as POJOs
+    // can still be created using `Object.create(null)`.
+    (value.constructor === Object || !Object.getPrototypeOf(value))
+  );
 }

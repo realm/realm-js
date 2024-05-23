@@ -711,7 +711,7 @@ describe("Lists", () => {
           Error,
           "Requested index 2 calling set() on list 'LinkTypesObject.arrayCol' when max is 1",
         );
-        expect(() => (array[-1] = { doubleCol: 1 })).throws(Error, "Index -1 cannot be less than zero.");
+        expect(() => (array[-1] = { doubleCol: 1 })).throws(Error, "Cannot set item at negative index -1");
 
         //@ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
         array["foo"] = "bar";
@@ -772,6 +772,7 @@ describe("Lists", () => {
     openRealmBeforeEach({
       schema: [LinkTypeSchema, TestObjectSchema, PersonListSchema, PersonSchema, PrimitiveArraysSchema],
     });
+
     it("are typesafe", function (this: RealmContext) {
       let obj: ILinkTypeSchema;
       let prim: IPrimitiveArraysSchema;
@@ -792,8 +793,10 @@ describe("Lists", () => {
         //@ts-expect-error TYPEBUG: type missmatch, forcecasting shouldn't be done
         obj.arrayCol = [this.realm.create<ITestObjectSchema>(TestObjectSchema.name, { doubleCol: 1.0 })];
         expect(obj.arrayCol[0].doubleCol).equals(1.0);
-        obj.arrayCol = obj.arrayCol; // eslint-disable-line no-self-assign
-        expect(obj.arrayCol[0].doubleCol).equals(1.0);
+
+        // TODO: Enable when self-assignment is solved (https://github.com/realm/realm-core/issues/7422).
+        // obj.arrayCol = obj.arrayCol; // eslint-disable-line no-self-assign
+        // expect(obj.arrayCol[0].doubleCol).equals(1.0);
 
         //@ts-expect-error Person is not assignable to boolean.
         expect(() => (prim.bool = [person])).throws(
@@ -868,21 +871,6 @@ describe("Lists", () => {
         testAssign("data", DATA1);
         testAssign("date", DATE1);
 
-        function testAssignNull(name: string, expected: string) {
-          //@ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
-          expect(() => (prim[name] = [null])).throws(Error, `Expected '${name}[0]' to be ${expected}, got null`);
-          //@ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
-          expect(prim[name].length).equals(1);
-        }
-
-        testAssignNull("bool", "a boolean");
-        testAssignNull("int", "a number or bigint");
-        testAssignNull("float", "a number");
-        testAssignNull("double", "a number");
-        testAssignNull("string", "a string");
-        testAssignNull("data", "an instance of ArrayBuffer");
-        testAssignNull("date", "an instance of Date");
-
         testAssign("optBool", true);
         testAssign("optInt", 1);
         testAssign("optFloat", 1.1);
@@ -905,7 +893,33 @@ describe("Lists", () => {
       //@ts-expect-error throws on modification outside of transaction.
       expect(() => (prim.bool = [])).throws("Cannot modify managed objects outside of a write transaction.");
     });
+
+    it("throws when assigning null to non-nullable", function (this: RealmContext) {
+      const realm = this.realm;
+      const prim = realm.write(() => realm.create<IPrimitiveArraysSchema>(PrimitiveArraysSchema.name, {}));
+
+      function testAssignNull(name: string, expected: string) {
+        expect(() => {
+          realm.write(() => {
+            // @ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
+            prim[name] = [null];
+          });
+        }).throws(Error, `Expected '${name}[0]' to be ${expected}, got null`);
+
+        // @ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
+        expect(prim[name].length).equals(0);
+      }
+
+      testAssignNull("bool", "a boolean");
+      testAssignNull("int", "a number or bigint");
+      testAssignNull("float", "a number");
+      testAssignNull("double", "a number");
+      testAssignNull("string", "a string");
+      testAssignNull("data", "an instance of ArrayBuffer");
+      testAssignNull("date", "an instance of Date");
+    });
   });
+
   describe("operations", () => {
     openRealmBeforeEach({ schema: [LinkTypeSchema, TestObjectSchema, PersonSchema, PersonListSchema] });
     it("supports enumeration", function (this: RealmContext) {

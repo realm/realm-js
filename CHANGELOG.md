@@ -4,8 +4,65 @@
 * None
 
 ### Enhancements
-* None.
-  
+* A `mixed` value can now hold a `Realm.List` and `Realm.Dictionary` with nested collections. Note that `Realm.Set` is not supported as a `mixed` value. ([#6613](https://github.com/realm/realm-js/pull/6613))
+```typescript
+class CustomObject extends Realm.Object {
+  value!: Realm.Types.Mixed;
+
+  static schema: ObjectSchema = {
+    name: "CustomObject",
+    properties: {
+      value: "mixed",
+    },
+  };
+}
+
+const realm = await Realm.open({ schema: [CustomObject] });
+
+// Create an object with a dictionary value as the Mixed
+// property, containing primitives and a list.
+const realmObject = realm.write(() => {
+  return realm.create(CustomObject, {
+    value: {
+      num: 1,
+      string: "hello",
+      bool: true,
+      list: [
+        {
+          string: "world",
+        },
+      ],
+    },
+  });
+});
+
+// Accessing the collection value returns the managed collection.
+const dictionary = realmObject.value;
+expectDictionary(dictionary);
+const list = dictionary.list;
+expectList(list);
+const leafDictionary = list[0];
+expectDictionary(leafDictionary);
+console.log(leafDictionary.string); // "world"
+
+// Update the Mixed property to a list.
+realm.write(() => {
+  realmObject.value = [1, "hello", { newKey: "new value" }];
+});
+
+// Useful custom helper functions. (Will be provided in a future release.)
+function expectList(value: unknown): asserts value is Realm.List {
+  if (!(value instanceof Realm.List)) {
+    throw new Error("Expected a 'Realm.List'.");
+  }
+}
+function expectDictionary(value: unknown): asserts value is Realm.Dictionary {
+  if (!(value instanceof Realm.Dictionary)) {
+    throw new Error("Expected a 'Realm.Dictionary'.");
+  }
+}
+```
+
 ### Fixed
 * Inserting the same typed link to the same key in a dictionary more than once would incorrectly create multiple backlinks to the object. This did not appear to cause any crashes later, but would have affecting explicit backlink count queries (eg: `...@links.@count`) and possibly notifications ([realm/realm-core#7676](https://github.com/realm/realm-core/issues/7676) since v12.7.1).
 * Having links in a nested collections would leave the file inconsistent if the top object is removed. ([realm/realm-core#7657](https://github.com/realm/realm-core/issues/7657), since v12.7.0)
