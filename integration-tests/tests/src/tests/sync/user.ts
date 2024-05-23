@@ -100,7 +100,7 @@ describe("User", () => {
 
     it("login with non existing user throws", async function (this: AppContext & RealmContext) {
       const credentials = Realm.Credentials.emailPassword({ email: "foo", password: "pass" });
-      await expect(this.app.logIn(credentials)).to.be.rejectedWith("invalid username/password");
+      await expect(this.app.logIn(credentials)).to.be.rejectedWith("unauthorized");
     });
 
     it("email password authprovider is correct instance", async function (this: AppContext & RealmContext) {
@@ -122,20 +122,20 @@ describe("User", () => {
 
     it("invalid email, invalid password", async function (this: AppContext & RealmContext) {
       const credentials = Realm.Credentials.emailPassword({ email: invalidEmail, password: invalidPassword });
-      await expect(this.app.logIn(credentials)).to.be.rejectedWith("invalid username/password"); // this user does not exist yet
+      await expect(this.app.logIn(credentials)).to.be.rejectedWith("unauthorized"); // this user does not exist yet
       await expect(
         this.app.emailPasswordAuth.registerUser({ email: invalidEmail, password: invalidPassword }),
       ).to.eventually.be.rejectedWith("password must be between 6 and 128 characters");
-      await expect(this.app.logIn(credentials)).to.be.rejectedWith("invalid username/password"); // this user did not register
+      await expect(this.app.logIn(credentials)).to.be.rejectedWith("unauthorized"); // this user did not register
     });
 
     it("valid email, invalid password", async function (this: AppContext & RealmContext) {
       const credentials = Realm.Credentials.emailPassword({ email: validEmail, password: invalidPassword });
-      await expect(this.app.logIn(credentials)).to.be.rejectedWith("invalid username/password"); // this user does not exist yet
+      await expect(this.app.logIn(credentials)).to.be.rejectedWith("unauthorized"); // this user does not exist yet
       await expect(
         this.app.emailPasswordAuth.registerUser({ email: validEmail, password: invalidPassword }),
       ).to.eventually.be.rejectedWith("password must be between 6 and 128 characters");
-      await expect(this.app.logIn(credentials)).to.be.rejectedWith("invalid username/password"); // this user did not register
+      await expect(this.app.logIn(credentials)).to.be.rejectedWith("unauthorized"); // this user did not register
     });
 
     it("valid email, valid password", async function (this: AppContext & RealmContext) {
@@ -143,7 +143,7 @@ describe("User", () => {
       const validPassword = "password123456";
 
       const credentials = Realm.Credentials.emailPassword({ email: validEmail, password: validPassword });
-      await expect(this.app.logIn(credentials)).to.be.rejectedWith("invalid username/password"); // this user does not exist yet
+      await expect(this.app.logIn(credentials)).to.be.rejectedWith("unauthorized"); // this user does not exist yet
       await this.app.emailPasswordAuth.registerUser({ email: validEmail, password: validPassword });
       const user = await this.app.logIn(credentials);
       expectIsUser(user);
@@ -155,7 +155,7 @@ describe("User", () => {
     it("valid email, valid password", async function (this: AppContext & RealmContext) {
       removeExistingUsers();
       const credentials = Realm.Credentials.emailPassword({ email: validEmail, password: validPassword });
-      await expect(this.app.logIn(credentials)).to.be.rejectedWith("invalid username/password"); // this user does not exist yet
+      await expect(this.app.logIn(credentials)).to.be.rejectedWith("unauthorized"); // this user does not exist yet
       await this.app.emailPasswordAuth.registerUser({ email: validEmail, password: validPassword });
       const user = await this.app.logIn(credentials);
       expectIsUser(user);
@@ -360,7 +360,7 @@ describe("User", () => {
         const user2 = await this.app
           .logIn(Realm.Credentials.emailPassword({ email: validEmail, password: validPassword }))
           .catch((err) => {
-            expect(err.message).equals("invalid username/password");
+            expect(err.message).equals("unauthorized");
             expect(err.code).equals(4349);
             didFail = true;
           });
@@ -609,11 +609,11 @@ describe("User", () => {
       const validPassword = "password123456";
 
       const credentials = Realm.Credentials.emailPassword({ email: invalidEmail, password: validPassword });
-      await expect(this.app.logIn(credentials)).to.be.rejectedWith("invalid username/password"); // this user does not exist yet
+      await expect(this.app.logIn(credentials)).to.be.rejectedWith("unauthorized"); // this user does not exist yet
       expect(
         this.app.emailPasswordAuth.registerUser({ email: invalidEmail, password: validPassword }),
       ).to.eventually.be.rejectedWith(`failed to confirm user "${invalidEmail}"`);
-      await expect(this.app.logIn(credentials)).to.be.rejectedWith("invalid username/password"); // this user did not register
+      await expect(this.app.logIn(credentials)).to.be.rejectedWith("unauthorized"); // this user did not register
     });
 
     it("reset password function works", async function (this: AppContext & RealmContext) {
