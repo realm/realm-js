@@ -1,7 +1,4 @@
-## vNext (TBD)
-
-### Deprecations
-* None
+## 12.9.0 (2024-05-23)
 
 ### Enhancements
 * A `mixed` value can now hold a `Realm.List` and `Realm.Dictionary` with nested collections. Note that `Realm.Set` is not supported as a `mixed` value. ([#6613](https://github.com/realm/realm-js/pull/6613))
