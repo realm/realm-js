@@ -18,5 +18,7 @@ jobs:
           node-version: 20
       - name: Install root package dependencies
         run: npm ci
+      - name: Check types
+        run: npm run check-types --workspace realm
       - name: Run linting of subpackages
         run: npm run lint
