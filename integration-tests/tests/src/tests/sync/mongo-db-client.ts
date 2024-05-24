@@ -302,7 +302,7 @@ describe("MongoDB Client", function () {
         await insertThreeDocuments(this.collection);
 
         const oldDoc = await this.collection.findOneAndDelete();
-        expect(oldDoc).to.deep.equal({ _id: insertedId3, text: insertedText, date: insertedDate });
+        expect(oldDoc).to.deep.equal({ _id: insertedId1, text: insertedText, date: insertedDate });
 
         await expectToNotFindDoc(this.collection, { _id: insertedId1 }, { expectedCount: 2 });
       });

@@ -332,7 +332,7 @@
   },
   "dependencies": {
     "@realm/fetch": "^0.1.1",
-    "bson": "^4.7.2",
+    "bson": "^6.6.0",
     "debug": "^4.3.4",
     "node-machine-id": "^1.1.12",
     "path-browserify": "^1.0.1",

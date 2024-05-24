@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
-import { ObjectID } from "bson";
+import { ObjectId } from "bson";
 
 import { createService } from "../services/MongoDBService";
 
@@ -54,7 +54,7 @@ describe("MongoDB Remote service", () => {
       .collection<MyDocument>("my-collection")
       .find(
         {
-          _id: ObjectID.createFromHexString("deadbeefdeadbeefdeadbeef"),
+          _id: ObjectId.createFromHexString("deadbeefdeadbeefdeadbeef"),
         },
         { limit: 10 },
       );
@@ -107,7 +107,7 @@ describe("MongoDB Remote service", () => {
       .collection<MyDocument>("my-collection")
       .findOne(
         {
-          _id: ObjectID.createFromHexString("deadbeefdeadbeefdeadbeef"),
+          _id: ObjectId.createFromHexString("deadbeefdeadbeefdeadbeef"),
         },
         {
           projection: { name: 1 },

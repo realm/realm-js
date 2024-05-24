@@ -16,7 +16,5 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-describe("App services", () => {
-  require("./remote-mongodb-service.test");
-  require("./http-service.test");
-});
+import "./remote-mongodb-service.test";
+import "./http-service.test";

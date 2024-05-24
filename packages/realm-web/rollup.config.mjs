@@ -16,16 +16,23 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import alias from "@rollup/plugin-alias";
 import commonjs from "@rollup/plugin-commonjs";
 import typescript from "@rollup/plugin-typescript";
 import nodeResolve from "@rollup/plugin-node-resolve";
 import replace from "@rollup/plugin-replace";
 import dts from "rollup-plugin-dts";
 
+import { createRequire } from "node:module";
+const require = createRequire(import.meta.url);
+
 import pkg from "./package.json" assert { type: "json" };
 
 const replacer = replace({
-  __SDK_VERSION__: JSON.stringify(pkg.version),
+  preventAssignment: true,
+  values: {
+    __SDK_VERSION__: JSON.stringify(pkg.version),
+  },
 });
 
 export default [
@@ -97,15 +104,26 @@ export default [
       },
     ],
     plugins: [
-      commonjs(),
-      typescript({
-        tsconfig: "src/dom/tsconfig.json",
+      // Providing an alias for the "bson" package
+      // See https://github.com/mongodb/js-bson/pull/669#pullrequestreview-1994786536 for more context
+      alias({
+        entries: [
+          {
+            find: "bson",
+            replacement: require.resolve("bson"),
+          },
+        ],
       }),
       nodeResolve({
         mainFields: ["browser", "module", "main"],
         exportConditions: ["browser", "module", "main"],
         modulesOnly: true,
         preferBuiltins: false,
+      }),
+      commonjs(),
+      typescript({
+        tsconfig: "src/dom/tsconfig.json",
+        removeComments: true,
       }),
       replacer,
     ],

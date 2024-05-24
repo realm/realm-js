@@ -2,10 +2,11 @@
 	"compilerOptions": {
 		"strict": true,
 		"sourceMap": true,
-		"module": "commonjs",
-		"target": "ES2019",
+		"module": "ES2022",
+		"target": "ES2022",
+		"moduleResolution": "Bundler",
 		"lib": [
-			"ES2019",
+			"ES2022",
 			"DOM"
 		],
 		"types": [
