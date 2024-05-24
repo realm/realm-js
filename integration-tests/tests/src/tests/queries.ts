@@ -400,8 +400,8 @@ describe("Queries", () => {
       it("throws with invalid queries", function (this: RealmContext) {
         expectQueryException(this.realm, NullableTypesObject, [
           ["Unsupported comparison between type", "intCol == false"],
-          ["Cannot convert", "intCol == 'not an int'"],
-          ["Cannot convert", "intCol == $0", "not an int"],
+          ["Unsupported comparison between type 'int' and type 'string'", "intCol == 'not an int'"],
+          ["Cannot compare argument $0 with value '\"not an int\"' to a int", "intCol == $0", "not an int"],
           ["Unsupported comparison operator", "intCol BEGINSWITH 1"],
           ["Unsupported comparison operator", "intCol CONTAINS 1"],
           ["Unsupported comparison operator", "intCol ENDSWITH 1"],
@@ -445,8 +445,8 @@ describe("Queries", () => {
       it("throws with invalid queries", function (this: RealmContext) {
         expectQueryException(this.realm, NullableTypesObject, [
           ["Unsupported comparison between type", "floatCol == false"],
-          ["Cannot convert", "floatCol == 'not a float'"],
-          ["Cannot convert", "floatCol == $0", "not a float"],
+          ["Unsupported comparison between type 'float' and type 'string'", "floatCol == 'not a float'"],
+          ["Cannot compare argument $0 with value '\"not a float\"' to a float", "floatCol == $0", "not a float"],
           ["Unsupported comparison operator", "floatCol BEGINSWITH 1"],
           ["Unsupported comparison operator", "floatCol CONTAINS 1"],
           ["Unsupported comparison operator", "floatCol ENDSWITH 1"],
@@ -491,8 +491,8 @@ describe("Queries", () => {
       it("throws with invalid queries", function (this: RealmContext) {
         expectQueryException(this.realm, NullableTypesObject, [
           ["Unsupported comparison between type", "doubleCol == false"],
-          ["Cannot convert", "doubleCol == 'not a double'"],
-          ["Cannot convert", "doubleCol == $0", "not a double"],
+          ["Unsupported comparison between type 'double' and type 'string'", "doubleCol == 'not a double'"],
+          ["Cannot compare argument $0 with value '\"not a double\"' to a double", "doubleCol == $0", "not a double"],
           ["Unsupported comparison operator", "doubleCol BEGINSWITH 1"],
           ["Unsupported comparison operator", "doubleCol CONTAINS 1"],
           ["Unsupported comparison operator", "doubleCol ENDSWITH 1"],
