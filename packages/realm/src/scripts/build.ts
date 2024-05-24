@@ -92,71 +92,75 @@ program.name("build-realm");
 program
   .command("build-apple")
   .description("Build native code for Apple platforms")
+  .option("--clean", "Delete any build directory first", false)
   .addOption(applePlatformOption)
   .addOption(configurationOption)
   .option("--skip-creating-xcframework", "Skip creating an xcframework from all frameworks in the build directory")
   .option("--skip-collecting-headers", "Skip collecting headers from the build directory and copy them to the SDK")
   .action(
-    actionWrapper(({ platform: rawPlatforms, configuration, skipCollectingHeaders, skipCreatingXcframework }) => {
-      assert(fs.existsSync(REALM_CORE_PATH), `Expected Realm Core at '${REALM_CORE_PATH}'`);
-      const { CMAKE_PATH: cmakePath = execSync("which cmake", { encoding: "utf8" }).trim() } = env;
-      const platforms = apple.validatePlatforms(rawPlatforms);
+    actionWrapper(
+      ({ clean, platform: rawPlatforms, configuration, skipCollectingHeaders, skipCreatingXcframework }) => {
+        assert(fs.existsSync(REALM_CORE_PATH), `Expected Realm Core at '${REALM_CORE_PATH}'`);
+        const { CMAKE_PATH: cmakePath = execSync("which cmake", { encoding: "utf8" }).trim() } = env;
+        const platforms = apple.validatePlatforms(rawPlatforms);
 
-      if (platforms.length > 0) {
-        group("Generate Xcode project", () => {
-          apple.generateXcodeProject({ cmakePath });
+        if (platforms.length > 0) {
+          group("Generate Xcode project", () => {
+            apple.generateXcodeProject({ cmakePath, clean });
+          });
+        } else {
+          console.log("Skipped generating Xcode project (no platforms to build for)");
+        }
+
+        const producedArchivePaths = platforms.map((platform) => {
+          return group(`Build ${platform} / ${configuration}`, () => {
+            return apple.buildFramework({ platform, configuration });
+          });
         });
-      } else {
-        console.log("Skipped generating Xcode project (no platforms to build for)");
-      }
 
-      const producedArchivePaths = platforms.map((platform) => {
-        return group(`Build ${platform} / ${configuration}`, () => {
-          return apple.buildFramework({ platform, configuration });
-        });
-      });
+        if (skipCollectingHeaders) {
+          group(`Collecting headers`, () => {
+            apple.collectHeaders();
+          });
+        } else {
+          console.log("Skipped collecting headers");
+        }
 
-      if (skipCollectingHeaders) {
-        group(`Collecting headers`, () => {
-          apple.collectHeaders();
-        });
-      } else {
-        console.log("Skipped collecting headers");
-      }
+        // Collect the absolute paths of all available archives in the build directory
+        // This allows for splitting up the invocation of the build command
+        const archivePaths = apple.collectArchivePaths();
+        for (const producedArchivePath of producedArchivePaths) {
+          // As a sanity check, we ensure all produced archives are passed as input for the creation of the xcframework
+          assert(
+            archivePaths.includes(producedArchivePath),
+            `Expected produced archive '${producedArchivePath}' to be one of the collected paths`,
+          );
+        }
 
-      // Collect the absolute paths of all available archives in the build directory
-      // This allows for splitting up the invocation of the build command
-      const archivePaths = apple.collectArchivePaths();
-      for (const producedArchivePath of producedArchivePaths) {
-        // As a sanity check, we ensure all produced archives are passed as input for the creation of the xcframework
-        assert(
-          archivePaths.includes(producedArchivePath),
-          `Expected produced archive '${producedArchivePath}' to be one of the collected paths`,
-        );
-      }
+        if (skipCreatingXcframework) {
+          console.log("Skipped creating Xcframework");
+        } else {
+          group(`Creating xcframework`, () => {
+            apple.createXCFramework({ archivePaths });
+          });
+        }
 
-      if (skipCreatingXcframework) {
-        console.log("Skipped creating Xcframework");
-      } else {
-        group(`Creating xcframework`, () => {
-          apple.createXCFramework({ archivePaths });
-        });
-      }
-
-      console.log("Great success! 🥳");
-    }),
+        console.log("Great success! 🥳");
+      },
+    ),
   );
 
 program
   .command("build-android")
   .description("Build native code for Android platforms")
+  .option("--clean", "Delete any build directory first", false)
   .addOption(androidArchOption)
   .addOption(configurationOption)
   .option("--ndk-version <version>", "The NDK version used when building", android.DEFAULT_NDK_VERSION)
   .option("--skip-collecting-headers", "Skip collecting headers from the build directory and copy them to the SDK")
   // .option("--skip-generating-version-file", "Skip generating a Version.java file")
   .action(
-    actionWrapper(({ architecture: rawArchitectures, configuration, ndkVersion }) => {
+    actionWrapper(({ architecture: rawArchitectures, configuration, ndkVersion, clean }) => {
       assert(fs.existsSync(REALM_CORE_PATH), `Expected Realm Core at '${REALM_CORE_PATH}'`);
       const { ANDROID_HOME, CMAKE_PATH: cmakePath = execSync("which cmake", { encoding: "utf8" }).trim() } = env;
       assert(typeof ANDROID_HOME === "string", "Missing env variable ANDROID_HOME");
@@ -169,7 +173,7 @@ program
 
       architectures.map((architecture) => {
         return group(`Build ${architecture} / ${configuration}`, () => {
-          return android.buildArchive({ cmakePath, architecture, configuration, ndkPath });
+          return android.buildArchive({ cmakePath, architecture, configuration, ndkPath, clean });
         });
       });
 

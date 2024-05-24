@@ -56,6 +56,18 @@ export function copyFiles(basePath: string, relativeFilePaths: string[], destina
   }
 }
 
+export function ensureDirectory(directoryPath: string, clean: boolean) {
+  // Optionally delete the directory first
+  if (clean) {
+    fs.rmSync(directoryPath, { force: true, recursive: true });
+  }
+  // Ensure the build directory exists
+  if (!fs.existsSync(directoryPath)) {
+    console.log("Creating directory:", directoryPath);
+    fs.mkdirSync(directoryPath, { recursive: true });
+  }
+}
+
 type CollectHeadersOptions = {
   buildPath: string;
   includePath: string;

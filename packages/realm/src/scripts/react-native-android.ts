@@ -30,6 +30,7 @@ import {
   REALM_CORE_LIBRARY_NAMES_DENYLIST,
   REALM_CORE_PATH,
   REALM_CORE_VERSION,
+  ensureDirectory,
 } from "./common";
 
 export const DEFAULT_NDK_VERSION = "25.1.8937393";
@@ -65,17 +66,9 @@ export function validateArchitectures(
   }
 }
 
-function ensureDirectory(directoryPath: string) {
-  // Ensure the build directory exists
-  if (!fs.existsSync(directoryPath)) {
-    console.log("Creating directory:", directoryPath);
-    fs.mkdirSync(directoryPath, { recursive: true });
-  }
-}
-
-function ensureBuildDirectory(architecture: AndroidArchitecture, configuration: Configuration) {
+function ensureBuildDirectory(architecture: AndroidArchitecture, configuration: Configuration, clean: boolean) {
   const buildPath = path.join(REALM_CORE_PATH, "build-android-" + architecture + "-" + configuration);
-  ensureDirectory(buildPath);
+  ensureDirectory(buildPath, clean);
   return buildPath;
 }
 
@@ -84,11 +77,12 @@ type BuildArchiveOptions = {
   ndkPath: string;
   architecture: AndroidArchitecture;
   configuration: Configuration;
+  clean: boolean;
 };
 
-export function buildArchive({ cmakePath, ndkPath, architecture, configuration }: BuildArchiveOptions) {
+export function buildArchive({ cmakePath, ndkPath, architecture, configuration, clean }: BuildArchiveOptions) {
   // Ensure a per architecture build directory
-  const buildPath = ensureBuildDirectory(architecture, configuration);
+  const buildPath = ensureBuildDirectory(architecture, configuration, clean);
   const installPath = path.join(INSTALL_PATH, architecture);
   // TODO: Consider using the "./tools/cmake/android.toolchain.cmake" from Realm Core instead?
   const toolchainPath = path.join(ndkPath, "build/cmake/android.toolchain.cmake");

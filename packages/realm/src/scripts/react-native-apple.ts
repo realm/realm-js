@@ -33,6 +33,7 @@ import {
   REALM_CORE_PATH,
   REALM_CORE_VERSION,
   collectHeaders as commonCollectHeaders,
+  ensureDirectory,
 } from "./common";
 
 const REALM_CORE_BUILD_PATH = path.resolve(REALM_CORE_PATH, "build-xcode");
@@ -75,20 +76,17 @@ export function validatePlatforms(values: readonly (XcodeSDKName | "all" | "none
   }
 }
 
-function ensureBuildDirectory() {
-  // Ensure the build directory exists
-  if (!fs.existsSync(REALM_CORE_BUILD_PATH)) {
-    console.log("Creating build directory:", REALM_CORE_BUILD_PATH);
-    fs.mkdirSync(REALM_CORE_BUILD_PATH);
-  }
+function ensureBuildDirectory(clean: boolean) {
+  ensureDirectory(REALM_CORE_BUILD_PATH, clean);
 }
 
 type GenerateXcodeProjectOptions = {
   cmakePath: string;
+  clean: boolean;
 };
 
-export function generateXcodeProject({ cmakePath }: GenerateXcodeProjectOptions) {
-  ensureBuildDirectory();
+export function generateXcodeProject({ cmakePath, clean }: GenerateXcodeProjectOptions) {
+  ensureBuildDirectory(clean);
   // Generate Xcode project
   spawnSync(
     cmakePath,
@@ -116,7 +114,7 @@ type BuildFrameworkOptions = {
 };
 
 export function buildFramework({ platform, configuration }: BuildFrameworkOptions) {
-  ensureBuildDirectory();
+  ensureBuildDirectory(false);
 
   console.log(`Building archive for '${platform}'`);
   const archivePath = path.join(REALM_CORE_BUILD_PATH, platform + ".xcarchive");
