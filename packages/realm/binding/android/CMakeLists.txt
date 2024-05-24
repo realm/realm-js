@@ -1,7 +1,11 @@
 cmake_minimum_required(VERSION 3.18.1)
 project(RealmJS)
 
-# TODO: Add a target for the prebuilt .so of Realm Core + headers
+# Use ccache if available
+find_program(CCACHE_PROGRAM ccache)
+if(CCACHE_PROGRAM)
+    set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "${CCACHE_PROGRAM}")
+endif()
 
 add_library(realm-js-android-binding SHARED
     ../jsi/jsi_init.cpp
