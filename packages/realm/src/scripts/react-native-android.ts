@@ -108,27 +108,25 @@ export function buildArchive({ cmakePath, ndkPath, architecture, configuration, 
       "-D",
       "CMAKE_MAKE_PROGRAM=ninja",
       "-D",
+      "CMAKE_C_COMPILER_LAUNCHER=ccache",
+      "-D",
+      "CMAKE_CXX_COMPILER_LAUNCHER=ccache",
+      "-D",
       `ANDROID_NDK=${ndkPath}`,
       "-D",
-      // TODO: Does this take more than one value?
       `ANDROID_ABI=${architecture}`,
       // TODO: Do we need both the above and below?
-      "-D",
-      `CMAKE_ANDROID_ARCH_ABI=${architecture}`,
       "-D",
       "ANDROID_TOOLCHAIN=clang",
       "-D",
       `ANDROID_NATIVE_API_LEVEL=${ANDROID_API_LEVEL}`,
       "-D",
       "ANDROID_STL=c++_shared",
-      // TODO: Check that this is even used, it was not needed by the previous build script
+      // Realm specific variables below
       "-D",
       `REALM_VERSION=${REALM_CORE_VERSION}`,
       "-D",
       "REALM_BUILD_LIB_ONLY=ON",
-      // "-D",
-      // "REALM_ENABLE_ENCRYPTION=ON",
-      // TODO: Consider if REALM_ANDROID_ABI, REALM_ANDROID, REALM_PLATFORM needs to be passed
     ],
     { stdio: "inherit" },
   );
