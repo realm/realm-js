@@ -119,11 +119,11 @@ program
         });
 
         if (skipCollectingHeaders) {
+          console.log("Skipped collecting headers");
+        } else {
           group(`Collecting headers`, () => {
             apple.collectHeaders();
           });
-        } else {
-          console.log("Skipped collecting headers");
         }
 
         // Collect the absolute paths of all available archives in the build directory
