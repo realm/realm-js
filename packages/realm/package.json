@@ -79,19 +79,17 @@
     "test": "wireit",
     "test:types": "tsc --project type-tests/tsconfig.json",
     "lint": "eslint --ext .js,.mjs,.ts .",
+    "prebuild": "tsx ./src/scripts/build.ts",
+    "prebuild-apple": "tsx ./src/scripts/build.ts build-apple",
+    "prebuild-android": "tsx ./src/scripts/build.ts build-android",
+    "prebuild-node": "wireit",
     "build:ts": "wireit",
     "build:node": "wireit",
-    "build:node:prebuild": "wireit",
-    "build:node:prebuild:arm": "wireit",
-    "build:node:prebuild:arm64": "wireit",
-    "build:node:prebuild:x64": "wireit",
-    "build:node:prebuild:ia32": "wireit",
     "build:react-native:iphonesimulator": "wireit",
     "bindgen:jsi": "wireit",
     "check-types": "wireit",
     "install": "prebuild-install --runtime napi || echo 'Failed to download prebuild for Realm'",
     "docs": "wireit",
-    "build-cli": "tsx ./src/scripts/build.ts",
     "postinstall": "node ./scripts/submit-analytics.js"
   },
   "wireit": {
@@ -251,36 +249,12 @@
         }
       ]
     },
-    "build:node:prebuild": {
+    "prebuild-node": {
       "command": "cross-env-shell prebuild --runtime napi --arch $PREBUILD_ARCH -- --directory binding/node",
       "env": {
         "PREBUILD_ARCH": {
           "external": true
         }
-      }
-    },
-    "build:node:prebuild:arm": {
-      "command": "npm run build:node:prebuild",
-      "env": {
-        "PREBUILD_ARCH": "arm"
-      }
-    },
-    "build:node:prebuild:arm64": {
-      "command": "npm run build:node:prebuild",
-      "env": {
-        "PREBUILD_ARCH": "arm64"
-      }
-    },
-    "build:node:prebuild:x64": {
-      "command": "npm run build:node:prebuild",
-      "env": {
-        "PREBUILD_ARCH": "x64"
-      }
-    },
-    "build:node:prebuild:ia32": {
-      "command": "npm run build:node:prebuild",
-      "env": {
-        "PREBUILD_ARCH": "ia32"
       }
     },
     "build:react-native:iphonesimulator": {

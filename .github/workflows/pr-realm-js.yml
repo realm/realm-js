@@ -216,7 +216,9 @@ jobs:
           echo 'VCPKG_KEEP_ENV_VARS=CCACHE_COMPILER;CCACHE_STATSLOG;CCACHE_LOGFILE;CCACHE_COMPILERTYPE;UseMultiToolTask' >> $GITHUB_ENV
 
       - name: Build native module
-        run: npm run build:node:prebuild:${{matrix.arch}} --workspace realm
+        run: npm run prebuild-node --workspace realm
+        env:
+          PREBUILD_ARCH: ${{ matrix.arch }}
 
       - name: Upload prebuild artifact
         uses: actions/upload-artifact@v4
@@ -263,7 +265,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Build archive
-        run: npm run build-cli --workspace realm -- build-apple --platform ${{ matrix.platform }} --skip-creating-xcframework
+        run: npm run prebuild-apple --workspace realm -- --platform ${{ matrix.platform }} --skip-creating-xcframework
       - name: Upload archive
         uses: actions/upload-artifact@v4
         with:
@@ -297,7 +299,7 @@ jobs:
           pattern: apple-*-archive
           merge-multiple: true
       - name: Create Xcframework
-        run: npm run build-cli --workspace realm -- build-apple --platform none --skip-collecting-headers
+        run: npm run prebuild-apple --workspace realm -- --platform none --skip-collecting-headers
       - uses: actions/upload-artifact@v4
         with:
           name: apple-prebuild
@@ -364,7 +366,7 @@ jobs:
         run: npm ci
 
       - name: Build archive
-        run: npm run build-cli --workspace realm -- build-android --architecture ${{ matrix.architecture }} --configuration Release
+        run: npm run prebuild-android --workspace realm -- --architecture ${{ matrix.architecture }} --configuration Release
 
       - name: Upload archive
         uses: actions/upload-artifact@v4
