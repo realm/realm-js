@@ -22,6 +22,7 @@ env:
   CMAKE_VERSION: 3.29.2
   NDK_VERSION: 25.1.8937393
   JAVA_VERSION: 17
+  WIREIT_LOGGER: simple
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
