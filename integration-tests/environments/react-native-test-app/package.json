@@ -85,7 +85,8 @@
       ],
       "output": [
         "ios/Pods",
-        "ios/Podfile.lock"
+        "ios/Podfile.lock",
+        "ios/RealmTests.xcworkspace"
       ],
       "env": {
         "USE_CCACHE": {
@@ -110,7 +111,8 @@
       ],
       "output": [
         "ios/Pods",
-        "ios/Podfile.lock"
+        "ios/Podfile.lock",
+        "ios/RealmTests.xcworkspace"
       ],
       "env": {
         "USE_HERMES": {
