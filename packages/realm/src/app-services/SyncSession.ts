@@ -304,7 +304,6 @@ export class SyncSession {
   private weakInternal: binding.WeakSyncSession;
   /** @internal */
   public withInternal<Ret = void>(cb: (syncSession: binding.SyncSession) => Ret) {
-    console.log("FISK 101", this.weakInternal);
     return this.weakInternal.withDeref((syncSession) => {
       assert(syncSession, "This SyncSession is no longer valid");
       return cb(syncSession);
