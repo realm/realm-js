@@ -437,7 +437,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
 
-      - name: Restore Wireit cache
+      - name: Setup Wireit cache
+        if: ${{ matrix.variant.os != 'ios' }}
         uses: google/wireit@setup-github-actions-caching/v1
 
       - name: Restore React Native cache
