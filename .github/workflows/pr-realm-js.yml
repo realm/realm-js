@@ -48,7 +48,7 @@ jobs:
         run: |
           npm run bindgen:jsi --workspace realm
       - name: Upload dist artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: jsi-binding-source
           # Including README.md to pin paths to the root of the repository
@@ -506,8 +506,8 @@ jobs:
           echo "wrapper=xvfb-run" >> $GITHUB_ENV
 
       - name: Download JSI
-        uses: actions/download-artifact@v3
-        if: ${{ matrix.variant.environment == 'react-native' }}
+        uses: actions/download-artifact@v4
+        if: ${{ matrix.variant.environment == 'react-native-test-app' }}
         with:
           name: jsi-binding-source
 
