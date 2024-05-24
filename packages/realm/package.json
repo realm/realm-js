@@ -53,9 +53,6 @@
   "imports": {
     "#realm.node": "./prebuilds/node/realm.node"
   },
-  "bin": {
-    "build-realm": "./build-realm-cli.js"
-  },
   "files": [
     "dependencies.list",
     "dist",

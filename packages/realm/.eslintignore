@@ -3,7 +3,5 @@ docs/
 bindgen/vendor/realm-core/
 src/tests/realms/
 
-build-realm-cli.js
-
 # Files transpiled by babel from generated files
 binding/generated/*.cjs
