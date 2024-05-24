@@ -304,6 +304,7 @@ export class SyncSession {
   private weakInternal: binding.WeakSyncSession;
   /** @internal */
   public withInternal<Ret = void>(cb: (syncSession: binding.SyncSession) => Ret) {
+    console.log("FISK 101", this.weakInternal);
     return this.weakInternal.withDeref((syncSession) => {
       assert(syncSession, "This SyncSession is no longer valid");
       return cb(syncSession);
@@ -450,8 +451,9 @@ export class SyncSession {
    *  - `reportIndefinitely` - the registration will stay active until the callback is unregistered
    *  - `forCurrentlyOutstandingWork` - the registration will be active until only the currently transferable bytes are synced
    * @param callback - Called with the following arguments:
-   * 1. `transferred`: The current number of bytes already transferred
-   * 2. `transferable`: The total number of transferable bytes (the number of bytes already transferred plus the number of bytes pending transfer)
+   * 1. `transferred`: The current number of bytes already transferred - partition based sync only
+   * 2. `transferable`: The total number of transferable bytes (the number of bytes already transferred plus the number of bytes pending transfer) - partition based sync only
+   * 3. `estimate`: An estimate between 0.0 and 1.0 on how much has been downloaded
    * @since 1.12.0
    */
   addProgressNotification(direction: ProgressDirection, mode: ProgressMode, callback: ProgressNotificationCallback) {

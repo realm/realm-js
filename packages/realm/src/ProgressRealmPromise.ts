@@ -174,11 +174,11 @@ export class ProgressRealmPromise implements Promise<Realm> {
   catch = this.handle.promise.catch.bind(this.handle.promise);
   finally = this.handle.promise.finally.bind(this.handle.promise);
 
-  private emitProgress = (transferredArg: binding.Int64, transferableArg: binding.Int64) => {
+  private emitProgress = (transferredArg: binding.Int64, transferableArg: binding.Int64, estimate: number) => {
     const transferred = binding.Int64.intToNum(transferredArg);
     const transferable = binding.Int64.intToNum(transferableArg);
     for (const listener of this.listeners) {
-      listener(transferred, transferable);
+      listener(transferred, transferable, estimate);
     }
   };
 

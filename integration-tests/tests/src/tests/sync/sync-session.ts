@@ -301,10 +301,12 @@ describe("SessionTest", () => {
       expect(progressCalled).to.be.true;
     });
 
-    it("removing progress notification does not invoke callback again", async function (this: AppContext) {
+    it.only("removing progress notification does not invoke callback again", async function (this: AppContext) {
       const partition = generatePartition();
       const { user, config } = await getSyncConfWithUser(this.app, partition);
-      const realm = new Realm(config);
+      const realm = await Realm.open(config);
+      console.log("FISK 0", realm.syncSession);
+
       let unregisterFunc: () => void;
       const writeDataFunc = () => {
         realm.write(() => {
@@ -318,7 +320,9 @@ describe("SessionTest", () => {
         let failOnCall = false;
         const progressCallback = (transferred: number, total: number, estimate?: number) => {
           unregisterFunc = () => {
+            console.log("FISK 1");
             realm.syncSession?.removeProgressNotification(progressCallback);
+            console.log("FISK 2");
           };
           if (failOnCall) {
             reject(new Error("Progress callback should not be called after removeProgressNotification"));
@@ -329,6 +333,7 @@ describe("SessionTest", () => {
             failOnCall = true;
             unregisterFunc();
             // use second callback to wait for sync finished
+            console.log("FISK 3");
             realm.syncSession?.addProgressNotification(
               Realm.ProgressDirection.Upload,
               Realm.ProgressMode.ReportIndefinitely,
@@ -338,9 +343,12 @@ describe("SessionTest", () => {
                 }
               },
             );
+            console.log("FISK 4");
             writeDataFunc();
           }
         };
+        console.log("FISK 5", realm.syncSession);
+
         realm.syncSession?.addProgressNotification(
           Realm.ProgressDirection.Upload,
           Realm.ProgressMode.ReportIndefinitely,
@@ -348,6 +356,8 @@ describe("SessionTest", () => {
         );
         writeDataFunc();
       });
+      console.log("FISK 6");
+
       realm.close();
       await user.logOut();
     });
