@@ -125,6 +125,54 @@ describe("normalizePropertySchema", () => {
         });
       });
 
+      describe("'counter' & collection combinations", () => {
+        itNormalizes("counter", {
+          type: "counter",
+          optional: false,
+        });
+
+        itNormalizes("counter?", {
+          type: "counter",
+          optional: true,
+        });
+
+        itNormalizes("counter[]", {
+          type: "list",
+          objectType: "counter",
+          optional: false,
+        });
+
+        itNormalizes("counter?[]", {
+          type: "list",
+          objectType: "counter",
+          optional: true,
+        });
+
+        itNormalizes("counter{}", {
+          type: "dictionary",
+          objectType: "counter",
+          optional: false,
+        });
+
+        itNormalizes("counter?{}", {
+          type: "dictionary",
+          objectType: "counter",
+          optional: true,
+        });
+
+        itNormalizes("counter<>", {
+          type: "set",
+          objectType: "counter",
+          optional: false,
+        });
+
+        itNormalizes("counter?<>", {
+          type: "set",
+          objectType: "counter",
+          optional: true,
+        });
+      });
+
       describe("User-defined 'Person' & collection combinations", () => {
         itNormalizes("Person", {
           type: "object",
@@ -500,6 +548,154 @@ describe("normalizePropertySchema", () => {
           {
             type: "set",
             objectType: "mixed",
+            optional: true,
+          },
+        );
+      });
+
+      describe("'counter' & collection combinations", () => {
+        itNormalizes(
+          {
+            type: "counter",
+          },
+          {
+            type: "counter",
+            optional: false,
+          },
+        );
+
+        itNormalizes(
+          {
+            type: "counter",
+            optional: false,
+          },
+          {
+            type: "counter",
+            optional: false,
+          },
+        );
+
+        itNormalizes(
+          {
+            type: "counter",
+            optional: true,
+          },
+          {
+            type: "counter",
+            optional: true,
+          },
+        );
+
+        itNormalizes(
+          {
+            type: "list",
+            objectType: "counter",
+          },
+          {
+            type: "list",
+            objectType: "counter",
+            optional: false,
+          },
+        );
+
+        itNormalizes(
+          {
+            type: "list",
+            objectType: "counter",
+            optional: false,
+          },
+          {
+            type: "list",
+            objectType: "counter",
+            optional: false,
+          },
+        );
+
+        itNormalizes(
+          {
+            type: "list",
+            objectType: "counter",
+            optional: true,
+          },
+          {
+            type: "list",
+            objectType: "counter",
+            optional: true,
+          },
+        );
+
+        itNormalizes(
+          {
+            type: "dictionary",
+            objectType: "counter",
+          },
+          {
+            type: "dictionary",
+            objectType: "counter",
+            optional: false,
+          },
+        );
+
+        itNormalizes(
+          {
+            type: "dictionary",
+            objectType: "counter",
+            optional: false,
+          },
+          {
+            type: "dictionary",
+            objectType: "counter",
+            optional: false,
+          },
+        );
+
+        itNormalizes(
+          {
+            type: "dictionary",
+            objectType: "counter",
+            optional: true,
+          },
+          {
+            type: "dictionary",
+            objectType: "counter",
+            optional: true,
+          },
+        );
+
+        itNormalizes(
+          {
+            type: "set",
+            objectType: "counter",
+          },
+          {
+            type: "set",
+            objectType: "counter",
+            optional: false,
+          },
+        );
+
+        itNormalizes(
+          {
+            type: "set",
+            objectType: "counter",
+            optional: false,
+          },
+          {
+            type: "set",
+            objectType: "counter",
+            optional: false,
+          },
+        );
+
+        itNormalizes(
+          {
+            type: "set",
+            objectType: "counter",
+            optional: true,
+          },
+          {
+            type: "set",
+            objectType: "counter",
             optional: true,
           },
         );
@@ -967,6 +1163,23 @@ describe("normalizePropertySchema", () => {
             indexed: "full-text",
           },
           "Primary keys cannot be full-text indexed.",
+          { isPrimaryKey: true },
+        );
+
+        itThrowsWhenNormalizing(
+          {
+            type: "counter",
+          },
+          "Counters cannot be primary keys.",
+          { isPrimaryKey: true },
+        );
+
+        itThrowsWhenNormalizing(
+          {
+            type: "list",
+            objectType: "counter",
+          },
+          "Counters cannot be primary keys.",
           { isPrimaryKey: true },
         );
       });
