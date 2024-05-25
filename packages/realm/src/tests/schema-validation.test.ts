@@ -28,11 +28,7 @@ const NOT_A_BOOLEAN = 0;
 const NOT_AN_OBJECT = 0;
 
 describe("validateObjectSchema", () => {
-  // ------------------------------------------------------------------------
-  // Valid shape of input
-  // ------------------------------------------------------------------------
-
-  describe("using valid shape of input", () => {
+  describe("Valid shape of input", () => {
     itValidates("an object with all top-level fields defined", {
       name: "",
       primaryKey: "",
@@ -55,11 +51,7 @@ describe("validateObjectSchema", () => {
     });
   });
 
-  // ------------------------------------------------------------------------
-  // Invalid shape of input
-  // ------------------------------------------------------------------------
-
-  describe("using invalid shape of input", () => {
+  describe("Invalid shape of input", () => {
     itThrowsWhenValidating("an array", [], "Expected 'object schema' to be an object, got an array");
 
     itThrowsWhenValidating("'null'", null, "Expected 'object schema' to be an object, got null");
@@ -142,11 +134,7 @@ describe("validateObjectSchema", () => {
 });
 
 describe("validatePropertySchema", () => {
-  // ------------------------------------------------------------------------
-  // Valid shape of input
-  // ------------------------------------------------------------------------
-
-  describe("using valid shape of input", () => {
+  describe("Valid shape of input", () => {
     itValidates("an object with all fields defined", {
       type: "",
       objectType: "",
@@ -172,11 +160,7 @@ describe("validatePropertySchema", () => {
     });
   });
 
-  // ------------------------------------------------------------------------
-  // Invalid shape of input
-  // ------------------------------------------------------------------------
-
-  describe("using invalid shape of input", () => {
+  describe("Invalid shape of input", () => {
     itThrowsWhenValidating(
       "an array",
       [],
