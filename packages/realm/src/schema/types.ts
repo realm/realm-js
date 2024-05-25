@@ -53,7 +53,8 @@ export type PrimitivePropertyTypeName =
   | "data"
   | "date"
   | "mixed"
-  | "uuid";
+  | "uuid"
+  | "counter";
 
 /**
  * The names of the supported Realm collection property types.
@@ -204,8 +205,8 @@ export type ObjectSchemaProperty = PropertySchema;
  * @see {@link PropertySchemaShorthand} for a shorthand representation of a property
  * schema.
  * @see {@link PropertySchemaStrict} for a precise type definition of the requirements
- * with the allowed combinations. This type is less strict in order to provide a more
- * user-friendly option due to misleading TypeScript error messages when working with
+ * with the allowed combinations. {@link PropertySchema} is less strict in order to provide
+ * a more user-friendly option due to misleading TypeScript error messages when working with
  * the strict type. This type is currently recommended for that reason, but the strict
  * type is provided as guidance. (Exact errors will always be shown when creating a
  * {@link Realm} instance if the schema is invalid.)
@@ -265,7 +266,7 @@ export type PropertySchemaCommon = {
 /**
  * The strict schema for specifying the type of a specific Realm object property.
  *
- * Unlike the less strict {@link PropertySchema}, this type precisely defines the type
+ * Unlike the less strict {@link PropertySchema}, the strict type precisely defines the type
  * requirements and their allowed combinations; however, TypeScript error messages tend
  * to be more misleading. {@link PropertySchema} is recommended for that reason, but the
  * strict type is provided as guidance.

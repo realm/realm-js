@@ -62,6 +62,7 @@ const PRIMITIVE_TYPES = new Set<PrimitivePropertyTypeName>([
   "date",
   "mixed",
   "uuid",
+  "counter",
 ]);
 
 const COLLECTION_TYPES = new Set<CollectionPropertyTypeName>(["list", "dictionary", "set"]);
@@ -319,6 +320,7 @@ function normalizePropertySchemaObject(info: PropertyInfoUsingObject): Canonical
   if (info.isPrimaryKey) {
     assert(indexed !== false, propError(info, "Primary keys must always be indexed."));
     assert(indexed !== "full-text", propError(info, "Primary keys cannot be full-text indexed."));
+    assert(type !== "counter" && objectType !== "counter", propError(info, "Counters cannot be primary keys."));
     indexed = true;
   }
 
