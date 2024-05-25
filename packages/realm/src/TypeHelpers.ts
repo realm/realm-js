@@ -20,6 +20,7 @@ import {
   BSON,
   ClassHelpers,
   Collection,
+  Counter,
   Dictionary,
   INTERNAL,
   List,
@@ -93,6 +94,8 @@ export type TypeOptions = {
   optional: boolean;
   objectType: string | undefined;
   objectSchemaName: string | undefined;
+  isCounter?: boolean;
+  columnKey?: binding.ColKey;
   getClassHelpers(nameOrTableKey: string | binding.TableKey): ClassHelpers;
 };
 
@@ -217,13 +220,18 @@ function nullPassthrough<T, R extends any[], F extends (value: unknown, ...rest:
 }
 
 const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => TypeHelpers> = {
-  [binding.PropertyType.Int]({ optional }) {
+  [binding.PropertyType.Int]({ /*columnKey,*/ isCounter, optional }) {
     return {
       toBinding: nullPassthrough((value) => {
         if (typeof value === "number") {
           return binding.Int64.numToInt(value);
         } else if (binding.Int64.isInt(value)) {
           return value;
+        } else if (value instanceof Counter) {
+          if (!isCounter) {
+            throw new Error(`Counters can only be used when 'counter' is declared in the property schema.`);
+          }
+          return binding.Int64.numToInt(value.value);
         } else {
           throw new TypeAssertionError("a number or bigint", value);
         }

@@ -45,6 +45,7 @@ type PropertyContext = binding.Property & {
   type: binding.PropertyType;
   objectSchemaName: string;
   embedded: boolean;
+  isCounter: boolean;
   default?: unknown;
 };
 
@@ -59,6 +60,7 @@ type PropertyOptions = {
   columnKey: binding.ColKey;
   optional: boolean;
   embedded: boolean;
+  isCounter: boolean;
 } & HelperOptions &
   binding.Property_Relaxed;
 
@@ -370,6 +372,8 @@ export function createPropertyHelpers(property: PropertyContext, options: Helper
     objectType: property.objectType,
     objectSchemaName: property.objectSchemaName,
     optional: !!(property.type & binding.PropertyType.Nullable),
+    isCounter: property.isCounter,
+    columnKey: property.columnKey,
   };
   if (collectionType) {
     return getPropertyHelpers(collectionType, {
