@@ -67,6 +67,7 @@ export * from "./Results";
 export * from "./List";
 export * from "./Set";
 export * from "./Dictionary";
+export * from "./Counter";
 
 export * from "./Types";
 export * from "./GeoSpatial";

@@ -16,7 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { HelperOptions, PropertyHelpers, binding, createPropertyHelpers } from "./internal";
+import {
+  CanonicalObjectSchema,
+  HelperOptions,
+  PropertyHelpers,
+  assert,
+  binding,
+  createPropertyHelpers,
+} from "./internal";
 
 class UninitializedPropertyMapError extends Error {
   constructor() {
@@ -35,7 +42,12 @@ export class PropertyMap {
   private nameByColumnKeyString: Map<string, string> = new Map();
   private _names: string[] = [];
 
-  public initialize(objectSchema: binding.ObjectSchema, defaults: Record<string, unknown>, options: HelperOptions) {
+  public initialize(
+    objectSchema: binding.ObjectSchema,
+    canonicalObjectSchema: CanonicalObjectSchema,
+    defaults: Record<string, unknown>,
+    options: HelperOptions,
+  ) {
     const { name: objectSchemaName, persistedProperties, computedProperties } = objectSchema;
     this.objectSchemaName = objectSchemaName;
     const properties = [...persistedProperties, ...computedProperties];
@@ -45,10 +57,17 @@ export class PropertyMap {
         const embedded = property.objectType
           ? options.getClassHelpers(property.objectType).objectSchema.tableType === binding.TableType.Embedded
           : false;
-        const helpers = createPropertyHelpers({ ...property, embedded, objectSchemaName }, options);
+
+        const canonicalPropertySchema = canonicalObjectSchema.properties[propertyName];
+        assert(canonicalPropertySchema, `Expected ${propertyName} to exist on the CanonicalObjectSchema.`);
+        const isCounter =
+          canonicalPropertySchema.type === "counter" || canonicalPropertySchema.objectType === "counter";
+
+        const helpers = createPropertyHelpers({ ...property, embedded, objectSchemaName, isCounter }, options);
         // Allow users to override the default value of properties
         const defaultValue = defaults[propertyName];
         helpers.default = typeof defaultValue !== "undefined" ? defaultValue : helpers.default;
+
         return [propertyName, helpers];
       }),
     );
