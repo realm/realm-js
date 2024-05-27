@@ -45,11 +45,15 @@ const REALM_CORE_VERSION_MATCH = REALM_CORE_DEPENDENCIES.match(/^VERSION: ?(.+)$
 assert(REALM_CORE_VERSION_MATCH, "Failed to determine Realm Core version");
 export const REALM_CORE_VERSION = REALM_CORE_VERSION_MATCH[1];
 
-export const REALM_CORE_LIBRARY_NAMES_DENYLIST = [
-  "libBid.a", // Included in librealm.a
-  "libs2geometry.a", // Included in librealm.a
-  "librealm-ffi-static.a",
-  "librealm-ffi-static-dbg.a",
+export const REALM_CORE_LIBRARY_NAMES_ALLOWLIST = [
+  "librealm.a",
+  "librealm-object-store.a",
+  "librealm-parser.a",
+  "librealm-sync.a",
+  "librealm-dbg.a",
+  "librealm-object-store-dbg.a",
+  "librealm-parser-dbg.a",
+  "librealm-sync-dbg.a",
 ];
 
 export function copyFiles(basePath: string, relativeFilePaths: string[], destinationPath: string) {

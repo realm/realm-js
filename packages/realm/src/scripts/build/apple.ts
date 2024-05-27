@@ -28,8 +28,8 @@ import { globSync } from "glob";
 
 import { ARCHIVE_INSTALL_PATH, SUPPORTED_PLATFORMS, XcodeSDKName, xcode } from "./xcode";
 import {
-  REALM_CORE_LIBRARY_NAMES_DENYLIST as COMMON_REALM_CORE_LIBRARY_NAMES_DENYLIST,
   PACKAGE_PATH,
+  REALM_CORE_LIBRARY_NAMES_ALLOWLIST,
   REALM_CORE_PATH,
   REALM_CORE_VERSION,
   collectHeaders as commonCollectHeaders,
@@ -39,10 +39,6 @@ import {
 const REALM_CORE_BUILD_PATH = path.resolve(REALM_CORE_PATH, "build-xcode");
 const REALM_CORE_CMAKE_TOOLCHAIN_PATH = path.resolve(REALM_CORE_PATH, "tools/cmake/xcode.toolchain.cmake");
 const REALM_CORE_COMBINED_LIBRARY_NAME = "librealm-combined.a";
-const REALM_CORE_LIBRARY_NAMES_DENYLIST = [
-  ...COMMON_REALM_CORE_LIBRARY_NAMES_DENYLIST,
-  REALM_CORE_COMBINED_LIBRARY_NAME,
-];
 
 // TODO: Consider if this needs to be platform specific
 const REALM_CORE_HEADERS_PATH = path.resolve(REALM_CORE_BUILD_PATH, "include");
@@ -132,7 +128,7 @@ export function buildFramework({ platform, configuration }: BuildFrameworkOption
   const archiveInstallPath = path.join(archivePath, REALM_CORE_PRODUCTS_INSTALL_PATH);
   const inputPaths = fs
     .readdirSync(archiveInstallPath)
-    .filter((name) => !REALM_CORE_LIBRARY_NAMES_DENYLIST.includes(name))
+    .filter((name) => REALM_CORE_LIBRARY_NAMES_ALLOWLIST.includes(name))
     .map((name) => path.join(archiveInstallPath, name));
   const combinedArchivePath = path.join(archiveInstallPath, REALM_CORE_COMBINED_LIBRARY_NAME);
   xcode.libtool({
