@@ -1,4 +1,3 @@
-import org.apache.tools.ant.taskdefs.condition.Os
 import java.nio.file.Paths
 
 buildscript {
@@ -13,28 +12,29 @@ buildscript {
 }
 apply plugin: 'com.android.library'
 
+/**
+ * Highly simplified implementation of the Node modules resolution algorithm to locate the React Native directory.
+ */
 static def findReactNative(startDir) {
-  def curPath = startDir.toPath().normalize()
-  while (curPath) {
-    def nodeModules = Paths.get(curPath.toString(), "node_modules")
-    def reactNative = Paths.get(nodeModules.toString(), "react-native")
-    if (nodeModules.toFile().exists() && reactNative.toFile().exists()) {
-      return reactNative.toFile()
+  def currentPath = startDir.toPath().normalize()
+  while (currentPath) {
+    def candidateFile = currentPath.resolve("node_modules/react-native").toFile()
+    if (candidateFile.exists()) {
+      return candidateFile.path
     }
-    curPath = curPath.getParent()
+    currentPath = currentPath.getParent()
   }
   throw new GradleException("Unable to find the React Native directory")
 }
 
-
+/**
+ * Replaces all occurances of the file path separator with '/' if it isn't already '/'.
+ */
 def sanitizeFilePath(String filePath) {
-    if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-        filePath = filePath.replace(File.separatorChar, '/' as char)
-    }
-    return filePath
+   return File.separatorChar === '/' as char ? filePath : filePath.replace(File.separatorChar, '/' as char)
 }
 
-def REACT_NATIVE_ROOT_DIR = sanitizeFilePath(findReactNative(rootProject.projectDir).path);
+def REACT_NATIVE_ROOT_DIR = sanitizeFilePath(findReactNative(rootProject.projectDir));
 
 def reactNativeArchitectures() {
     def value = project.getProperties().get("reactNativeArchitectures")
