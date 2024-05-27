@@ -607,6 +607,7 @@ jobs:
         if: ${{ matrix.variant.os == 'android' }}
         env:
           MOCHA_REMOTE_CONTEXT: ${{ steps.mocha-env.outputs.context }}
+          # TODO: Consider passing ORG_GRADLE_PROJECT_reactNativeArchitectures=x86 to limit increase build speed
         timeout-minutes: 75
         uses: reactivecircus/android-emulator-runner@v2
         with:
