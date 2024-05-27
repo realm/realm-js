@@ -212,5 +212,74 @@ describe("Counter", () => {
         }
       });
     });
+
+    describe("Via collection accessors", () => {
+      it("can create and access list items", function (this: RealmContext) {
+        const { list } = this.realm.write(() => {
+          return this.realm.create<IWithCounterCollections>(WithCounterCollectionsSchema.name, {
+            list: [],
+          });
+        });
+        expect(this.realm.objects(WithCounterCollectionsSchema.name).length).equals(1);
+        expect(list.length).equals(0);
+
+        this.realm.write(() => {
+          list.push(...initialValuesList);
+        });
+
+        expect(list.length).equals(initialValuesList.length);
+        for (let i = 0; i < list.length; i++) {
+          const counter = list[i];
+          expectCounter(counter);
+          expect(counter.value).equals(initialValuesList[i]);
+        }
+      });
+
+      it("can create and access dictionary entries", function (this: RealmContext) {
+        const { dictionary } = this.realm.write(() => {
+          return this.realm.create<IWithCounterCollections>(WithCounterCollectionsSchema.name, {
+            dictionary: {},
+          });
+        });
+        expect(this.realm.objects(WithCounterCollectionsSchema.name).length).equals(1);
+        expect(Object.keys(dictionary).length).equals(0);
+
+        this.realm.write(() => {
+          for (const key in initialValuesDict) {
+            dictionary[key] = initialValuesDict[key];
+          }
+        });
+
+        expectKeys(dictionary, Object.keys(initialValuesDict));
+        for (const key in dictionary) {
+          const counter = dictionary[key];
+          expectCounter(counter);
+          expect(counter.value).equals(initialValuesDict[key]);
+        }
+      });
+
+      it("can create and access set items", function (this: RealmContext) {
+        const { set } = this.realm.write(() => {
+          return this.realm.create<IWithCounterCollections>(WithCounterCollectionsSchema.name, {
+            set: [] as number[],
+          });
+        });
+        expect(this.realm.objects(WithCounterCollectionsSchema.name).length).equals(1);
+        expect(set.length).equals(0);
+
+        this.realm.write(() => {
+          for (const input of initialValuesList) {
+            set.add(input);
+          }
+        });
+
+        expect(set.length).equals(initialValuesList.length);
+        for (let i = 0; i < set.length; i++) {
+          const counter = set[i];
+          expectCounter(counter);
+          expect(counter.value).equals(initialValuesList[i]);
+        }
+      });
+    });
   });
 });
