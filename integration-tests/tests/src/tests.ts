@@ -50,6 +50,7 @@ import "./tests/alias";
 import "./tests/array-buffer";
 import "./tests/bson";
 import "./tests/class-models";
+import "./tests/counter";
 import "./tests/dictionary";
 import "./tests/dynamic-schema-updates";
 import "./tests/enums";
