@@ -57,6 +57,8 @@ Pod::Spec.new do |s|
                                 # since we build Core with private symbols by default on Apple platforms.
                                 # See https://github.com/realm/realm-core/blob/cf3b76ebd38b220d604fd438bcc51175c83eeb76/CMakeLists.txt#L45
                                 'GCC_SYMBOLS_PRIVATE_EXTERN' => 'YES',
+                                # Signaling to headers that Realm was compiled with Sync enabled
+                                'GCC_PREPROCESSOR_DEFINITIONS' => '$(inherited) REALM_ENABLE_SYNC=1',
                                 # Header search paths are prefixes to the path specified in #include macros
                                 'HEADER_SEARCH_PATHS' => [
                                   # Bootstrapper for React Native
