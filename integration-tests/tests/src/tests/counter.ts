@@ -163,6 +163,54 @@ describe("Counter", () => {
         expect(counter1.value).equals(0);
         expect(counter2).to.be.null;
       });
+
+      it("can create and access list (input: number[])", function (this: RealmContext) {
+        const { list } = this.realm.write(() => {
+          return this.realm.create<IWithCounterCollections>(WithCounterCollectionsSchema.name, {
+            list: initialValuesList,
+          });
+        });
+
+        expect(this.realm.objects(WithCounterCollectionsSchema.name).length).equals(1);
+        expect(list.length).equals(initialValuesList.length);
+        for (let i = 0; i < list.length; i++) {
+          const counter = list[i];
+          expectCounter(counter);
+          expect(counter.value).equals(initialValuesList[i]);
+        }
+      });
+
+      it("can create and access dictionary (input: JS Object)", function (this: RealmContext) {
+        const { dictionary } = this.realm.write(() => {
+          return this.realm.create<IWithCounterCollections>(WithCounterCollectionsSchema.name, {
+            dictionary: initialValuesDict,
+          });
+        });
+
+        expect(this.realm.objects(WithCounterCollectionsSchema.name).length).equals(1);
+        expectKeys(dictionary, Object.keys(initialValuesDict));
+        for (const key in dictionary) {
+          const counter = dictionary[key];
+          expectCounter(counter);
+          expect(counter.value).equals(initialValuesDict[key]);
+        }
+      });
+
+      it("can create and access set (input: number[])", function (this: RealmContext) {
+        const { set } = this.realm.write(() => {
+          return this.realm.create<IWithCounterCollections>(WithCounterCollectionsSchema.name, {
+            set: initialValuesList,
+          });
+        });
+
+        expect(this.realm.objects(WithCounterCollectionsSchema.name).length).equals(1);
+        expect(set.length).equals(initialValuesList.length);
+        for (let i = 0; i < set.length; i++) {
+          const counter = set[i];
+          expectCounter(counter);
+          expect(counter.value).equals(initialValuesList[i]);
+        }
+      });
     });
   });
 });
