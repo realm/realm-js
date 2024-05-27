@@ -303,12 +303,9 @@
     }
   },
   "dependencies": {
-    "@commander-js/extra-typings": "^12",
     "@realm/fetch": "^0.1.1",
     "bson": "^4.7.2",
-    "commander": "^12",
     "debug": "^4.3.4",
-    "glob": "^10.3.12",
     "node-machine-id": "^1.1.12",
     "path-browserify": "^1.0.1",
     "prebuild-install": "^7.1.1"
@@ -325,6 +322,7 @@
     "@babel/cli": "^7.23.9",
     "@babel/core": "^7.23.9",
     "@babel/plugin-transform-modules-commonjs": "^7.23.3",
+    "@commander-js/extra-typings": "^12",
     "@realm/bindgen": "^0.1.0",
     "@types/chai": "^4.3.3",
     "@types/mocha": "^10.0.0",
@@ -333,7 +331,9 @@
     "chai": "4.3.6",
     "cmake-js": "6.3.2",
     "command-line-args": "^5.2.1",
+    "commander": "^12",
     "cross-env": "^7.0.3",
+    "glob": "^10.3.12",
     "mocha": "^10.1.0",
     "prebuild": "^12.1.0",
     "react-native": "0.74.1",
