@@ -84,7 +84,7 @@ type GenerateXcodeProjectOptions = {
 export function generateXcodeProject({ cmakePath, clean }: GenerateXcodeProjectOptions) {
   ensureBuildDirectory(clean);
   // Generate Xcode project
-  spawnSync(
+  const { status } = spawnSync(
     cmakePath,
     [
       "-G",
@@ -102,6 +102,7 @@ export function generateXcodeProject({ cmakePath, clean }: GenerateXcodeProjectO
     ],
     { stdio: "inherit" },
   );
+  assert.equal(status, 0, `Expected a clean exit (got status = ${status})`);
 }
 
 type BuildFrameworkOptions = {
