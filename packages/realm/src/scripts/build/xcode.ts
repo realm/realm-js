@@ -19,9 +19,9 @@
 import assert from "node:assert";
 import { execSync, spawnSync } from "node:child_process";
 import path from "node:path";
+import { PACKAGE_PATH } from "./common";
 
 const { env } = process;
-const PACKAGE_PATH = path.resolve(__dirname, "../..");
 
 export const SUPPORTED_PLATFORMS = [
   "iphoneos",

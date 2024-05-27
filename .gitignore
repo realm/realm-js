@@ -40,8 +40,6 @@ DerivedData
 # node.js
 node_modules/
 npm-debug.log
-build/
-/prebuilds/
 yarn.lock
 
 # Emacs
@@ -112,6 +110,8 @@ coverage/
 /packages/realm/dist/
 /packages/realm/binding/dist/
 /packages/realm/binding/build/
+/packages/realm/binding/android/build/
+/packages/realm/binding/node/build/
 /packages/realm/prebuilds/
 /packages/realm/binding/android/src/main/java/io/realm/react/Version.java
 /packages/realm/binding/android/src/main/jniLibs/

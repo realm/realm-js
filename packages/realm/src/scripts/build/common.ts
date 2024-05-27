@@ -28,7 +28,7 @@ import { globSync } from "glob";
 export const SUPPORTED_CONFIGURATIONS = ["Release", "Debug", "MinSizeRel", "RelWithDebInfo"] as const;
 export type Configuration = (typeof SUPPORTED_CONFIGURATIONS)[number];
 
-export const PACKAGE_PATH = path.resolve(__dirname, "../..");
+export const PACKAGE_PATH = path.resolve(__dirname, "../../..");
 export const PACKAGE_JSON_PATH = path.resolve(PACKAGE_PATH, "package.json");
 export const PACKAGE_JSON = JSON.parse(fs.readFileSync(PACKAGE_JSON_PATH, "utf8"));
 assert(typeof PACKAGE_JSON === "object" && PACKAGE_JSON !== null, "Failed to read package.json");
