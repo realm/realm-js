@@ -282,4 +282,119 @@ describe("Counter", () => {
       });
     });
   });
+
+  describe("Update", () => {
+    describe("Counter.value", () => {
+      it("increments", function (this: RealmContext) {
+        const { counter } = this.realm.write(() => {
+          return this.realm.create<IWithCounter>(WithCounterSchema.name, {
+            counter: 0,
+          });
+        });
+        expectCounter(counter);
+        expect(counter.value).equals(0);
+
+        this.realm.write(() => {
+          counter.increment(0);
+        });
+        expect(counter.value).equals(0);
+
+        this.realm.write(() => {
+          counter.increment();
+        });
+        expect(counter.value).equals(1);
+
+        this.realm.write(() => {
+          counter.increment(19);
+        });
+        expect(counter.value).equals(20);
+
+        this.realm.write(() => {
+          counter.increment(-20);
+        });
+        expect(counter.value).equals(0);
+
+        this.realm.write(() => {
+          counter.increment();
+          counter.increment();
+          counter.increment();
+        });
+        expect(counter.value).equals(3);
+      });
+
+      it("decrements", function (this: RealmContext) {
+        const { counter } = this.realm.write(() => {
+          return this.realm.create<IWithCounter>(WithCounterSchema.name, {
+            counter: 0,
+          });
+        });
+        expectCounter(counter);
+        expect(counter.value).equals(0);
+
+        this.realm.write(() => {
+          counter.decrement(0);
+        });
+        expect(counter.value).equals(0);
+
+        this.realm.write(() => {
+          counter.decrement();
+        });
+        expect(counter.value).equals(-1);
+
+        this.realm.write(() => {
+          counter.decrement(19);
+        });
+        expect(counter.value).equals(-20);
+
+        this.realm.write(() => {
+          counter.decrement(-20);
+        });
+        expect(counter.value).equals(0);
+
+        this.realm.write(() => {
+          counter.decrement();
+          counter.decrement();
+          counter.decrement();
+        });
+        expect(counter.value).equals(-3);
+      });
+
+      it("sets", function (this: RealmContext) {
+        const { counter } = this.realm.write(() => {
+          return this.realm.create<IWithCounter>(WithCounterSchema.name, {
+            counter: 0,
+          });
+        });
+        expectCounter(counter);
+        expect(counter.value).equals(0);
+
+        this.realm.write(() => {
+          counter.set(0);
+        });
+        expect(counter.value).equals(0);
+
+        this.realm.write(() => {
+          counter.set(1);
+        });
+        expect(counter.value).equals(1);
+
+        this.realm.write(() => {
+          counter.set(20);
+        });
+        expect(counter.value).equals(20);
+
+        this.realm.write(() => {
+          counter.set(100_000);
+        });
+        expect(counter.value).equals(100_000);
+
+        this.realm.write(() => {
+          counter.set(1);
+          counter.set(2);
+          counter.set(3);
+        });
+        expect(counter.value).equals(3);
+      });
+    });
+  });
 });
