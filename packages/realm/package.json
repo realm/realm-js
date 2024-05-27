@@ -83,7 +83,7 @@
     "prebuild": "tsx ./src/scripts/build/cli.ts",
     "prebuild-apple": "wireit",
     "prebuild-apple:simulator": "wireit",
-    "prebuild-android": "tsx ./src/scripts/build/cli.ts build-android",
+    "prebuild-android": "wireit",
     "prebuild-node": "wireit",
     "build:ts": "wireit",
     "build:node": "wireit",
@@ -110,27 +110,32 @@
     },
     "prebuild-apple": {
       "command": "tsx ./src/scripts/build/cli.ts build-apple",
-      "env": {
-        "PLATFORM": {
-          "external": true,
-          "default": "all"
-        }
-      }
-    },
-    "prebuild-apple:simulator": {
-      "command": "tsx ./src/scripts/build/cli.ts build-apple --platform iphonesimulator --configuration Debug",
-      "env": {
-        "PLATFORM": {
-          "external": true,
-          "default": "all"
-        }
-      },
       "files": [
         "bindgen/vendor/realm-core/src",
-        "src/scripts/"
+        "src/scripts"
       ],
       "output": [
         "prebuilds/apple/realm-core.xcframework"
+      ]
+    },
+    "prebuild-apple:simulator": {
+      "command": "tsx ./src/scripts/build/cli.ts build-apple --platform iphonesimulator --configuration Debug",
+      "files": [
+        "bindgen/vendor/realm-core/src",
+        "src/scripts"
+      ],
+      "output": [
+        "prebuilds/apple/realm-core.xcframework"
+      ]
+    },
+    "prebuild-android": {
+      "command": "tsx ./src/scripts/build/cli.ts build-android",
+      "files": [
+        "bindgen/vendor/realm-core/src",
+        "src/scripts"
+      ],
+      "output": [
+        "prebuilds/android"
       ]
     },
     "build:ts": {
