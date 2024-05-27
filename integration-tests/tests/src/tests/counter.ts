@@ -396,5 +396,38 @@ describe("Counter", () => {
         expect(counter.value).equals(3);
       });
     });
+
+    describe("Realm object counter property", () => {
+      it("updates", function (this: RealmContext) {
+        const object = this.realm.write(() => {
+          return this.realm.create<IWithOptAndDefaultCounter>(WithOptAndDefaultCounterSchema.name, {
+            optionalCounter: 0,
+          });
+        });
+        expectCounter(object.optionalCounter);
+
+        this.realm.write(() => {
+          object.optionalCounter = null;
+        });
+        expect(object.optionalCounter).to.be.null;
+
+        this.realm.write(() => {
+          object.optionalCounter = 1;
+        });
+        expectCounter(object.optionalCounter);
+        expect(object.optionalCounter.value).equals(1);
+
+        this.realm.write(() => {
+          object.optionalCounter = null;
+        });
+        expect(object.optionalCounter).to.be.null;
+
+        this.realm.write(() => {
+          object.optionalCounter = -100_000;
+        });
+        expectCounter(object.optionalCounter);
+        expect(object.optionalCounter.value).equals(-100_000);
+      });
+    });
   });
 });
