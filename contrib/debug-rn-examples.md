@@ -99,12 +99,15 @@ Since we want to keep the simplicity for our users, changes made in order to deb
 
 ## Common Issues
 
-### Android doesn't find Realm.
+### Android or iOS doesn't find Realm.
 
-Make sure to build binaries for Android in packages/realm by running:
+Make sure to build binaries for Android and iOS in packages/realm by running:
 
-```
-npm run build:android --workspace=realm
+```bash
+# Android
+npm run prebuild-android --workspace realm
+# Apple / iOS
+npm run prebuild-apple --workspace realm
 ```
 
 ### Building failed
