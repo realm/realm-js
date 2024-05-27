@@ -560,6 +560,8 @@ export class Realm {
         },
         schemaDidChange: (r) => {
           r.verifyOpen();
+          // TODO(lj): Use normalized schema from the user-defined one instead of
+          //           `this.schema`, since `this.schema` normalizes based on the binding.
           this.classes = new ClassMap(this, this.internal.schema, this.schema);
           this.schemaListeners.notify(this.schema);
         },
@@ -586,6 +588,8 @@ export class Realm {
       writable: false,
     });
 
+    // TODO(lj): Use normalized schema from the user-defined one instead of
+    //           `this.schema`, since `this.schema` normalizes based on the binding.
     this.classes = new ClassMap(this, this.internal.schema, this.schema);
 
     const syncSession = this.internal.syncSession;
@@ -644,6 +648,13 @@ export class Realm {
    * @since 0.12.0
    */
   get schema(): CanonicalObjectSchema[] {
+    // TODO(lj):
+    // * Why does this need to be calculated on each invocation?
+    //   * The below code is already handled during normalization.
+    // * This currently creates the SDK canonical schema via the binding
+    //   schema. Since the binding will not have information about the counter,
+    //   the canonical schema returned will be incorrect for counters.
+
     const schemas = fromBindingRealmSchema(this.internal.schema);
     // Stitch in the constructors and defaults stored in this.schemaExtras
     for (const objectSchema of schemas) {
@@ -1262,6 +1273,7 @@ export namespace Realm {
   export import ConfigurationWithSync = internal.ConfigurationWithSync;
   export import ConnectionNotificationCallback = internal.ConnectionNotificationCallback;
   export import ConnectionState = internal.ConnectionState;
+  export import Counter = internal.Counter;
   export import Credentials = internal.Credentials;
   export import DefaultFunctionsFactory = internal.DefaultFunctionsFactory;
   export import DefaultUserProfileData = internal.DefaultUserProfileData;
