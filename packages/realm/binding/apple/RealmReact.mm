@@ -18,8 +18,6 @@
 
 #import "RealmReact.h"
 
-#import <jsi/jsi_init.h>
-
 #import <React/RCTBridge+Private.h>
 #import <React/RCTInvalidating.h>
 #import <ReactCommon/CallInvoker.h>
@@ -30,6 +28,8 @@
 #import <net/if.h>
 #import <netdb.h>
 #import <objc/runtime.h>
+
+#import "jsi/jsi_init.h"
 
 // the part of the RCTCxxBridge private class we care about
 @interface RCTBridge (Realm_RCTCxxBridge)
