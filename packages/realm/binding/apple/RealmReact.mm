@@ -144,10 +144,10 @@ RCT_EXPORT_MODULE(Realm)
             // because the work is performed before the microtask queue is flushed - see sequence
             // diagram at https://bit.ly/3kexhHm. It might be possible to further optimize this,
             // e.g. only flush the queue a maximum of once per frame, but this seems reasonable.
-            if (!waitingForUiFlush) {
-              waitingForUiFlush = true;
+            if (!self->waitingForUiFlush) {
+              self->waitingForUiFlush = true;
               [bridge jsCallInvoker]->invokeAsync(
-                  [&]() { waitingForUiFlush = false; });
+                  [&]() { self->waitingForUiFlush = false; });
             }
           });
         }
