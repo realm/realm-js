@@ -59,16 +59,12 @@ Pod::Spec.new do |s|
                                 'HEADER_SEARCH_PATHS' => [
                                   # Bootstrapper for React Native
                                   '"${PODS_TARGET_SRCROOT}/binding/apple/"',
-                                  # Copy of the Realm Core headers (no longer needed as these are included in the XCFramework)
-                                  # '"${PODS_TARGET_SRCROOT}/prebuilds/ios/include/"',
                                   # Logger and JS-SDK specific helpers
                                   '"${PODS_TARGET_SRCROOT}/binding/"',
                                   # Platform specific helpers used by the generated binding code
                                   '"${PODS_TARGET_SRCROOT}/bindgen/src/"',
                                   # Platform independent helpers
                                   '"${PODS_TARGET_SRCROOT}/bindgen/vendor/realm-core/bindgen/src/"',
-                                  # No need for the Realm Core src, because these are coppied to 'react-native/ios/include'
-                                  # '"${PODS_TARGET_SRCROOT}/bindgen/vendor/realm-core/src/"',
                                 ]
                               }
 
