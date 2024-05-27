@@ -18,6 +18,7 @@
 
 import {
   ClassHelpers,
+  Counter,
   Dictionary,
   List,
   ListAccessor,
@@ -123,6 +124,23 @@ function embeddedSet({ typeHelpers: { toBinding }, columnKey }: PropertyOptions)
 type AccessorFactory = (options: PropertyOptions) => PropertyAccessor;
 
 const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>> = {
+  [binding.PropertyType.Int](options) {
+    const { realm, columnKey, isCounter } = options;
+
+    if (isCounter) {
+      return {
+        get(obj) {
+          return new Counter(realm, obj, columnKey);
+        },
+        set: defaultSet(options),
+      };
+    } else {
+      return {
+        get: defaultGet(options),
+        set: defaultSet(options),
+      };
+    }
+  },
   [binding.PropertyType.Object](options) {
     const {
       columnKey,
