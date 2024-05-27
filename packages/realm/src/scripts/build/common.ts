@@ -47,12 +47,12 @@ export const REALM_CORE_VERSION = REALM_CORE_VERSION_MATCH[1];
 
 export const REALM_CORE_LIBRARY_NAMES_ALLOWLIST = [
   "librealm.a",
-  "librealm-object-store.a",
-  "librealm-parser.a",
-  "librealm-sync.a",
   "librealm-dbg.a",
+  "librealm-object-store.a",
   "librealm-object-store-dbg.a",
+  "librealm-parser.a",
   "librealm-parser-dbg.a",
+  "librealm-sync.a",
   "librealm-sync-dbg.a",
 ];
 
