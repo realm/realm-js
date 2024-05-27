@@ -54,6 +54,9 @@ Pod::Spec.new do |s|
                                 # Setting up clang
                                 'CLANG_CXX_LANGUAGE_STANDARD' => 'c++20',
                                 'CLANG_CXX_LIBRARY' => 'libc++',
+                                # To prevent link errors when building we need to enable the following setting,
+                                # since we build Core with private symbols by default on Apple platforms.
+                                # See https://github.com/realm/realm-core/blob/cf3b76ebd38b220d604fd438bcc51175c83eeb76/CMakeLists.txt#L45
                                 'GCC_SYMBOLS_PRIVATE_EXTERN' => 'YES',
                                 # Header search paths are prefixes to the path specified in #include macros
                                 'HEADER_SEARCH_PATHS' => [
