@@ -53,7 +53,6 @@ Pod::Spec.new do |s|
                                 # Setting up clang
                                 'CLANG_CXX_LANGUAGE_STANDARD' => 'c++20',
                                 'CLANG_CXX_LIBRARY' => 'libc++',
-                                'GCC_PREPROCESSOR_DEFINITIONS' => '$(inherited) REALM_ENABLE_SYNC=1',
                                 'GCC_SYMBOLS_PRIVATE_EXTERN' => 'YES',
                                 # Header search paths are prefixes to the path specified in #include macros
                                 'HEADER_SEARCH_PATHS' => [
