@@ -34,6 +34,7 @@ def sanitizeFilePath(String filePath) {
    return File.separatorChar === '/' as char ? filePath : filePath.replace(File.separatorChar, '/' as char)
 }
 
+// We're resolving this only to pass it to CMake for a workaround which relies on a private React Native API / header.
 def REACT_NATIVE_ROOT_DIR = sanitizeFilePath(findReactNative(rootProject.projectDir));
 
 def reactNativeArchitectures() {

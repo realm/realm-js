@@ -34,13 +34,15 @@ set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG -Oz")
 
 target_link_options(realm-js-android-binding PUBLIC -fvisibility=hidden)
 
-# TODO: Could this REACT_NATIVE_ROOT_DIR be passed from
-
 target_include_directories(realm-js-android-binding PRIVATE
-    "${REACT_NATIVE_ROOT_DIR}/ReactCommon/callinvoker"
     "${CMAKE_CURRENT_SOURCE_DIR}/.."
     "${CMAKE_CURRENT_SOURCE_DIR}/../../bindgen/src"
     "${CMAKE_CURRENT_SOURCE_DIR}/../../bindgen/vendor/realm-core/bindgen/src"
+
+    # We're relying on the private callinvoker API to flush the micro-task queue as a workaround
+    # See https://github.com/realm/realm-js/pull/4389 for context on this.
+    # TODO: Submit an issue to make this public or the need for it obsolete.
+    "${REACT_NATIVE_ROOT_DIR}/ReactCommon/callinvoker"
 )
 
 find_library(android-lib android)
