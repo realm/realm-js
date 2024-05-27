@@ -27,7 +27,7 @@ import assert from "node:assert";
 import {
   Configuration,
   PACKAGE_PATH,
-  REALM_CORE_LIBRARY_NAMES_DENYLIST,
+  REALM_CORE_LIBRARY_NAMES_ALLOWLIST,
   REALM_CORE_PATH,
   REALM_CORE_VERSION,
   ensureDirectory,
@@ -133,9 +133,10 @@ export function buildArchive({ cmakePath, ndkPath, architecture, configuration, 
   // Invoke the native build tool (Ninja) to build the generated project
   spawnSync(cmakePath, ["--build", buildPath, "--", "install"], { stdio: "inherit" });
   // Delete unwanted build artifacts
-  for (const name of REALM_CORE_LIBRARY_NAMES_DENYLIST) {
-    const libraryPath = path.join(installPath, "lib", name);
-    if (fs.existsSync(libraryPath)) {
+  const libsPath = path.join(installPath, "lib");
+  for (const fileName of fs.readdirSync(libsPath)) {
+    if (!REALM_CORE_LIBRARY_NAMES_ALLOWLIST.includes(fileName)) {
+      const libraryPath = path.join(libsPath, fileName);
       console.log("Deleting unwanted library archive file", libraryPath);
       fs.rmSync(libraryPath);
     }
