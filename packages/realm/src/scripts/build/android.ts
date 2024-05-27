@@ -86,52 +86,60 @@ export function buildArchive({ cmakePath, ndkPath, architecture, configuration, 
   const installPath = path.join(INSTALL_PATH, architecture);
   // TODO: Consider using the "./tools/cmake/android.toolchain.cmake" from Realm Core instead?
   const toolchainPath = path.join(ndkPath, "build/cmake/android.toolchain.cmake");
-  spawnSync(
-    cmakePath,
-    [
-      "-G",
-      "Ninja",
-      "-S",
-      REALM_CORE_PATH,
-      "-B",
-      buildPath,
-      "--toolchain",
-      toolchainPath,
-      "-D",
-      "CMAKE_SYSTEM_NAME=Android",
-      "-D",
-      `CPACK_SYSTEM_NAME=Android-${architecture}`,
-      "-D",
-      `CMAKE_INSTALL_PREFIX=${installPath}`,
-      "-D",
-      `CMAKE_BUILD_TYPE=${configuration}`,
-      "-D",
-      "CMAKE_MAKE_PROGRAM=ninja",
-      "-D",
-      "CMAKE_C_COMPILER_LAUNCHER=ccache",
-      "-D",
-      "CMAKE_CXX_COMPILER_LAUNCHER=ccache",
-      "-D",
-      `ANDROID_NDK=${ndkPath}`,
-      "-D",
-      `ANDROID_ABI=${architecture}`,
-      // TODO: Do we need both the above and below?
-      "-D",
-      "ANDROID_TOOLCHAIN=clang",
-      "-D",
-      `ANDROID_NATIVE_API_LEVEL=${ANDROID_API_LEVEL}`,
-      "-D",
-      "ANDROID_STL=c++_shared",
-      // Realm specific variables below
-      "-D",
-      `REALM_VERSION=${REALM_CORE_VERSION}`,
-      "-D",
-      "REALM_BUILD_LIB_ONLY=ON",
-    ],
-    { stdio: "inherit" },
-  );
+
+  {
+    const { status } = spawnSync(
+      cmakePath,
+      [
+        "-G",
+        "Ninja",
+        "-S",
+        REALM_CORE_PATH,
+        "-B",
+        buildPath,
+        "--toolchain",
+        toolchainPath,
+        "-D",
+        "CMAKE_SYSTEM_NAME=Android",
+        "-D",
+        `CPACK_SYSTEM_NAME=Android-${architecture}`,
+        "-D",
+        `CMAKE_INSTALL_PREFIX=${installPath}`,
+        "-D",
+        `CMAKE_BUILD_TYPE=${configuration}`,
+        "-D",
+        "CMAKE_MAKE_PROGRAM=ninja",
+        "-D",
+        "CMAKE_C_COMPILER_LAUNCHER=ccache",
+        "-D",
+        "CMAKE_CXX_COMPILER_LAUNCHER=ccache",
+        "-D",
+        `ANDROID_NDK=${ndkPath}`,
+        "-D",
+        `ANDROID_ABI=${architecture}`,
+        // TODO: Do we need both the above and below?
+        "-D",
+        "ANDROID_TOOLCHAIN=clang",
+        "-D",
+        `ANDROID_NATIVE_API_LEVEL=${ANDROID_API_LEVEL}`,
+        "-D",
+        "ANDROID_STL=c++_shared",
+        // Realm specific variables below
+        "-D",
+        `REALM_VERSION=${REALM_CORE_VERSION}`,
+        "-D",
+        "REALM_BUILD_LIB_ONLY=ON",
+      ],
+      { stdio: "inherit" },
+    );
+    assert.equal(status, 0, `Expected a clean exit (got status = ${confugureStatus})`);
+  }
+
   // Invoke the native build tool (Ninja) to build the generated project
-  spawnSync(cmakePath, ["--build", buildPath, "--", "install"], { stdio: "inherit" });
+  {
+    const { status } = spawnSync(cmakePath, ["--build", buildPath, "--", "install"], { stdio: "inherit" });
+    assert.equal(status, 0, `Expected a clean exit (got status = ${status})`);
+  }
   // Delete unwanted build artifacts
   const libsPath = path.join(installPath, "lib");
   for (const fileName of fs.readdirSync(libsPath)) {
