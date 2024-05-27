@@ -197,41 +197,59 @@ Other editors should also be able to be configured to use the `compile_commands.
 
 ## Building Realm JS
 
+In most cases, its not required to build the SDK explicitly. You can either simply download the package from `npm` or run one of the test scripts in either of the `integration-tests/environments` (which will drive the dependent build-scripts automatically). If you want to invoke these scripts manually, see the individual sections below:
+
+### Building the SDK
+
+Most of Realm JS is platform independent code (commonly referred to as the SDK), which is built explicitly by running:
+
+```sh
+npm run build:ts --workspace realm
+```
+
 ### Building for iOS
 
 You can build and bundle for iOS by running the following command from the root directory:
 
 ```sh
+# Pre-build Realm Core into an XCFramework
+npm run prebuild-apple --workspace realm
+# Generate the JSI binding code (to be compiled when building the consuming app)
 npm run bindgen:jsi  --workspace realm
-npm run bundle --workspace realm
 ```
 
-In the consuming project, be sure to enable building core from source by setting the environment variable `REALM_BUILD_FROM_SOURCE`.
-This can either be set globally or locally before running `pod install`:
-```
-REALM_BUILD_FROM_SOURCE=1 pod install
-```
+The resulting prebuilt binary is stored in `packages/realm/prebuilds/apple`.
 
 ### Building for Android
 
 You can build and bundle for Android by running the following command from the root directory:
 
 ```sh
+# Pre-build Realm Core into a CPack install directory
+npm run prebuild-android --workspace realm
+# Generate the JSI binding code (to be compiled when building the consuming app)
 npm run bindgen:jsi  --workspace realm
-npm run build:android --workspace realm
-npm run bundle --workspace realm
 ```
 
-The compiled version of the Android module is output to `<project-root>/android`.
+The resulting prebuilt binary is stored in `packages/realm/prebuilds/android`.
 
 ### Building for Node.js
 
-You can build and bundle for Node.js by running the following command from the root directory:
+You can build the native prebuilt binary for Node.js by running the following command from the root directory:
 
 ```sh
 npm run build:node --workspace realm
-npm run bundle --workspace realm
 ```
+
+The resulting prebuilt binary is the `packages/realm/prebuilds/node/realm.node` file.
+
+If you want to produce a prebuilt (a OS +arch specific archive meant for distribution alongside the NPM archive):
+
+```sh
+npm run prebuild-node --workspace realm
+```
+
+The resulting prebuilt binary is stored in a `packages/realm/prebuilds/realm-*.tar.gz` file.
 
 #### Additional steps for Windows
 
@@ -288,7 +306,7 @@ cd realm-js
 git submodule update —-init —-recursive
 npm install --ignore-scripts
 npm run build:node --workspace realm
-npm run bundle --workspace realm
+npm run build:ts --workspace realm
 ```
 
 Finally, you can use Realm JS in your example project `MyProject`:
