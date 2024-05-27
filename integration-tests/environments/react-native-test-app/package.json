@@ -75,7 +75,7 @@
     "pod-install": {
       "command": "pod-install",
       "dependencies": [
-        "../../../packages/realm:build:react-native:iphonesimulator",
+        "../../../packages/realm:prebuild-apple:simulator",
         "../../../packages/realm:bindgen:jsi"
       ],
       "clean": "if-file-deleted",

@@ -26,10 +26,10 @@ import path from "node:path";
 
 import { Option, program } from "@commander-js/extra-typings";
 
-import * as apple from "./react-native-apple";
-import * as android from "./react-native-android";
+import * as apple from "./apple";
+import * as android from "./android";
 import * as xcode from "./xcode";
-import { SUPPORTED_CONFIGURATIONS } from "./common";
+import { REALM_CORE_PATH, SUPPORTED_CONFIGURATIONS } from "./common";
 
 export { program };
 
@@ -49,10 +49,6 @@ const androidArchOption = new Option("--architecture <name...>", "Architecture t
   .makeOptionMandatory()
   .choices([...android.SUPPORTED_ARCHITECTURES, "all", "infer"] as const)
   .default(["infer"] as const);
-
-const PACKAGE_PATH = path.resolve(__dirname, "../..");
-const REALM_CORE_RELATIVE_PATH = "bindgen/vendor/realm-core";
-const REALM_CORE_PATH = path.resolve(PACKAGE_PATH, REALM_CORE_RELATIVE_PATH);
 
 function actionWrapper<Args extends unknown[]>(action: (...args: Args) => Promise<void> | void) {
   return async (...args: Args) => {

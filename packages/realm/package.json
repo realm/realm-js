@@ -80,13 +80,13 @@
     "test": "wireit",
     "test:types": "tsc --project type-tests/tsconfig.json",
     "lint": "eslint --ext .js,.mjs,.ts .",
-    "prebuild": "tsx ./src/scripts/build.ts",
-    "prebuild-apple": "tsx ./src/scripts/build.ts build-apple",
-    "prebuild-android": "tsx ./src/scripts/build.ts build-android",
+    "prebuild": "tsx ./src/scripts/build/cli.ts",
+    "prebuild-apple": "wireit",
+    "prebuild-apple:simulator": "wireit",
+    "prebuild-android": "tsx ./src/scripts/build/cli.ts build-android",
     "prebuild-node": "wireit",
     "build:ts": "wireit",
     "build:node": "wireit",
-    "build:react-native:iphonesimulator": "wireit",
     "bindgen:jsi": "wireit",
     "check-types": "wireit",
     "install": "prebuild-install --runtime napi || echo 'Failed to download prebuild for Realm'",
@@ -107,6 +107,31 @@
       "env": {
         "TSX_TSCONFIG_PATH": "tsconfig.tests.json"
       }
+    },
+    "prebuild-apple": {
+      "command": "tsx ./src/scripts/build/cli.ts build-apple",
+      "env": {
+        "PLATFORM": {
+          "external": true,
+          "default": "all"
+        }
+      }
+    },
+    "prebuild-apple:simulator": {
+      "command": "tsx ./src/scripts/build/cli.ts build-apple --platform iphonesimulator --configuration Debug",
+      "env": {
+        "PLATFORM": {
+          "external": true,
+          "default": "all"
+        }
+      },
+      "files": [
+        "bindgen/vendor/realm-core/src",
+        "src/scripts/"
+      ],
+      "output": [
+        "prebuilds/apple/realm-core.xcframework"
+      ]
     },
     "build:ts": {
       "command": "tsc --build",
@@ -254,19 +279,10 @@
       "command": "cross-env-shell prebuild --runtime napi --arch $PREBUILD_ARCH -- --directory binding/node",
       "env": {
         "PREBUILD_ARCH": {
-          "external": true
+          "external": true,
+          "default": "undefined"
         }
       }
-    },
-    "build:react-native:iphonesimulator": {
-      "command": "tsx ./src/scripts/build.ts build-apple --platform iphonesimulator --configuration Debug",
-      "files": [
-        "src/scripts",
-        "bindgen/vendor/realm-core/src"
-      ],
-      "output": [
-        "binding/apple/realm-core.xcframework"
-      ]
     },
     "check-types": {
       "command": "tsc --project tsconfig.public-types-check.json",
