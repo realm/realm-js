@@ -16,17 +16,19 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { IllegalConstructorError, binding } from "./internal";
+import { IllegalConstructorError, Realm, assert, binding } from "./internal";
 
 /**
  * TODO(lj)
  */
 export class Counter {
+  /** @internal */
+  private declare readonly realm: Realm;
   /**
    * The binding representation of the associated obj.
    * @internal
    */
-  private declare readonly objInternal: binding.Obj;
+  private declare readonly obj: binding.Obj;
   /**
    * The column key on the obj.
    * @internal
@@ -34,12 +36,19 @@ export class Counter {
   private declare readonly columnKey: binding.ColKey;
 
   /** @internal */
-  constructor(obj: binding.Obj, columnKey: binding.ColKey /*, value = 0*/) {
-    if (!(obj instanceof binding.Obj)) {
+  constructor(realm: Realm, obj: binding.Obj, columnKey: binding.ColKey) {
+    if (!(realm instanceof Realm) || !(obj instanceof binding.Obj)) {
       throw new IllegalConstructorError("Counter");
     }
 
-    Object.defineProperty(this, "internalObj", {
+    // TODO(lj): May convert these into Symbols.
+    Object.defineProperty(this, "realm", {
+      enumerable: false,
+      configurable: false,
+      writable: false,
+      value: realm,
+    });
+    Object.defineProperty(this, "obj", {
       enumerable: false,
       configurable: false,
       writable: false,
@@ -57,26 +66,37 @@ export class Counter {
    * TODO(lj)
    */
   get value(): number {
-    // TODO(lj)
-    return 0;
+    return Number(this.obj.getAny(this.columnKey));
+  }
+
+  /**
+   * TODO(lj)
+   * @internal
+   */
+  set value(_: number) {
+    throw new Error("To update the value, use the methods on the Counter.");
   }
 
   /**
    * TODO(lj)
    * @param by The value to increment by.
    */
-  increment(by: number): void {
-    // TODO(lj)
-    console.log(`Incrementing counter by ${by}.`);
+  increment(by = 1): void {
+    assert.inTransaction(this.realm);
+    assert.integer(by, "by");
+    this.obj.addInt(this.columnKey, binding.Int64.numToInt(by));
   }
 
   /**
    * TODO(lj)
    * @param by The value to decrement by.
    */
-  decrement(by: number): void {
-    // TODO(lj)
-    console.log(`Decrementing counter by ${by}.`);
+  decrement(by = 1): void {
+    assert.inTransaction(this.realm);
+    // Assert that it is a number here despite calling into `increment` in order to
+    // report the type provided by the user, rather than e.g. NaN or 0 due to negation.
+    assert.integer(by, "by");
+    this.increment(-by);
   }
 
   /**
@@ -84,6 +104,7 @@ export class Counter {
    * @param value The value to reset the counter to.
    */
   set(value: number): void {
+    assert.inTransaction(this.realm);
     // TODO(lj)
     console.log(`Setting counter to ${value}.`);
   }
