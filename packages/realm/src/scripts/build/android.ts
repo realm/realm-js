@@ -132,7 +132,7 @@ export function buildArchive({ cmakePath, ndkPath, architecture, configuration, 
       ],
       { stdio: "inherit" },
     );
-    assert.equal(status, 0, `Expected a clean exit (got status = ${confugureStatus})`);
+    assert.equal(status, 0, `Expected a clean exit (got status = ${status})`);
   }
 
   // Invoke the native build tool (Ninja) to build the generated project
