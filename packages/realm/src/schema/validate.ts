@@ -49,6 +49,7 @@ const OBJECT_SCHEMA_KEYS = new Set<keyof CanonicalObjectSchema>([
 const PROPERTY_SCHEMA_KEYS = new Set<keyof CanonicalPropertySchema>([
   "type",
   "objectType",
+  "presentation",
   "property",
   "default",
   "optional",
@@ -150,10 +151,13 @@ export function validatePropertySchema(
 ): asserts propertySchema is PropertySchema {
   try {
     assert.object(propertySchema, `'${propertyName}' on '${objectName}'`, { allowArrays: false });
-    const { type, objectType, optional, property, indexed, mapTo } = propertySchema;
+    const { type, objectType, presentation, optional, property, indexed, mapTo } = propertySchema;
     assert.string(type, `'${propertyName}.type' on '${objectName}'`);
     if (objectType !== undefined) {
       assert.string(objectType, `'${propertyName}.objectType' on '${objectName}'`);
+    }
+    if (presentation !== undefined) {
+      assert.string(presentation, `'${propertyName}.presentation' on '${objectName}'`);
     }
     if (optional !== undefined) {
       assert.boolean(optional, `'${propertyName}.optional' on '${objectName}'`);

@@ -138,6 +138,7 @@ describe("validatePropertySchema", () => {
     itValidates("an object with all fields defined", {
       type: "",
       objectType: "",
+      presentation: "",
       optional: true,
       property: "",
       indexed: true,
@@ -148,6 +149,7 @@ describe("validatePropertySchema", () => {
     itValidates("an object with required fields defined and optional fields set to 'undefined'", {
       type: "",
       objectType: undefined,
+      presentation: undefined,
       optional: undefined,
       property: undefined,
       indexed: undefined,
@@ -190,6 +192,15 @@ describe("validatePropertySchema", () => {
         objectType: NOT_A_STRING,
       },
       `Expected '${PROPERTY_NAME}.objectType' on '${OBJECT_NAME}' to be a string, got a number`,
+    );
+
+    itThrowsWhenValidating(
+      "an object with invalid type for property 'presentation'",
+      {
+        type: "",
+        presentation: NOT_A_STRING,
+      },
+      `Expected '${PROPERTY_NAME}.presentation' on '${OBJECT_NAME}' to be a string, got a number`,
     );
 
     itThrowsWhenValidating(

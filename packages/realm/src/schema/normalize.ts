@@ -22,6 +22,7 @@ import {
   CollectionPropertyTypeName,
   ObjectSchema,
   ObjectSchemaParseError,
+  PresentationPropertyTypeName,
   PrimitivePropertyTypeName,
   PropertiesTypes,
   PropertySchema,
@@ -62,7 +63,6 @@ const PRIMITIVE_TYPES = new Set<PrimitivePropertyTypeName>([
   "date",
   "mixed",
   "uuid",
-  "counter",
 ]);
 
 const COLLECTION_TYPES = new Set<CollectionPropertyTypeName>(["list", "dictionary", "set"]);
@@ -75,12 +75,24 @@ const COLLECTION_SHORTHAND_TO_NAME: Readonly<Record<string, string>> = {
 
 const COLLECTION_SUFFIX_LENGTH = "[]".length;
 
+const PRESENTATION_TYPES = new Set<PresentationPropertyTypeName>(["counter"]);
+
+const PRESENTATION_TO_REALM_TYPE: Readonly<Record<PresentationPropertyTypeName, PropertyTypeName>> = {
+  counter: "int",
+};
+
+const OPTIONAL_MARKER = "?";
+
 function isPrimitive(type: string | undefined): type is PrimitivePropertyTypeName {
   return PRIMITIVE_TYPES.has(type as PrimitivePropertyTypeName);
 }
 
 function isCollection(type: string | undefined): type is CollectionPropertyTypeName {
   return COLLECTION_TYPES.has(type as CollectionPropertyTypeName);
+}
+
+function isPresentationType(type: string | undefined): type is PresentationPropertyTypeName {
+  return PRESENTATION_TYPES.has(type as PresentationPropertyTypeName);
 }
 
 function isUserDefined(type: string | undefined): type is UserTypeName {
@@ -181,6 +193,7 @@ function normalizePropertySchemaShorthand(info: PropertyInfoUsingShorthand): Can
 
   let type = "";
   let objectType: string | undefined;
+  let presentation: PresentationPropertyTypeName | undefined;
   let optional: boolean | undefined;
 
   if (hasCollectionSuffix(propertySchema)) {
@@ -194,10 +207,10 @@ function normalizePropertySchemaShorthand(info: PropertyInfoUsingShorthand): Can
     assert(!isNestedCollection, propError(info, "Nested collections are not supported."));
   }
 
-  if (propertySchema.endsWith("?")) {
+  if (propertySchema.endsWith(OPTIONAL_MARKER)) {
     optional = true;
 
-    propertySchema = propertySchema.substring(0, propertySchema.length - 1);
+    propertySchema = propertySchema.substring(0, propertySchema.length - OPTIONAL_MARKER.length);
     assert(propertySchema.length > 0, propError(info, "The type must be specified. (Examples: 'int?' and 'int?[]')"));
 
     const usingOptionalOnCollection = hasCollectionSuffix(propertySchema);
@@ -208,6 +221,11 @@ function normalizePropertySchemaShorthand(info: PropertyInfoUsingShorthand): Can
         "Collections cannot be optional. To allow elements of the collection to be optional, use '?' after the element type. (Examples: 'int?[]', 'int?{}', and 'int?<>')",
       ),
     );
+  }
+
+  if (isPresentationType(propertySchema)) {
+    presentation = propertySchema;
+    propertySchema = PRESENTATION_TO_REALM_TYPE[propertySchema];
   }
 
   if (isPrimitive(propertySchema)) {
@@ -261,6 +279,7 @@ function normalizePropertySchemaShorthand(info: PropertyInfoUsingShorthand): Can
   };
   // Add optional properties only if defined (tests expect no 'undefined' properties)
   if (objectType !== undefined) normalizedSchema.objectType = objectType;
+  if (presentation !== undefined) normalizedSchema.presentation = presentation;
 
   return normalizedSchema;
 }
@@ -271,7 +290,7 @@ function normalizePropertySchemaShorthand(info: PropertyInfoUsingShorthand): Can
  */
 function normalizePropertySchemaObject(info: PropertyInfoUsingObject): CanonicalPropertySchema {
   const { propertySchema } = info;
-  const { type, objectType, property, default: defaultValue } = propertySchema;
+  const { type, objectType, presentation, property, default: defaultValue } = propertySchema;
   let { optional, indexed } = propertySchema;
 
   assert(type.length > 0, propError(info, "'type' must be specified."));
@@ -320,7 +339,7 @@ function normalizePropertySchemaObject(info: PropertyInfoUsingObject): Canonical
   if (info.isPrimaryKey) {
     assert(indexed !== false, propError(info, "Primary keys must always be indexed."));
     assert(indexed !== "full-text", propError(info, "Primary keys cannot be full-text indexed."));
-    assert(type !== "counter" && objectType !== "counter", propError(info, "Counters cannot be primary keys."));
+    assert(presentation !== "counter", propError(info, "Counters cannot be primary keys."));
     indexed = true;
   }
 
@@ -334,6 +353,7 @@ function normalizePropertySchemaObject(info: PropertyInfoUsingObject): Canonical
 
   // Add optional properties only if defined (tests expect no 'undefined' properties)
   if (objectType !== undefined) normalizedSchema.objectType = objectType;
+  if (presentation !== undefined) normalizedSchema.presentation = presentation;
   if (property !== undefined) normalizedSchema.property = property;
   if (defaultValue !== undefined) normalizedSchema.default = defaultValue;
 
@@ -376,26 +396,35 @@ function assertNotUsingShorthand(input: string | undefined, info: PropertyInfo):
   }
 
   const shorthands = extractShorthands(input);
-  assert(
-    shorthands.length === 0,
-    propError(
-      info,
-      `Cannot use shorthand '${shorthands.join("' and '")}' in 'type' or 'objectType' when defining property objects.`,
-    ),
-  );
+  let message =
+    `Cannot use shorthand '${shorthands.all.join("' and '")}' in 'type' ` +
+    "or 'objectType' when defining property objects.";
+
+  if (shorthands.presentationType) {
+    message += ` To use presentation types such as '${shorthands.presentationType}', use the field 'presentation'.`;
+  }
+  assert(shorthands.all.length === 0, propError(info, message));
 }
 
 /**
  * Extract the shorthand markers used in the input.
  */
-function extractShorthands(input: string): string[] {
-  const shorthands: string[] = [];
+function extractShorthands(input: string) {
+  const shorthands: { all: string[]; presentationType?: PresentationPropertyTypeName } = { all: [] };
+
   if (hasCollectionSuffix(input)) {
-    shorthands.push(input.substring(input.length - COLLECTION_SUFFIX_LENGTH));
+    shorthands.all.push(input.substring(input.length - COLLECTION_SUFFIX_LENGTH));
     input = input.substring(0, input.length - COLLECTION_SUFFIX_LENGTH);
   }
-  if (input.endsWith("?")) {
-    shorthands.push("?");
+
+  if (input.endsWith(OPTIONAL_MARKER)) {
+    shorthands.all.push(OPTIONAL_MARKER);
+    input = input.substring(0, input.length - OPTIONAL_MARKER.length);
+  }
+
+  if (isPresentationType(input)) {
+    shorthands.all.push(input);
+    shorthands.presentationType = input;
   }
 
   return shorthands;
