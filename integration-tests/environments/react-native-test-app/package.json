@@ -14,6 +14,7 @@
     "test:ci:android": "wireit",
     "test:ci:ios": "wireit",
     "pod-install": "wireit",
+    "realm:build-android": "wireit",
     "metro": "react-native start --reset-cache",
     "runner": "node harness/runner.js"
   },
@@ -128,6 +129,12 @@
           "default": "0"
         }
       }
+    },
+    "realm:build-android": {
+      "command": "cd android && ./gradlew realm:assembleDebug",
+      "dependencies": [
+        "../../../packages/realm/:bindgen:jsi"
+      ]
     }
   },
   "dependencies": {
