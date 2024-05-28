@@ -1,3 +1,11 @@
 .gradle/
 build/
 .cxx/
+
+# No need to include the gradle wrapper when distributing this
+gradle/
+gradlew
+gradlew.bat
+
+# The JNI libs are built by the dependent app
+src/main/jniLibs
