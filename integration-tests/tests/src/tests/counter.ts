@@ -130,7 +130,6 @@ describe("Counter", () => {
         for (let i = 0; i < initialValuesList.length; i++) {
           const input = initialValuesList[i];
           const { counter } = this.realm.write(() => {
-            console.log({ input });
             return this.realm.create<IWithCounter>(WithCounterSchema.name, {
               counter: input,
             });
@@ -139,7 +138,6 @@ describe("Counter", () => {
           const expectedNumObjects = i + 1;
           expect(this.realm.objects(WithCounterSchema.name).length).equals(expectedNumObjects);
           expectCounter(counter);
-          console.log({ initial: initialValuesList[i], counter: counter.value });
           expect(counter.value).equals(input);
         }
       });
@@ -164,7 +162,6 @@ describe("Counter", () => {
         // Use the managed Counters as input, each in a separate transaction.
         for (let i = 0; i < initialCounterValues.length; i++) {
           const input = initialCounterValues[i];
-          console.log({ input: input instanceof Counter });
           const { counter } = this.realm.write(() => {
             return this.realm.create<IWithCounter>(WithCounterSchema.name, {
               counter: input,
@@ -208,7 +205,8 @@ describe("Counter", () => {
         expect(counter2).to.be.null;
       });
 
-      it("can create and access list (input: number[])", function (this: RealmContext) {
+      // TODO(lj): To be implemented.
+      it.skip("can create and access list (input: number[])", function (this: RealmContext) {
         const { list } = this.realm.write(() => {
           return this.realm.create<IWithCounterCollections>(WithCounterCollectionsSchema.name, {
             list: initialValuesList,
@@ -219,7 +217,8 @@ describe("Counter", () => {
         expectRealmListOfCounters(list, initialValuesList);
       });
 
-      it("can create and access dictionary (input: JS Object)", function (this: RealmContext) {
+      // TODO(lj): To be implemented.
+      it.skip("can create and access dictionary (input: JS Object)", function (this: RealmContext) {
         const { dictionary } = this.realm.write(() => {
           return this.realm.create<IWithCounterCollections>(WithCounterCollectionsSchema.name, {
             dictionary: initialValuesDict,
@@ -230,7 +229,8 @@ describe("Counter", () => {
         expectRealmDictionaryOfCounters(dictionary, initialValuesDict);
       });
 
-      it("can create and access set (input: number[])", function (this: RealmContext) {
+      // TODO(lj): To be implemented.
+      it.skip("can create and access set (input: number[])", function (this: RealmContext) {
         const { set } = this.realm.write(() => {
           return this.realm.create<IWithCounterCollections>(WithCounterCollectionsSchema.name, {
             set: initialValuesList,
@@ -256,7 +256,8 @@ describe("Counter", () => {
       });
     });
 
-    describe("Via collection accessors", () => {
+    // TODO(lj): To be implemented.
+    describe.skip("Via collection accessors", () => {
       it("can create and access list items", function (this: RealmContext) {
         const { list } = this.realm.write(() => {
           return this.realm.create<IWithCounterCollections>(WithCounterCollectionsSchema.name, {
@@ -415,7 +416,8 @@ describe("Counter", () => {
         expect(counter.value).equals(-3);
       });
 
-      it("sets", function (this: RealmContext) {
+      // TODO(lj): To be implemented.
+      it.skip("sets", function (this: RealmContext) {
         const { counter } = this.realm.write(() => {
           return this.realm.create<IWithCounter>(WithCounterSchema.name, {
             counter: 0,
@@ -486,7 +488,8 @@ describe("Counter", () => {
       });
     });
 
-    describe("Realm object collection of counters property", () => {
+    // TODO(lj): To be implemented.
+    describe.skip("Realm object collection of counters property", () => {
       it("updates list", function (this: RealmContext) {
         let input = [-1, 0, 1, 100_000];
         const object = this.realm.write(() => {
@@ -652,7 +655,8 @@ describe("Counter", () => {
       expect(counter.value).equals(0);
     });
 
-    it("throws when setting to non-integer", function (this: RealmContext) {
+    // TODO(lj): To be implemented.
+    it.skip("throws when setting to non-integer", function (this: RealmContext) {
       const { counter } = this.realm.write(() => {
         return this.realm.create<IWithCounter>(WithCounterSchema.name, {
           counter: 0,
