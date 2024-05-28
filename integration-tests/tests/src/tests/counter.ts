@@ -240,6 +240,20 @@ describe("Counter", () => {
         expect(this.realm.objects(WithCounterCollectionsSchema.name).length).equals(1);
         expectRealmSetOfCounters(set, initialValuesList);
       });
+
+      it("returns different reference for each access", function (this: RealmContext) {
+        const object = this.realm.write(() => {
+          return this.realm.create<IWithCounter>(WithCounterSchema.name, {
+            counter: 0,
+          });
+        });
+
+        expectCounter(object.counter);
+        // @ts-expect-error Testing different types.
+        expect(object.counter === 0).to.be.false;
+        expect(object.counter === object.counter).to.be.false;
+        expect(Object.is(object.counter, object.counter)).to.be.false;
+      });
     });
 
     describe("Via collection accessors", () => {
@@ -293,6 +307,34 @@ describe("Counter", () => {
         });
 
         expectRealmSetOfCounters(set, initialValuesList);
+      });
+
+      it("returns different reference for each access", function (this: RealmContext) {
+        const { list, dictionary, set } = this.realm.write(() => {
+          return this.realm.create<IWithCounterCollections>(WithCounterCollectionsSchema.name, {
+            list: [0],
+            dictionary: { key: 0 },
+            set: [0],
+          });
+        });
+
+        expectCounter(list[0]);
+        // @ts-expect-error Testing different types.
+        expect(list[0] === 0).to.be.false;
+        expect(list[0] === list[0]).to.be.false;
+        expect(Object.is(list[0], list[0])).to.be.false;
+
+        expectCounter(dictionary.key);
+        // @ts-expect-error Testing different types.
+        expect(dictionary.key === 0).to.be.false;
+        expect(dictionary.key === dictionary.key).to.be.false;
+        expect(Object.is(dictionary.key, dictionary.key)).to.be.false;
+
+        expectCounter(set[0]);
+        // @ts-expect-error Testing different types.
+        expect(set[0] === 0).to.be.false;
+        expect(set[0] === set[0]).to.be.false;
+        expect(Object.is(set[0], set[0])).to.be.false;
       });
     });
   });
