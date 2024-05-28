@@ -60,10 +60,10 @@ export class PropertyMap {
 
         const canonicalPropertySchema = canonicalObjectSchema.properties[propertyName];
         assert(canonicalPropertySchema, `Expected ${propertyName} to exist on the CanonicalObjectSchema.`);
-        const isCounter =
-          canonicalPropertySchema.type === "counter" || canonicalPropertySchema.objectType === "counter";
-
-        const helpers = createPropertyHelpers({ ...property, embedded, objectSchemaName, isCounter }, options);
+        const helpers = createPropertyHelpers(
+          { ...property, embedded, objectSchemaName, presentation: canonicalPropertySchema.presentation },
+          options,
+        );
         // Allow users to override the default value of properties
         const defaultValue = defaults[propertyName];
         helpers.default = typeof defaultValue !== "undefined" ? defaultValue : helpers.default;

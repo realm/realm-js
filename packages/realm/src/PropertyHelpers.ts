@@ -22,6 +22,7 @@ import {
   Dictionary,
   List,
   ListAccessor,
+  PresentationPropertyTypeName,
   Realm,
   RealmSet,
   Results,
@@ -46,7 +47,7 @@ type PropertyContext = binding.Property & {
   type: binding.PropertyType;
   objectSchemaName: string;
   embedded: boolean;
-  isCounter: boolean;
+  presentation?: PresentationPropertyTypeName;
   default?: unknown;
 };
 
@@ -61,7 +62,7 @@ type PropertyOptions = {
   columnKey: binding.ColKey;
   optional: boolean;
   embedded: boolean;
-  isCounter: boolean;
+  presentation?: PresentationPropertyTypeName;
 } & HelperOptions &
   binding.Property_Relaxed;
 
@@ -125,9 +126,9 @@ type AccessorFactory = (options: PropertyOptions) => PropertyAccessor;
 
 const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>> = {
   [binding.PropertyType.Int](options) {
-    const { realm, columnKey, isCounter } = options;
+    const { realm, columnKey, presentation } = options;
 
-    if (isCounter) {
+    if (presentation === "counter") {
       return {
         get(obj) {
           return new Counter(realm, obj, columnKey);
@@ -390,7 +391,7 @@ export function createPropertyHelpers(property: PropertyContext, options: Helper
     objectType: property.objectType,
     objectSchemaName: property.objectSchemaName,
     optional: !!(property.type & binding.PropertyType.Nullable),
-    isCounter: property.isCounter,
+    presentation: property.presentation,
     columnKey: property.columnKey,
   };
   if (collectionType) {
