@@ -115,7 +115,7 @@ function writePackageJson(packagePath: string, content: string) {
  * Heuristics to decide if analytics should be disabled.
  * @returns true if analytics is disabled
  */
-function isAnalyticsDisabled() {
+function isAnalyticsDisabled(): boolean {
   if ("REALM_DISABLE_ANALYTICS" in process.env || "CI" in process.env) {
     return true;
   } else if (
@@ -124,6 +124,8 @@ function isAnalyticsDisabled() {
     process.env["NODE_ENV"] === "test"
   ) {
     return true;
+  } else {
+    return false;
   }
 }
 
