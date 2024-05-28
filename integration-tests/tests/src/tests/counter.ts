@@ -17,9 +17,10 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
-import { Counter, ObjectSchema } from "realm";
+import Realm, { Counter, ObjectSchema } from "realm";
 
 import { openRealmBeforeEach } from "../hooks";
+import { expectRealmDictionary, expectRealmList, expectRealmSet } from "../utils/expects";
 
 interface IWithCounter {
   counter: Counter;
@@ -67,6 +68,49 @@ function expectCounter(value: unknown): asserts value is Counter {
 
 function expectKeys(dictionary: Realm.Dictionary, keys: string[]) {
   expect(Object.keys(dictionary)).members(keys);
+}
+
+function expectRealmListOfCounters(
+  actual: unknown,
+  expectedCounts: readonly number[],
+): asserts actual is Realm.List<Counter> {
+  expectRealmList(actual);
+  expect(actual.length).equals(expectedCounts.length);
+
+  for (let i = 0; i < actual.length; i++) {
+    const counter = actual[i];
+    expectCounter(counter);
+    expect(counter.value).equals(expectedCounts[i]);
+  }
+}
+
+function expectRealmDictionaryOfCounters(
+  actual: unknown,
+  expectedCounts: Record<string, number>,
+): asserts actual is Realm.Dictionary<Counter> {
+  expectRealmDictionary(actual);
+  expectKeys(actual, Object.keys(expectedCounts));
+
+  for (const key in actual) {
+    const counter = actual[key];
+    expectCounter(counter);
+    expect(counter.value).equals(expectedCounts[key]);
+  }
+}
+
+function expectRealmSetOfCounters(
+  actual: unknown,
+  expectedCounts: readonly number[],
+): asserts actual is Realm.Set<Counter> {
+  expectRealmSet(actual);
+  const size = actual.size;
+  expect(size).equals(expectedCounts.length);
+
+  for (let i = 0; i < size; i++) {
+    const counter = actual[i];
+    expectCounter(counter);
+    expect(counter.value).equals(expectedCounts[i]);
+  }
 }
 
 describe("Counter", () => {
@@ -172,12 +216,7 @@ describe("Counter", () => {
         });
 
         expect(this.realm.objects(WithCounterCollectionsSchema.name).length).equals(1);
-        expect(list.length).equals(initialValuesList.length);
-        for (let i = 0; i < list.length; i++) {
-          const counter = list[i];
-          expectCounter(counter);
-          expect(counter.value).equals(initialValuesList[i]);
-        }
+        expectRealmListOfCounters(list, initialValuesList);
       });
 
       it("can create and access dictionary (input: JS Object)", function (this: RealmContext) {
@@ -188,12 +227,7 @@ describe("Counter", () => {
         });
 
         expect(this.realm.objects(WithCounterCollectionsSchema.name).length).equals(1);
-        expectKeys(dictionary, Object.keys(initialValuesDict));
-        for (const key in dictionary) {
-          const counter = dictionary[key];
-          expectCounter(counter);
-          expect(counter.value).equals(initialValuesDict[key]);
-        }
+        expectRealmDictionaryOfCounters(dictionary, initialValuesDict);
       });
 
       it("can create and access set (input: number[])", function (this: RealmContext) {
@@ -204,12 +238,7 @@ describe("Counter", () => {
         });
 
         expect(this.realm.objects(WithCounterCollectionsSchema.name).length).equals(1);
-        expect(set.length).equals(initialValuesList.length);
-        for (let i = 0; i < set.length; i++) {
-          const counter = set[i];
-          expectCounter(counter);
-          expect(counter.value).equals(initialValuesList[i]);
-        }
+        expectRealmSetOfCounters(set, initialValuesList);
       });
     });
 
@@ -227,12 +256,7 @@ describe("Counter", () => {
           list.push(...initialValuesList);
         });
 
-        expect(list.length).equals(initialValuesList.length);
-        for (let i = 0; i < list.length; i++) {
-          const counter = list[i];
-          expectCounter(counter);
-          expect(counter.value).equals(initialValuesList[i]);
-        }
+        expectRealmListOfCounters(list, initialValuesList);
       });
 
       it("can create and access dictionary entries", function (this: RealmContext) {
@@ -250,12 +274,7 @@ describe("Counter", () => {
           }
         });
 
-        expectKeys(dictionary, Object.keys(initialValuesDict));
-        for (const key in dictionary) {
-          const counter = dictionary[key];
-          expectCounter(counter);
-          expect(counter.value).equals(initialValuesDict[key]);
-        }
+        expectRealmDictionaryOfCounters(dictionary, initialValuesDict);
       });
 
       it("can create and access set items", function (this: RealmContext) {
@@ -273,12 +292,7 @@ describe("Counter", () => {
           }
         });
 
-        expect(set.length).equals(initialValuesList.length);
-        for (let i = 0; i < set.length; i++) {
-          const counter = set[i];
-          expectCounter(counter);
-          expect(counter.value).equals(initialValuesList[i]);
-        }
+        expectRealmSetOfCounters(set, initialValuesList);
       });
     });
   });
