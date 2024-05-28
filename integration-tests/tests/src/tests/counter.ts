@@ -442,6 +442,72 @@ describe("Counter", () => {
         expectCounter(object.optionalCounter);
         expect(object.optionalCounter.value).equals(-100_000);
       });
+
+      it("updates list", function (this: RealmContext) {
+        let input = [-1, 0, 1, 100_000];
+        const object = this.realm.write(() => {
+          return this.realm.create<IWithCounterCollections>(WithCounterCollectionsSchema.name, {
+            list: input,
+          });
+        });
+        expectRealmListOfCounters(object.list, input);
+
+        input = [2, 10];
+        this.realm.write(() => {
+          object.list = input;
+        });
+        expectRealmListOfCounters(object.list, input);
+
+        input = [];
+        this.realm.write(() => {
+          object.list = input;
+        });
+        expectRealmListOfCounters(object.list, input);
+      });
+
+      it("updates dictionary", function (this: RealmContext) {
+        let input: Record<string, number> = { a: -1, b: 0, c: 1, d: 100_000 };
+        const object = this.realm.write(() => {
+          return this.realm.create<IWithCounterCollections>(WithCounterCollectionsSchema.name, {
+            dictionary: input,
+          });
+        });
+        expectRealmDictionaryOfCounters(object.dictionary, input);
+
+        input = { a: 2, b: 10 };
+        this.realm.write(() => {
+          object.dictionary = input;
+        });
+        expectRealmDictionaryOfCounters(object.dictionary, input);
+
+        input = {};
+        this.realm.write(() => {
+          object.dictionary = input;
+        });
+        expectRealmDictionaryOfCounters(object.dictionary, input);
+      });
+
+      it("updates set", function (this: RealmContext) {
+        let input = [-1, 0, 1, 100_000];
+        const object = this.realm.write(() => {
+          return this.realm.create<IWithCounterCollections>(WithCounterCollectionsSchema.name, {
+            set: input,
+          });
+        });
+        expectRealmSetOfCounters(object.set, input);
+
+        input = [2, 10];
+        this.realm.write(() => {
+          object.set = input;
+        });
+        expectRealmSetOfCounters(object.set, input);
+
+        input = [];
+        this.realm.write(() => {
+          object.set = input;
+        });
+        expectRealmSetOfCounters(object.set, input);
+      });
     });
   });
 });
