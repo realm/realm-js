@@ -34,16 +34,16 @@ const WithCounterSchema: ObjectSchema = {
 };
 
 interface IWithOptAndDefaultCounter {
-  optionalCounter?: Counter | null;
+  nullableCounter?: Counter | null;
   counterWithDefault: Counter;
 }
 
 const WithOptAndDefaultCounterSchema: ObjectSchema = {
   name: "WithOptAndDefaultCounter",
   properties: {
-    optionalCounter: "counter?",
+    nullableCounter: "counter?",
     counterWithDefault: { type: "int", presentation: "counter", default: 0 },
-    // TODO(lj): Add a 'listOfOptionalCounters'?
+    // TODO(lj): Add a 'listOfNullableCounters'?
   },
 };
 
@@ -113,7 +113,7 @@ function expectRealmSetOfCounters(
   }
 }
 
-describe.skip("Counter", () => {
+describe("Counter", () => {
   openRealmBeforeEach({ schema: [WithCounterSchema, WithOptAndDefaultCounterSchema, WithCounterCollectionsSchema] });
 
   const initialValuesList = [-100, 0, 1.0, 1000] as const;
@@ -192,12 +192,12 @@ describe.skip("Counter", () => {
       it("can create optional counter with int or null", function (this: RealmContext) {
         const { counter1, counter2 } = this.realm.write(() => {
           const counter1 = this.realm.create<IWithOptAndDefaultCounter>(WithOptAndDefaultCounterSchema.name, {
-            optionalCounter: 0,
-          }).optionalCounter;
+            nullableCounter: 0,
+          }).nullableCounter;
 
           const counter2 = this.realm.create<IWithOptAndDefaultCounter>(WithOptAndDefaultCounterSchema.name, {
-            optionalCounter: null,
-          }).optionalCounter;
+            nullableCounter: null,
+          }).nullableCounter;
 
           return { counter1, counter2 };
         });
@@ -457,32 +457,32 @@ describe.skip("Counter", () => {
       it("updates", function (this: RealmContext) {
         const object = this.realm.write(() => {
           return this.realm.create<IWithOptAndDefaultCounter>(WithOptAndDefaultCounterSchema.name, {
-            optionalCounter: 0,
+            nullableCounter: 0,
           });
         });
-        expectCounter(object.optionalCounter);
+        expectCounter(object.nullableCounter);
 
         this.realm.write(() => {
-          object.optionalCounter = null;
+          object.nullableCounter = null;
         });
-        expect(object.optionalCounter).to.be.null;
+        expect(object.nullableCounter).to.be.null;
 
         this.realm.write(() => {
-          object.optionalCounter = 1;
+          object.nullableCounter = 1;
         });
-        expectCounter(object.optionalCounter);
-        expect(object.optionalCounter.value).equals(1);
+        expectCounter(object.nullableCounter);
+        expect(object.nullableCounter.value).equals(1);
 
         this.realm.write(() => {
-          object.optionalCounter = null;
+          object.nullableCounter = null;
         });
-        expect(object.optionalCounter).to.be.null;
+        expect(object.nullableCounter).to.be.null;
 
         this.realm.write(() => {
-          object.optionalCounter = -100_000;
+          object.nullableCounter = -100_000;
         });
-        expectCounter(object.optionalCounter);
-        expect(object.optionalCounter.value).equals(-100_000);
+        expectCounter(object.nullableCounter);
+        expect(object.nullableCounter.value).equals(-100_000);
       });
     });
 
