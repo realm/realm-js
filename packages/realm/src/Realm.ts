@@ -37,6 +37,7 @@ import {
   LoggerCallback2,
   MigrationCallback,
   ObjectSchema,
+  PresentationPropertyTypeName,
   ProgressRealmPromise,
   REALM,
   RealmEvent,
@@ -80,6 +81,7 @@ type RealmSchemaExtra = Record<string, ObjectSchemaExtra | undefined>;
 type ObjectSchemaExtra = {
   constructor?: RealmObjectConstructor;
   defaults: Record<string, unknown>;
+  presentations: Record<string, PresentationPropertyTypeName | undefined>;
   // objectTypes: Record<string, unknown>;
 };
 
@@ -398,17 +400,26 @@ export class Realm {
     }
   }
 
-  private static extractSchemaExtras(schemas: CanonicalObjectSchema[]): RealmSchemaExtra {
-    return Object.fromEntries(
-      schemas.map((schema) => {
-        const defaults = Object.fromEntries(
-          Object.entries(schema.properties).map(([name, property]) => {
-            return [name, property.default];
-          }),
-        );
-        return [schema.name, { defaults, constructor: schema.ctor }];
-      }),
-    );
+  private static extractRealmSchemaExtras(schemas: CanonicalObjectSchema[]): RealmSchemaExtra {
+    const extras: RealmSchemaExtra = {};
+    for (const schema of schemas) {
+      extras[schema.name] = this.extractObjectSchemaExtras(schema);
+    }
+
+    return extras;
+  }
+
+  /** @internal */
+  private static extractObjectSchemaExtras(schema: CanonicalObjectSchema): ObjectSchemaExtra {
+    const defaults: Record<string, unknown> = {};
+    const presentations: Record<string, PresentationPropertyTypeName | undefined> = {};
+
+    for (const [name, propertySchema] of Object.entries(schema.properties)) {
+      defaults[name] = propertySchema.default;
+      presentations[name] = propertySchema.presentation;
+    }
+
+    return { constructor: schema.ctor, defaults, presentations };
   }
 
   /** @internal */
@@ -417,7 +428,7 @@ export class Realm {
     bindingConfig: binding.RealmConfig_Relaxed;
   } {
     const normalizedSchema = config.schema && normalizeRealmSchema(config.schema);
-    const schemaExtras = Realm.extractSchemaExtras(normalizedSchema || []);
+    const schemaExtras = Realm.extractRealmSchemaExtras(normalizedSchema || []);
     const path = Realm.determinePath(config);
     const { fifoFilesFallbackPath, shouldCompact, inMemory } = config;
     const bindingSchema = normalizedSchema && toBindingSchema(normalizedSchema);
@@ -560,8 +571,6 @@ export class Realm {
         },
         schemaDidChange: (r) => {
           r.verifyOpen();
-          // TODO(lj): Use normalized schema from the user-defined one instead of
-          //           `this.schema`, since `this.schema` normalizes based on the binding.
           this.classes = new ClassMap(this, this.internal.schema, this.schema);
           this.schemaListeners.notify(this.schema);
         },
@@ -588,8 +597,6 @@ export class Realm {
       writable: false,
     });
 
-    // TODO(lj): Use normalized schema from the user-defined one instead of
-    //           `this.schema`, since `this.schema` normalizes based on the binding.
     this.classes = new ClassMap(this, this.internal.schema, this.schema);
 
     const syncSession = this.internal.syncSession;
@@ -648,13 +655,6 @@ export class Realm {
    * @since 0.12.0
    */
   get schema(): CanonicalObjectSchema[] {
-    // TODO(lj):
-    // * Why does this need to be calculated on each invocation?
-    //   * The below code is already handled during normalization.
-    // * This currently creates the SDK canonical schema via the binding
-    //   schema. Since the binding will not have information about the counter,
-    //   the canonical schema returned will be incorrect for counters.
-
     const schemas = fromBindingRealmSchema(this.internal.schema);
     // Stitch in the constructors and defaults stored in this.schemaExtras
     for (const objectSchema of schemas) {
@@ -662,8 +662,11 @@ export class Realm {
       if (extras) {
         objectSchema.ctor = extras.constructor;
       }
+      // Some tests require that the properties exist on the object, even
+      // if the value is `undefined`. Thus, explicitly set to `undefined`.
       for (const property of Object.values(objectSchema.properties)) {
         property.default = extras ? extras.defaults[property.name] : undefined;
+        property.presentation = extras ? extras.presentations[property.name] : undefined;
       }
     }
     return schemas;
@@ -1316,6 +1319,7 @@ export namespace Realm {
   export import OpenRealmTimeOutBehavior = internal.OpenRealmTimeOutBehavior;
   export import OrderedCollection = internal.OrderedCollection;
   export import PartitionSyncConfiguration = internal.PartitionSyncConfiguration;
+  export import PresentationPropertyTypeName = internal.PresentationPropertyTypeName;
   export import PrimaryKey = internal.PrimaryKey;
   export import PrimitivePropertyTypeName = internal.PrimitivePropertyTypeName;
   export import ProgressDirection = internal.ProgressDirection;
@@ -1342,6 +1346,7 @@ export namespace Realm {
   export import SessionState = internal.SessionState;
   export import SessionStopPolicy = internal.SessionStopPolicy;
   export import Set = internal.RealmSet;
+  export import ShorthandPrimitivePropertyTypeName = internal.ShorthandPrimitivePropertyTypeName;
   export import SortDescriptor = internal.SortDescriptor;
   export import SSLConfiguration = internal.SSLConfiguration;
   export import SSLVerifyCallback = internal.SSLVerifyCallback;

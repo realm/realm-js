@@ -375,6 +375,7 @@ describe("Observable", () => {
                   name: {
                     name: "name",
                     type: "string",
+                    presentation: undefined,
                     optional: false,
                     indexed: false,
                     mapTo: "name",
