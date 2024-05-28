@@ -127,48 +127,56 @@ describe("normalizePropertySchema", () => {
 
       describe("'counter' & collection combinations", () => {
         itNormalizes("counter", {
-          type: "counter",
+          type: "int",
+          presentation: "counter",
           optional: false,
         });
 
         itNormalizes("counter?", {
-          type: "counter",
+          type: "int",
+          presentation: "counter",
           optional: true,
         });
 
         itNormalizes("counter[]", {
           type: "list",
-          objectType: "counter",
+          objectType: "int",
+          presentation: "counter",
           optional: false,
         });
 
         itNormalizes("counter?[]", {
           type: "list",
-          objectType: "counter",
+          objectType: "int",
+          presentation: "counter",
           optional: true,
         });
 
         itNormalizes("counter{}", {
           type: "dictionary",
-          objectType: "counter",
+          objectType: "int",
+          presentation: "counter",
           optional: false,
         });
 
         itNormalizes("counter?{}", {
           type: "dictionary",
-          objectType: "counter",
+          objectType: "int",
+          presentation: "counter",
           optional: true,
         });
 
         itNormalizes("counter<>", {
           type: "set",
-          objectType: "counter",
+          objectType: "int",
+          presentation: "counter",
           optional: false,
         });
 
         itNormalizes("counter?<>", {
           type: "set",
-          objectType: "counter",
+          objectType: "int",
+          presentation: "counter",
           optional: true,
         });
       });
@@ -556,32 +564,38 @@ describe("normalizePropertySchema", () => {
       describe("'counter' & collection combinations", () => {
         itNormalizes(
           {
-            type: "counter",
+            type: "int",
+            presentation: "counter",
           },
           {
-            type: "counter",
+            type: "int",
+            presentation: "counter",
             optional: false,
           },
         );
 
         itNormalizes(
           {
-            type: "counter",
+            type: "int",
+            presentation: "counter",
             optional: false,
           },
           {
-            type: "counter",
+            type: "int",
+            presentation: "counter",
             optional: false,
           },
         );
 
         itNormalizes(
           {
-            type: "counter",
+            type: "int",
+            presentation: "counter",
             optional: true,
           },
           {
-            type: "counter",
+            type: "int",
+            presentation: "counter",
             optional: true,
           },
         );
@@ -589,24 +603,13 @@ describe("normalizePropertySchema", () => {
         itNormalizes(
           {
             type: "list",
-            objectType: "counter",
+            objectType: "int",
+            presentation: "counter",
           },
           {
             type: "list",
-            objectType: "counter",
-            optional: false,
-          },
-        );
-
-        itNormalizes(
-          {
-            type: "list",
-            objectType: "counter",
-            optional: false,
-          },
-          {
-            type: "list",
-            objectType: "counter",
+            objectType: "int",
+            presentation: "counter",
             optional: false,
           },
         );
@@ -614,12 +617,29 @@ describe("normalizePropertySchema", () => {
         itNormalizes(
           {
             type: "list",
-            objectType: "counter",
+            objectType: "int",
+            presentation: "counter",
+            optional: false,
+          },
+          {
+            type: "list",
+            objectType: "int",
+            presentation: "counter",
+            optional: false,
+          },
+        );
+
+        itNormalizes(
+          {
+            type: "list",
+            objectType: "int",
+            presentation: "counter",
             optional: true,
           },
           {
             type: "list",
-            objectType: "counter",
+            objectType: "int",
+            presentation: "counter",
             optional: true,
           },
         );
@@ -627,11 +647,13 @@ describe("normalizePropertySchema", () => {
         itNormalizes(
           {
             type: "dictionary",
-            objectType: "counter",
+            objectType: "int",
+            presentation: "counter",
           },
           {
             type: "dictionary",
-            objectType: "counter",
+            objectType: "int",
+            presentation: "counter",
             optional: false,
           },
         );
@@ -639,12 +661,14 @@ describe("normalizePropertySchema", () => {
         itNormalizes(
           {
             type: "dictionary",
-            objectType: "counter",
+            objectType: "int",
+            presentation: "counter",
             optional: false,
           },
           {
             type: "dictionary",
-            objectType: "counter",
+            objectType: "int",
+            presentation: "counter",
             optional: false,
           },
         );
@@ -652,12 +676,14 @@ describe("normalizePropertySchema", () => {
         itNormalizes(
           {
             type: "dictionary",
-            objectType: "counter",
+            objectType: "int",
+            presentation: "counter",
             optional: true,
           },
           {
             type: "dictionary",
-            objectType: "counter",
+            objectType: "int",
+            presentation: "counter",
             optional: true,
           },
         );
@@ -665,11 +691,13 @@ describe("normalizePropertySchema", () => {
         itNormalizes(
           {
             type: "set",
-            objectType: "counter",
+            objectType: "int",
+            presentation: "counter",
           },
           {
             type: "set",
-            objectType: "counter",
+            objectType: "int",
+            presentation: "counter",
             optional: false,
           },
         );
@@ -677,12 +705,14 @@ describe("normalizePropertySchema", () => {
         itNormalizes(
           {
             type: "set",
-            objectType: "counter",
+            objectType: "int",
+            presentation: "counter",
             optional: false,
           },
           {
             type: "set",
-            objectType: "counter",
+            objectType: "int",
+            presentation: "counter",
             optional: false,
           },
         );
@@ -690,12 +720,14 @@ describe("normalizePropertySchema", () => {
         itNormalizes(
           {
             type: "set",
-            objectType: "counter",
+            objectType: "int",
+            presentation: "counter",
             optional: true,
           },
           {
             type: "set",
-            objectType: "counter",
+            objectType: "int",
+            presentation: "counter",
             optional: true,
           },
         );
@@ -942,7 +974,7 @@ describe("normalizePropertySchema", () => {
     describe("Invalid object notation", () => {
       itThrowsWhenNormalizing(
         {
-          // @ts-expect-error Passing in the wrong type
+          // @ts-expect-error Passing in the wrong type.
           type: "",
         },
         "'type' must be specified",
@@ -987,7 +1019,7 @@ describe("normalizePropertySchema", () => {
 
       itThrowsWhenNormalizing(
         {
-          // @ts-expect-error Passing in the wrong type
+          // @ts-expect-error Passing in the wrong type.
           type: "Person",
         },
         "If you meant to define a relationship, use { type: 'object', objectType: 'Person' } or { type: 'linkingObjects', objectType: 'Person', property: 'The Person property' }",
@@ -1107,7 +1139,7 @@ describe("normalizePropertySchema", () => {
       describe("Mixing shorthand inside object notation", () => {
         itThrowsWhenNormalizing(
           {
-            // @ts-expect-error Passing in the wrong type
+            // @ts-expect-error Passing in the wrong type.
             type: "int?",
           },
           "Cannot use shorthand '?' in 'type' or 'objectType' when defining property objects",
@@ -1115,7 +1147,7 @@ describe("normalizePropertySchema", () => {
 
         itThrowsWhenNormalizing(
           {
-            // @ts-expect-error Passing in the wrong type
+            // @ts-expect-error Passing in the wrong type.
             type: "int?[]",
           },
           "Cannot use shorthand '[]' and '?' in 'type' or 'objectType' when defining property objects",
@@ -1144,6 +1176,22 @@ describe("normalizePropertySchema", () => {
           },
           "Cannot use shorthand '?' in 'type' or 'objectType' when defining property objects",
         );
+
+        itThrowsWhenNormalizing(
+          {
+            // @ts-expect-error Passing in the wrong type.
+            type: "counter",
+          },
+          "Cannot use shorthand 'counter' in 'type' or 'objectType' when defining property objects. To use presentation types such as 'counter', use the field 'presentation'",
+        );
+
+        itThrowsWhenNormalizing(
+          {
+            type: "list",
+            objectType: "counter?",
+          },
+          "Cannot use shorthand '?' and 'counter' in 'type' or 'objectType' when defining property objects. To use presentation types such as 'counter', use the field 'presentation'",
+        );
       });
 
       describe("Indexed and primary key combinations", () => {
@@ -1168,7 +1216,8 @@ describe("normalizePropertySchema", () => {
 
         itThrowsWhenNormalizing(
           {
-            type: "counter",
+            type: "int",
+            presentation: "counter",
           },
           "Counters cannot be primary keys.",
           { isPrimaryKey: true },
@@ -1177,7 +1226,8 @@ describe("normalizePropertySchema", () => {
         itThrowsWhenNormalizing(
           {
             type: "list",
-            objectType: "counter",
+            objectType: "int",
+            presentation: "counter",
           },
           "Counters cannot be primary keys.",
           { isPrimaryKey: true },
