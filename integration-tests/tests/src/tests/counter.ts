@@ -116,11 +116,11 @@ function expectRealmSetOfCounters(
 describe("Counter", () => {
   openRealmBeforeEach({ schema: [WithCounterSchema, WithOptAndDefaultCounterSchema, WithCounterCollectionsSchema] });
 
-  const initialValuesList = [-100, 0, 1, 1000] as const;
+  const initialValuesList = [-100, 0, 1.0, 1000] as const;
   const initialValuesDict: Readonly<Record<string, number>> = {
     negative100: -100,
     _0: 0,
-    _1: 1,
+    _1: 1.0,
     _1000: 1000,
   };
 
@@ -351,7 +351,7 @@ describe("Counter", () => {
         expect(counter.value).equals(0);
 
         this.realm.write(() => {
-          counter.increment(0);
+          counter.increment(0.0);
         });
         expect(counter.value).equals(0);
 
@@ -361,7 +361,7 @@ describe("Counter", () => {
         expect(counter.value).equals(1);
 
         this.realm.write(() => {
-          counter.increment(19);
+          counter.increment(Number(19));
         });
         expect(counter.value).equals(20);
 
@@ -388,7 +388,7 @@ describe("Counter", () => {
         expect(counter.value).equals(0);
 
         this.realm.write(() => {
-          counter.decrement(0);
+          counter.decrement(0.0);
         });
         expect(counter.value).equals(0);
 
@@ -398,12 +398,12 @@ describe("Counter", () => {
         expect(counter.value).equals(-1);
 
         this.realm.write(() => {
-          counter.decrement(19);
+          counter.decrement(Number(19));
         });
         expect(counter.value).equals(-20);
 
         this.realm.write(() => {
-          counter.decrement(-20);
+          counter.decrement(-20.0);
         });
         expect(counter.value).equals(0);
 
@@ -425,7 +425,7 @@ describe("Counter", () => {
         expect(counter.value).equals(0);
 
         this.realm.write(() => {
-          counter.set(0);
+          counter.set(0.0);
         });
         expect(counter.value).equals(0);
 
@@ -435,7 +435,7 @@ describe("Counter", () => {
         expect(counter.value).equals(1);
 
         this.realm.write(() => {
-          counter.set(20);
+          counter.set(20.0);
         });
         expect(counter.value).equals(20);
 
@@ -484,7 +484,9 @@ describe("Counter", () => {
         expectCounter(object.optionalCounter);
         expect(object.optionalCounter.value).equals(-100_000);
       });
+    });
 
+    describe("Realm object collection of counters property", () => {
       it("updates list", function (this: RealmContext) {
         let input = [-1, 0, 1, 100_000];
         const object = this.realm.write(() => {
@@ -550,6 +552,152 @@ describe("Counter", () => {
         });
         expectRealmSetOfCounters(object.set, input);
       });
+    });
+  });
+
+  describe("Invalid operations", () => {
+    it("throws when incrementing by non-integer", function (this: RealmContext) {
+      const { counter } = this.realm.write(() => {
+        return this.realm.create<IWithCounter>(WithCounterSchema.name, {
+          counter: 0,
+        });
+      });
+      expectCounter(counter);
+      expect(counter.value).equals(0);
+
+      expect(() => {
+        this.realm.write(() => {
+          counter.increment(1.1);
+        });
+      }).to.throw("Expected 'by' to be an integer, got a floating point number");
+      expect(counter.value).equals(0);
+
+      expect(() => {
+        this.realm.write(() => {
+          counter.increment(NaN);
+        });
+      }).to.throw("Expected 'by' to be an integer, got NaN");
+      expect(counter.value).equals(0);
+
+      expect(() => {
+        this.realm.write(() => {
+          // @ts-expect-error Testing incorrect type.
+          counter.increment(new Number(1));
+        });
+      }).to.throw("Expected 'by' to be an integer, got an instance of Number");
+      expect(counter.value).equals(0);
+
+      expect(() => {
+        this.realm.write(() => {
+          // @ts-expect-error Testing incorrect type.
+          counter.increment("1");
+        });
+      }).to.throw("Expected 'by' to be an integer, got a string");
+      expect(counter.value).equals(0);
+
+      expect(() => {
+        this.realm.write(() => {
+          // @ts-expect-error Testing incorrect type.
+          counter.increment(BigInt(1));
+        });
+      }).to.throw("Expected 'by' to be an integer, got a bigint");
+      expect(counter.value).equals(0);
+    });
+
+    it("throws when decrementing by non-integer", function (this: RealmContext) {
+      const { counter } = this.realm.write(() => {
+        return this.realm.create<IWithCounter>(WithCounterSchema.name, {
+          counter: 0,
+        });
+      });
+      expectCounter(counter);
+      expect(counter.value).equals(0);
+
+      expect(() => {
+        this.realm.write(() => {
+          counter.decrement(1.1);
+        });
+      }).to.throw("Expected 'by' to be an integer, got a floating point number");
+      expect(counter.value).equals(0);
+
+      expect(() => {
+        this.realm.write(() => {
+          counter.decrement(NaN);
+        });
+      }).to.throw("Expected 'by' to be an integer, got NaN");
+      expect(counter.value).equals(0);
+
+      expect(() => {
+        this.realm.write(() => {
+          // @ts-expect-error Testing incorrect type.
+          counter.decrement(new Number(1));
+        });
+      }).to.throw("Expected 'by' to be an integer, got an instance of Number");
+      expect(counter.value).equals(0);
+
+      expect(() => {
+        this.realm.write(() => {
+          // @ts-expect-error Testing incorrect type.
+          counter.decrement("1");
+        });
+      }).to.throw("Expected 'by' to be an integer, got a string");
+      expect(counter.value).equals(0);
+
+      expect(() => {
+        this.realm.write(() => {
+          // @ts-expect-error Testing incorrect type.
+          counter.decrement(BigInt(1));
+        });
+      }).to.throw("Expected 'by' to be an integer, got a bigint");
+      expect(counter.value).equals(0);
+    });
+
+    it("throws when setting to non-integer", function (this: RealmContext) {
+      const { counter } = this.realm.write(() => {
+        return this.realm.create<IWithCounter>(WithCounterSchema.name, {
+          counter: 0,
+        });
+      });
+      expectCounter(counter);
+      expect(counter.value).equals(0);
+
+      expect(() => {
+        this.realm.write(() => {
+          counter.set(1.1);
+        });
+      }).to.throw("Expected 'by' to be an integer, got a floating point number");
+      expect(counter.value).equals(0);
+
+      expect(() => {
+        this.realm.write(() => {
+          counter.set(NaN);
+        });
+      }).to.throw("Expected 'by' to be an integer, got NaN");
+      expect(counter.value).equals(0);
+
+      expect(() => {
+        this.realm.write(() => {
+          // @ts-expect-error Testing incorrect type.
+          counter.set(new Number(1));
+        });
+      }).to.throw("Expected 'by' to be an integer, got an instance of Number");
+      expect(counter.value).equals(0);
+
+      expect(() => {
+        this.realm.write(() => {
+          // @ts-expect-error Testing incorrect type.
+          counter.set("1");
+        });
+      }).to.throw("Expected 'by' to be an integer, got a string");
+      expect(counter.value).equals(0);
+
+      expect(() => {
+        this.realm.write(() => {
+          // @ts-expect-error Testing incorrect type.
+          counter.set(BigInt(1));
+        });
+      }).to.throw("Expected 'by' to be an integer, got a bigint");
+      expect(counter.value).equals(0);
     });
   });
 });
