@@ -35,6 +35,8 @@ export { program };
 
 const { env } = process;
 
+assert.equal(env.npm_package_name, "realm", "Expected this to be invoked through NPM scripts");
+
 const applePlatformOption = new Option("--platform <name...>", "Platform to build for")
   .makeOptionMandatory()
   .choices([...xcode.SUPPORTED_PLATFORMS, "all", "none"] as const)
