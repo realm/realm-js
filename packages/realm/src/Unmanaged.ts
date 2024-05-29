@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import type { AnyRealmObject, Collection, Dictionary, List, Realm } from "./internal";
+import type { AnyRealmObject, Collection, Counter, Dictionary, List, Realm } from "./internal";
 
 /* eslint-disable-next-line @typescript-eslint/no-explicit-any -- We define these once to avoid using "any" through the code */
 export type AnyCollection = Collection<any, any, any, any, any>;
@@ -32,7 +32,7 @@ type ExtractPropertyNamesOfType<T, PropType> = {
 /**
  * Exchanges properties defined as {@link List} with an optional {@link Array}.
  */
-type RealmListsRemappedModelPart<T> = {
+type RealmListRemappedModelPart<T> = {
   [K in ExtractPropertyNamesOfType<T, AnyList>]?: T[K] extends List<infer GT> ? Array<GT | Unmanaged<GT>> : never;
 };
 
@@ -45,6 +45,17 @@ type RealmDictionaryRemappedModelPart<T> = {
     : never;
 };
 
+// TODO(lj): Fix so that nullable Counters can be set to null (by TS) (see temporary type test at bottom).
+/**
+ * Exchanges properties defined as a {@link Counter} with a `number`.
+ */
+type RealmCounterRemappedModelPart<T> = {
+  [K in ExtractPropertyNamesOfType<T, Counter>]?: Exclude<T[K], null | undefined> extends Counter
+    ? Counter | number | Exclude<T[K], Counter>
+    : never;
+    // : T[K];
+};
+
 /** Omits all properties of a model which are not defined by the schema */
 export type OmittedRealmTypes<T> = Omit<
   T,
@@ -53,6 +64,7 @@ export type OmittedRealmTypes<T> = Omit<
   | ExtractPropertyNamesOfType<T, Function> // TODO: Figure out the use-case for this
   | ExtractPropertyNamesOfType<T, AnyCollection>
   | ExtractPropertyNamesOfType<T, AnyDictionary>
+  | ExtractPropertyNamesOfType<T, Counter>
 >;
 
 /** Make all fields optional except those specified in K */
@@ -68,7 +80,9 @@ type OmittedRealmTypesWithRequired<T, RequiredProperties extends keyof OmittedRe
 >;
 
 /** Remaps realm types to "simpler" types (arrays and objects) */
-type RemappedRealmTypes<T> = RealmListsRemappedModelPart<T> & RealmDictionaryRemappedModelPart<T>;
+type RemappedRealmTypes<T> = RealmListRemappedModelPart<T> &
+  RealmDictionaryRemappedModelPart<T> &
+  RealmCounterRemappedModelPart<T>;
 
 /**
  * Joins `T` stripped of all keys which value extends {@link Collection} and all inherited from {@link Realm.Object},
@@ -80,3 +94,38 @@ export type Unmanaged<T, RequiredProperties extends keyof OmittedRealmTypes<T> =
   RequiredProperties
 > &
   RemappedRealmTypes<T>;
+
+// TODO(lj): Remove temporary manual type testing.
+
+// type MyObj = {
+//   counter1: Counter;
+//   counter2: Counter;
+//   nullableCounter1?: Counter | null;
+//   nullableCounter2?: Counter | null;
+//   counterOrUndefined1?: Counter;
+//   counterOrUndefined2?: Counter;
+
+//   stringProp1: string;
+//   stringProp2: string;
+//   nullableStringProp1: string | null;
+//   nullableStringProp2: string | null;
+//   stringOrUndefined1?: string;
+//   stringOrUndefined2?: string;
+// };
+
+// const test: Unmanaged<MyObj> = {
+//   counter1: 5, // Expected: valid
+//   counter2: null, // Expected: invalid
+//   nullableCounter1: null, // Expected: valid
+//   nullableCounter2: 10, // Expected: valid
+//   counterOrUndefined1: undefined, // Expected: valid
+//   counterOrUndefined2: 10, // Expected: valid
+
+//   stringProp1: "test", // Expected: valid
+//   stringProp2: null, // Expected: invalid
+//   nullableStringProp1: null, // Expected: valid
+//   nullableStringProp2: "blah", // Expected: valid
+//   stringOrUndefined1: undefined, // Expected: valid
+//   stringOrUndefined2: "sad", // Expected: valid
+// };
+// test;
