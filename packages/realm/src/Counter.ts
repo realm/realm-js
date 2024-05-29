@@ -24,15 +24,9 @@ import { IllegalConstructorError, Realm, assert, binding } from "./internal";
 export class Counter {
   /** @internal */
   private declare readonly realm: Realm;
-  /**
-   * The binding representation of the associated obj.
-   * @internal
-   */
+  /** @internal */
   private declare readonly obj: binding.Obj;
-  /**
-   * The column key on the obj.
-   * @internal
-   */
+  /** @internal */
   private declare readonly columnKey: binding.ColKey;
 
   /** @internal */
@@ -66,7 +60,13 @@ export class Counter {
    * TODO(lj)
    */
   get value(): number {
-    return Number(this.obj.getAny(this.columnKey));
+    try {
+      return Number(this.obj.getAny(this.columnKey));
+    } catch (err) {
+      // Throw a custom error message instead of Core's.
+      assert.isValid(this.obj);
+      throw err;
+    }
   }
 
   /**
