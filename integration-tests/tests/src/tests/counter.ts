@@ -806,5 +806,29 @@ describe("Counter", () => {
       );
       expect(object.nullableCounter.value).equals(10);
     });
+
+    it("throws when setting an int property to a counter", function (this: RealmContext) {
+      const { objectWithInt, counter } = this.realm.write(() => {
+        const objectWithInt = this.realm.create<IWithRegularInt>(WithRegularIntSchema.name, {
+          int: 10,
+        });
+        // Create and object with a counter that will be used for setting an 'int' property.
+        const { counter } = this.realm.create<IWithCounter>(WithCounterSchema.name, {
+          counter: 20,
+        });
+        return { objectWithInt, counter };
+      });
+      expectCounter(counter);
+      expect(counter.value).equals(20);
+      expect(objectWithInt.int).equals(10);
+
+      expect(() => {
+        this.realm.write(() => {
+          // @ts-expect-error Testing incorrect type.
+          objectWithInt.int = counter;
+        });
+      }).to.throw("Counters can only be used when 'counter' is declared in the property schema");
+      expect(objectWithInt.int).equals(10);
+    });
   });
 });
