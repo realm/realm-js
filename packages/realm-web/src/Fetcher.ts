@@ -39,8 +39,6 @@ type SimpleObject = Record<string, unknown>;
 function asyncIteratorFromResponseBody({ body }: Response): AsyncIterable<Uint8Array> {
   if (typeof body !== "object" || body === null) {
     throw new Error("Expected a non-null object");
-  } else if (Symbol.asyncIterator in body) {
-    return body as AsyncIterable<Uint8Array>;
   } else if ("getReader" in body) {
     return {
       [Symbol.asyncIterator]() {
