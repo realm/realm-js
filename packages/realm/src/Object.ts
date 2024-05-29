@@ -221,21 +221,28 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
     // TODO: Consider using the property helpers directly to improve performance
     for (const property of persistedProperties) {
       const propertyName = property.publicName || property.name;
-      const { default: defaultValue } = properties.get(propertyName);
+      const { default: defaultValue, get: getProperty, set: setProperty } = properties.get(propertyName);
       if (property.isPrimary) {
         continue; // Skip setting this, as we already provided it on object creation
       }
       const propertyValue = values[propertyName];
       if (typeof propertyValue !== "undefined") {
-        if (mode !== UpdateMode.Modified || result[propertyName] !== propertyValue) {
-          // This will call into the property setter in PropertyHelpers.ts.
+        if (mode !== UpdateMode.Modified || getProperty(obj) !== propertyValue) {
+          // Calling `set`/`setProperty` (or `result[propertyName] = propertyValue`)
+          // will call into the property setter in PropertyHelpers.ts.
           // (E.g. the setter for [binding.PropertyType.Array] in the case of lists.)
-          result[propertyName] = propertyValue;
+
+          // Some setters need to allow/disallow certain operations based on
+          // whether the setter is called for the first time via object creation.
+          setProperty(obj, propertyValue, created);
         }
       } else {
+        // If the user has omitted a value for the `property`, and the underlying
+        // object was just created, set the `property` to the default if provided.
         if (created) {
           if (typeof defaultValue !== "undefined") {
-            result[propertyName] = typeof defaultValue === "function" ? defaultValue() : defaultValue;
+            const extractedValue = typeof defaultValue === "function" ? defaultValue() : defaultValue;
+            setProperty(obj, extractedValue, created);
           } else if (
             !(property.type & binding.PropertyType.Collection) &&
             !(property.type & binding.PropertyType.Nullable)
