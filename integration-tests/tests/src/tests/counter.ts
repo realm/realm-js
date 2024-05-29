@@ -33,17 +33,26 @@ const WithCounterSchema: ObjectSchema = {
   },
 };
 
-interface IWithOptAndDefaultCounter {
+interface IWithNullableCounter {
   nullableCounter?: Counter | null;
+}
+
+const WithNullableCounterSchema: ObjectSchema = {
+  name: "WithNullableCounter",
+  properties: {
+    nullableCounter: "counter?",
+    // TODO(lj): Add a 'listOfNullableCounters'?
+  },
+};
+
+interface IWithDefaultCounter {
   counterWithDefault: Counter;
 }
 
-const WithOptAndDefaultCounterSchema: ObjectSchema = {
-  name: "WithOptAndDefaultCounter",
+const WithDefaultCounterSchema: ObjectSchema = {
+  name: "WithDefaultCounter",
   properties: {
-    nullableCounter: "counter?",
     counterWithDefault: { type: "int", presentation: "counter", default: 0 },
-    // TODO(lj): Add a 'listOfNullableCounters'?
   },
 };
 
@@ -59,6 +68,17 @@ const WithCounterCollectionsSchema: ObjectSchema = {
     list: "counter[]",
     dictionary: "counter{}",
     set: "counter<>",
+  },
+};
+
+interface IWithRegularInt {
+  int: number;
+}
+
+const WithRegularIntSchema: ObjectSchema = {
+  name: "WithRegularInt",
+  properties: {
+    int: "int",
   },
 };
 
@@ -114,7 +134,15 @@ function expectRealmSetOfCounters(
 }
 
 describe("Counter", () => {
-  openRealmBeforeEach({ schema: [WithCounterSchema, WithOptAndDefaultCounterSchema, WithCounterCollectionsSchema] });
+  openRealmBeforeEach({
+    schema: [
+      WithCounterSchema,
+      WithNullableCounterSchema,
+      WithCounterCollectionsSchema,
+      WithDefaultCounterSchema,
+      WithRegularIntSchema,
+    ],
+  });
 
   const initialValuesList = [-100, 0, 1.0, 1000] as const;
   const initialValuesDict: Readonly<Record<string, number>> = {
@@ -178,28 +206,28 @@ describe("Counter", () => {
       it("can create and access (input: default value)", function (this: RealmContext) {
         const { counterWithDefault } = this.realm.write(() => {
           // Pass an empty object in order to use the default value from the schema.
-          return this.realm.create<IWithOptAndDefaultCounter>(WithOptAndDefaultCounterSchema.name, {});
+          return this.realm.create<IWithDefaultCounter>(WithDefaultCounterSchema.name, {});
         });
 
-        expect(this.realm.objects(WithOptAndDefaultCounterSchema.name).length).equals(1);
+        expect(this.realm.objects(WithDefaultCounterSchema.name).length).equals(1);
         expectCounter(counterWithDefault);
         expect(counterWithDefault.value).equals(0);
       });
 
       it("can create optional counter with int or null", function (this: RealmContext) {
         const { counter1, counter2 } = this.realm.write(() => {
-          const counter1 = this.realm.create<IWithOptAndDefaultCounter>(WithOptAndDefaultCounterSchema.name, {
+          const counter1 = this.realm.create<IWithNullableCounter>(WithNullableCounterSchema.name, {
             nullableCounter: 0,
           }).nullableCounter;
 
-          const counter2 = this.realm.create<IWithOptAndDefaultCounter>(WithOptAndDefaultCounterSchema.name, {
+          const counter2 = this.realm.create<IWithNullableCounter>(WithNullableCounterSchema.name, {
             nullableCounter: null,
           }).nullableCounter;
 
           return { counter1, counter2 };
         });
 
-        expect(this.realm.objects(WithOptAndDefaultCounterSchema.name).length).equals(2);
+        expect(this.realm.objects(WithNullableCounterSchema.name).length).equals(2);
         expectCounter(counter1);
         expect(counter1.value).equals(0);
         expect(counter2).to.be.null;
@@ -458,7 +486,7 @@ describe("Counter", () => {
     describe("Realm object counter property", () => {
       it("updates", function (this: RealmContext) {
         const object = this.realm.write(() => {
-          return this.realm.create<IWithOptAndDefaultCounter>(WithOptAndDefaultCounterSchema.name, {
+          return this.realm.create<IWithNullableCounter>(WithNullableCounterSchema.name, {
             nullableCounter: 0,
           });
         });
@@ -566,21 +594,21 @@ describe("Counter", () => {
         });
       });
       expectCounter(counter);
-      expect(counter.value).equals(0);
+      expect(counter.value).equals(10);
 
       expect(() => {
         this.realm.write(() => {
           counter.increment(1.1);
         });
       }).to.throw("Expected 'by' to be an integer, got a floating point number");
-      expect(counter.value).equals(0);
+      expect(counter.value).equals(10);
 
       expect(() => {
         this.realm.write(() => {
           counter.increment(NaN);
         });
       }).to.throw("Expected 'by' to be an integer, got NaN");
-      expect(counter.value).equals(0);
+      expect(counter.value).equals(10);
 
       expect(() => {
         this.realm.write(() => {
@@ -588,7 +616,7 @@ describe("Counter", () => {
           counter.increment(new Number(1));
         });
       }).to.throw("Expected 'by' to be an integer, got an instance of Number");
-      expect(counter.value).equals(0);
+      expect(counter.value).equals(10);
 
       expect(() => {
         this.realm.write(() => {
@@ -596,7 +624,7 @@ describe("Counter", () => {
           counter.increment("1");
         });
       }).to.throw("Expected 'by' to be an integer, got a string");
-      expect(counter.value).equals(0);
+      expect(counter.value).equals(10);
 
       expect(() => {
         this.realm.write(() => {
@@ -604,7 +632,7 @@ describe("Counter", () => {
           counter.increment(BigInt(1));
         });
       }).to.throw("Expected 'by' to be an integer, got a bigint");
-      expect(counter.value).equals(0);
+      expect(counter.value).equals(10);
     });
 
     it("throws when decrementing by non-integer", function (this: RealmContext) {
@@ -614,21 +642,21 @@ describe("Counter", () => {
         });
       });
       expectCounter(counter);
-      expect(counter.value).equals(0);
+      expect(counter.value).equals(10);
 
       expect(() => {
         this.realm.write(() => {
           counter.decrement(1.1);
         });
       }).to.throw("Expected 'by' to be an integer, got a floating point number");
-      expect(counter.value).equals(0);
+      expect(counter.value).equals(10);
 
       expect(() => {
         this.realm.write(() => {
           counter.decrement(NaN);
         });
       }).to.throw("Expected 'by' to be an integer, got NaN");
-      expect(counter.value).equals(0);
+      expect(counter.value).equals(10);
 
       expect(() => {
         this.realm.write(() => {
@@ -636,7 +664,7 @@ describe("Counter", () => {
           counter.decrement(new Number(1));
         });
       }).to.throw("Expected 'by' to be an integer, got an instance of Number");
-      expect(counter.value).equals(0);
+      expect(counter.value).equals(10);
 
       expect(() => {
         this.realm.write(() => {
@@ -644,7 +672,7 @@ describe("Counter", () => {
           counter.decrement("1");
         });
       }).to.throw("Expected 'by' to be an integer, got a string");
-      expect(counter.value).equals(0);
+      expect(counter.value).equals(10);
 
       expect(() => {
         this.realm.write(() => {
@@ -652,32 +680,32 @@ describe("Counter", () => {
           counter.decrement(BigInt(1));
         });
       }).to.throw("Expected 'by' to be an integer, got a bigint");
-      expect(counter.value).equals(0);
+      expect(counter.value).equals(10);
     });
 
     // TODO(lj): To be implemented.
     it.skip("throws when setting to non-integer", function (this: RealmContext) {
       const { counter } = this.realm.write(() => {
         return this.realm.create<IWithCounter>(WithCounterSchema.name, {
-          counter: 0,
+          counter: 10,
         });
       });
       expectCounter(counter);
-      expect(counter.value).equals(0);
+      expect(counter.value).equals(10);
 
       expect(() => {
         this.realm.write(() => {
           counter.set(1.1);
         });
       }).to.throw("Expected 'by' to be an integer, got a floating point number");
-      expect(counter.value).equals(0);
+      expect(counter.value).equals(10);
 
       expect(() => {
         this.realm.write(() => {
           counter.set(NaN);
         });
       }).to.throw("Expected 'by' to be an integer, got NaN");
-      expect(counter.value).equals(0);
+      expect(counter.value).equals(10);
 
       expect(() => {
         this.realm.write(() => {
@@ -685,7 +713,7 @@ describe("Counter", () => {
           counter.set(new Number(1));
         });
       }).to.throw("Expected 'by' to be an integer, got an instance of Number");
-      expect(counter.value).equals(0);
+      expect(counter.value).equals(10);
 
       expect(() => {
         this.realm.write(() => {
@@ -693,7 +721,7 @@ describe("Counter", () => {
           counter.set("1");
         });
       }).to.throw("Expected 'by' to be an integer, got a string");
-      expect(counter.value).equals(0);
+      expect(counter.value).equals(10);
 
       expect(() => {
         this.realm.write(() => {
@@ -701,7 +729,57 @@ describe("Counter", () => {
           counter.set(BigInt(1));
         });
       }).to.throw("Expected 'by' to be an integer, got a bigint");
-      expect(counter.value).equals(0);
+      expect(counter.value).equals(10);
+    });
+
+    it("throws when setting a non-nullable Realm object counter property", function (this: RealmContext) {
+      const object = this.realm.write(() => {
+        return this.realm.create<IWithCounter>(WithCounterSchema.name, {
+          counter: 10,
+        });
+      });
+      const counter = object.counter;
+      expectCounter(counter);
+      expect(counter.value).equals(10);
+
+      expect(() => {
+        this.realm.write(() => {
+          object.counter = 0;
+        });
+      }).to.throw(
+        "You can only directly reset a Counter instance when initializing a previously null Counter or resetting a nullable Counter to null. To update the value of the Counter, use its instance methods",
+      );
+      expect(object.counter.value).equals(10);
+
+      expect(() => {
+        this.realm.write(() => {
+          // @ts-expect-error Testing incorrect type.
+          object.counter = null;
+        });
+      }).to.throw(
+        "You can only directly reset a Counter instance when initializing a previously null Counter or resetting a nullable Counter to null. To update the value of the Counter, use its instance methods",
+      );
+      expect(object.counter.value).equals(10);
+    });
+
+    it("throws when setting a nullable Realm object counter property from number -> number", function (this: RealmContext) {
+      const object = this.realm.write(() => {
+        return this.realm.create<IWithNullableCounter>(WithNullableCounterSchema.name, {
+          nullableCounter: 10,
+        });
+      });
+      const counter = object.nullableCounter;
+      expectCounter(counter);
+      expect(counter.value).equals(10);
+
+      expect(() => {
+        this.realm.write(() => {
+          object.nullableCounter = 0;
+        });
+      }).to.throw(
+        "You can only directly reset a Counter instance when initializing a previously null Counter or resetting a nullable Counter to null. To update the value of the Counter, use its instance methods",
+      );
+      expect(object.nullableCounter.value).equals(10);
     });
   });
 });
