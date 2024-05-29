@@ -105,8 +105,8 @@ export class Counter {
    */
   set(value: number): void {
     assert.inTransaction(this.realm);
-    // TODO(lj)
-    console.log(`Setting counter to ${value}.`);
+    assert.integer(value, "value");
+    this.obj.setAny(this.columnKey, binding.Int64.numToInt(value));
   }
 
   /**

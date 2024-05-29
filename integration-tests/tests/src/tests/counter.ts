@@ -444,8 +444,7 @@ describe("Counter", () => {
         expect(counter.value).equals(-3);
       });
 
-      // TODO(lj): To be implemented.
-      it.skip("sets", function (this: RealmContext) {
+      it("sets", function (this: RealmContext) {
         const { counter } = this.realm.write(() => {
           return this.realm.create<IWithCounter>(WithCounterSchema.name, {
             counter: 0,
@@ -683,8 +682,7 @@ describe("Counter", () => {
       expect(counter.value).equals(10);
     });
 
-    // TODO(lj): To be implemented.
-    it.skip("throws when setting to non-integer", function (this: RealmContext) {
+    it("throws when setting to non-integer", function (this: RealmContext) {
       const { counter } = this.realm.write(() => {
         return this.realm.create<IWithCounter>(WithCounterSchema.name, {
           counter: 10,
@@ -697,14 +695,14 @@ describe("Counter", () => {
         this.realm.write(() => {
           counter.set(1.1);
         });
-      }).to.throw("Expected 'by' to be an integer, got a floating point number");
+      }).to.throw("Expected 'value' to be an integer, got a floating point number");
       expect(counter.value).equals(10);
 
       expect(() => {
         this.realm.write(() => {
           counter.set(NaN);
         });
-      }).to.throw("Expected 'by' to be an integer, got NaN");
+      }).to.throw("Expected 'value' to be an integer, got NaN");
       expect(counter.value).equals(10);
 
       expect(() => {
@@ -712,7 +710,7 @@ describe("Counter", () => {
           // @ts-expect-error Testing incorrect type.
           counter.set(new Number(1));
         });
-      }).to.throw("Expected 'by' to be an integer, got an instance of Number");
+      }).to.throw("Expected 'value' to be an integer, got an instance of Number");
       expect(counter.value).equals(10);
 
       expect(() => {
@@ -720,7 +718,7 @@ describe("Counter", () => {
           // @ts-expect-error Testing incorrect type.
           counter.set("1");
         });
-      }).to.throw("Expected 'by' to be an integer, got a string");
+      }).to.throw("Expected 'value' to be an integer, got a string");
       expect(counter.value).equals(10);
 
       expect(() => {
@@ -728,7 +726,7 @@ describe("Counter", () => {
           // @ts-expect-error Testing incorrect type.
           counter.set(BigInt(1));
         });
-      }).to.throw("Expected 'by' to be an integer, got a bigint");
+      }).to.throw("Expected 'value' to be an integer, got a bigint");
       expect(counter.value).equals(10);
     });
 
