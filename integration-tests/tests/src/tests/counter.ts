@@ -732,6 +732,31 @@ describe("Counter", () => {
       expect(counter.value).equals(10);
     });
 
+    it("throws when updating outside write transaction", function (this: RealmContext) {
+      const { counter } = this.realm.write(() => {
+        return this.realm.create<IWithCounter>(WithCounterSchema.name, {
+          counter: 10,
+        });
+      });
+      expectCounter(counter);
+      expect(counter.value).equals(10);
+
+      expect(() => {
+        counter.increment();
+      }).to.throw("Cannot modify managed objects outside of a write transaction.");
+      expect(counter.value).equals(10);
+
+      expect(() => {
+        counter.decrement();
+      }).to.throw("Cannot modify managed objects outside of a write transaction.");
+      expect(counter.value).equals(10);
+
+      expect(() => {
+        counter.set(1);
+      }).to.throw("Cannot modify managed objects outside of a write transaction.");
+      expect(counter.value).equals(10);
+    });
+
     it("throws when setting a non-nullable Realm object counter property", function (this: RealmContext) {
       const object = this.realm.write(() => {
         return this.realm.create<IWithCounter>(WithCounterSchema.name, {
