@@ -590,7 +590,7 @@ describe("Counter", () => {
     it("throws when incrementing by non-integer", function (this: RealmContext) {
       const { counter } = this.realm.write(() => {
         return this.realm.create<IWithCounter>(WithCounterSchema.name, {
-          counter: 0,
+          counter: 10,
         });
       });
       expectCounter(counter);
@@ -638,7 +638,7 @@ describe("Counter", () => {
     it("throws when decrementing by non-integer", function (this: RealmContext) {
       const { counter } = this.realm.write(() => {
         return this.realm.create<IWithCounter>(WithCounterSchema.name, {
-          counter: 0,
+          counter: 10,
         });
       });
       expectCounter(counter);
@@ -829,6 +829,25 @@ describe("Counter", () => {
         });
       }).to.throw("Counters can only be used when 'counter' is declared in the property schema");
       expect(objectWithInt.int).equals(10);
+    });
+
+    it("throws when getting the count on an invalidated obj", function (this: RealmContext) {
+      const object = this.realm.write(() => {
+        return this.realm.create<IWithCounter>(WithCounterSchema.name, {
+          counter: 10,
+        });
+      });
+      const counter = object.counter;
+      expectCounter(counter);
+      expect(counter.value).equals(10);
+      expect(this.realm.objects(WithCounterSchema.name).length).equals(1);
+
+      this.realm.write(() => {
+        this.realm.delete(object);
+      });
+      expect(this.realm.objects(WithCounterSchema.name).length).equals(0);
+
+      expect(() => counter.value).to.throw("Accessing object which has been invalidated or deleted");
     });
   });
 });
