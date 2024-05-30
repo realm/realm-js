@@ -15,7 +15,6 @@
     "start": "npm run bundle -- --watch",
     "lint": "eslint --ext .js,.ts .",
     "test": "mocha",
-    "postversion": "ts-node --project scripts/tsconfig.json scripts/postversion.ts",
     "docs": "wireit"
   },
   "wireit": {
