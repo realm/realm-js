@@ -151,9 +151,9 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
             }
           }
           throw new Error(
-            "You can only directly reset a Counter instance when initializing a previously " +
-              "null Counter or resetting a nullable Counter to null. To update the value of " +
-              "the Counter, use its instance methods.",
+            "You can only reset a Counter instance when initializing a previously " +
+              "null Counter or resetting a nullable Counter to null. To update the " +
+              "value of the Counter, use its instance methods.",
           );
         },
       };
