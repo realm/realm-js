@@ -18,8 +18,7 @@
 * The base URL used to communicate with the Atlas App Services was changed from "https://realm.mongodb.com" to "https://services.cloud.mongodb.com". ([#6591](https://github.com/realm/realm-js/pull/6591))
 * Avoid falling back to `_stitch_` prefixed values when parsing the querystring response from an OAuth2 redirection. ([#6659](https://github.com/realm/realm-js/pull/6659))
 
-2.0.0 Release notes (2022-10-18)
-=============================================================
+## 2.0.0 Release notes (2022-10-18)
 
 ### Breaking Changes
 
@@ -57,8 +56,7 @@ callResetPasswordFunction({ email, password }, ...args);
 ### Internal
 * None
 
-1.7.1 Release notes (2022-07-04)
-=============================================================
+## 1.7.1 Release notes (2022-07-04)
 
 ### Breaking Changes
 * None
@@ -72,8 +70,7 @@ callResetPasswordFunction({ email, password }, ...args);
 ### Internal
 * None
 
-1.7.0 Release notes (2022-02-14)
-=============================================================
+## 1.7.0 Release notes (2022-02-14)
 
 ### Breaking Changes
 * None
@@ -87,8 +84,7 @@ callResetPasswordFunction({ email, password }, ...args);
 ### Internal
 * Updated base URL to https://realm.mongodb.com. ([#4283](https://github.com/realm/realm-js/pull/4283))
 
-1.6.0 Release notes (2022-01-26)
-=============================================================
+## 1.6.0 Release notes (2022-01-26)
 
 ### Breaking Changes
 * None
@@ -102,8 +98,7 @@ callResetPasswordFunction({ email, password }, ...args);
 ### Internal
 * None
 
-1.5.1 Release notes (2021-11-17)
-=============================================================
+## 1.5.1 Release notes (2021-11-17)
 
 ### Breaking Changes
 * None
@@ -117,8 +112,7 @@ callResetPasswordFunction({ email, password }, ...args);
 ### Internal
 * None
 
-1.5.0 Release notes (2021-11-11)
-=============================================================
+## 1.5.0 Release notes (2021-11-11)
 
 ### Breaking Changes
 * None
@@ -137,8 +131,7 @@ callResetPasswordFunction({ email, password }, ...args);
 ### Internal
 * None
 
-1.4.0 Release notes (2021-10-18)
-=============================================================
+## 1.4.0 Release notes (2021-10-18)
 
 ### Breaking Changes
 * Added support retrying custom confirmation functions via `retryCustomConfirmation`. ([#4000](https://github.com/realm/realm-js/pull/4000))
@@ -152,8 +145,7 @@ callResetPasswordFunction({ email, password }, ...args);
 ### Internal
 * None
 
-1.3.0 Release notes (2021-05-27)
-=============================================================
+## 1.3.0 Release notes (2021-05-27)
 
 ### Breaking Changes
 * None
@@ -168,8 +160,7 @@ callResetPasswordFunction({ email, password }, ...args);
 ### Internal
 * None
 
-1.2.1 Release notes (2021-02-17)
-=============================================================
+## 1.2.1 Release notes (2021-02-17)
 
 ### Breaking Changes
 * None
@@ -185,8 +176,7 @@ callResetPasswordFunction({ email, password }, ...args);
 ### Internal
 * None
 
-1.2.0 Release notes (2021-01-11)
-=============================================================
+## 1.2.0 Release notes (2021-01-11)
 
 ### Breaking Changes
 * None
@@ -202,8 +192,7 @@ callResetPasswordFunction({ email, password }, ...args);
 ### Internal
 * None
 
-1.1.0 Release notes (2020-12-08)
-=============================================================
+## 1.1.0 Release notes (2020-12-08)
 
 ### Breaking Changes
 * None
@@ -217,8 +206,7 @@ callResetPasswordFunction({ email, password }, ...args);
 ### Internal
 * None
 
-1.0.0 Release notes (2020-10-16)
-=============================================================
+## 1.0.0 Release notes (2020-10-16)
 
 ### Breaking Changes
 * Changed the `allUsers` property into an object keyed by user id. Use `Object.values(app.allUsers)` to retrieve a list of all users. ([#3346](https://github.com/realm/realm-js/pull/3346))
@@ -232,8 +220,7 @@ callResetPasswordFunction({ email, password }, ...args);
 ### Internal
 * None
 
-1.0.0-rc.2 Release notes (2020-10-13)
-=============================================================
+## 1.0.0-rc.2 Release notes (2020-10-13)
 
 ### Breaking Changes
 * None
@@ -247,8 +234,7 @@ callResetPasswordFunction({ email, password }, ...args);
 ### Internal
 * None
 
-1.0.0-rc.1 Release notes (2020-10-09)
-=============================================================
+## 1.0.0-rc.1 Release notes (2020-10-09)
 
 ### Breaking Changes
 * Removed the `functions` and `services` properties from `App`, use the `functions` property and `mongoClient` method on `User` instances instead. ([#3298](https://github.com/realm/realm-js/pull/3298) and [#3322](https://github.com/realm/realm-js/pull/3322))
@@ -264,8 +250,7 @@ callResetPasswordFunction({ email, password }, ...args);
 ### Internal
 * Sending device information in request body instead of a query parameter. ([#3295](https://github.com/realm/realm-js/pull/3295))
 
-0.9.0 Release notes (2020-09-24)
-=============================================================
+## 0.9.0 Release notes (2020-09-24)
 
 ### Enhancements
 * Added support for linking credentials to an existing user. ([#3088](https://github.com/realm/realm-js/pull/3088), [#3239](https://github.com/realm/realm-js/pull/3239) and [#3240](https://github.com/realm/realm-js/pull/3240))
@@ -280,8 +265,7 @@ callResetPasswordFunction({ email, password }, ...args);
 ### Internal
 * None
 
-0.8.1 Release notes (2020-08-17)
-=============================================================
+## 0.8.1 Release notes (2020-08-17)
 
 ### Enhancements
 * None
@@ -292,8 +276,7 @@ callResetPasswordFunction({ email, password }, ...args);
 ### Internal
 * None
 
-0.8.0 Release notes (2020-07-31)
-=============================================================
+## 0.8.0 Release notes (2020-07-31)
 
 ### Breaking changes
 * Renamed `Realm.app` to `Realm.getApp` to make it less conflicting with a local `app` variable.
@@ -309,8 +292,7 @@ callResetPasswordFunction({ email, password }, ...args);
 ### Internal
 * Refactored the concept of base, authenticated, prefixed transports into a single "fetcher" built on-top-of the "realm-network-package". ([#3086](https://github.com/realm/realm-js/pull/3086))
 
-0.7.0 Release notes (2020-07-13)
-=============================================================
+## 0.7.0 Release notes (2020-07-13)
 
 ### Enhancements
 * Added `Credentials.userApiKey` and `Credentials.serverApiKey` as aliases for `Credentials.apiKey`.
@@ -323,8 +305,7 @@ callResetPasswordFunction({ email, password }, ...args);
 ### Internal
 * None
 
-0.6.0 Release notes (2020-07-01)
-=============================================================
+## 0.6.0 Release notes (2020-07-01)
 
 ### Enhancements
 * Added more credentials enabling logins via additional authentication providers: Custom Functions, Custom JWT, Google, Facebook & Apple ID. ([#3019](https://github.com/realm/realm-js/pull/3019))
@@ -337,8 +318,7 @@ callResetPasswordFunction({ email, password }, ...args);
 ### Internal
 * None
 
-0.5.0 Release notes (2020-06-29)
-=============================================================
+## 0.5.0 Release notes (2020-06-29)
 
 ### Enhancements
 * Users are now persisted across refreshes and browser tabs (using the browser's local-storage). ([#2990](https://github.com/realm/realm-js/pull/2990))
@@ -351,8 +331,7 @@ callResetPasswordFunction({ email, password }, ...args);
 ### Internal
 * Renamed the "RemoteMongoDB*" classes to "MongoDB*". Not considered a breaking changes as these types were not exported from the package. ([#3001](https://github.com/realm/realm-js/pull/3001))
 
-0.4.0 Release notes (2020-06-11)
-=============================================================
+## 0.4.0 Release notes (2020-06-11)
 
 ### Enhancements
 * None
@@ -363,8 +342,7 @@ callResetPasswordFunction({ email, password }, ...args);
 ### Internal
 * None
 
-0.3.0 Release notes (2020-06-11)
-=============================================================
+## 0.3.0 Release notes (2020-06-11)
 
 ### Enhancements
 * None
@@ -375,7 +353,6 @@ callResetPasswordFunction({ email, password }, ...args);
 ### Internal
 * None
 
-0.2.0 Release notes (2020-06-04)
-=============================================================
+## 0.2.0 Release notes (2020-06-04)
 
 This was the first external release of the Realm Web package.
