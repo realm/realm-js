@@ -131,7 +131,7 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
     if (presentation === "counter") {
       return {
         get(obj) {
-          return new Counter(realm, obj, columnKey);
+          return obj.getAny(columnKey) === null ? null : new Counter(realm, obj, columnKey);
         },
         set(obj, value, isCreating) {
           // We only allow resetting a counter this way (e.g. realmObject.counter = 5)
