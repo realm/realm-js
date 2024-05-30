@@ -17,29 +17,35 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
-import Realm, { Counter, ObjectSchema } from "realm";
+import Realm, { BSON, Counter, ObjectSchema, UpdateMode } from "realm";
 
 import { openRealmBeforeEach } from "../hooks";
 import { expectRealmDictionary, expectRealmList, expectRealmSet } from "../utils/expects";
 
 interface IWithCounter {
+  _id: BSON.ObjectId;
   counter: Counter;
 }
 
 const WithCounterSchema: ObjectSchema = {
   name: "WithCounter",
+  primaryKey: "_id",
   properties: {
+    _id: { type: "objectId", default: () => new BSON.ObjectId() },
     counter: "counter",
   },
 };
 
 interface IWithNullableCounter {
+  _id: BSON.ObjectId;
   nullableCounter?: Counter | null;
 }
 
 const WithNullableCounterSchema: ObjectSchema = {
   name: "WithNullableCounter",
+  primaryKey: "_id",
   properties: {
+    _id: { type: "objectId", default: () => new BSON.ObjectId() },
     nullableCounter: "counter?",
   },
 };
@@ -316,7 +322,7 @@ describe("Counter", () => {
     });
 
     describe("Realm object counter property", () => {
-      it("updates nullable counter from int -> null -> int", function (this: RealmContext) {
+      it("updates nullable counter from int -> null -> int via setter", function (this: RealmContext) {
         const object = this.realm.write(() => {
           return this.realm.create<IWithNullableCounter>(WithNullableCounterSchema.name, {
             nullableCounter: 0,
@@ -330,6 +336,7 @@ describe("Counter", () => {
         expect(object.nullableCounter).to.be.null;
 
         this.realm.write(() => {
+          // @ts-expect-error Cannot currently express in TS that a Counter can be set to a number (while 'get' returns Counter).
           object.nullableCounter = 1;
         });
         expectCounter(object.nullableCounter);
@@ -341,11 +348,75 @@ describe("Counter", () => {
         expect(object.nullableCounter).to.be.null;
 
         this.realm.write(() => {
+          // @ts-expect-error Cannot currently express in TS that a Counter can be set to a number (while 'get' returns Counter).
           object.nullableCounter = -100_000;
         });
         expectCounter(object.nullableCounter);
         expect(object.nullableCounter.value).equals(-100_000);
       });
+
+      for (const updateMode of [UpdateMode.Modified, UpdateMode.All]) {
+        it(`updates nullable counter from int -> null -> int via UpdateMode: ${updateMode}`, function (this: RealmContext) {
+          const object = this.realm.write(() => {
+            return this.realm.create<IWithNullableCounter>(WithNullableCounterSchema.name, {
+              nullableCounter: 0,
+            });
+          });
+          expectCounter(object.nullableCounter);
+
+          const _id = object._id;
+
+          this.realm.write(() => {
+            this.realm.create<IWithNullableCounter>(
+              WithNullableCounterSchema.name,
+              {
+                _id,
+                nullableCounter: null,
+              },
+              updateMode,
+            );
+          });
+          expect(object.nullableCounter).to.be.null;
+
+          this.realm.write(() => {
+            this.realm.create<IWithNullableCounter>(
+              WithNullableCounterSchema.name,
+              {
+                _id,
+                nullableCounter: 1,
+              },
+              updateMode,
+            );
+          });
+          expectCounter(object.nullableCounter);
+          expect(object.nullableCounter.value).equals(1);
+
+          this.realm.write(() => {
+            this.realm.create<IWithNullableCounter>(
+              WithNullableCounterSchema.name,
+              {
+                _id,
+                nullableCounter: null,
+              },
+              updateMode,
+            );
+          });
+          expect(object.nullableCounter).to.be.null;
+
+          this.realm.write(() => {
+            this.realm.create<IWithNullableCounter>(
+              WithNullableCounterSchema.name,
+              {
+                _id,
+                nullableCounter: -100_000,
+              },
+              updateMode,
+            );
+          });
+          expectCounter(object.nullableCounter);
+          expect(object.nullableCounter.value).equals(-100_000);
+        });
+      }
     });
   });
 
@@ -551,7 +622,7 @@ describe("Counter", () => {
       expect(counter.value).equals(10);
     });
 
-    it("throws when setting a non-nullable Realm object counter property", function (this: RealmContext) {
+    it("throws when setting a non-nullable counter via setter", function (this: RealmContext) {
       const object = this.realm.write(() => {
         return this.realm.create<IWithCounter>(WithCounterSchema.name, {
           counter: 10,
@@ -563,10 +634,11 @@ describe("Counter", () => {
 
       expect(() => {
         this.realm.write(() => {
+          // @ts-expect-error Cannot currently express in TS that a Counter can be set to a number (while 'get' returns Counter).
           object.counter = 0;
         });
       }).to.throw(
-        "You can only directly reset a Counter instance when initializing a previously null Counter or resetting a nullable Counter to null. To update the value of the Counter, use its instance methods",
+        "You can only reset a Counter instance when initializing a previously null Counter or resetting a nullable Counter to null. To update the value of the Counter, use its instance methods",
       );
       expect(object.counter.value).equals(10);
 
@@ -576,12 +648,60 @@ describe("Counter", () => {
           object.counter = null;
         });
       }).to.throw(
-        "You can only directly reset a Counter instance when initializing a previously null Counter or resetting a nullable Counter to null. To update the value of the Counter, use its instance methods",
+        "You can only reset a Counter instance when initializing a previously null Counter or resetting a nullable Counter to null. To update the value of the Counter, use its instance methods",
       );
       expect(object.counter.value).equals(10);
     });
 
-    it("throws when setting a nullable Realm object counter property from number -> number", function (this: RealmContext) {
+    for (const updateMode of [UpdateMode.Modified, UpdateMode.All]) {
+      it(`throws when setting a non-nullable counter via UpdateMode: ${updateMode}`, function (this: RealmContext) {
+        const object = this.realm.write(() => {
+          return this.realm.create<IWithCounter>(WithCounterSchema.name, {
+            counter: 10,
+          });
+        });
+        const counter = object.counter;
+        expectCounter(counter);
+        expect(counter.value).equals(10);
+
+        const _id = object._id;
+
+        expect(() => {
+          this.realm.write(() => {
+            this.realm.create<IWithCounter>(
+              WithCounterSchema.name,
+              {
+                _id,
+                counter: 0,
+              },
+              updateMode,
+            );
+          });
+        }).to.throw(
+          "You can only reset a Counter instance when initializing a previously null Counter or resetting a nullable Counter to null. To update the value of the Counter, use its instance methods",
+        );
+        expect(object.counter.value).equals(10);
+
+        expect(() => {
+          this.realm.write(() => {
+            this.realm.create<IWithCounter>(
+              WithCounterSchema.name,
+              {
+                _id,
+                // @ts-expect-error Testing incorrect type.
+                counter: null,
+              },
+              updateMode,
+            );
+          });
+        }).to.throw(
+          "You can only reset a Counter instance when initializing a previously null Counter or resetting a nullable Counter to null. To update the value of the Counter, use its instance methods",
+        );
+        expect(object.counter.value).equals(10);
+      });
+    }
+
+    it("throws when setting a nullable counter from number -> number via setter", function (this: RealmContext) {
       const object = this.realm.write(() => {
         return this.realm.create<IWithNullableCounter>(WithNullableCounterSchema.name, {
           nullableCounter: 10,
@@ -593,13 +713,45 @@ describe("Counter", () => {
 
       expect(() => {
         this.realm.write(() => {
+          // @ts-expect-error Testing incorrect type.
           object.nullableCounter = 0;
         });
       }).to.throw(
-        "You can only directly reset a Counter instance when initializing a previously null Counter or resetting a nullable Counter to null. To update the value of the Counter, use its instance methods",
+        "You can only reset a Counter instance when initializing a previously null Counter or resetting a nullable Counter to null. To update the value of the Counter, use its instance methods",
       );
-      expect(object.nullableCounter.value).equals(10);
+      expect(object.nullableCounter?.value).equals(10);
     });
+
+    for (const updateMode of [UpdateMode.Modified, UpdateMode.All]) {
+      it(`throws when setting a nullable counter from number -> number via UpdateMode: ${updateMode}`, function (this: RealmContext) {
+        const object = this.realm.write(() => {
+          return this.realm.create<IWithNullableCounter>(WithNullableCounterSchema.name, {
+            nullableCounter: 10,
+          });
+        });
+        const counter = object.nullableCounter;
+        expectCounter(counter);
+        expect(counter.value).equals(10);
+
+        const _id = object._id;
+
+        expect(() => {
+          this.realm.write(() => {
+            this.realm.create<IWithNullableCounter>(
+              WithNullableCounterSchema.name,
+              {
+                _id,
+                nullableCounter: 0,
+              },
+              updateMode,
+            );
+          });
+        }).to.throw(
+          "You can only reset a Counter instance when initializing a previously null Counter or resetting a nullable Counter to null. To update the value of the Counter, use its instance methods",
+        );
+        expect(object.nullableCounter?.value).equals(10);
+      });
+    }
 
     it("throws when setting an int property to a counter", function (this: RealmContext) {
       const { objectWithInt, counter } = this.realm.write(() => {
