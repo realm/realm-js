@@ -1,13 +1,7 @@
-## vNext (TBD)
+## 2.0.1 (2024-05-30)
 
 > [!NOTE]
 > This version communicates with Atlas Device Services through a different URL (https://services.cloud.mongodb.com). While we consider this an internal detail of the SDK, you might need to update rules in firewalls or other configuration that you've used to limit connections made by your app.
-
-### Deprecations
-* None
-
-### Enhancements
-* None
 
 ### Fixed
 * Fixed an endless loop of requests that would happen if linking credentials failed due to an authentication failure. ([#6588](https://github.com/realm/realm-js/pull/6588), since v0.6.0)
