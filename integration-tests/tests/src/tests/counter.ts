@@ -603,6 +603,38 @@ describe("Counter", () => {
     });
   });
 
+  describe("Filtering", () => {
+    it("filters objects with counters", function (this: RealmContext) {
+      this.realm.write(() => {
+        this.realm.create<IWithCounter>(WithCounterSchema.name, { counter: -100_000 });
+
+        this.realm.create<IWithCounter>(WithCounterSchema.name, { counter: 10 });
+        this.realm.create<IWithCounter>(WithCounterSchema.name, { counter: 10 });
+        this.realm.create<IWithCounter>(WithCounterSchema.name, { counter: 10 });
+
+        this.realm.create<IWithCounter>(WithCounterSchema.name, { counter: 500 });
+      });
+      const objects = this.realm.objects<IWithCounter>(WithCounterSchema.name);
+      expect(objects.length).equals(5);
+
+      let filtered = objects.filtered("counter > 10");
+      expect(filtered.length).equals(1);
+
+      filtered = objects.filtered("counter < $0", 501);
+      expect(filtered.length).equals(5);
+
+      filtered = objects.filtered("counter = 10");
+      expect(filtered.length).equals(3);
+
+      this.realm.write(() => {
+        for (const object of objects) {
+          object.counter.set(0);
+        }
+      });
+      expect(filtered.length).equals(0);
+    });
+  });
+
   describe("Invalid operations", () => {
     it("throws when incrementing by non-integer", function (this: RealmContext) {
       const { counter } = this.realm.write(() => {
@@ -1025,6 +1057,22 @@ describe("Counter", () => {
       }).to.throw("Using a Counter as a Mixed value is not supported");
       expectKeys(dictionary, ["key"]);
       expect(dictionary.key).equals(20);
+    });
+
+    it("throws when using counter as query argument", function (this: RealmContext) {
+      const { counter } = this.realm.write(() => {
+        return this.realm.create<IWithCounter>(WithCounterSchema.name, {
+          counter: 10,
+        });
+      });
+      expectCounter(counter);
+
+      const objects = this.realm.objects(WithCounterSchema.name);
+      expect(objects.length).equals(1);
+
+      expect(() => {
+        objects.filtered("counter = $0", counter);
+      }).to.throw("Using a Counter as a query argument is not supported. Use 'Counter.value'");
     });
   });
 });

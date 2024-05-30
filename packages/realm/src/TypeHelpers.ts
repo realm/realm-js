@@ -136,7 +136,9 @@ export function mixedToBinding(
   } else if (value instanceof RealmSet || value instanceof Set) {
     throw new Error(`Using a ${value.constructor.name} as ${displayedType} is not supported.`);
   } else if (value instanceof Counter) {
-    throw new Error(`Using a Counter as ${displayedType} is not supported.`);
+    let errMessage = `Using a Counter as ${displayedType} is not supported.`;
+    errMessage += isQueryArg ? " Use 'Counter.value'." : "";
+    throw new Error(errMessage);
   } else {
     if (isQueryArg) {
       if (value instanceof Collection || Array.isArray(value)) {
