@@ -118,6 +118,7 @@ export function mixedToBinding(
   value: unknown,
   { isQueryArg } = { isQueryArg: false },
 ): binding.MixedArg {
+  const displayedType = isQueryArg ? "a query argument" : "a Mixed value";
   if (typeof value === "string" || typeof value === "number" || typeof value === "boolean" || value === null) {
     // Fast track pass through for the most commonly used types
     return value;
@@ -127,13 +128,15 @@ export function mixedToBinding(
     return binding.Timestamp.fromDate(value);
   } else if (value instanceof RealmObject) {
     if (value.objectSchema().embedded) {
-      throw new Error(`Using an embedded object (${value.constructor.name}) as a Mixed value is not supported.`);
+      throw new Error(`Using an embedded object (${value.constructor.name}) as ${displayedType} is not supported.`);
     }
     const otherRealm = value[REALM].internal;
     assert.isSameRealm(realm, otherRealm, "Realm object is from another Realm");
     return value[INTERNAL];
   } else if (value instanceof RealmSet || value instanceof Set) {
-    throw new Error(`Using a ${value.constructor.name} as a Mixed value is not supported.`);
+    throw new Error(`Using a ${value.constructor.name} as ${displayedType} is not supported.`);
+  } else if (value instanceof Counter) {
+    throw new Error(`Using a Counter as ${displayedType} is not supported.`);
   } else {
     if (isQueryArg) {
       if (value instanceof Collection || Array.isArray(value)) {
