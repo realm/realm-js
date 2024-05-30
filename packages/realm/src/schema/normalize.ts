@@ -257,6 +257,15 @@ function normalizePropertySchemaShorthand(info: PropertyInfoUsingShorthand): Can
     }
   }
 
+  switch (presentation) {
+    case "counter":
+      // If `type` is not an int at this point, a collection shorthand is used.
+      assert(type === "int", propError(info, "Counters cannot be used in collections."));
+      break;
+    default:
+      break;
+  }
+
   if (isAlwaysOptional(type, objectType)) {
     optional = true;
   } else if (isNeverOptional(type, objectType)) {
@@ -319,6 +328,14 @@ function normalizePropertySchemaObject(info: PropertyInfoUsingObject): Canonical
 
   if (type !== "linkingObjects") {
     assert(property === undefined, propError(info, "'property' can only be specified if 'type' is 'linkingObjects'."));
+  }
+
+  switch (presentation) {
+    case "counter":
+      assert(type === "int", propError(info, "Counters can only be used when 'type' is 'int'."));
+      break;
+    default:
+      break;
   }
 
   if (isAlwaysOptional(type, objectType)) {

@@ -96,7 +96,6 @@ export type TypeOptions = {
   objectType: string | undefined;
   objectSchemaName: string | undefined;
   presentation?: PresentationPropertyTypeName;
-  columnKey?: binding.ColKey;
   getClassHelpers(nameOrTableKey: string | binding.TableKey): ClassHelpers;
 };
 
@@ -226,7 +225,7 @@ function nullPassthrough<T, R extends any[], F extends (value: unknown, ...rest:
 }
 
 const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => TypeHelpers> = {
-  [binding.PropertyType.Int]({ /*realm, columnKey,*/ presentation, optional }) {
+  [binding.PropertyType.Int]({ presentation, optional }) {
     return {
       toBinding: nullPassthrough((value) => {
         if (typeof value === "number") {
@@ -243,15 +242,7 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => Type
         }
       }, optional),
       // TODO: Support returning bigints to end-users
-      fromBinding: nullPassthrough((value) => {
-        if (presentation === "counter") {
-          // TODO(lj)
-          console.warn("Not yet implemented. TypeHelpers.ts: Returning -1");
-          return -1;
-        } else {
-          return Number(value);
-        }
-      }, optional),
+      fromBinding: nullPassthrough((value) => Number(value), optional),
     };
   },
   [binding.PropertyType.Bool]({ optional }) {

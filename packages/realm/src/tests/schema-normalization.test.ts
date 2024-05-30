@@ -125,7 +125,7 @@ describe("normalizePropertySchema", () => {
         });
       });
 
-      describe("'counter' & collection combinations", () => {
+      describe("'counter'", () => {
         itNormalizes("counter", {
           type: "int",
           presentation: "counter",
@@ -134,48 +134,6 @@ describe("normalizePropertySchema", () => {
 
         itNormalizes("counter?", {
           type: "int",
-          presentation: "counter",
-          optional: true,
-        });
-
-        itNormalizes("counter[]", {
-          type: "list",
-          objectType: "int",
-          presentation: "counter",
-          optional: false,
-        });
-
-        itNormalizes("counter?[]", {
-          type: "list",
-          objectType: "int",
-          presentation: "counter",
-          optional: true,
-        });
-
-        itNormalizes("counter{}", {
-          type: "dictionary",
-          objectType: "int",
-          presentation: "counter",
-          optional: false,
-        });
-
-        itNormalizes("counter?{}", {
-          type: "dictionary",
-          objectType: "int",
-          presentation: "counter",
-          optional: true,
-        });
-
-        itNormalizes("counter<>", {
-          type: "set",
-          objectType: "int",
-          presentation: "counter",
-          optional: false,
-        });
-
-        itNormalizes("counter?<>", {
-          type: "set",
-          objectType: "int",
           presentation: "counter",
           optional: true,
         });
@@ -310,6 +268,18 @@ describe("normalizePropertySchema", () => {
         "linkingObjects",
         "To define an inverse relationship, use { type: 'linkingObjects', objectType: 'MyObjectType', property: 'myObjectTypesProperty' }",
       );
+
+      itThrowsWhenNormalizing("counter[]", "Counters cannot be used in collections");
+
+      itThrowsWhenNormalizing("counter?[]", "Counters cannot be used in collections");
+
+      itThrowsWhenNormalizing("counter{}", "Counters cannot be used in collections");
+
+      itThrowsWhenNormalizing("counter?{}", "Counters cannot be used in collections");
+
+      itThrowsWhenNormalizing("counter<>", "Counters cannot be used in collections");
+
+      itThrowsWhenNormalizing("counter?<>", "Counters cannot be used in collections");
     });
   });
 
@@ -561,7 +531,7 @@ describe("normalizePropertySchema", () => {
         );
       });
 
-      describe("'counter' & collection combinations", () => {
+      describe("'counter'", () => {
         itNormalizes(
           {
             type: "int",
@@ -595,138 +565,6 @@ describe("normalizePropertySchema", () => {
           },
           {
             type: "int",
-            presentation: "counter",
-            optional: true,
-          },
-        );
-
-        itNormalizes(
-          {
-            type: "list",
-            objectType: "int",
-            presentation: "counter",
-          },
-          {
-            type: "list",
-            objectType: "int",
-            presentation: "counter",
-            optional: false,
-          },
-        );
-
-        itNormalizes(
-          {
-            type: "list",
-            objectType: "int",
-            presentation: "counter",
-            optional: false,
-          },
-          {
-            type: "list",
-            objectType: "int",
-            presentation: "counter",
-            optional: false,
-          },
-        );
-
-        itNormalizes(
-          {
-            type: "list",
-            objectType: "int",
-            presentation: "counter",
-            optional: true,
-          },
-          {
-            type: "list",
-            objectType: "int",
-            presentation: "counter",
-            optional: true,
-          },
-        );
-
-        itNormalizes(
-          {
-            type: "dictionary",
-            objectType: "int",
-            presentation: "counter",
-          },
-          {
-            type: "dictionary",
-            objectType: "int",
-            presentation: "counter",
-            optional: false,
-          },
-        );
-
-        itNormalizes(
-          {
-            type: "dictionary",
-            objectType: "int",
-            presentation: "counter",
-            optional: false,
-          },
-          {
-            type: "dictionary",
-            objectType: "int",
-            presentation: "counter",
-            optional: false,
-          },
-        );
-
-        itNormalizes(
-          {
-            type: "dictionary",
-            objectType: "int",
-            presentation: "counter",
-            optional: true,
-          },
-          {
-            type: "dictionary",
-            objectType: "int",
-            presentation: "counter",
-            optional: true,
-          },
-        );
-
-        itNormalizes(
-          {
-            type: "set",
-            objectType: "int",
-            presentation: "counter",
-          },
-          {
-            type: "set",
-            objectType: "int",
-            presentation: "counter",
-            optional: false,
-          },
-        );
-
-        itNormalizes(
-          {
-            type: "set",
-            objectType: "int",
-            presentation: "counter",
-            optional: false,
-          },
-          {
-            type: "set",
-            objectType: "int",
-            presentation: "counter",
-            optional: false,
-          },
-        );
-
-        itNormalizes(
-          {
-            type: "set",
-            objectType: "int",
-            presentation: "counter",
-            optional: true,
-          },
-          {
-            type: "set",
-            objectType: "int",
             presentation: "counter",
             optional: true,
           },
@@ -1194,6 +1032,95 @@ describe("normalizePropertySchema", () => {
         );
       });
 
+      describe("'counter' & collection combinations", () => {
+        itThrowsWhenNormalizing(
+          {
+            type: "list",
+            objectType: "int",
+            presentation: "counter",
+          },
+          "Counters can only be used when 'type' is 'int'",
+        );
+
+        itThrowsWhenNormalizing(
+          {
+            type: "list",
+            objectType: "int",
+            presentation: "counter",
+            optional: false,
+          },
+          "Counters can only be used when 'type' is 'int'",
+        );
+
+        itThrowsWhenNormalizing(
+          {
+            type: "list",
+            objectType: "int",
+            presentation: "counter",
+            optional: true,
+          },
+          "Counters can only be used when 'type' is 'int'",
+        );
+
+        itThrowsWhenNormalizing(
+          {
+            type: "dictionary",
+            objectType: "int",
+            presentation: "counter",
+          },
+          "Counters can only be used when 'type' is 'int'",
+        );
+
+        itThrowsWhenNormalizing(
+          {
+            type: "dictionary",
+            objectType: "int",
+            presentation: "counter",
+            optional: false,
+          },
+          "Counters can only be used when 'type' is 'int'",
+        );
+
+        itThrowsWhenNormalizing(
+          {
+            type: "dictionary",
+            objectType: "int",
+            presentation: "counter",
+            optional: true,
+          },
+          "Counters can only be used when 'type' is 'int'",
+        );
+
+        itThrowsWhenNormalizing(
+          {
+            type: "set",
+            objectType: "int",
+            presentation: "counter",
+          },
+          "Counters can only be used when 'type' is 'int'",
+        );
+
+        itThrowsWhenNormalizing(
+          {
+            type: "set",
+            objectType: "int",
+            presentation: "counter",
+            optional: false,
+          },
+          "Counters can only be used when 'type' is 'int'",
+        );
+
+        itThrowsWhenNormalizing(
+          {
+            type: "set",
+            objectType: "int",
+            presentation: "counter",
+            optional: true,
+          },
+          "Counters can only be used when 'type' is 'int'",
+        );
+      });
+
       describe("Indexed and primary key combinations", () => {
         itThrowsWhenNormalizing(
           {
@@ -1217,16 +1144,6 @@ describe("normalizePropertySchema", () => {
         itThrowsWhenNormalizing(
           {
             type: "int",
-            presentation: "counter",
-          },
-          "Counters cannot be primary keys.",
-          { isPrimaryKey: true },
-        );
-
-        itThrowsWhenNormalizing(
-          {
-            type: "list",
-            objectType: "int",
             presentation: "counter",
           },
           "Counters cannot be primary keys.",
