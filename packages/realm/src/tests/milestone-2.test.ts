@@ -45,6 +45,7 @@ describe("Milestone #2", () => {
               name: {
                 name: "name",
                 type: "string",
+                presentation: undefined,
                 optional: false,
                 indexed: true,
                 mapTo: "name",
@@ -57,6 +58,7 @@ describe("Milestone #2", () => {
                 name: "age",
                 optional: true,
                 type: "int",
+                presentation: undefined,
               },
               bestFriend: {
                 indexed: false,
@@ -65,6 +67,7 @@ describe("Milestone #2", () => {
                 optional: true,
                 type: "object",
                 objectType: "Person",
+                presentation: undefined,
                 default: undefined,
               },
             },

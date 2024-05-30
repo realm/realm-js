@@ -248,13 +248,6 @@ export type PropertySchema = {
    *    type: "int",
    *    presentation: "counter",
    * }
-   *
-   * // A list of counters
-   * {
-   *    type: "list",
-   *    objectType: "int",
-   *    presentation: "counter",
-   * }
    */
   presentation?: PresentationPropertyTypeName;
   /**
@@ -294,7 +287,7 @@ export type PropertySchema = {
  * Keys used in the property schema that are common among all variations of {@link PropertySchemaStrict}.
  */
 export type PropertySchemaCommon = {
-  presentation?: PresentationPropertyTypeName;
+  presentation: never;
   indexed?: IndexedType;
   mapTo?: string;
   default?: unknown;
@@ -313,8 +306,13 @@ export type PropertySchemaCommon = {
 export type PropertySchemaStrict = PropertySchemaCommon &
   (
     | {
-        type: Exclude<PrimitivePropertyTypeName, "mixed">;
+        type: Exclude<PrimitivePropertyTypeName, "mixed" | "int">;
         optional?: boolean;
+      }
+    | {
+        type: "int";
+        optional?: boolean;
+        presentation?: "counter";
       }
     | {
         type: "mixed";

@@ -41,7 +41,6 @@ const WithNullableCounterSchema: ObjectSchema = {
   name: "WithNullableCounter",
   properties: {
     nullableCounter: "counter?",
-    // TODO(lj): Add a 'listOfNullableCounters'?
   },
 };
 
@@ -53,21 +52,6 @@ const WithDefaultCounterSchema: ObjectSchema = {
   name: "WithDefaultCounter",
   properties: {
     counterWithDefault: { type: "int", presentation: "counter", default: 0 },
-  },
-};
-
-interface IWithCounterCollections {
-  list: Realm.List<Counter>;
-  dictionary: Realm.Dictionary<Counter>;
-  set: Realm.Set<Counter>;
-}
-
-const WithCounterCollectionsSchema: ObjectSchema = {
-  name: "WithCounterCollections",
-  properties: {
-    list: "counter[]",
-    dictionary: "counter{}",
-    set: "counter<>",
   },
 };
 
@@ -107,55 +91,11 @@ function expectKeys(dictionary: Realm.Dictionary, keys: string[]) {
   expect(Object.keys(dictionary)).members(keys);
 }
 
-function expectRealmListOfCounters(
-  actual: unknown,
-  expectedCounts: readonly number[],
-): asserts actual is Realm.List<Counter> {
-  expectRealmList(actual);
-  expect(actual.length).equals(expectedCounts.length);
-
-  for (let i = 0; i < actual.length; i++) {
-    const counter = actual[i];
-    expectCounter(counter);
-    expect(counter.value).equals(expectedCounts[i]);
-  }
-}
-
-function expectRealmDictionaryOfCounters(
-  actual: unknown,
-  expectedCounts: Record<string, number>,
-): asserts actual is Realm.Dictionary<Counter> {
-  expectRealmDictionary(actual);
-  expectKeys(actual, Object.keys(expectedCounts));
-
-  for (const key in actual) {
-    const counter = actual[key];
-    expectCounter(counter);
-    expect(counter.value).equals(expectedCounts[key]);
-  }
-}
-
-function expectRealmSetOfCounters(
-  actual: unknown,
-  expectedCounts: readonly number[],
-): asserts actual is Realm.Set<Counter> {
-  expectRealmSet(actual);
-  const size = actual.size;
-  expect(size).equals(expectedCounts.length);
-
-  for (let i = 0; i < size; i++) {
-    const counter = actual[i];
-    expectCounter(counter);
-    expect(counter.value).equals(expectedCounts[i]);
-  }
-}
-
 describe("Counter", () => {
   openRealmBeforeEach({
     schema: [
       WithCounterSchema,
       WithNullableCounterSchema,
-      WithCounterCollectionsSchema,
       WithDefaultCounterSchema,
       WithRegularIntSchema,
       WithMixedSchema,
@@ -163,12 +103,6 @@ describe("Counter", () => {
   });
 
   const initialValuesList = [-100, 0, 1.0, 1000] as const;
-  const initialValuesDict: Readonly<Record<string, number>> = {
-    negative100: -100,
-    _0: 0,
-    _1: 1.0,
-    _1000: 1000,
-  };
 
   describe("Create and access", () => {
     describe("Via 'realm.create()'", () => {
@@ -251,42 +185,6 @@ describe("Counter", () => {
         expect(counter2).to.be.null;
       });
 
-      // TODO(lj): To be implemented.
-      it.skip("can create and access list (input: number[])", function (this: RealmContext) {
-        const { list } = this.realm.write(() => {
-          return this.realm.create<IWithCounterCollections>(WithCounterCollectionsSchema.name, {
-            list: initialValuesList,
-          });
-        });
-
-        expect(this.realm.objects(WithCounterCollectionsSchema.name).length).equals(1);
-        expectRealmListOfCounters(list, initialValuesList);
-      });
-
-      // TODO(lj): To be implemented.
-      it.skip("can create and access dictionary (input: JS Object)", function (this: RealmContext) {
-        const { dictionary } = this.realm.write(() => {
-          return this.realm.create<IWithCounterCollections>(WithCounterCollectionsSchema.name, {
-            dictionary: initialValuesDict,
-          });
-        });
-
-        expect(this.realm.objects(WithCounterCollectionsSchema.name).length).equals(1);
-        expectRealmDictionaryOfCounters(dictionary, initialValuesDict);
-      });
-
-      // TODO(lj): To be implemented.
-      it.skip("can create and access set (input: number[])", function (this: RealmContext) {
-        const { set } = this.realm.write(() => {
-          return this.realm.create<IWithCounterCollections>(WithCounterCollectionsSchema.name, {
-            set: initialValuesList,
-          });
-        });
-
-        expect(this.realm.objects(WithCounterCollectionsSchema.name).length).equals(1);
-        expectRealmSetOfCounters(set, initialValuesList);
-      });
-
       it("returns different reference for each access", function (this: RealmContext) {
         const object = this.realm.write(() => {
           return this.realm.create<IWithCounter>(WithCounterSchema.name, {
@@ -299,89 +197,6 @@ describe("Counter", () => {
         expect(object.counter === 0).to.be.false;
         expect(object.counter === object.counter).to.be.false;
         expect(Object.is(object.counter, object.counter)).to.be.false;
-      });
-    });
-
-    // TODO(lj): To be implemented.
-    describe.skip("Via collection accessors", () => {
-      it("can create and access list items", function (this: RealmContext) {
-        const { list } = this.realm.write(() => {
-          return this.realm.create<IWithCounterCollections>(WithCounterCollectionsSchema.name, {
-            list: [],
-          });
-        });
-        expect(this.realm.objects(WithCounterCollectionsSchema.name).length).equals(1);
-        expect(list.length).equals(0);
-
-        this.realm.write(() => {
-          list.push(...initialValuesList);
-        });
-
-        expectRealmListOfCounters(list, initialValuesList);
-      });
-
-      it("can create and access dictionary entries", function (this: RealmContext) {
-        const { dictionary } = this.realm.write(() => {
-          return this.realm.create<IWithCounterCollections>(WithCounterCollectionsSchema.name, {
-            dictionary: {},
-          });
-        });
-        expect(this.realm.objects(WithCounterCollectionsSchema.name).length).equals(1);
-        expect(Object.keys(dictionary).length).equals(0);
-
-        this.realm.write(() => {
-          for (const key in initialValuesDict) {
-            dictionary[key] = initialValuesDict[key];
-          }
-        });
-
-        expectRealmDictionaryOfCounters(dictionary, initialValuesDict);
-      });
-
-      it("can create and access set items", function (this: RealmContext) {
-        const { set } = this.realm.write(() => {
-          return this.realm.create<IWithCounterCollections>(WithCounterCollectionsSchema.name, {
-            set: [] as number[],
-          });
-        });
-        expect(this.realm.objects(WithCounterCollectionsSchema.name).length).equals(1);
-        expect(set.length).equals(0);
-
-        this.realm.write(() => {
-          for (const input of initialValuesList) {
-            set.add(input);
-          }
-        });
-
-        expectRealmSetOfCounters(set, initialValuesList);
-      });
-
-      it("returns different reference for each access", function (this: RealmContext) {
-        const { list, dictionary, set } = this.realm.write(() => {
-          return this.realm.create<IWithCounterCollections>(WithCounterCollectionsSchema.name, {
-            list: [0],
-            dictionary: { key: 0 },
-            set: [0],
-          });
-        });
-
-        expectCounter(list[0]);
-        // @ts-expect-error Testing different types.
-        expect(list[0] === 0).to.be.false;
-        expect(list[0] === list[0]).to.be.false;
-        expect(Object.is(list[0], list[0])).to.be.false;
-
-        expectCounter(dictionary.key);
-        // @ts-expect-error Testing different types.
-        expect(dictionary.key === 0).to.be.false;
-        expect(dictionary.key === dictionary.key).to.be.false;
-        expect(Object.is(dictionary.key, dictionary.key)).to.be.false;
-
-        expectCounter(set[0]);
-        // @ts-expect-error Testing different types.
-        expect(set[0] === 0).to.be.false;
-        expect(set[0] === set[0]).to.be.false;
-        expect(Object.is(set[0], set[0])).to.be.false;
       });
     });
   });
@@ -530,75 +345,6 @@ describe("Counter", () => {
         });
         expectCounter(object.nullableCounter);
         expect(object.nullableCounter.value).equals(-100_000);
-      });
-    });
-
-    // TODO(lj): To be implemented.
-    describe.skip("Realm object collection of counters property", () => {
-      it("updates list", function (this: RealmContext) {
-        let input = [-1, 0, 1, 100_000];
-        const object = this.realm.write(() => {
-          return this.realm.create<IWithCounterCollections>(WithCounterCollectionsSchema.name, {
-            list: input,
-          });
-        });
-        expectRealmListOfCounters(object.list, input);
-
-        input = [2, 10];
-        this.realm.write(() => {
-          object.list = input;
-        });
-        expectRealmListOfCounters(object.list, input);
-
-        input = [];
-        this.realm.write(() => {
-          object.list = input;
-        });
-        expectRealmListOfCounters(object.list, input);
-      });
-
-      it("updates dictionary", function (this: RealmContext) {
-        let input: Record<string, number> = { a: -1, b: 0, c: 1, d: 100_000 };
-        const object = this.realm.write(() => {
-          return this.realm.create<IWithCounterCollections>(WithCounterCollectionsSchema.name, {
-            dictionary: input,
-          });
-        });
-        expectRealmDictionaryOfCounters(object.dictionary, input);
-
-        input = { a: 2, b: 10 };
-        this.realm.write(() => {
-          object.dictionary = input;
-        });
-        expectRealmDictionaryOfCounters(object.dictionary, input);
-
-        input = {};
-        this.realm.write(() => {
-          object.dictionary = input;
-        });
-        expectRealmDictionaryOfCounters(object.dictionary, input);
-      });
-
-      it("updates set", function (this: RealmContext) {
-        let input = [-1, 0, 1, 100_000];
-        const object = this.realm.write(() => {
-          return this.realm.create<IWithCounterCollections>(WithCounterCollectionsSchema.name, {
-            set: input,
-          });
-        });
-        expectRealmSetOfCounters(object.set, input);
-
-        input = [2, 10];
-        this.realm.write(() => {
-          object.set = input;
-        });
-        expectRealmSetOfCounters(object.set, input);
-
-        input = [];
-        this.realm.write(() => {
-          object.set = input;
-        });
-        expectRealmSetOfCounters(object.set, input);
       });
     });
   });

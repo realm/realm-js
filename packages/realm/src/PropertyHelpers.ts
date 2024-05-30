@@ -414,7 +414,6 @@ export function createPropertyHelpers(property: PropertyContext, options: Helper
     objectSchemaName: property.objectSchemaName,
     optional: !!(property.type & binding.PropertyType.Nullable),
     presentation: property.presentation,
-    columnKey: property.columnKey,
   };
   if (collectionType) {
     return getPropertyHelpers(collectionType, {
