@@ -438,6 +438,48 @@ describe("Flexible sync", function () {
     });
   });
 
+  describe("Progress notification", () => {
+    it("only estimate callback is allowed", async function () {
+      const realm = await Realm.open({
+        schema: [Person, Dog],
+        sync: {
+          flexible: true,
+          user: this.user,
+        },
+      });
+
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-function
+      const callback = (estimate: number) => {};
+      realm.syncSession?.addProgressNotification(
+        Realm.ProgressDirection.Download,
+        Realm.ProgressMode.ForCurrentlyOutstandingWork,
+        callback,
+      );
+      realm.close();
+    });
+
+    it("old callback style is not allowed", async function () {
+      const realm = await Realm.open({
+        schema: [Person, Dog],
+        sync: {
+          flexible: true,
+          user: this.user,
+        },
+      });
+
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-function
+      const callback = (transferable: number, transferred: number) => {};
+      expect(() => {
+        realm.syncSession?.addProgressNotification(
+          Realm.ProgressDirection.Download,
+          Realm.ProgressMode.ForCurrentlyOutstandingWork,
+          callback,
+        );
+      }).to.throw();
+      realm.close();
+    });
+  });
+
   describe("Sync Errors", () => {
     it("compensating writes", async function () {
       const objectIds = [new BSON.ObjectId(), new BSON.ObjectId(), new BSON.ObjectId()].sort((a, b) =>
