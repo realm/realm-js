@@ -29,6 +29,10 @@ type ExtractPropertyNamesOfType<T, PropType> = {
   [K in keyof T]: T[K] extends PropType ? K : never;
 }[keyof T];
 
+type ExtractPropertyNamesOfUnerlyingType<T, PropType> = {
+  [K in keyof T]: Exclude<T[K], null | undefined> extends PropType ? K : never;
+}[keyof T]
+
 /**
  * Exchanges properties defined as {@link List} with an optional {@link Array}.
  */
@@ -50,10 +54,7 @@ type RealmDictionaryRemappedModelPart<T> = {
  * Exchanges properties defined as a {@link Counter} with a `number`.
  */
 type RealmCounterRemappedModelPart<T> = {
-  [K in ExtractPropertyNamesOfType<T, Counter>]?: Exclude<T[K], null | undefined> extends Counter
-    ? Counter | number | Exclude<T[K], Counter>
-    : never;
-    // : T[K];
+  [K in ExtractPropertyNamesOfUnerlyingType<T, Counter>]?: Counter | number | Exclude<T[K], Counter>;
 };
 
 /** Omits all properties of a model which are not defined by the schema */
@@ -64,7 +65,7 @@ export type OmittedRealmTypes<T> = Omit<
   | ExtractPropertyNamesOfType<T, Function> // TODO: Figure out the use-case for this
   | ExtractPropertyNamesOfType<T, AnyCollection>
   | ExtractPropertyNamesOfType<T, AnyDictionary>
-  | ExtractPropertyNamesOfType<T, Counter>
+  | ExtractPropertyNamesOfUnerlyingType<T, Counter>
 >;
 
 /** Make all fields optional except those specified in K */
