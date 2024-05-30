@@ -82,6 +82,23 @@ const WithRegularIntSchema: ObjectSchema = {
   },
 };
 
+interface IWithMixed {
+  mixed: Realm.Types.Mixed;
+  list: Realm.List<Realm.Types.Mixed>;
+  dictionary: Realm.Dictionary<Realm.Types.Mixed>;
+  set: Realm.Set<Realm.Types.Mixed>;
+}
+
+const WithMixedSchema: ObjectSchema = {
+  name: "WithMixed",
+  properties: {
+    mixed: "mixed",
+    list: "mixed[]",
+    dictionary: "mixed{}",
+    set: "mixed<>",
+  },
+};
+
 function expectCounter(value: unknown): asserts value is Counter {
   expect(value).to.be.instanceOf(Counter);
 }
@@ -141,6 +158,7 @@ describe("Counter", () => {
       WithCounterCollectionsSchema,
       WithDefaultCounterSchema,
       WithRegularIntSchema,
+      WithMixedSchema,
     ],
   });
 
@@ -846,6 +864,167 @@ describe("Counter", () => {
       expect(this.realm.objects(WithCounterSchema.name).length).equals(0);
 
       expect(() => counter.value).to.throw("Accessing object which has been invalidated or deleted");
+    });
+
+    it("throws when setting a mixed to a counter via object creation", function (this: RealmContext) {
+      const { counter } = this.realm.write(() => {
+        return this.realm.create<IWithCounter>(WithCounterSchema.name, {
+          counter: 10,
+        });
+      });
+      expectCounter(counter);
+      expect(counter.value).equals(10);
+
+      expect(() => {
+        this.realm.write(() => {
+          this.realm.create<IWithMixed>(WithMixedSchema.name, { mixed: counter });
+        });
+      }).to.throw("Using a Counter as a Mixed value is not supported");
+      expect(this.realm.objects(WithMixedSchema.name).length).equals(0);
+    });
+
+    it("throws when setting a mixed to a counter via object setter", function (this: RealmContext) {
+      const { counter, objectWithMixed } = this.realm.write(() => {
+        const counter = this.realm.create<IWithCounter>(WithCounterSchema.name, {
+          counter: 10,
+        }).counter;
+        const objectWithMixed = this.realm.create<IWithMixed>(WithMixedSchema.name, { mixed: 20 });
+
+        return { counter, objectWithMixed };
+      });
+      expectCounter(counter);
+      expect(counter.value).equals(10);
+
+      expect(() => {
+        this.realm.write(() => {
+          objectWithMixed.mixed = counter;
+        });
+      }).to.throw("Using a Counter as a Mixed value is not supported");
+      expect(objectWithMixed.mixed).equals(20);
+    });
+
+    it("throws when adding a counter to mixed collections via object creation", function (this: RealmContext) {
+      const { counter } = this.realm.write(() => {
+        return this.realm.create<IWithCounter>(WithCounterSchema.name, {
+          counter: 10,
+        });
+      });
+      expectCounter(counter);
+      expect(counter.value).equals(10);
+
+      expect(() => {
+        this.realm.write(() => {
+          this.realm.create<IWithMixed>(WithMixedSchema.name, { list: [counter] });
+        });
+      }).to.throw("Using a Counter as a Mixed value is not supported");
+      expect(this.realm.objects(WithMixedSchema.name).length).equals(0);
+
+      expect(() => {
+        this.realm.write(() => {
+          this.realm.create<IWithMixed>(WithMixedSchema.name, { dictionary: { key: counter } });
+        });
+      }).to.throw("Using a Counter as a Mixed value is not supported");
+      expect(this.realm.objects(WithMixedSchema.name).length).equals(0);
+
+      expect(() => {
+        this.realm.write(() => {
+          this.realm.create<IWithMixed>(WithMixedSchema.name, { set: [counter] });
+        });
+      }).to.throw("Using a Counter as a Mixed value is not supported");
+      expect(this.realm.objects(WithMixedSchema.name).length).equals(0);
+
+      expect(() => {
+        this.realm.write(() => {
+          this.realm.create<IWithMixed>(WithMixedSchema.name, { mixed: [counter] });
+        });
+      }).to.throw("Using a Counter as a Mixed value is not supported");
+      expect(this.realm.objects(WithMixedSchema.name).length).equals(0);
+
+      expect(() => {
+        this.realm.write(() => {
+          this.realm.create<IWithMixed>(WithMixedSchema.name, { mixed: { key: counter } });
+        });
+      }).to.throw("Using a Counter as a Mixed value is not supported");
+      expect(this.realm.objects(WithMixedSchema.name).length).equals(0);
+    });
+
+    it("throws when adding a counter to mixed collections via setters", function (this: RealmContext) {
+      const { counter, list, dictionary, set, objectWithMixed } = this.realm.write(() => {
+        const counter = this.realm.create<IWithCounter>(WithCounterSchema.name, {
+          counter: 10,
+        }).counter;
+        const list = this.realm.create<IWithMixed>(WithMixedSchema.name, { list: [20] }).list;
+        const dictionary = this.realm.create<IWithMixed>(WithMixedSchema.name, { dictionary: { key: 20 } }).dictionary;
+        const set = this.realm.create<IWithMixed>(WithMixedSchema.name, { set: [20] }).set;
+        const objectWithMixed = this.realm.create<IWithMixed>(WithMixedSchema.name, { mixed: [20] });
+
+        return { counter, list, dictionary, set, objectWithMixed };
+      });
+      expectCounter(counter);
+      expectRealmList(list);
+      expectRealmDictionary(dictionary);
+      expectRealmSet(set);
+      expect(counter.value).equals(10);
+      expect(list[0]).equals(20);
+      expect(dictionary.key).equals(20);
+      expect(set[0]).equals(20);
+
+      // Collections OF Mixed
+      expect(() => {
+        this.realm.write(() => {
+          list[0] = counter;
+        });
+      }).to.throw("Using a Counter as a Mixed value is not supported");
+      expect(list[0]).equals(20);
+
+      expect(() => {
+        this.realm.write(() => {
+          list.push(counter);
+        });
+      }).to.throw("Using a Counter as a Mixed value is not supported");
+      expect(list.length).equals(1);
+      expect(list[0]).equals(20);
+
+      expect(() => {
+        this.realm.write(() => {
+          dictionary.key = counter;
+        });
+      }).to.throw("Using a Counter as a Mixed value is not supported");
+      expectKeys(dictionary, ["key"]);
+      expect(dictionary.key).equals(20);
+
+      expect(() => {
+        this.realm.write(() => {
+          dictionary.set({ newKey: counter });
+        });
+      }).to.throw("Using a Counter as a Mixed value is not supported");
+      expectKeys(dictionary, ["key"]);
+      expect(dictionary.key).equals(20);
+
+      expect(() => {
+        this.realm.write(() => {
+          set.add(counter);
+        });
+      }).to.throw("Using a Counter as a Mixed value is not supported");
+      expect(set[0]).equals(20);
+      expect(set.has(counter.value)).to.be.false;
+
+      // Collections IN Mixed
+      expect(() => {
+        this.realm.write(() => {
+          objectWithMixed.mixed = [counter];
+        });
+      }).to.throw("Using a Counter as a Mixed value is not supported");
+      expect(list.length).equals(1);
+      expect(list[0]).equals(20);
+
+      expect(() => {
+        this.realm.write(() => {
+          objectWithMixed.mixed = { newKey: counter };
+        });
+      }).to.throw("Using a Counter as a Mixed value is not supported");
+      expectKeys(dictionary, ["key"]);
+      expect(dictionary.key).equals(20);
     });
   });
 });
