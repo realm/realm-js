@@ -562,6 +562,7 @@ classes:
       - start
       - cancel
       - register_download_progress_notifier
+      - unregister_download_progress_notifier
       # JS-specific
       - DOLLAR_resetSharedPtr
 

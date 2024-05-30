@@ -339,8 +339,8 @@ describe("SessionTest", () => {
         realm.syncSession?.addProgressNotification("upload", "reportIndefinitely", progressCallback);
         writeDataFunc();
       });
-      await realm.close();
-      user.logOut();
+      realm.close();
+      await user.logOut();
     });
   });
 
