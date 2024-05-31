@@ -197,7 +197,7 @@ Other editors should also be able to be configured to use the `compile_commands.
 
 ## Building Realm JS
 
-In most cases, its not required to build the SDK explicitly. You can either simply download the package from `npm` or run one of the test scripts in either of the `integration-tests/environments` (which will drive the dependent build-scripts automatically). If you want to invoke these scripts manually, see the individual sections below:
+In most cases, it's not required to build the SDK explicitly. You can either simply download the package from `npm` or run one of the test scripts in either of the `integration-tests/environments` (which will drive the dependent build-scripts automatically). If you want to invoke these scripts manually, see the individual sections below:
 
 ### Building the SDK
 
