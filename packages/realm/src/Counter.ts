@@ -18,6 +18,10 @@
 
 import { IllegalConstructorError, Realm, UpdateMode, assert, binding } from "./internal";
 
+const REALM = Symbol("Counter#realm");
+const OBJ = Symbol("Counter#obj");
+const COLUMN_KEY = Symbol("Counter#columnKey");
+
 /**
  * A logical counter representation for performing numeric updates that need
  * to be synchronized as sequentially consistent events rather than individual
@@ -64,11 +68,11 @@ import { IllegalConstructorError, Realm, UpdateMode, assert, binding } from "./i
  */
 export class Counter {
   /** @internal */
-  private declare readonly realm: Realm;
+  private readonly [REALM]: Realm;
   /** @internal */
-  private declare readonly obj: binding.Obj;
+  private readonly [OBJ]: binding.Obj;
   /** @internal */
-  private declare readonly columnKey: binding.ColKey;
+  private readonly [COLUMN_KEY]: binding.ColKey;
 
   /** @internal */
   constructor(realm: Realm, obj: binding.Obj, columnKey: binding.ColKey) {
@@ -76,25 +80,9 @@ export class Counter {
       throw new IllegalConstructorError("Counter");
     }
 
-    // TODO(lj): May convert these into Symbols.
-    Object.defineProperty(this, "realm", {
-      enumerable: false,
-      configurable: false,
-      writable: false,
-      value: realm,
-    });
-    Object.defineProperty(this, "obj", {
-      enumerable: false,
-      configurable: false,
-      writable: false,
-      value: obj,
-    });
-    Object.defineProperty(this, "columnKey", {
-      enumerable: false,
-      configurable: false,
-      writable: false,
-      value: columnKey,
-    });
+    this[REALM] = realm;
+    this[OBJ] = obj;
+    this[COLUMN_KEY] = columnKey;
   }
 
   /**
@@ -102,10 +90,10 @@ export class Counter {
    */
   get value(): number {
     try {
-      return Number(this.obj.getAny(this.columnKey));
+      return Number(this[OBJ].getAny(this[COLUMN_KEY]));
     } catch (err) {
       // Throw a custom error message instead of Core's.
-      assert.isValid(this.obj);
+      assert.isValid(this[OBJ]);
       throw err;
     }
   }
@@ -120,9 +108,9 @@ export class Counter {
    * @param by The value to increment by. (Default: `1`)
    */
   increment(by = 1): void {
-    assert.inTransaction(this.realm);
+    assert.inTransaction(this[REALM]);
     assert.integer(by, "by");
-    this.obj.addInt(this.columnKey, binding.Int64.numToInt(by));
+    this[OBJ].addInt(this[COLUMN_KEY], binding.Int64.numToInt(by));
   }
 
   /**
@@ -130,7 +118,7 @@ export class Counter {
    * @param by The value to decrement by. (Default: `1`)
    */
   decrement(by = 1): void {
-    assert.inTransaction(this.realm);
+    assert.inTransaction(this[REALM]);
     // Assert that it is a number here despite calling into `increment` in order to
     // report the type provided by the user, rather than e.g. NaN or 0 due to negation.
     assert.integer(by, "by");
@@ -145,8 +133,8 @@ export class Counter {
    * setting the count behaves like regular individual updates to the underlying value.
    */
   set(value: number): void {
-    assert.inTransaction(this.realm);
+    assert.inTransaction(this[REALM]);
     assert.integer(value, "value");
-    this.obj.setAny(this.columnKey, binding.Int64.numToInt(value));
+    this[OBJ].setAny(this[COLUMN_KEY], binding.Int64.numToInt(value));
   }
 }
