@@ -110,8 +110,8 @@ describe("Counter", () => {
 
   const initialValuesList = [-100, 0, 1.0, 1000] as const;
 
-  describe("Create and access", () => {
-    describe("Via 'realm.create()'", () => {
+  describe("create and access", () => {
+    describe("via 'realm.create()'", () => {
       it("can create and access (input: number)", function (this: RealmContext) {
         for (let i = 0; i < initialValuesList.length; i++) {
           const input = initialValuesList[i];
@@ -207,7 +207,7 @@ describe("Counter", () => {
     });
   });
 
-  describe("Update", () => {
+  describe("update", () => {
     describe("Counter.value", () => {
       it("increments", function (this: RealmContext) {
         const { counter } = this.realm.write(() => {
@@ -420,7 +420,7 @@ describe("Counter", () => {
     });
   });
 
-  describe("Filtering", () => {
+  describe("filtering", () => {
     it("filters objects with counters", function (this: RealmContext) {
       this.realm.write(() => {
         this.realm.create<IWithCounter>(WithCounterSchema.name, { counter: -100_000 });
@@ -470,7 +470,7 @@ describe("Counter", () => {
     });
   });
 
-  describe("Invalid operations", () => {
+  describe("invalid operations", () => {
     it("throws when incrementing by non-integer", function (this: RealmContext) {
       const { counter } = this.realm.write(() => {
         return this.realm.create<IWithCounter>(WithCounterSchema.name, {
