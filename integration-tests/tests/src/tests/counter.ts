@@ -126,19 +126,16 @@ describe("Counter", () => {
 
       it("can create and access (input: Counter)", function (this: RealmContext) {
         const initialNumValues = initialValuesList;
-        const initialCounterValues: Counter[] = [];
-
         // First create Realm objects with counters.
-        this.realm.write(() => {
-          for (const input of initialNumValues) {
+        const initialCounterValues = this.realm.write(() => {
+          return initialNumValues.map((input) => {
             const { counter } = this.realm.create<IWithCounter>(WithCounterSchema.name, {
               counter: input,
             });
             expectCounter(counter);
             expect(counter.value).equals(input);
-
-            initialCounterValues.push(counter);
-          }
+            return counter;
+          });
         });
 
         // Use the managed Counters as input, each in a separate transaction.
