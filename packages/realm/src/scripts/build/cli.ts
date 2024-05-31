@@ -21,9 +21,6 @@
 
 const { env } = process;
 
-// For the sake of sanity and because the dependencies we use are not available when this is packaged.
-assert.equal(env.npm_package_name, "realm", "Expected this to be invoked through NPM scripts");
-
 import assert from "node:assert";
 import { execSync } from "node:child_process";
 import fs from "node:fs";
