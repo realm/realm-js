@@ -20,7 +20,7 @@ import { expect } from "chai";
 import Realm, { BSON, Counter, ObjectSchema, UpdateMode } from "realm";
 
 import { openRealmBeforeEach } from "../hooks";
-import { expectRealmDictionary, expectRealmList, expectRealmSet } from "../utils/expects";
+import { expectCounter, expectRealmDictionary, expectRealmList, expectRealmSet } from "../utils/expects";
 
 interface IWithCounter {
   _id: BSON.ObjectId;
@@ -88,10 +88,6 @@ const WithMixedSchema: ObjectSchema = {
     set: "mixed<>",
   },
 };
-
-function expectCounter(value: unknown): asserts value is Counter {
-  expect(value).to.be.instanceOf(Counter);
-}
 
 function expectKeys(dictionary: Realm.Dictionary, keys: string[]) {
   expect(Object.keys(dictionary)).members(keys);
