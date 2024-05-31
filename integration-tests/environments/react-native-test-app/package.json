@@ -92,6 +92,10 @@
         "RCT_NEW_ARCH_ENABLED": {
           "external": true,
           "default": "1"
+        },
+        "USE_BRIDGELESS": {
+          "external": true,
+          "default": "0"
         }
       }
     },
@@ -105,6 +109,10 @@
         "RCT_NEW_ARCH_ENABLED": {
           "external": true,
           "default": "1"
+        },
+        "USE_BRIDGELESS": {
+          "external": true,
+          "default": "0"
         }
       }
     }
