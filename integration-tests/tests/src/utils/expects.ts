@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
-import Realm from "realm";
+import Realm, { Counter } from "realm";
 
 export function expectRealmList(value: unknown): asserts value is Realm.List<unknown> {
   expect(value).instanceOf(Realm.List);
@@ -33,4 +33,8 @@ export function expectRealmResults(value: unknown): asserts value is Realm.Resul
 
 export function expectRealmSet(value: unknown): asserts value is Realm.Set<unknown> {
   expect(value).instanceOf(Realm.Set);
+}
+
+export function expectCounter(value: unknown): asserts value is Counter {
+  expect(value).to.be.instanceOf(Counter);
 }
