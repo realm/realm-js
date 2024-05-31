@@ -1,7 +1,4 @@
-## vNext (TBD)
-
-### Deprecations
-* None
+## 12.10.0-rc.0 (2024-05-31)
 
 ### Enhancements
 * A `counter` presentation data type has been introduced. The `int` data type can now be used as a logical counter for performing numeric updates that need to be synchronized as sequentially consistent events rather than individual reassignments of the number. ([#6694](https://github.com/realm/realm-js/pull/6694))
