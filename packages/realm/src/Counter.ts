@@ -31,6 +31,15 @@ const COLUMN_KEY = Symbol("Counter#columnKey");
  * as `0`, can both call `Counter.increment(1)`. Once online, the value will
  * converge to `2`.
  * @note
+ * __Not supported__:
+ *
+ * Counter types are __not__ supported as:
+ * - `Mixed` values
+ * - Primary keys
+ * - Inside collections
+ * - Query arguments for placeholders (e.g. `$0`) in {@link Realm.Results.filtered | filtered()}
+ *   - If you need to use the value of the `Counter` when filtering, use `Counter.value`.
+ *
  * __Declaring a counter__:
  *
  * A property schema is declared as either:
