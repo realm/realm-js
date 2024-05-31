@@ -57,7 +57,7 @@ interface IWithDefaultCounter {
 const WithDefaultCounterSchema: ObjectSchema = {
   name: "WithDefaultCounter",
   properties: {
-    counterWithDefault: { type: "int", presentation: "counter", default: 0 },
+    counterWithDefault: { type: "int", presentation: "counter", default: 10 },
   },
 };
 
@@ -169,7 +169,7 @@ describe("Counter", () => {
 
         expect(this.realm.objects(WithDefaultCounterSchema.name).length).equals(1);
         expectCounter(counterWithDefault);
-        expect(counterWithDefault.value).equals(0);
+        expect(counterWithDefault.value).equals(10);
       });
 
       it("can create nullable counter with int or null", function (this: RealmContext) {
