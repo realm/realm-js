@@ -29,6 +29,10 @@ type ExtractPropertyNamesOfType<T, PropType> = {
   [K in keyof T]: T[K] extends PropType ? K : never;
 }[keyof T];
 
+type ExtractPropertyNamesOfTypeExclNullability<T, PropType> = {
+  [K in keyof T]: Exclude<T[K], null | undefined> extends PropType ? K : never;
+}[keyof T];
+
 /**
  * Exchanges properties defined as {@link List} with an optional {@link Array}.
  */
@@ -45,15 +49,11 @@ type RealmDictionaryRemappedModelPart<T> = {
     : never;
 };
 
-// TODO(lj): Fix so that nullable Counters can be set to null (by TS) (see temporary type test at bottom).
 /**
  * Exchanges properties defined as a {@link Counter} with a `number`.
  */
 type RealmCounterRemappedModelPart<T> = {
-  [K in ExtractPropertyNamesOfType<T, Counter>]?: Exclude<T[K], null | undefined> extends Counter
-    ? Counter | number | Exclude<T[K], Counter>
-    : never;
-    // : T[K];
+  [K in ExtractPropertyNamesOfTypeExclNullability<T, Counter>]?: Counter | number | Exclude<T[K], Counter>;
 };
 
 /** Omits all properties of a model which are not defined by the schema */
@@ -64,7 +64,7 @@ export type OmittedRealmTypes<T> = Omit<
   | ExtractPropertyNamesOfType<T, Function> // TODO: Figure out the use-case for this
   | ExtractPropertyNamesOfType<T, AnyCollection>
   | ExtractPropertyNamesOfType<T, AnyDictionary>
-  | ExtractPropertyNamesOfType<T, Counter>
+  | ExtractPropertyNamesOfTypeExclNullability<T, Counter>
 >;
 
 /** Make all fields optional except those specified in K */
@@ -94,38 +94,3 @@ export type Unmanaged<T, RequiredProperties extends keyof OmittedRealmTypes<T> =
   RequiredProperties
 > &
   RemappedRealmTypes<T>;
-
-// TODO(lj): Remove temporary manual type testing.
-
-// type MyObj = {
-//   counter1: Counter;
-//   counter2: Counter;
-//   nullableCounter1?: Counter | null;
-//   nullableCounter2?: Counter | null;
-//   counterOrUndefined1?: Counter;
-//   counterOrUndefined2?: Counter;
-
-//   stringProp1: string;
-//   stringProp2: string;
-//   nullableStringProp1: string | null;
-//   nullableStringProp2: string | null;
-//   stringOrUndefined1?: string;
-//   stringOrUndefined2?: string;
-// };
-
-// const test: Unmanaged<MyObj> = {
-//   counter1: 5, // Expected: valid
-//   counter2: null, // Expected: invalid
-//   nullableCounter1: null, // Expected: valid
-//   nullableCounter2: 10, // Expected: valid
-//   counterOrUndefined1: undefined, // Expected: valid
-//   counterOrUndefined2: 10, // Expected: valid
-
-//   stringProp1: "test", // Expected: valid
-//   stringProp2: null, // Expected: invalid
-//   nullableStringProp1: null, // Expected: valid
-//   nullableStringProp2: "blah", // Expected: valid
-//   stringOrUndefined1: undefined, // Expected: valid
-//   stringOrUndefined2: "sad", // Expected: valid
-// };
-// test;
