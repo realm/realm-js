@@ -149,11 +149,4 @@ export class Counter {
     assert.integer(value, "value");
     this.obj.setAny(this.columnKey, binding.Int64.numToInt(value));
   }
-
-  /**
-   * TODO(lj)
-   */
-  valueOf(): number {
-    return this.value;
-  }
 }
