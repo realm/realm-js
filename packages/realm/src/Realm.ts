@@ -1242,6 +1242,7 @@ export namespace Realm {
   export import AnyList = internal.AnyList;
   export import AnyRealmObject = internal.AnyRealmObject;
   export import AnyResults = internal.AnyResults;
+  export import AnySet = internal.AnySet;
   export import AnyUser = internal.AnyUser;
   export import ApiKey = internal.ApiKey;
   export import AppChangeCallback = internal.AppChangeCallback;
