@@ -16,10 +16,51 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { IllegalConstructorError, Realm, assert, binding } from "./internal";
+import { IllegalConstructorError, Realm, UpdateMode, assert, binding } from "./internal";
 
 /**
- * TODO(lj)
+ * A logical counter representation for performing numeric updates that need
+ * to be synchronized as sequentially consistent events rather than individual
+ * reassignments of the number.
+ *
+ * For instance, offline Client 1 and Client 2 which both see `Counter.value`
+ * as `0`, can both call `Counter.increment(1)`. Once online, the value will
+ * converge to `2`.
+ * @note
+ * __Declaring a counter__:
+ *
+ * A property schema is declared as either:
+ * - `"counter"`
+ * - `{ type: "int", presentation: "counter" }`
+ *
+ * __Creating a counter__:
+ *
+ * Use a `number` when creating your counter on a {@link Realm.Object}.
+ * ```ts
+ * realm.write(() => {
+ *   realm.create(MyObject, { _id, counter: 0 });
+ * })
+ * ```
+ *
+ * To update a `null` counter, use {@link UpdateMode.Modified} or {@link UpdateMode.All}.
+ * ```ts
+ * realm.write(() => {
+ *   realm.create(MyObject, { _id, counter: 0 }, UpdateMode.Modified);
+ * })
+ * ```
+ *
+ * __Nullability__:
+ *
+ * The above property schema can be extended to allow a nullable counter.
+ * A `Counter` never stores `null` values itself, but the counter property
+ * on the {@link Realm.Object} (e.g. `myRealmObject.myCounter`) can be `null`.
+ *
+ * __Not a live object__:
+ *
+ * The `Counter` instance itself is _not_ a live object. Calling `myCounter.value`
+ * will always return the most recent locally persisted (and synced) state, and
+ * calling `myRealmObject.myCounter` always returns a new `Counter` instance (or
+ * potentially `null` for nullable counters).
  */
 export class Counter {
   /** @internal */
@@ -57,7 +98,7 @@ export class Counter {
   }
 
   /**
-   * TODO(lj)
+   * The current count.
    */
   get value(): number {
     try {
@@ -69,17 +110,14 @@ export class Counter {
     }
   }
 
-  /**
-   * TODO(lj)
-   * @internal
-   */
+  /** @internal */
   set value(_: number) {
     throw new Error("To update the value, use the methods on the Counter.");
   }
 
   /**
-   * TODO(lj)
-   * @param by The value to increment by.
+   * Increment the count.
+   * @param by The value to increment by. (Default: `1`)
    */
   increment(by = 1): void {
     assert.inTransaction(this.realm);
@@ -88,8 +126,8 @@ export class Counter {
   }
 
   /**
-   * TODO(lj)
-   * @param by The value to decrement by.
+   * Decrement the count.
+   * @param by The value to decrement by. (Default: `1`)
    */
   decrement(by = 1): void {
     assert.inTransaction(this.realm);
@@ -100,8 +138,11 @@ export class Counter {
   }
 
   /**
-   * TODO(lj)
-   * @param value The value to reset the counter to.
+   * Reset the count.
+   * @param value The value to reset the count to.
+   * @warning
+   * Unlike {@link Counter.increment | increment} and {@link Counter.decrement | decrement},
+   * setting the count behaves like regular individual updates to the underlying value.
    */
   set(value: number): void {
     assert.inTransaction(this.realm);
