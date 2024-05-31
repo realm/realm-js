@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import type { AnyRealmObject, Collection, Counter, Dictionary, List, Realm } from "./internal";
+import type { AnyRealmObject, Collection, Counter, Dictionary, List, Realm, RealmSet } from "./internal";
 
 /* eslint-disable-next-line @typescript-eslint/no-explicit-any -- We define these once to avoid using "any" through the code */
 export type AnyCollection = Collection<any, any, any, any, any>;
@@ -24,6 +24,8 @@ export type AnyCollection = Collection<any, any, any, any, any>;
 export type AnyDictionary = Dictionary<any>;
 /* eslint-disable-next-line @typescript-eslint/no-explicit-any -- We define these once to avoid using "any" through the code */
 export type AnyList = List<any>;
+/* eslint-disable-next-line @typescript-eslint/no-explicit-any -- We define these once to avoid using "any" through the code */
+export type AnySet = RealmSet<any>;
 
 type ExtractPropertyNamesOfType<T, PropType> = {
   [K in keyof T]: T[K] extends PropType ? K : never;
@@ -47,6 +49,13 @@ type RealmDictionaryRemappedModelPart<T> = {
   [K in ExtractPropertyNamesOfType<T, AnyDictionary>]?: T[K] extends Dictionary<infer ValueType>
     ? { [key: string]: ValueType }
     : never;
+};
+
+/**
+ * Exchanges properties defined as {@link RealmSet} with an optional {@link Array}.
+ */
+type RealmSetRemappedModelPart<T> = {
+  [K in ExtractPropertyNamesOfType<T, AnySet>]?: T[K] extends RealmSet<infer GT> ? Array<GT | Unmanaged<GT>> : never;
 };
 
 /**
@@ -82,6 +91,7 @@ type OmittedRealmTypesWithRequired<T, RequiredProperties extends keyof OmittedRe
 /** Remaps realm types to "simpler" types (arrays and objects) */
 type RemappedRealmTypes<T> = RealmListRemappedModelPart<T> &
   RealmDictionaryRemappedModelPart<T> &
+  RealmSetRemappedModelPart<T> &
   RealmCounterRemappedModelPart<T>;
 
 /**
