@@ -343,7 +343,7 @@ describe("Counter", () => {
         expect(object.nullableCounter.value).equals(1);
 
         this.realm.write(() => {
-          object.nullableCounter = null;
+          object.nullableCounter = undefined;
         });
         expect(object.nullableCounter).to.be.null;
 
@@ -449,6 +449,24 @@ describe("Counter", () => {
         }
       });
       expect(filtered.length).equals(0);
+    });
+  });
+
+  describe("Realm.schema", () => {
+    it("includes `presentation: 'counter'` in the canonical property schema", function (this: RealmContext) {
+      const objectSchema = this.realm.schema.find((objectSchema) => objectSchema.name === WithCounterSchema.name);
+      expect(objectSchema).to.be.an("object");
+
+      const counterPropertySchema = objectSchema?.properties.counter;
+      expect(counterPropertySchema).deep.equals({
+        name: "counter",
+        type: "int",
+        presentation: "counter",
+        optional: false,
+        indexed: false,
+        mapTo: "counter",
+        default: undefined,
+      });
     });
   });
 
