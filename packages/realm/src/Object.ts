@@ -220,7 +220,6 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
     const result = wrapObject(obj);
     assert(result);
     // Persist any values provided
-    // TODO: Consider using the property helpers directly to improve performance
     for (const property of persistedProperties) {
       const propertyName = property.publicName || property.name;
       const { default: defaultValue, get: getProperty, set: setProperty } = properties.get(propertyName);
