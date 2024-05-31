@@ -477,7 +477,7 @@ describe("Counter", () => {
         this.realm.write(() => {
           counter.increment(1.1);
         });
-      }).to.throw("Expected 'by' to be an integer, got a floating point number");
+      }).to.throw("Expected 'by' to be an integer, got a decimal number");
       expect(counter.value).equals(10);
 
       expect(() => {
@@ -525,7 +525,7 @@ describe("Counter", () => {
         this.realm.write(() => {
           counter.decrement(1.1);
         });
-      }).to.throw("Expected 'by' to be an integer, got a floating point number");
+      }).to.throw("Expected 'by' to be an integer, got a decimal number");
       expect(counter.value).equals(10);
 
       expect(() => {
@@ -573,7 +573,7 @@ describe("Counter", () => {
         this.realm.write(() => {
           counter.set(1.1);
         });
-      }).to.throw("Expected 'value' to be an integer, got a floating point number");
+      }).to.throw("Expected 'value' to be an integer, got a decimal number");
       expect(counter.value).equals(10);
 
       expect(() => {
