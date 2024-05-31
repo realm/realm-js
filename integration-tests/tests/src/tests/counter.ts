@@ -615,6 +615,23 @@ describe("Counter", () => {
       expect(counter.value).equals(10);
     });
 
+    it("throws when setting 'Counter.value' directly", function (this: RealmContext) {
+      const { counter } = this.realm.write(() => {
+        return this.realm.create<IWithCounter>(WithCounterSchema.name, {
+          counter: 10,
+        });
+      });
+      expectCounter(counter);
+      expect(counter.value).equals(10);
+
+      expect(() => {
+        this.realm.write(() => {
+          // @ts-expect-error Assigning to read-only property.
+          counter.value = 20;
+        });
+      }).to.throw("To update the value, use the methods on the Counter");
+    });
+
     it("throws when updating outside write transaction", function (this: RealmContext) {
       const { counter } = this.realm.write(() => {
         return this.realm.create<IWithCounter>(WithCounterSchema.name, {
