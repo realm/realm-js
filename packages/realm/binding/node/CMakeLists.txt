@@ -87,7 +87,6 @@ if(CMAKE_GENERATOR MATCHES "^Ninja")
     endif()
 endif()
 
-
 set(REALM_BUILD_LIB_ONLY ON)
 set(REALM_ENABLE_SYNC ON)
 

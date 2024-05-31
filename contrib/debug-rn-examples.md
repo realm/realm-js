@@ -103,7 +103,7 @@ Since we want to keep the simplicity for our users, changes made in order to deb
 
 Make sure to build binaries for Android and iOS in packages/realm by running:
 
-```bash
+```sh
 # Android
 npm run prebuild-android --workspace realm
 # Apple / iOS
