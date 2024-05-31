@@ -4,7 +4,35 @@
 * None
 
 ### Enhancements
-* None
+* A `counter` presentation data type has been introduced. The `int` data type can now be used as a logical counter for performing numeric updates that need to be synchronized as sequentially consistent events rather than individual reassignments of the number. See the [API docs](https://www.mongodb.com/docs/realm-sdks/js/latest/classes/Realm.Types.Counter.html) for more information. ([#6694](https://github.com/realm/realm-js/pull/6694))
+```ts
+class MyObject extends Realm.Object {
+  _id!: BSON.ObjectId;
+  counter!: Realm.Types.Counter;
+
+  static schema: ObjectSchema = {
+    name: "MyObject",
+    primaryKey: "_id",
+    properties: {
+      _id: { type: "objectId", default: () => new BSON.ObjectId() },
+      counter: "counter",
+      // or: counter: { type: "int", presentation: "counter" },
+    },
+  };
+}
+
+const realm = await Realm.open({ schema: [MyObject] });
+const object = realm.write(() => {
+  return realm.create(MyObject, { counter: 0 });
+});
+
+realm.write(() => {
+  object.counter.increment();
+  object.counter.value; // 1
+  object.counter.decrement(2);
+  object.counter.value; // -1
+});
+```
 
 ### Fixed
 * A non-streaming progress notifier would not immediately call its callback after registration. Instead you would have to wait for a download message to be received to get your first update - if you were already caught up when you registered the notifier you could end up waiting a long time for the server to deliver a download that would call/expire your notifier. ([#7627](https://github.com/realm/realm-core/issues/7627), since v12.8.0)
