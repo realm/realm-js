@@ -85,6 +85,8 @@
     "build:ts": "wireit",
     "build:node": "wireit",
     "bindgen:jsi": "wireit",
+    "react-native-codegen:ios": "wireit",
+    "react-native-codegen:android": "wireit",
     "check-types": "wireit",
     "install": "prebuild-install --runtime napi || echo 'Failed to download prebuild for Realm'",
     "docs": "wireit",
@@ -269,6 +271,24 @@
         "bindgen/vendor/realm-core/bindgen/generated/spec.schema.json"
       ]
     },
+    "react-native-codegen:ios": {
+      "command": "react-native codegen --platform ios",
+      "files": [
+        "binding/react-native/NativeRealm.ts"
+      ],
+      "output": [
+        "binding/apple/generated"
+      ]
+    },
+    "react-native-codegen:android": {
+      "command": "react-native codegen --platform android",
+      "files": [
+        "binding/react-native/NativeRealm.ts"
+      ],
+      "output": [
+        "binding/android/generated"
+      ]
+    },
     "build:node": {
       "dependencies": [
         {
@@ -352,5 +372,18 @@
     "napi_versions": [
       6
     ]
+  },
+  "codegenConfig": {
+    "name": "Realm",
+    "type": "modules",
+    "jsSrcsDir": "binding/react-native",
+    "outputDir": {
+      "ios": "binding/apple/generated",
+      "android": "binding/android/generated"
+    },
+    "includesGeneratedCode": true,
+    "android": {
+      "javaPackageName": "io.realm.react"
+    }
   }
 }

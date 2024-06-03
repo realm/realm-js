@@ -105,6 +105,8 @@ coverage/
 /packages/realm/generated/
 /packages/realm/binding/generated
 /packages/realm/binding/jsi/jsi_init.cpp
+/packages/realm/binding/apple/generated
+/packages/realm/binding/android/generated
 
 # Build artifacts
 /packages/realm/dist/
