@@ -7,6 +7,10 @@ if(CCACHE_PROGRAM)
     set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "${CCACHE_PROGRAM}")
 endif()
 
+if(NOT REACT_NATIVE_ROOT_DIR)
+    message(FATAL_ERROR "Expected REACT_NATIVE_ROOT_DIR to be defined")
+endif()
+
 add_library(realm-js-android-binding SHARED
     ../jsi/jsi_init.cpp
     src/main/cpp/platform.cpp
