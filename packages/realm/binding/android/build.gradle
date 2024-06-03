@@ -72,6 +72,13 @@ android {
                 doNotStrip "**/librealm.so"
             }
         }
+        release {
+            externalNativeBuild {
+                cmake {
+                    arguments "-DCMAKE_BUILD_TYPE=Release"
+                }
+            }
+        }
     }
 
     externalNativeBuild {
@@ -80,6 +87,7 @@ android {
             version '3.22.1'
         }
     }
+
     packagingOptions {
         excludes = [
                 "META-INF",
