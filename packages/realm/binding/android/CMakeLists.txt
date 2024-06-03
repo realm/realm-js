@@ -9,7 +9,6 @@ endif()
 
 add_library(realm-js-android-binding SHARED
     ../jsi/jsi_init.cpp
-    src/main/cpp/hack.cpp
     src/main/cpp/platform.cpp
     src/main/cpp/jni_utils.cpp
     src/main/cpp/io_realm_react_RealmReactModule.cpp
@@ -21,13 +20,6 @@ set_target_properties(realm-js-android-binding PROPERTIES
     SUFFIX ".so"
     LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/src/main/jniLibs/${ANDROID_ABI}"
 )
-
-if (ANDROID_ABI MATCHES "^armeabi")
-    target_compile_definitions(realm-js-android-binding PUBLIC REALM_WRAP_MEMMOVE=1)
-    target_link_options(realm-js-android-binding PUBLIC -Wl,--wrap=memmove -Wl,--wrap=memcpy)
-else()
-    target_compile_definitions(realm-js-android-binding PUBLIC REALM_WRAP_MEMMOVE=0)
-endif()
 
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION OFF)
 set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG -Oz")
