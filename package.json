@@ -72,7 +72,9 @@
     "integration-tests/baas-test-server"
   ],
   "dependencies": {
-    "@react-native/eslint-config": "0.73.2",
+    "@react-native/eslint-config": "0.74.83",
+    "@react-native/eslint-plugin": "0.74.83",
+    "@react-native/typescript-config": "0.74.83",
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^15.2.3",
@@ -94,7 +96,7 @@
     "eslint-plugin-react-native": "^4.0.0",
     "node-addon-api": "^7.1.0",
     "prettier": "2.8.8",
-    "react-native": "0.73.6",
+    "react-native": "0.74.1",
     "rollup": "^4.9.6",
     "rollup-plugin-dts": "^6.1.0",
     "rollup-plugin-istanbul": "^5.0.0",

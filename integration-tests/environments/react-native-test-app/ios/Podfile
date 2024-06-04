@@ -4,6 +4,7 @@ workspace 'RealmTests.xcworkspace'
 
 options = {
   :hermes_enabled => ENV['USE_HERMES'] && ENV['USE_HERMES'] == '0' ? false : true,
+  :bridgeless_enabled => ENV['USE_BRIDGELESS'] && ENV['USE_BRIDGELESS'] == '0' ? false : true,
 }
 
 use_test_app! options
