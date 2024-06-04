@@ -1372,3 +1372,4 @@ export namespace Realm {
 // Set default logger and log level.
 Realm.setLogger(defaultLogger);
 Realm.setLogLevel(defaultLoggerLevel);
+
