@@ -89,13 +89,18 @@ export async function fetchBaasTag(branch: string) {
   }
 }
 
-export function getLatestLocalId() {
+export function getLatestLocalId(githash?: string) {
   const imagesOutput = execSync("docker images --format json", { encoding: "utf8" });
   for (const line of imagesOutput.split("\n")) {
     if (line) {
       const image = JSON.parse(line.trim());
       if (image.Repository === ECR_HOSTNAME + ECR_PATHNAME && image.Tag.startsWith(BAAS_VARIANT)) {
-        return image.ID;
+        if (typeof githash === "string" && image.Tag === BAAS_VARIANT + "-race-" + githash) {
+          return image.ID;
+        } else {
+          // Latest and greatest
+          return image.ID;
+        }
       }
     }
   }
@@ -125,7 +130,7 @@ export function spawnBaaS({
   accessKeyId: string;
   secretAccessKey: string;
 }) {
-  console.log("Starting server from tag", chalk.dim(image));
+  console.log("Starting server from", chalk.dim(image));
   spawn(chalk.blueBright("baas"), "docker", [
     "run",
     "--name",
