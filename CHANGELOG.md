@@ -4,10 +4,11 @@
 * None
 
 ### Enhancements
-* None
+* Report the originating error that caused a client reset to occur. ([realm/realm-core#6154](https://github.com/realm/realm-core/issues/6154))
 
 ### Fixed
 * A non-streaming progress notifier would not immediately call its callback after registration. Instead you would have to wait for a download message to be received to get your first update - if you were already caught up when you registered the notifier you could end up waiting a long time for the server to deliver a download that would call/expire your notifier. ([#7627](https://github.com/realm/realm-core/issues/7627), since v12.8.0)
+* After compacting, a file upgrade would be triggered. This could cause loss of data for synced Realms. ([realm/realm-core#7747](https://github.com/realm/realm-core/issues/7747), since 12.7.0-rc.0)
 
 ### Compatibility
 * React Native >= v0.71.4
@@ -15,7 +16,7 @@
 * File format: generates Realms with format v24 (reads and upgrades file format v10).
 
 ### Internal
-* Upgraded Realm Core from v14.7.0 to v14.9.0.
+* Upgraded Realm Core from v14.7.0 to v14.9.0. ([#6701](https://github.com/realm/realm-js/issues/6701))
 
 ## 12.9.0 (2024-05-23)
 
