@@ -9,6 +9,7 @@
 ### Fixed
 * A non-streaming progress notifier would not immediately call its callback after registration. Instead you would have to wait for a download message to be received to get your first update - if you were already caught up when you registered the notifier you could end up waiting a long time for the server to deliver a download that would call/expire your notifier. ([#7627](https://github.com/realm/realm-core/issues/7627), since v12.8.0)
 * After compacting, a file upgrade would be triggered. This could cause loss of data for synced Realms. ([realm/realm-core#7747](https://github.com/realm/realm-core/issues/7747), since 12.7.0-rc.0)
+* The function `immediatelyRunFileActions` was not added to the bindgen's opt-list. This could lead to the error `TypeError: app.internal.immediatelyRunFileActions is not a function`. ([#6708](https://github.com/realm/realm-js/issues/6708), since v12.8.0)
 
 ### Compatibility
 * React Native >= v0.71.4

@@ -514,6 +514,7 @@ classes:
       - make_streaming_request
       - update_base_url
       - get_base_url
+      - immediately_run_file_actions
 
   WatchStream:
     methods:
