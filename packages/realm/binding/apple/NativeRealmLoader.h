@@ -22,9 +22,10 @@
 extern "C" {
 #endif
 
-@interface RealmReact : NSObject
+@interface NativeRealmLoader : NSObject
 @end
 
 #ifdef __cplusplus
 }
 #endif
+

@@ -83,7 +83,8 @@
       "clean": "if-file-deleted",
       "files": [
         "ios/Podfile",
-        "../../../packages/realm/RealmJS.podspec"
+        "../../../packages/realm/RealmJS.podspec",
+        "../../../packages/realm/binding/apple"
       ],
       "output": [
         "ios/Pods",
@@ -104,7 +105,7 @@
         },
         "USE_BRIDGELESS": {
           "external": true,
-          "default": "0"
+          "default": "1"
         }
       }
     },

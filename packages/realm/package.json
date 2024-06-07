@@ -372,18 +372,5 @@
     "napi_versions": [
       6
     ]
-  },
-  "codegenConfig": {
-    "name": "Realm",
-    "type": "modules",
-    "jsSrcsDir": "binding/react-native",
-    "outputDir": {
-      "ios": "binding/apple/generated",
-      "android": "binding/android/generated"
-    },
-    "includesGeneratedCode": true,
-    "android": {
-      "javaPackageName": "io.realm.react"
-    }
   }
 }

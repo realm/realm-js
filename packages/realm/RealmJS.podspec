@@ -41,11 +41,17 @@ Pod::Spec.new do |s|
   s.source                 = { :http => 'https://github.com/realm/realm-js/blob/main/CONTRIBUTING.md#how-to-debug-react-native-podspec' }
 
   s.source_files           = 'binding/jsi/*.cpp',
-                             'binding/apple/*.mm'
+                             'binding/apple/*.mm',
+                             'binding/apple/*.cpp',
+                             # Headers
+                             'binding/*.h',
+                             'binding/*.hpp',
+                             'binding/apple/*.h',
+                             'bindgen/src/*.h',
+                             'binding/jsi/*.h',
+                             'bindgen/vendor/realm-core/bindgen/src/*.h'
 
   s.public_header_files    = 'binding/apple/*.h'
-
-  s.frameworks             = uses_frameworks ? ['React'] : []
 
   s.library                = 'c++', 'z', 'compression'
 
@@ -60,19 +66,22 @@ Pod::Spec.new do |s|
                                 # Signaling to headers that Realm was compiled with Sync enabled
                                 'GCC_PREPROCESSOR_DEFINITIONS' => '$(inherited) REALM_ENABLE_SYNC=1',
                                 # Header search paths are prefixes to the path specified in #include macros
-                                'HEADER_SEARCH_PATHS' => [
-                                  # Bootstrapper for React Native
-                                  '"${PODS_TARGET_SRCROOT}/binding/apple/"',
-                                  # Logger and JS-SDK specific helpers
-                                  '"${PODS_TARGET_SRCROOT}/binding/"',
-                                  # Platform specific helpers used by the generated binding code
-                                  '"${PODS_TARGET_SRCROOT}/bindgen/src/"',
-                                  # Platform independent helpers
-                                  '"${PODS_TARGET_SRCROOT}/bindgen/vendor/realm-core/bindgen/src/"',
-                                ]
+                                # 'HEADER_SEARCH_PATHS' => [
+                                #   # Bootstrapper for React Native
+                                #   '"${PODS_TARGET_SRCROOT}/binding/apple/"',
+                                #   # Logger and JS-SDK specific helpers
+                                #   '"${PODS_TARGET_SRCROOT}/binding/"',
+                                #   # Platform specific helpers used by the generated binding code
+                                #   '"${PODS_TARGET_SRCROOT}/bindgen/src/"',
+                                #   # Platform independent helpers
+                                #   '"${PODS_TARGET_SRCROOT}/bindgen/vendor/realm-core/bindgen/src/"'
+                                # ]
                               }
 
   s.vendored_frameworks = 'prebuilds/apple/realm-core.xcframework'
 
-  s.dependency 'React'
+  # s.frameworks             = uses_frameworks ? ['React'] : []
+  # s.dependency 'React'
+
+  install_modules_dependencies(s)
 end

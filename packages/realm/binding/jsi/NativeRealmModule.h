@@ -16,11 +16,22 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { TurboModule, TurboModuleRegistry } from "react-native";
+#pragma once
 
-export interface Spec extends TurboModule {
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  getBinding(): Object;
+#include <ReactCommon/CallInvoker.h>
+#include <ReactCommon/TurboModule.h>
+
+namespace realm {
+namespace jsi = facebook::jsi;
+namespace react = facebook::react;
+
+class JSI_EXPORT NativeRealmModule: public react::TurboModule {
+public:
+    NativeRealmModule(std::shared_ptr<react::CallInvoker> js_invoker);
+    ~NativeRealmModule();
+    void flush_ui();
+private:
+    bool waiting_for_ui_flush;
+};
+
 }
-
-export default TurboModuleRegistry.get<Spec>("Realm");

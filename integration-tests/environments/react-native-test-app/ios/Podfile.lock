@@ -1194,7 +1194,26 @@ PODS:
     - React-jsi
   - ReactTestApp-Resources (1.0.0-dev)
   - RealmJS (12.9.0):
-    - React
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.01.01.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Codegen
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - RNFS (2.20.0):
     - React-Core
   - SocketRocket (0.7.0)
@@ -1446,10 +1465,10 @@ SPEC CHECKSUMS:
   React-runtimescheduler: e2152ed146b6a35c07386fc2ac4827b27e6aad12
   React-utils: 3285151c9d1e3a28a9586571fc81d521678c196d
   ReactCommon: f42444e384d82ab89184aed5d6f3142748b54768
-  ReactNativeHost: 35df5fb9d51dc99eaec21e993642f1232ec8b380
+  ReactNativeHost: 76f58edded6537ed8a03cfce6327e31d667bd802
   ReactTestApp-DevSupport: 9052e9a0ba3a96a3cc574ee66c7b6089ee76b341
   ReactTestApp-Resources: d200e68756fa45c648f369210bd7ee0c14759f5a
-  RealmJS: e02ad90549318cff0a9c4b76e0b605e43424e8d1
+  RealmJS: 8ae01bdbf5e5cfd731b508e8917afff6f17193c2
   RNFS: 4ac0f0ea233904cb798630b3c077808c06931688
   SocketRocket: abac6f5de4d4d62d24e11868d7a2f427e0ef940d
   Yoga: 348f8b538c3ed4423eb58a8e5730feec50bce372
