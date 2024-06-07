@@ -93,18 +93,18 @@ export function getLatestLocalId(githash?: string) {
   const imagesOutput = execSync("docker images --format json", { encoding: "utf8" });
   for (const line of imagesOutput.split("\n")) {
     if (line) {
-      const image = JSON.parse(line.trim());
-      if (image.Repository === ECR_HOSTNAME + ECR_PATHNAME && image.Tag.startsWith(BAAS_VARIANT)) {
-        if (typeof githash === "string" && image.Tag === BAAS_VARIANT + "-race-" + githash) {
-          return image.ID;
-        } else {
-          // Latest and greatest
-          return image.ID;
+      const { Repository: repository, Tag: tag, ID: id } = JSON.parse(line.trim());
+      assert(typeof repository === "string");
+      assert(typeof tag === "string");
+      assert(typeof id === "string");
+      if (repository === ECR_HOSTNAME + ECR_PATHNAME && tag.startsWith(BAAS_VARIANT)) {
+        if (typeof githash !== "string" || tag === BAAS_VARIANT + "-race-" + githash) {
+          return id;
         }
       }
     }
   }
-  throw new Error("Unable to infer the latest local tag");
+  throw new Error("Unable to find local image, try running with --pull-latest");
 }
 
 export function pullBaas({ profile, tag }: { profile: string; tag: string }) {
