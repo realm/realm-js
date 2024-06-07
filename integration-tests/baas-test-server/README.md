@@ -37,7 +37,7 @@ npm run start-latest
 npx baas-test-server docker --pull-latest
 ```
 
-If you want to pull and run form a specific git commit hash of the BaaS repository, run:
+If you want to pull and run from a specific git commit hash of the BaaS repository, run:
 
 ```shell
 npm start -- 3597df8f7f0375860f2c3c53435d80d4eaa3e976
