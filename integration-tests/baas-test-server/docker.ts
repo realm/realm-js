@@ -89,7 +89,7 @@ export async function fetchBaasTag(branch: string) {
   }
 }
 
-export function getLatestLocalId(githash?: string) {
+export function getLatestLocalId() {
   const imagesOutput = execSync("docker images --format json", { encoding: "utf8" });
   for (const line of imagesOutput.split("\n")) {
     if (line) {
@@ -98,38 +98,46 @@ export function getLatestLocalId(githash?: string) {
       assert(typeof tag === "string");
       assert(typeof id === "string");
       if (repository === ECR_HOSTNAME + ECR_PATHNAME && tag.startsWith(BAAS_VARIANT)) {
-        if (typeof githash !== "string" || tag === BAAS_VARIANT + "-race-" + githash) {
-          return id;
-        }
+        return id;
       }
     }
   }
-  throw new Error("Unable to find local image, try running with --pull-latest");
 }
 
-export function pullBaas({ profile, tag }: { profile: string; tag: string }) {
+export function pullBaas(tag: string) {
+  const { AWS_PROFILE } = process.env;
+  assert(AWS_PROFILE, "Missing AWS_PROFILE env");
   try {
     execSync(`docker pull ${tag}`, { stdio: "inherit" });
   } catch (err) {
     // We'll assume that any error pulling the image is related to not being authenticated.
     // Unfortunately, it's not trivial to inherit the stdio and match on the stderr at the same time.
-    execSync(`aws --profile ${profile} sso login`, { stdio: "inherit" });
+    execSync(`aws --profile ${AWS_PROFILE} sso login`, { stdio: "inherit" });
     execSync(
-      `aws --profile ${profile} ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${ECR_HOSTNAME}`,
+      `aws --profile ${AWS_PROFILE} ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${ECR_HOSTNAME}`,
       { stdio: "inherit" },
     );
   }
 }
 
-export function spawnBaaS({
-  image,
-  accessKeyId,
-  secretAccessKey,
-}: {
-  image: string;
-  accessKeyId: string;
-  secretAccessKey: string;
-}) {
+export async function pullLatest(branch: string) {
+  const tag = await fetchBaasTag(branch);
+  pullBaas(tag);
+  return tag;
+}
+
+export async function pullByGitHash(hash: string) {
+  const repository = ECR_HOSTNAME + ECR_PATHNAME;
+  const tag = BAAS_VARIANT + "-race-" + hash;
+  const combined = `${repository}:${tag}`;
+  pullBaas(combined);
+  return combined;
+}
+
+export function spawnBaaS(image: string) {
+  const { AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY } = process.env;
+  assert(AWS_ACCESS_KEY_ID && AWS_SECRET_ACCESS_KEY, "Missing AWS_ACCESS_KEY_ID or AWS_SECRET_ACCESS_KEY env");
+
   console.log("Starting server from", chalk.dim(image));
   spawn(chalk.blueBright("baas"), "docker", [
     "run",
@@ -138,9 +146,9 @@ export function spawnBaaS({
     "-it",
     "--rm",
     "--env",
-    `AWS_ACCESS_KEY_ID=${accessKeyId}`,
+    `AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}`,
     "--env",
-    `AWS_SECRET_ACCESS_KEY=${secretAccessKey}`,
+    `AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}`,
     "--publish",
     `${BAAS_PORT}:${BAAS_PORT}`,
     image,
