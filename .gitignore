@@ -94,7 +94,6 @@ coverage/
 
 /build-tmp*/
 /cmakebuild/
-/realm*.tgz
 
 # Ignore template package-lock.json files
 /templates/*/package-lock.json
@@ -118,6 +117,7 @@ coverage/
 /packages/realm/binding/android/src/main/java/io/realm/react/Version.java
 /packages/realm/binding/android/src/main/jniLibs/
 /packages/realm/binding/apple/*.xcframework
+/packages/realm/realm-*.tgz
 
 # Wireit repo caches
 .wireit
