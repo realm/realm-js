@@ -19,9 +19,12 @@
 #include <jni.h>
 #include <fbjni/fbjni.h>
 #include <ReactCommon/CallInvokerHolder.h>
+#include <ReactCommon/CxxTurboModuleUtils.h>
 #include <android/log.h>
 #include <android/asset_manager_jni.h>
 #include <jsi/jsi.h>
+
+#include "NativeRealmModule.h"
 
 #include "jsi/jsi_init.h"
 #include "jsi/jsi_externs.hpp"
@@ -31,6 +34,7 @@
 #include "io_realm_react_RealmReactModule.h"
 
 namespace jsi = facebook::jsi;
+namespace react = facebook::react;
 
 using namespace realm::jni_util;
 
@@ -39,9 +43,6 @@ jclass ssl_helper_class;
 namespace realm {
 // set the AssetManager used to access bundled files within the APK
 void set_asset_manager(AAssetManager* assetManager);
-// Keep track of whether we are already waiting for the React Native UI queue
-// to be flushed asynchronously
-bool waiting_for_ui_flush = false;
 } // namespace realm
 
 
@@ -58,6 +59,13 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void*)
     // We do lookup the class in this Thread, since FindClass sometimes fails
     // when issued from the sync client thread
     ssl_helper_class = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("io/realm/react/util/SSLHelper")));
+
+    __android_log_print(ANDROID_LOG_VERBOSE, "JSRealm", "Registering native module");
+    react::registerCxxModuleToGlobalModuleMap("Realm", [&](std::shared_ptr<react::CallInvoker> js_invoker) {
+        __android_log_print(ANDROID_LOG_VERBOSE, "JSRealm", "Creating NativeRealmModule");
+        return std::make_shared<realm::NativeRealmModule>(js_invoker);
+    });
+
 
     return JNI_VERSION_1_6;
 }
@@ -112,44 +120,4 @@ JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_invalidateCaches(JNI
 {
     __android_log_print(ANDROID_LOG_VERBOSE, "JSRealm", "invalidateCaches");
     realm_jsi_invalidate_caches();
-}
-
-// Setup the flush_ui_queue function we use to flush the React Native UI queue whenever we call from C++ to JS.
-// See RealmReact.mm's setBridge method for details, this is the equivalent for Android.
-JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_setupFlushUiQueue(JNIEnv* env, jobject,
-                                                                              jobject callInvokerHolderJavaObj)
-{
-    // React Native uses the fbjni library for handling JNI, which has the concept of "hybrid objects",
-    // which are Java objects containing a pointer to a C++ object. The CallInvokerHolder, which has the
-    // invokeAsync method we want access to, is one such hybrid object.
-    // Rather than reworking our code to use fbjni throughout, this code unpacks the C++ object from the Java
-    // object `callInvokerHolderJavaObj` manually, based on reverse engineering the fbjni code.
-
-    // 1. Get the Java object referred to by the mHybridData field of the Java holder object
-    auto callInvokerHolderClass = env->GetObjectClass(callInvokerHolderJavaObj);
-    auto hybridDataField = env->GetFieldID(callInvokerHolderClass, "mHybridData", "Lcom/facebook/jni/HybridData;");
-    auto hybridDataObj = env->GetObjectField(callInvokerHolderJavaObj, hybridDataField);
-
-    // 2. Get the destructor Java object referred to by the mDestructor field from the myHybridData Java object
-    auto hybridDataClass = env->FindClass("com/facebook/jni/HybridData");
-    auto destructorField =
-        env->GetFieldID(hybridDataClass, "mDestructor", "Lcom/facebook/jni/HybridData$Destructor;");
-    auto destructorObj = env->GetObjectField(hybridDataObj, destructorField);
-
-    // 3. Get the mNativePointer field from the mDestructor Java object
-    auto destructorClass = env->FindClass("com/facebook/jni/HybridData$Destructor");
-    auto nativePointerField = env->GetFieldID(destructorClass, "mNativePointer", "J");
-    auto nativePointerValue = env->GetLongField(destructorObj, nativePointerField);
-
-    // 4. Cast the mNativePointer back to its C++ type
-    auto nativePointer = reinterpret_cast<facebook::react::CallInvokerHolder*>(nativePointerValue);
-
-    realm::js::flush_ui_queue = [&, nativePointer]() {
-        if (!realm::waiting_for_ui_flush) {
-            realm::waiting_for_ui_flush = true;
-            nativePointer->getCallInvoker()->invokeAsync([]() {
-                realm::waiting_for_ui_flush = false;
-            });
-        }
-    };
 }

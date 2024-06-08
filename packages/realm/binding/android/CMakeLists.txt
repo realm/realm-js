@@ -13,9 +13,11 @@ endif()
 
 add_library(realm-js-android-binding SHARED
     ../jsi/jsi_init.cpp
+    ../jsi/NativeRealmModule.cpp
     src/main/cpp/platform.cpp
     src/main/cpp/jni_utils.cpp
-    src/main/cpp/io_realm_react_RealmReactModule.cpp
+    src/main/cpp/io_realm_react_RealmReactPackage.cpp
+    # src/main/cpp/io_realm_react_RealmReactModule.cpp
 )
 
 set_target_properties(realm-js-android-binding PROPERTIES
@@ -32,6 +34,7 @@ target_link_options(realm-js-android-binding PUBLIC -fvisibility=hidden)
 
 target_include_directories(realm-js-android-binding PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/.."
+    "${CMAKE_CURRENT_SOURCE_DIR}/../../binding/jsi"
     "${CMAKE_CURRENT_SOURCE_DIR}/../../bindgen/src"
     "${CMAKE_CURRENT_SOURCE_DIR}/../../bindgen/vendor/realm-core/bindgen/src"
 
@@ -39,6 +42,7 @@ target_include_directories(realm-js-android-binding PRIVATE
     # See https://github.com/realm/realm-js/pull/4389 for context on this.
     # TODO: Submit an issue to make this public or the need for it obsolete.
     "${REACT_NATIVE_ROOT_DIR}/ReactCommon/callinvoker"
+    "${REACT_NATIVE_ROOT_DIR}/ReactCommon/react/nativemodule/core"
 )
 
 find_library(android-lib android)
@@ -57,6 +61,7 @@ target_link_libraries(realm-js-android-binding
     Realm::QueryParser
     Realm::ObjectStore
     Realm::Sync
+    ReactAndroid::react_nativemodule_core
     ReactAndroid::jsi
     ReactAndroid::reactnativejni
     ReactAndroid::turbomodulejsijni

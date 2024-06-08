@@ -16,7 +16,10 @@
 
 package io.realm.react;
 
+import android.content.res.AssetManager;
 import android.util.Log;
+
+import androidx.annotation.NonNull;
 
 import com.facebook.react.ReactPackage;
 import com.facebook.react.TurboReactPackage;
@@ -26,41 +29,74 @@ import com.facebook.react.module.annotations.ReactModule;
 import com.facebook.react.module.model.ReactModuleInfo;
 import com.facebook.react.module.model.ReactModuleInfoProvider;
 import com.facebook.react.turbomodule.core.interfaces.TurboModule;
+import com.facebook.react.uimanager.ViewManager;
+import com.facebook.soloader.SoLoader;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-public class RealmReactPackage extends TurboReactPackage implements ReactPackage {
-    @Override
-    public NativeModule getModule(String name, final ReactApplicationContext reactContext) {
-        if (name.equals(RealmReactModule.NAME)) {
-            return new RealmReactModule(reactContext);
-        } else {
-            return null;
-        }
+public class RealmReactPackage implements ReactPackage {
+    static {
+        SoLoader.loadLibrary("realm");
+        registerModule();
     }
 
+    static native void registerModule();
+
+    static native void setDefaultRealmFileDirectory(String fileDir, AssetManager assets);
+
+
+    static native void invalidateCaches();
+
+    // Used to create a native AssetManager in C++ in order to load file from APK
+    // Note: We keep a VM reference to the assetManager to prevent its being
+    //       garbage collected while the native object is in use.
+    //http://developer.android.com/ndk/reference/group___asset.html#gadfd6537af41577735bcaee52120127f4
+    @SuppressWarnings("FieldCanBeLocal")
+    private static AssetManager assetManager;
+
+    @NonNull
     @Override
-    public ReactModuleInfoProvider getReactModuleInfoProvider() {
-        final Map<String, ReactModuleInfo> reactModuleInfoMap = new HashMap<>();
-        ReactModule reactModule = RealmReactModule.class.getAnnotation(ReactModule.class);
+    public List<NativeModule> createNativeModules(@NonNull ReactApplicationContext reactContext) {
+        return new ArrayList<NativeModule>(){{
+            add(new NativeModule() {
+                @NonNull
+                @Override
+                public String getName() {
+                    return "RealmHelper";
+                }
 
-        reactModuleInfoMap.put(
-                reactModule.name(),
-                new ReactModuleInfo(
-                        reactModule.name(),
-                        RealmReactModule.class.getName(),
-                        false,
-                        reactModule.needsEagerInit(),
-                        reactModule.hasConstants(),
-                        reactModule.isCxxModule(),
-                        TurboModule.class.isAssignableFrom(RealmReactModule.class)));
+                @Override
+                public void initialize() {
+                    configure(reactContext);
+                }
 
-        return new ReactModuleInfoProvider() {
-            @Override
-            public Map<String, ReactModuleInfo> getReactModuleInfos() {
-                return reactModuleInfoMap;
-            }
-        };
+                @Override
+                public void invalidate() {
+                    invalidateCaches();
+                }
+            });
+        }};
+    }
+
+    @NonNull
+    @Override
+    public List<ViewManager> createViewManagers(@NonNull ReactApplicationContext reactContext) {
+        return Collections.emptyList();
+    }
+
+    private static void configure(@NonNull ReactApplicationContext reactContext) {
+        assetManager = reactContext.getResources().getAssets();
+        try {
+            String fileDir = reactContext.getFilesDir().getCanonicalPath();
+            setDefaultRealmFileDirectory(fileDir, assetManager);
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+
     }
 }

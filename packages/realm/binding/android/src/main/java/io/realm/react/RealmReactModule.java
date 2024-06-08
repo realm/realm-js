@@ -22,11 +22,14 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
 import com.facebook.react.bridge.JavaScriptContextHolder;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.module.annotations.ReactModule;
 import com.facebook.react.turbomodule.core.CallInvokerHolderImpl;
+import com.facebook.react.turbomodule.core.interfaces.TurboModule;
 import com.facebook.soloader.SoLoader;
 
 import java.io.IOException;
@@ -43,9 +46,8 @@ import java.util.Map;
 import java.util.Locale;
 
 @ReactModule(name = RealmReactModule.NAME)
-class RealmReactModule extends ReactContextBaseJavaModule {
+class RealmReactModule extends ReactContextBaseJavaModule implements TurboModule {
     public static final String NAME = "Realm";
-    private static boolean sentAnalytics = false;
 
     // used to create a native AssetManager in C++ in order to load file from APK
     // Note: We keep a VM reference to the assetManager to prevent its being
@@ -55,14 +57,7 @@ class RealmReactModule extends ReactContextBaseJavaModule {
     private final AssetManager assetManager;
 
     static {
-        try {
-            SoLoader.loadLibrary("realm");
-        } catch (UnsatisfiedLinkError err) {
-            if (err.getMessage().contains("library \"libjsi.so\" not found")) {
-                throw new LinkageError("This version of Realm JS needs at least React Native version 0.66.0", err);
-            }
-            throw err;
-        }
+        SoLoader.loadLibrary("realm");
     }
 
     public RealmReactModule(ReactApplicationContext reactContext) {
@@ -78,25 +73,11 @@ class RealmReactModule extends ReactContextBaseJavaModule {
         }
 
         setDefaultRealmFileDirectory(fileDir, assetManager);
-
-        // Get the javascript runtime and install our native module with it
-
-        // TODO: Update this to use reactContext.getRuntimeExecutor() instead (since this is calling a deprecated method underneath)
-        // Using the RuntimeExecutor however, requires that we link our native module against fbjni.
-
-        JavaScriptContextHolder jsContext = reactContext.getJavaScriptContextHolder();
-        synchronized(jsContext) {
-            install(jsContext.get());
-        }
     }
 
     @Override
     public void initialize() {
-        // Pass the React Native jsCallInvokerHolder over to C++, so that we can access the invokeAsync
-        // method which we use to flush the React Native UI queue whenever we call from C++ to JS.
-        // See RealmReact.mm's setBridge method for details, this is the equivalent for Android.
-        CallInvokerHolderImpl jsCallInvokerHolder = (CallInvokerHolderImpl) getReactApplicationContext().getCatalystInstance().getJSCallInvokerHolder();
-        setupFlushUiQueue(jsCallInvokerHolder);
+        Log.d("JSRealm", "initialize called :'(");
     }
 
     @Override
@@ -104,6 +85,7 @@ class RealmReactModule extends ReactContextBaseJavaModule {
         invalidateCaches();
     }
 
+    @NonNull
     @Override
     public String getName() {
         return NAME;
@@ -117,9 +99,5 @@ class RealmReactModule extends ReactContextBaseJavaModule {
     // fileDir: path of the internal storage of the application
     private native void setDefaultRealmFileDirectory(String fileDir, AssetManager assets);
 
-    private native void install(long runtimePointer);
-
     private native void invalidateCaches();
-    // Passes the React Native jsCallInvokerHolder over to C++ so we can setup our UI queue flushing
-    private native void setupFlushUiQueue(CallInvokerHolderImpl callInvoker);
 }

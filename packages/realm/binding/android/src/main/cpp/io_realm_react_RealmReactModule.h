@@ -29,16 +29,6 @@ JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_install(JNIEnv*, job
  */
 JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_invalidateCaches(JNIEnv*, jobject);
 
-/*
- * Class:     io_realm_react_RealmReactModule
- * Method:    setupFlushUiQueue
- * Signature: (Lcom/facebook/react/turbomodule/core/CallInvokerHolderImpl;)V
- */
-// JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_setupFlushUiQueue
-// (JNIEnv *, jobject, jobject);
-
-JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_setupFlushUiQueue(JNIEnv*, jobject, jobject);
-
 #ifdef __cplusplus
 }
 #endif

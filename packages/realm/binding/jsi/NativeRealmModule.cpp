@@ -44,7 +44,7 @@ NativeRealmModule::NativeRealmModule(std::shared_ptr<facebook::react::CallInvoke
 
 NativeRealmModule::~NativeRealmModule()
 {
-    printf("NativeRealmModule got destructed");
+    realm_jsi_invalidate_caches();
 }
 
 
