@@ -80,39 +80,54 @@ async function waitForServer(baseUrl: string, interval = 2000, timeout = WAIT_FO
   );
 }
 
+async function determineDockerImageId({
+  hash,
+  branch,
+  pullLatest,
+}: {
+  hash: string | undefined;
+  branch: string;
+  pullLatest: boolean;
+}) {
+  assert(!pullLatest || typeof hash !== "string", "Providing a commit hash and --pull-latest is mutually exclusive");
+  if (hash) {
+    return docker.pullByGitHash(hash);
+  } else if (pullLatest) {
+    return await docker.pullLatest(branch);
+  } else {
+    // Getting the latest local or falling back to pulling latest
+    return docker.getLatestLocalId() || (await docker.pullLatest(branch));
+  }
+}
+
 yargs(hideBin(process.argv))
   .command(
-    ["docker [githash]"],
+    ["docker [hash]"],
     "Runs the BaaS test image using Docker",
     (yargs) =>
       yargs
-        .positional("githash", { type: "string" })
-        .option("branch", { default: "master" })
-        .option("latest-local", { default: false, boolean: true }),
+        .positional("hash", {
+          type: "string",
+          description: "SHA hash of the commit on the BaaS repository to start the server from",
+        })
+        .option("branch", {
+          default: "master",
+          description: "Branch to use when querying BaaSaaS for the docker image id",
+        })
+        .option("pull-latest", {
+          default: false,
+          boolean: true,
+          description: "Pull the latest available docker image from BaaSaaS",
+        }),
     wrapCommand(async (argv) => {
-      const { AWS_PROFILE, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY } = process.env;
-      assert(AWS_ACCESS_KEY_ID && AWS_SECRET_ACCESS_KEY, "Missing AWS_ACCESS_KEY_ID or AWS_SECRET_ACCESS_KEY env");
-
       docker.ensureNodeVersion();
       docker.ensureDocker();
       docker.ensureAWSCli();
       docker.ensureNoBaas();
 
-      if (argv.githash) {
-        docker.spawnBaaS({
-          image: argv.githash,
-          accessKeyId: AWS_ACCESS_KEY_ID,
-          secretAccessKey: AWS_SECRET_ACCESS_KEY,
-        });
-      } else if (argv["latest-local"]) {
-        const id = docker.getLatestLocalId();
-        docker.spawnBaaS({ image: id, accessKeyId: AWS_ACCESS_KEY_ID, secretAccessKey: AWS_SECRET_ACCESS_KEY });
-      } else {
-        const tag = await docker.fetchBaasTag(argv.branch);
-        assert(AWS_PROFILE, "Missing AWS_PROFILE env");
-        docker.pullBaas({ profile: AWS_PROFILE, tag });
-        docker.spawnBaaS({ image: tag, accessKeyId: AWS_ACCESS_KEY_ID, secretAccessKey: AWS_SECRET_ACCESS_KEY });
-      }
+      const { "pull-latest": pullLatest, hash, branch } = argv;
+      const id = await determineDockerImageId({ pullLatest, hash, branch });
+      docker.spawnBaaS(id);
     }),
   )
   .command(["baasaas <command>"], "Manage the BaaSaaS service", (yargs) =>

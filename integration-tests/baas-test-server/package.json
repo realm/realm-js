@@ -9,6 +9,7 @@
   },
   "scripts": {
     "start": "baas-test-server docker",
+    "start-latest": "baas-test-server docker --pull-latest",
     "baasaas": "baas-test-server baasaas",
     "baasaas:start": "baas-test-server baasaas start",
     "baasaas:stop": "baas-test-server baasaas stop",
