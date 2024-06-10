@@ -245,7 +245,7 @@ describe("App", () => {
 
       const handle = createPromiseHandle();
       const listener = () => {
-        expect(this.app.currentUser).to.not.be.null;
+        expect(this.app.currentUser).instanceOf(Realm.User);
         this.app.removeListener(listener);
         handle.resolve();
       };
@@ -269,6 +269,7 @@ describe("App", () => {
 
       const handle = createPromiseHandle();
       const listener = () => {
+        expect(this.app.currentUser).instanceOf(Realm.User);
         expect(this.app.currentUser?.id).equals(user.id);
         user.removeListener(listener);
         handle.resolve();
