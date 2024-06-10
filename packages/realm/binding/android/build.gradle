@@ -42,6 +42,8 @@ def reactNativeArchitectures() {
     return value ? value.split(",") : ["armeabi-v7a", "x86", "x86_64", "arm64-v8a"]
 }
 
+// https://github.com/facebook/react-native/blob/v0.74.2/packages/react-native/template/android/gradle.properties#L32-L37
+def NEW_ARCH_ENABLED = rootProject.findProperty('newArchEnabled') == "true"
 
 android {
     namespace 'io.realm.react'
@@ -59,7 +61,7 @@ android {
                           "-DCMAKE_CXX_VISIBILITY_PRESET=hidden",
                           "-DREACT_NATIVE_ROOT_DIR=${REACT_NATIVE_ROOT_DIR}"
                 targets 'realm-js-android-binding'
-                cppFlags '-std=c++20'
+                cppFlags '-std=c++20', "-DRCT_NEW_ARCH_ENABLED=${NEW_ARCH_ENABLED}"
                 abiFilters (*reactNativeArchitectures())
             }
         }
@@ -71,6 +73,11 @@ android {
             packagingOptions {
                 doNotStrip "**/librealm.so"
             }
+            // externalNativeBuild {
+            //     cmake {
+            //         arguments "-DDEBUG=true"
+            //     }
+            // }
         }
         release {
             externalNativeBuild {
@@ -85,6 +92,16 @@ android {
         cmake {
             path file('CMakeLists.txt')
             version '3.22.1'
+        }
+    }
+
+    sourceSets {
+        main {
+            if (NEW_ARCH_ENABLED) {
+                java.srcDirs += ["src/newarch"]
+            } else {
+                java.srcDirs += ["src/oldarch"]
+            }
         }
     }
 

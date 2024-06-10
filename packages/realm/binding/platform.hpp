@@ -20,7 +20,7 @@
 
 #include <string>
 
-namespace realm {
+namespace realm::js {
 //
 // These methods are used internally and must be implemented
 // separately for each platform

@@ -20,6 +20,10 @@ else
   uses_frameworks = ENV['REALM_USE_FRAMEWORKS'] == 'true' ? true : false
 end
 
+# This is injected by react_native_pods.rb since RN v0.71.0
+# See https://github.com/facebook/react-native/blob/v0.71.0/scripts/react_native_pods.rb#L75
+new_arch_enabled = ENV['RCT_NEW_ARCH_ENABLED'] == '1'
+
 if ENV['DEBUG_REALM_JS_PODSPEC'].present?
   puts "RealmJS thinks the Podfile #{uses_frameworks ? "is" : "is not"} calling use_frameworks!"
 end
@@ -41,8 +45,10 @@ Pod::Spec.new do |s|
   s.source                 = { :http => 'https://github.com/realm/realm-js/blob/main/CONTRIBUTING.md#how-to-debug-react-native-podspec' }
 
   s.source_files           = 'binding/jsi/*.cpp',
-                             'binding/apple/*.mm',
-                             'binding/apple/*.cpp',
+                             'binding/apple/platform.mm',
+                             new_arch_enabled ?
+                              'binding/apple/NativeRealmLoader-cxx.mm' :
+                              'binding/apple/NativeRealmLoader-bridge.mm',
                              # Headers
                              'binding/*.h',
                              'binding/*.hpp',

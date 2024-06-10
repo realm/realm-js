@@ -21,7 +21,7 @@
 #include <ReactCommon/CallInvoker.h>
 #include <ReactCommon/TurboModule.h>
 
-namespace realm {
+namespace realm::js {
 namespace jsi = facebook::jsi;
 namespace react = facebook::react;
 
@@ -29,7 +29,7 @@ class JSI_EXPORT NativeRealmModule: public react::TurboModule {
 public:
     NativeRealmModule(std::shared_ptr<react::CallInvoker> js_invoker);
     ~NativeRealmModule();
-    void flush_ui();
+    void flush_ui_queue();
 private:
     bool waiting_for_ui_flush;
 };

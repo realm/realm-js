@@ -27,12 +27,26 @@ export function generate(context: TemplateContext): void {
 
   out(`
     /*global global*/
-    import { TurboModuleRegistry } from "react-native";
-    const NativeRealmModule = TurboModuleRegistry.get("Realm");
-    if (!NativeRealmModule) {
+    import { Platform, TurboModuleRegistry, NativeModules } from "react-native";
+
+    function getBinding() {
+      const NativeRealmModule = TurboModuleRegistry.get("Realm");
+      if (NativeRealmModule) {
+        return NativeRealmModule.getBinding();
+      }
+      if (Platform.OS === "android") {
+        // Getting the native module on Android will inject the Realm global
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const RealmNativeModule = NativeModules.Realm;
+      }
+      const { __injectedRealmBinding } = global;
+      if (__injectedRealmBinding) {
+        return __injectedRealmBinding;
+      }
       throw new Error("Could not find the Realm native module. Please consult our troubleshooting guide: https://www.mongodb.com/docs/realm-sdks/js/latest/#md:troubleshooting-missing-binary");
     }
-    const nativeBinding = NativeRealmModule.getBinding();
+
+    const nativeBinding = getBinding();
     if (!nativeBinding) {
       throw new Error("Could not get the Realm binding.");
     }

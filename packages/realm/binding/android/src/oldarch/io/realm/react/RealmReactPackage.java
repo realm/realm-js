@@ -17,7 +17,6 @@
 package io.realm.react;
 
 import android.content.res.AssetManager;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -25,10 +24,11 @@ import com.facebook.react.ReactPackage;
 import com.facebook.react.TurboReactPackage;
 import com.facebook.react.bridge.NativeModule;
 import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.module.annotations.ReactModule;
+import com.facebook.react.common.annotations.FrameworkAPI;
+import com.facebook.react.common.annotations.UnstableReactNativeAPI;
 import com.facebook.react.module.model.ReactModuleInfo;
 import com.facebook.react.module.model.ReactModuleInfoProvider;
-import com.facebook.react.turbomodule.core.interfaces.TurboModule;
+import com.facebook.react.turbomodule.core.CallInvokerHolderImpl;
 import com.facebook.react.uimanager.ViewManager;
 import com.facebook.soloader.SoLoader;
 
@@ -39,16 +39,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class RealmReactPackage implements ReactPackage {
+@UnstableReactNativeAPI @FrameworkAPI public class RealmReactPackage extends TurboReactPackage {
     static {
         SoLoader.loadLibrary("realm");
-        registerModule();
     }
 
-    static native void registerModule();
+    // Passes the React Native jsCallInvokerHolder over to C++ so we can setup our UI queue flushing
+
+    static native void injectModuleIntoJSGlobal(long runtimePointer);
+
+    static native void injectFlushUiQueue(CallInvokerHolderImpl callInvoker);
 
     static native void setDefaultRealmFileDirectory(String fileDir, AssetManager assets);
-
 
     static native void invalidateCaches();
 
@@ -62,25 +64,7 @@ public class RealmReactPackage implements ReactPackage {
     @NonNull
     @Override
     public List<NativeModule> createNativeModules(@NonNull ReactApplicationContext reactContext) {
-        return new ArrayList<NativeModule>(){{
-            add(new NativeModule() {
-                @NonNull
-                @Override
-                public String getName() {
-                    return "RealmHelper";
-                }
-
-                @Override
-                public void initialize() {
-                    configure(reactContext);
-                }
-
-                @Override
-                public void invalidate() {
-                    invalidateCaches();
-                }
-            });
-        }};
+        return Collections.emptyList();
     }
 
     @NonNull
@@ -89,7 +73,36 @@ public class RealmReactPackage implements ReactPackage {
         return Collections.emptyList();
     }
 
-    private static void configure(@NonNull ReactApplicationContext reactContext) {
+    @Override
+    public NativeModule getModule(String name, final ReactApplicationContext reactContext) {
+        if (name.equals(RealmReactModule.NAME)) {
+            configure(reactContext);
+            return new RealmReactModule(reactContext);
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    public ReactModuleInfoProvider getReactModuleInfoProvider() {
+        return () -> {
+            final Map<String, ReactModuleInfo> moduleInfos = new HashMap<>();
+            moduleInfos.put(
+                    RealmReactModule.NAME,
+                    new ReactModuleInfo(
+                            RealmReactModule.NAME,
+                            RealmReactModule.NAME,
+                    false, // canOverrideExistingModule
+                    false, // needsEagerInit
+                    true, // hasConstants
+                    false, // isCxxModule
+                    false // isTurboModule
+            ));
+            return moduleInfos;
+        };
+    }
+
+    static void configure(@NonNull ReactApplicationContext reactContext) {
         assetManager = reactContext.getResources().getAssets();
         try {
             String fileDir = reactContext.getFilesDir().getCanonicalPath();

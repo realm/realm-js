@@ -178,8 +178,6 @@ class JsiAddon extends CppClass {
                 1,
                 std::bind(&${this.name}::injectInjectables, this, _1, _2, _3, _4)
             ));
-
-            _env.global().setProperty(_env, "__RealmFuncs", exports);
             `,
       }),
     );

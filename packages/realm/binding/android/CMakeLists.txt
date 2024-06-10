@@ -17,7 +17,6 @@ add_library(realm-js-android-binding SHARED
     src/main/cpp/platform.cpp
     src/main/cpp/jni_utils.cpp
     src/main/cpp/io_realm_react_RealmReactPackage.cpp
-    # src/main/cpp/io_realm_react_RealmReactModule.cpp
 )
 
 set_target_properties(realm-js-android-binding PROPERTIES
