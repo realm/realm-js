@@ -35,7 +35,7 @@ target_include_directories(realm-js-android-binding PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/../../bindgen/src"
     "${CMAKE_CURRENT_SOURCE_DIR}/../../bindgen/vendor/realm-core/bindgen/src"
 
-    # We're relying on the private callinvoker API to flush the micro-task queue as a workaround
+    # We're relying on the private CallInvoker API to flush the micro-task queue as a workaround
     # See https://github.com/realm/realm-js/pull/4389 for context on this.
     # TODO: Submit an issue to make this public or the need for it obsolete.
     "${REACT_NATIVE_ROOT_DIR}/ReactCommon/callinvoker"

@@ -243,7 +243,7 @@ npm run build:node --workspace realm
 
 The resulting prebuilt binary is the `packages/realm/prebuilds/node/realm.node` file.
 
-If you want to produce a prebuilt (a OS +arch specific archive meant for distribution alongside the NPM archive):
+If you want to produce a prebuild (a OS +arch specific archive meant for distribution alongside the NPM archive):
 
 ```sh
 npm run prebuild-node --workspace realm

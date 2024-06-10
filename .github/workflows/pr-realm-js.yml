@@ -43,7 +43,7 @@ jobs:
           node-version: 20
           cache: npm
       - name: Install dependencies
-        # Ignoring scripts to prevent a prebuilt from getting fetched / built
+        # Ignoring scripts to prevent a prebuild from getting fetched / built
         run: npm ci --ignore-scripts
       - name: Generate JSI
         run: |

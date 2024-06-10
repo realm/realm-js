@@ -28,7 +28,7 @@ static def findReactNative(startDir) {
 }
 
 /**
- * Replaces all occurances of the file path separator with '/' if it isn't already '/'.
+ * Replaces all occurrences of the file path separator with '/' if it isn't already '/'.
  */
 def sanitizeFilePath(String filePath) {
    return File.separatorChar === '/' as char ? filePath : filePath.replace(File.separatorChar, '/' as char)
