@@ -124,7 +124,7 @@ async function seedDataWithExternalUser(app: Realm.App, partition: string) {
 }
 
 describe("SessionTest", () => {
-  importAppBefore(buildAppConfig("with-pbs").emailPasswordAuth().partitionBasedSync({ required: true }));
+  importAppBefore(buildAppConfig("with-pbs").anonAuth().emailPasswordAuth().partitionBasedSync({ required: true }));
 
   describe("invalid syncsessions", () => {
     afterEach(() => Realm.clearTestState());
