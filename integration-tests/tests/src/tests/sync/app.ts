@@ -236,7 +236,9 @@ describe("App", () => {
       expect(this.app.currentUser).to.be.null;
     });
 
-    it("currentUser is available from an App listener", async function (this: Mocha.Context & AppContext & RealmContext) {
+    it("currentUser is available from an App listener", async function (this: Mocha.Context &
+      AppContext &
+      RealmContext) {
       expect(this.app.currentUser).to.be.null;
 
       const credentials = Realm.Credentials.anonymous();
@@ -257,7 +259,9 @@ describe("App", () => {
       await handle;
     });
 
-    it.only("currentUser is available from a User listener", async function (this: Mocha.Context & AppContext & RealmContext) {
+    it.only("currentUser is available from a User listener", async function (this: Mocha.Context &
+      AppContext &
+      RealmContext) {
       expect(this.app.currentUser).to.be.null;
 
       const credentials = Realm.Credentials.anonymous(false);
