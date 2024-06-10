@@ -259,7 +259,7 @@ describe("App", () => {
       await handle;
     });
 
-    it.only("currentUser is available from a User listener", async function (this: Mocha.Context &
+    it("currentUser is available from a User listener", async function (this: Mocha.Context &
       AppContext &
       RealmContext) {
       expect(this.app.currentUser).to.be.null;
