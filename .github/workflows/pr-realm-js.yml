@@ -412,6 +412,7 @@ jobs:
       - name: Run ${{matrix.variant.target}} (${{ matrix.variant.os}} / ${{ matrix.variant.environment }})
         if: ${{ matrix.variant.os == 'ios' }}
         env:
+          USE_CCACHE: 1
           USE_BRIDGELESS: 0 # Disabling bridgeless for now
           MOCHA_REMOTE_CONTEXT: ${{ steps.mocha-env.outputs.context }}
         timeout-minutes: 75
