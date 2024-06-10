@@ -104,13 +104,13 @@ describe("Counter", () => {
     ],
   });
 
-  const initialValuesList = [-100, 0, 1.0, 1000] as const;
+  const initialValues = [-100, 0, 1.0, 1000] as const;
 
   describe("create and access", () => {
     describe("via 'realm.create()'", () => {
       it("can create and access (input: number)", function (this: RealmContext) {
-        for (let i = 0; i < initialValuesList.length; i++) {
-          const input = initialValuesList[i];
+        for (let i = 0; i < initialValues.length; i++) {
+          const input = initialValues[i];
           const { counter } = this.realm.write(() => {
             return this.realm.create<IWithCounter>(WithCounterSchema.name, {
               counter: input,
@@ -125,7 +125,7 @@ describe("Counter", () => {
       });
 
       it("can create and access (input: Counter)", function (this: RealmContext) {
-        const initialNumValues = initialValuesList;
+        const initialNumValues = initialValues;
         // First create Realm objects with counters.
         const initialCounterValues = this.realm.write(() => {
           return initialNumValues.map((input) => {
@@ -623,6 +623,7 @@ describe("Counter", () => {
           counter.value = 20;
         });
       }).to.throw("To update the value, use the methods on the Counter");
+      expect(counter.value).equals(10);
     });
 
     it("throws when updating outside write transaction", function (this: RealmContext) {
@@ -741,7 +742,7 @@ describe("Counter", () => {
 
       expect(() => {
         this.realm.write(() => {
-          // @ts-expect-error Testing incorrect type.
+          // @ts-expect-error Cannot currently express in TS that a Counter can be set to a number (while 'get' returns Counter).
           object.nullableCounter = 0;
         });
       }).to.throw(
