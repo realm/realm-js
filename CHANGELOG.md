@@ -26,6 +26,7 @@
 * Report the originating error that caused a client reset to occur. ([realm/realm-core#6154](https://github.com/realm/realm-core/issues/6154))
 * Reduce the size of the local transaction log produced by creating objects, improving the performance of insertion-heavy transactions. ([realm/realm-core#7734](https://github.com/realm/realm-core/pull/7734))
 * A `counter` presentation data type has been introduced. The `int` data type can now be used as a logical counter for performing numeric updates that need to be synchronized as sequentially consistent events rather than individual reassignments of the number. ([#6694](https://github.com/realm/realm-js/pull/6694))
+  * See the [API docs](https://www.mongodb.com/docs/realm-sdks/js/latest/classes/Realm.Types.Counter.html) for more information about the usage, or get a high-level introduction about counters in the [documentation](https://www.mongodb.com/docs/atlas/app-services/sync/details/conflict-resolution/#counters).
 ```typescript
 class MyObject extends Realm.Object {
   _id!: BSON.ObjectId;
