@@ -30,47 +30,46 @@ const COLUMN_KEY = Symbol("Counter#columnKey");
  * For instance, offline Client 1 and Client 2 which both see `Counter.value`
  * as `0`, can both call `Counter.increment(1)`. Once online, the value will
  * converge to `2`.
- * @note
- * __Not supported__:
  *
- * Counter types are __not__ supported as:
+ * ### Counter types are *not* supported as:
+ *
  * - `Mixed` values
  * - Primary keys
  * - Inside collections
  * - Query arguments for placeholders (e.g. `$0`) in {@link Realm.Results.filtered | filtered()}
  *   - If you need to use the value of the `Counter` when filtering, use `Counter.value`.
  *
- * __Declaring a counter__:
+ * ### Declaring a counter
  *
  * A property schema is declared as either:
  * - `"counter"`
  * - `{ type: "int", presentation: "counter" }`
  *
- * __Creating a counter__:
+ * ### Creating a counter
  *
  * Use a `number` when creating your counter on a {@link Realm.Object}.
  * ```ts
  * realm.write(() => {
- *   realm.create(MyObject, { _id, counter: 0 });
+ *   realm.create(MyObject, { _id: "123", counter: 0 });
  * });
  * ```
  *
  * To update a `null` counter, use {@link UpdateMode.Modified} or {@link UpdateMode.All}.
  * ```ts
  * realm.write(() => {
- *   realm.create(MyObject, { _id, counter: 0 }, UpdateMode.Modified);
+ *   realm.create(MyObject, { _id: "123", counter: 0 }, UpdateMode.Modified);
  * });
  * ```
  *
- * __Nullability__:
+ * ### Nullability
  *
  * The above property schema can be extended to allow a nullable counter.
  * A `Counter` never stores `null` values itself, but the counter property
  * on the {@link Realm.Object} (e.g. `myRealmObject.myCounter`) can be `null`.
  *
- * __Not a live object__:
+ * ### Not a live object
  *
- * The `Counter` instance itself is _not_ a live object. Calling `myCounter.value`
+ * The `Counter` instance itself is *not* a live object. Calling `myCounter.value`
  * will always return the most recent locally persisted (and synced) state, and
  * calling `myRealmObject.myCounter` always returns a new `Counter` instance (or
  * potentially `null` for nullable counters).
