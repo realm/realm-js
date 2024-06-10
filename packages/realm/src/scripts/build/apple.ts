@@ -169,7 +169,7 @@ type CreateXCFrameworkOptions = {
 export function createXCFramework({ archivePaths }: CreateXCFrameworkOptions) {
   console.log(`Creating an xcframework from ${archivePaths.length} archives`);
   assert(fs.existsSync(REALM_CORE_HEADERS_PATH), "Collect headers before creating XCFramework");
-  // Delete any existing xcframework to prevent
+  // Delete any existing xcframework to prevent the error:
   // “librealm-combined.a” couldn’t be copied to “...” because an item with the same name already exists
   // Ideally, it would only be necessary to delete the specific platform+arch, to allow selectively building from source.
   fs.rmSync(XCFRAMEWORK_PATH, { recursive: true, force: true });

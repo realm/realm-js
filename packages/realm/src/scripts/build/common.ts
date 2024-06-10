@@ -33,7 +33,7 @@ export const PACKAGE_JSON_PATH = path.resolve(PACKAGE_PATH, "package.json");
 export const PACKAGE_JSON = JSON.parse(fs.readFileSync(PACKAGE_JSON_PATH, "utf8"));
 assert(typeof PACKAGE_JSON === "object" && PACKAGE_JSON !== null, "Failed to read package.json");
 export const PACKAGE_VERSION: string = PACKAGE_JSON.version;
-assert(typeof PACKAGE_VERSION === "string", "Failed to package version");
+assert(typeof PACKAGE_VERSION === "string", "Failed to determine package version");
 
 export const REALM_CORE_RELATIVE_PATH = "bindgen/vendor/realm-core";
 export const REALM_CORE_PATH = path.resolve(PACKAGE_PATH, REALM_CORE_RELATIVE_PATH);

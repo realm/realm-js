@@ -117,7 +117,6 @@ export function buildArchive({ cmakePath, ndkPath, architecture, configuration, 
         `ANDROID_NDK=${ndkPath}`,
         "-D",
         `ANDROID_ABI=${architecture}`,
-        // TODO: Do we need both the above and below?
         "-D",
         "ANDROID_TOOLCHAIN=clang",
         "-D",
