@@ -52,14 +52,14 @@ const COLUMN_KEY = Symbol("Counter#columnKey");
  * ```ts
  * realm.write(() => {
  *   realm.create(MyObject, { _id, counter: 0 });
- * })
+ * });
  * ```
  *
  * To update a `null` counter, use {@link UpdateMode.Modified} or {@link UpdateMode.All}.
  * ```ts
  * realm.write(() => {
  *   realm.create(MyObject, { _id, counter: 0 }, UpdateMode.Modified);
- * })
+ * });
  * ```
  *
  * __Nullability__:

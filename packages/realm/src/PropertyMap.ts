@@ -59,7 +59,7 @@ export class PropertyMap {
           : false;
 
         const canonicalPropertySchema = canonicalObjectSchema.properties[propertyName];
-        assert(canonicalPropertySchema, `Expected ${propertyName} to exist on the CanonicalObjectSchema.`);
+        assert(canonicalPropertySchema, `Expected '${propertyName}' to exist on the CanonicalObjectSchema.`);
         const helpers = createPropertyHelpers(
           { ...property, embedded, objectSchemaName, presentation: canonicalPropertySchema.presentation },
           options,

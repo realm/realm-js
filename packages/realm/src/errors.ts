@@ -50,8 +50,9 @@ export class TypeAssertionError extends AssertionError {
         return "NaN";
       } else if (!Number.isInteger(value)) {
         return "a decimal number";
+      } else {
+        return "a number";
       }
-      return "a number";
     } else {
       return "a " + typeof value;
     }
