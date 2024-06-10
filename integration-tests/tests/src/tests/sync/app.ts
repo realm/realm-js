@@ -264,7 +264,7 @@ describe("App", () => {
       RealmContext) {
       expect(this.app.currentUser).to.be.null;
 
-      const credentials = Realm.Credentials.anonymous(false);
+      const credentials = Realm.Credentials.anonymous();
       const user = await this.app.logIn(credentials);
 
       const handle = createPromiseHandle();
