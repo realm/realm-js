@@ -26,11 +26,7 @@ type PartialRealmConfiguration = Omit<Partial<Realm.Configuration>, "sync"> & {
   sync?: Partial<Realm.SyncConfiguration>;
 };
 
-type ProviderProps = PartialRealmConfiguration & {
-  /**
-   * The fallback component to render if the Realm is not opened.
-   */
-  fallback?: React.ComponentType<unknown> | React.ReactElement | null | undefined;
+export type RealmProviderWithConfigurationProps = {
   /**
    * If false, Realm will not be closed when the component unmounts.
    * @default true
@@ -41,8 +37,57 @@ type ProviderProps = PartialRealmConfiguration & {
    * instance outside of a component that uses the Realm hooks.
    */
   realmRef?: React.MutableRefObject<Realm | null>;
+  /**
+   * The fallback component to render if the Realm is not open.
+   */
+  fallback?: React.ComponentType<unknown> | React.ReactElement | null | undefined;
   children: React.ReactNode;
-};
+
+  realm?: never;
+} & PartialRealmConfiguration;
+
+/**
+ * Explicitly sets all the properties of a type to never.
+ * Useful for ensuring different prop types are mutually exclusive.
+ */
+type Never<T> = { [K in keyof T]?: never };
+
+export type RealmProviderWithRealmInstanceProps =
+  | {
+      /**
+       * The Realm instance to be used by the provider.
+       */
+      realm: Realm;
+      children: React.ReactNode;
+
+      fallback?: never;
+      closeOnUnmount?: never;
+      realmRef?: never;
+    } & Never<PartialRealmConfiguration>;
+
+/**
+ * Represents the provider returned from using an existing realm at context creation i.e. `createRealmContext(new Realm))`.
+ */
+export type RealmProviderWithRealmInstanceFC = React.FC<Omit<RealmProviderWithRealmInstanceProps, "realm">>;
+/**
+ * Represents the provider returned from using a configuration at context creation i.e. `createRealmContext({schema: []}))`.
+ */
+export type RealmProviderWithConfigurationFC = React.FC<RealmProviderWithConfigurationProps>;
+
+/**
+ * Represents the provider returned from creating context with no arguments (including the default context).
+ * Supports either passing a `realm` as a property or the schema configuration.
+ */
+export type RealmProviderFC = React.FC<RealmProviderWithRealmInstanceProps | RealmProviderWithConfigurationProps>;
+
+export function createRealmProviderFromRealm(
+  realm: Realm | null,
+  RealmContext: React.Context<Realm | null>,
+): RealmProviderWithRealmInstanceFC {
+  return ({ children }) => {
+    return <RealmContext.Provider value={realm} children={children} />;
+  };
+}
 
 /**
  * Generates a `RealmProvider` given a {@link Realm.Configuration} and {@link React.Context}.
@@ -53,31 +98,7 @@ type ProviderProps = PartialRealmConfiguration & {
 export function createRealmProvider(
   realmConfig: Realm.Configuration,
   RealmContext: React.Context<Realm | null>,
-): React.FC<ProviderProps> {
-  /**
-   * Returns a Context Provider component that is required to wrap any component using
-   * the Realm hooks.
-   * @example
-   * ```
-   * const AppRoot = () => {
-   *   const syncConfig = {
-   *     flexible: true,
-   *     user: currentUser
-   *   };
-   *
-   *   return (
-   *     <RealmProvider path="data.realm" sync={syncConfig}>
-   *       <App/>
-   *     </RealmProvider>
-   *   )
-   * }
-   * ```
-   * @param props - The {@link Realm.Configuration} for this Realm defaults to
-   * the config passed to `createRealmProvider`, but individual config keys can
-   * be overridden when creating a `<RealmProvider>` by passing them as props.
-   * For example, to override the `path` config value, use a prop named `path`,
-   * e.g. `path="newPath.realm"`
-   */
+): RealmProviderWithConfigurationFC {
   return ({ children, fallback: Fallback, closeOnUnmount = true, realmRef, ...restProps }) => {
     const [realm, setRealm] = useState<Realm | null>(() =>
       realmConfig.sync === undefined && restProps.sync === undefined

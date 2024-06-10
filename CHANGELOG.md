@@ -4,6 +4,17 @@
 * None
 
 ### Enhancements
+* None
+
+### Fixed
+* None
+
+## vNext (TBD)
+
+### Deprecations
+* None
+
+### Enhancements
 * Report the originating error that caused a client reset to occur. ([realm/realm-core#6154](https://github.com/realm/realm-core/issues/6154))
 
 ### Fixed
