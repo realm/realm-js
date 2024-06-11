@@ -74,6 +74,7 @@
     "scripts/submit-analytics.mjs",
     "react-native.config.js",
     "RealmJS.podspec",
+    "PrivacyInfo.xcprivacy",
     "binding.gyp"
   ],
   "scripts": {

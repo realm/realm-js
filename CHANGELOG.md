@@ -14,7 +14,6 @@
 * Encrypted files on Windows had a maximum size of 2 GB even on x64 due to internal usage of `off_t`, which is a 32-bit type on 64-bit Windows. ([realm/realm-core#7698](https://github.com/realm/realm-core/pull/7698), since the introduction of encryption support on Windows - likely in v1.11.0)
 * Tokenizing strings for full-text search could lead to undefined behavior. ([realm/realm-core#7698](https://github.com/realm/realm-core/pull/7698), since v11.3.0-rc.0)
 
-
 ### Compatibility
 * React Native >= v0.71.4
 * Realm Studio v15.0.0.
@@ -22,6 +21,7 @@
 
 ### Internal
 * Upgraded Realm Core from v14.7.0 to v14.10.0. ([#6701](https://github.com/realm/realm-js/issues/6701))
+* Added [privacy manifest](https://developer.apple.com/documentation/bundleresources/privacy_manifest_files) for Apple App Store. First released in v12.8.1-alpha.0 only. ([#6638](https://github.com/realm/realm-js/issues/6638))
 
 ## 12.9.0 (2024-05-23)
 
