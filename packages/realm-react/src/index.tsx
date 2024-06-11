@@ -20,11 +20,10 @@ import Realm from "realm";
 import React, { createContext } from "react";
 
 import {
-  RealmProviderFC,
-  RealmProviderFromConfigurationFC,
+  FlexibleRealmProviderFC,
+  RealmProviderFromConfigFC,
   RealmProviderFromRealmInstanceFC,
   createRealmProvider,
-  createRealmProviderFromRealm,
 } from "./RealmProvider";
 import { createUseObject } from "./useObject";
 import { createUseQuery } from "./useQuery";
@@ -55,7 +54,7 @@ export type { UseQueryHook, QueryHookOptions, QueryHookClassBasedOptions } from 
  * @param realmConfig - {@link Realm.Configuration} used to open the Realm
  * @returns An object containing a `RealmProvider` component, and `useRealm`, `useQuery` and `useObject` hooks
  */
-export function createRealmContext(realmConfig: Realm.Configuration): RealmContext<RealmProviderFromConfigurationFC>;
+export function createRealmContext(realmConfig: Realm.Configuration): RealmContext<RealmProviderFromConfigFC>;
 /**
  * Creates Realm React hooks and Provider component for a given Realm instance.
  * @example
@@ -67,23 +66,39 @@ export function createRealmContext(realmConfig: Realm.Configuration): RealmConte
  * @returns An object containing a `RealmProvider` component, and `useRealm`, `useQuery` and `useObject` hooks
  */
 export function createRealmContext(realm: Realm): RealmContext<RealmProviderFromRealmInstanceFC>;
-export function createRealmContext(): RealmContext<RealmProviderFC>;
+/**
+ * Creates Realm React hooks and Provider component.
+ * @example
+ * ```
+ * class Task extends Realm.Object {
+ *  ...
+ *  static schema = {
+ *    name: 'Task',
+ *    primaryKey: '_id',
+ *    properties: {
+ *      ...
+ *    },
+ *  };
+ * }
+ * const {useRealm, useQuery, useObject, RealmProvider} = createRealmContext();
+ * ...
+ * <RealmProvider schema={[Task]}></RealmProvider>
+ * ```
+ *  @example
+ * ```
+ * const realm = await Realm.open({ path: "example.realm" });
+ * const {RealmProvider} = createRealmContext();
+ * ...
+ * <RealmProvider realm={realm}></RealmProvider>
+ * ```
+ * @returns An object containing a `RealmProvider` component, and `useRealm`, `useQuery` and `useObject` hooks
+ */
+export function createRealmContext(): RealmContext<FlexibleRealmProviderFC>;
 export function createRealmContext(
   realmOrRealmConfig?: Realm | Realm.Configuration,
-): RealmContext<RealmProviderFromConfigurationFC | RealmProviderFromRealmInstanceFC | RealmProviderFC> {
-  let RealmContext: React.Context<Realm | null>;
-  let RealmProvider: RealmProviderFromConfigurationFC | RealmProviderFromRealmInstanceFC;
-
-  if (realmOrRealmConfig == undefined) {
-    RealmContext = createContext<Realm | null>(realmOrRealmConfig);
-    RealmProvider = createRealmProviderFromRealm(realmOrRealmConfig, RealmContext);
-  } else if (realmOrRealmConfig instanceof Realm) {
-    RealmContext = createContext<Realm | null>(realmOrRealmConfig);
-    RealmProvider = createRealmProviderFromRealm(realmOrRealmConfig, RealmContext);
-  } else {
-    RealmContext = createContext<Realm | null>(null);
-    RealmProvider = createRealmProvider(realmOrRealmConfig, RealmContext);
-  }
+): RealmContext<RealmProviderFromConfigFC | RealmProviderFromRealmInstanceFC | FlexibleRealmProviderFC> {
+  const RealmContext = createContext<Realm | null>(realmOrRealmConfig instanceof Realm ? realmOrRealmConfig : null);
+  const RealmProvider = createRealmProvider(realmOrRealmConfig, RealmContext);
 
   const useRealm = createUseRealm(RealmContext);
   const useQuery = createUseQuery(useRealm);

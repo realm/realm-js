@@ -338,51 +338,11 @@ describe("RealmProvider", () => {
       expect(realm.isClosed).toBe(false);
       expect(existingRealmInstance.isClosed).toBe(false);
     });
-
-    it("can access realm through realmRef as a forwarded ref", async () => {
-      const { RealmProvider, useRealm } = realmContextWithRealmInstance;
-      const RealmComponent = () => {
-        const realm = useRealm();
-        return <Text testID="schemaName">{realm.schema[0].name}</Text>;
-      };
-      const App = () => {
-        const realmRef = useRef<Realm | null>(null);
-        const [path, setPath] = useState("");
-        return (
-          <>
-            <View testID="firstRealmProvider">
-              <RealmProvider>
-                <RealmComponent />
-              </RealmProvider>
-            </View>
-            <Button
-              testID="toggleRefPath"
-              title="toggle ref path"
-              onPress={() => setPath(realmRef?.current?.path ?? "")}
-            />
-            {realmRef.current && <Text testID="realmRefPath">{path}</Text>}
-          </>
-        );
-      };
-      const { getByTestId, queryByTestId } = render(<App />);
-      await waitFor(() => getByTestId("schemaName"));
-      const toggleRefPath = getByTestId("toggleRefPath");
-
-      // Wait a tick for the RealmProvider to set the reference and then call a function that uses the ref
-      await act(async () => {
-        await new Promise<void>((resolve) => setTimeout(resolve, 0));
-        fireEvent.press(toggleRefPath);
-      });
-
-      const realmRefPathText = await waitFor(() => queryByTestId("realmRefPath"));
-
-      expect(realmRefPathText).toHaveTextContent(existingRealmInstance.path);
-    });
   });
 
   describe("with multiple providers", () => {
     const createRealmObjectCreator =
-      (realmContext: RealmContext<any>) =>
+      (realmContext: RealmContext<unknown>) =>
       ({ testID }: { testID: string }) => {
         const { useRealm } = realmContext;
         const realm = useRealm();
@@ -445,6 +405,7 @@ describe("RealmProvider", () => {
       expect(withRealmInstanceRealm.path).not.toEqual(withConfigRealm.path);
 
       expect(withRealmInstanceRealm.objects(dogSchema.name).length).toEqual(0);
+      expect(existingRealmInstance.objects(dogSchema.name).length).toEqual(0);
       expect(withConfigRealm.objects(dogSchema.name).length).toEqual(0);
 
       const pressButton = async (testId: string) => {
@@ -469,15 +430,25 @@ describe("RealmProvider", () => {
       const { getByTestId } = render(<App />);
 
       const secondRealmProvider = getByTestId("secondRealmProvider");
-      const actionComponent = await waitFor(() => getByTestId("with-realm-action"));
-      await pressButton("with-realm-action");
 
       expect(secondRealmProvider).not.toBeEmptyElement();
 
-      // Unlike the bug with configuration Providers, this should not have the same bug.
       await act(async () => {
-        expect(() => fireEvent.press(actionComponent)).not.toThrow();
+        // Create a new Realm object using the existing Realm instance provider.
+        await pressButton("with-realm-action");
         expect(existingRealmInstance.objects(dogSchema.name).length).toEqual(1);
+        expect(withRealmInstanceRealm.objects(dogSchema.name).length).toEqual(1);
+        expect(withRealmInstanceRealm.objects(dogSchema.name)[0]).toStrictEqual(
+          existingRealmInstance.objects(dogSchema.name)[0],
+        );
+
+        expect(withConfigRealm.objects(dogSchema.name).length).toEqual(0);
+
+        // Create a new Realm object using the Realm config provider.
+        await pressButton("with-config-action");
+        expect(withConfigRealm.objects(dogSchema.name).length).toEqual(1);
+        expect(existingRealmInstance.objects(dogSchema.name).length).toEqual(1);
+        expect(withRealmInstanceRealm.objects(dogSchema.name).length).toEqual(1);
       });
     });
   });
