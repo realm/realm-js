@@ -21,8 +21,8 @@ import React, { createContext } from "react";
 
 import {
   RealmProviderFC,
-  RealmProviderWithConfigurationFC,
-  RealmProviderWithRealmInstanceFC,
+  RealmProviderFromConfigurationFC,
+  RealmProviderFromRealmInstanceFC,
   createRealmProvider,
   createRealmProviderFromRealm,
 } from "./RealmProvider";
@@ -55,7 +55,7 @@ export type { UseQueryHook, QueryHookOptions, QueryHookClassBasedOptions } from 
  * @param realmConfig - {@link Realm.Configuration} used to open the Realm
  * @returns An object containing a `RealmProvider` component, and `useRealm`, `useQuery` and `useObject` hooks
  */
-export function createRealmContext(realmConfig: Realm.Configuration): RealmContext<RealmProviderWithConfigurationFC>;
+export function createRealmContext(realmConfig: Realm.Configuration): RealmContext<RealmProviderFromConfigurationFC>;
 /**
  * Creates Realm React hooks and Provider component for a given Realm instance.
  * @example
@@ -66,15 +66,18 @@ export function createRealmContext(realmConfig: Realm.Configuration): RealmConte
  * @param realm - {@link Realm} instance
  * @returns An object containing a `RealmProvider` component, and `useRealm`, `useQuery` and `useObject` hooks
  */
-export function createRealmContext(realm: Realm): RealmContext<RealmProviderWithRealmInstanceFC>;
+export function createRealmContext(realm: Realm): RealmContext<RealmProviderFromRealmInstanceFC>;
 export function createRealmContext(): RealmContext<RealmProviderFC>;
 export function createRealmContext(
-  realmOrRealmConfig: Realm | Realm.Configuration = {},
-): RealmContext<RealmProviderWithConfigurationFC | RealmProviderWithRealmInstanceFC | RealmProviderFC> {
+  realmOrRealmConfig?: Realm | Realm.Configuration,
+): RealmContext<RealmProviderFromConfigurationFC | RealmProviderFromRealmInstanceFC | RealmProviderFC> {
   let RealmContext: React.Context<Realm | null>;
-  let RealmProvider: RealmProviderWithConfigurationFC | RealmProviderWithRealmInstanceFC;
+  let RealmProvider: RealmProviderFromConfigurationFC | RealmProviderFromRealmInstanceFC;
 
-  if (realmOrRealmConfig instanceof Realm) {
+  if (realmOrRealmConfig == undefined) {
+    RealmContext = createContext<Realm | null>(realmOrRealmConfig);
+    RealmProvider = createRealmProviderFromRealm(realmOrRealmConfig, RealmContext);
+  } else if (realmOrRealmConfig instanceof Realm) {
     RealmContext = createContext<Realm | null>(realmOrRealmConfig);
     RealmProvider = createRealmProviderFromRealm(realmOrRealmConfig, RealmContext);
   } else {

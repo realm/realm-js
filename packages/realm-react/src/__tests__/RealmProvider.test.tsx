@@ -23,7 +23,7 @@ import { act, fireEvent, render, renderHook, waitFor } from "@testing-library/re
 
 import { createRealmContext } from "..";
 import {
-  RealmProviderWithRealmInstanceFC,
+  RealmProviderFromRealmInstanceFC,
   areConfigurationsIdentical,
   mergeRealmConfiguration,
 } from "../RealmProvider";
@@ -304,7 +304,7 @@ describe("RealmProvider", () => {
 
   describe("with an existing Realm Instance", () => {
     let existingRealmInstance: Realm;
-    let realmContextWithRealmInstance: RealmContext<RealmProviderWithRealmInstanceFC>;
+    let realmContextWithRealmInstance: RealmContext<RealmProviderFromRealmInstanceFC>;
 
     beforeEach(() => {
       existingRealmInstance = new Realm({
@@ -399,7 +399,7 @@ describe("RealmProvider", () => {
         );
       };
     let existingRealmInstance: Realm;
-    let WithRealmInstance: RealmContext<RealmProviderWithRealmInstanceFC>;
+    let WithRealmInstance: RealmContext<RealmProviderFromRealmInstanceFC>;
 
     const WithConfig = realmContextWithConfig;
 

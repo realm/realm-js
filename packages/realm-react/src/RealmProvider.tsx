@@ -26,7 +26,11 @@ type PartialRealmConfiguration = Omit<Partial<Realm.Configuration>, "sync"> & {
   sync?: Partial<Realm.SyncConfiguration>;
 };
 
-export type RealmProviderWithConfigurationProps = {
+export type RealmProviderProps = {
+  /**
+   * The Realm instance to be used by the provider.
+   */
+  realm?: Realm;
   /**
    * If false, Realm will not be closed when the component unmounts.
    * @default true
@@ -42,37 +46,42 @@ export type RealmProviderWithConfigurationProps = {
    */
   fallback?: React.ComponentType<unknown> | React.ReactElement | null | undefined;
   children: React.ReactNode;
-
-  realm?: never;
 } & PartialRealmConfiguration;
 
 /**
- * Explicitly sets all the properties of a type to never.
- * Useful for ensuring different prop types are mutually exclusive.
+  Represents the provider returned from using an existing realm at context creation i.e. `createRealmContext(new Realm))`.
  */
-type Never<T> = { [K in keyof T]?: never };
-
-export type RealmProviderWithRealmInstanceProps =
-  | {
-      /**
-       * The Realm instance to be used by the provider.
-       */
-      realm: Realm;
-      children: React.ReactNode;
-
-      fallback?: never;
-      closeOnUnmount?: never;
-      realmRef?: never;
-    } & Never<PartialRealmConfiguration>;
+export type RealmProviderFromRealmInstanceFC = React.FC<{
+  children: React.ReactNode;
+}>;
 
 /**
- * Represents the provider returned from using an existing realm at context creation i.e. `createRealmContext(new Realm))`.
+ * Represents the provider returned from using a Realm configuration at context creation i.e. `createRealmContext({schema: []}))`.
  */
-export type RealmProviderWithRealmInstanceFC = React.FC<Omit<RealmProviderWithRealmInstanceProps, "realm">>;
+export type RealmProviderFromConfigurationFC = React.FC<
+  Pick<RealmProviderProps, "closeOnUnmount" | "realmRef" | "fallback" | "children"> & PartialRealmConfiguration
+>;
+
 /**
- * Represents the provider returned from using a configuration at context creation i.e. `createRealmContext({schema: []}))`.
+ * Explicitly sets the unpicked properties of a type to never instead of dropping them like in Pick.
+ * Useful for ensuring different prop types are mutually exclusive as React expects the union type
+ * of different prop types to be compatible by including all the fields.
  */
-export type RealmProviderWithConfigurationFC = React.FC<RealmProviderWithConfigurationProps>;
+type ExclusivePick<T, F extends keyof T> = Pick<T, F> & { [K in keyof Omit<T, F>]?: never };
+
+/**
+ * Represents properties of a generic RealmProvider where the realm is set and therefore all other
+ * props should be disallowed.
+ */
+export type RealmProviderWithRealmInstanceProps = ExclusivePick<RealmProviderProps, "realm" | "children">;
+
+/*
+ * Represents properties of a generic RealmProvider where Realm configuration props are used and no realm is set
+ */
+export type RealmProviderWithConfigurationProps = ExclusivePick<
+  RealmProviderProps,
+  "closeOnUnmount" | "realmRef" | "fallback" | "children" | keyof PartialRealmConfiguration
+>;
 
 /**
  * Represents the provider returned from creating context with no arguments (including the default context).
@@ -83,7 +92,7 @@ export type RealmProviderFC = React.FC<RealmProviderWithRealmInstanceProps | Rea
 export function createRealmProviderFromRealm(
   realm: Realm | null,
   RealmContext: React.Context<Realm | null>,
-): RealmProviderWithRealmInstanceFC {
+): RealmProviderFromRealmInstanceFC {
   return ({ children }) => {
     return <RealmContext.Provider value={realm} children={children} />;
   };
@@ -96,9 +105,9 @@ export function createRealmProviderFromRealm(
  * @returns a RealmProvider component that provides context to all context hooks
  */
 export function createRealmProvider(
-  realmConfig: Realm.Configuration,
+  realmConfig: Realm.Configuration | undefined,
   RealmContext: React.Context<Realm | null>,
-): RealmProviderWithConfigurationFC {
+): RealmProviderFromConfigurationFC {
   return ({ children, fallback: Fallback, closeOnUnmount = true, realmRef, ...restProps }) => {
     const [realm, setRealm] = useState<Realm | null>(() =>
       realmConfig.sync === undefined && restProps.sync === undefined
