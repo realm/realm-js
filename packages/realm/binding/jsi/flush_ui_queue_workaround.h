@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2016 Realm Inc.
+// Copyright 2024 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,25 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#import "NativeRealmLoader.h"
-#import "NativeRealmModule.h"
+#pragma once
 
-#import <jsi_init.h>
+#include <ReactCommon/CallInvoker.h>
 
-#import <ReactCommon/CallInvoker.h>
-#import <ReactCommon/CxxTurboModuleUtils.h>
-
-namespace react = facebook::react;
-
-@interface NativeRealmLoader()
-@end
-
-@implementation NativeRealmLoader
-
-+ (void) load {
-    react::registerCxxModuleToGlobalModuleMap("Realm", [](std::shared_ptr<react::CallInvoker> js_invoker) {
-        return std::make_shared<realm::js::NativeRealmModule>(js_invoker);
-    });
+namespace realm::js::flush_ui_workaround {
+    void inject_js_call_invoker(std::shared_ptr<facebook::react::CallInvoker> js_invoker);
+    void reset_js_call_invoker();
+    void flush_ui_queue();
 }
-
-@end

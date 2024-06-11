@@ -19,6 +19,7 @@
 #import "NativeRealmLoader.h"
 
 #import <jsi_init.h>
+#import <flush_ui_queue_workaround.h>
 
 #import <React/RCTBridge+Private.h>
 #import <React/RCTInvalidating.h>
@@ -74,6 +75,7 @@ RCT_EXPORT_MODULE(Realm)
 }
 
 - (void)invalidate {
+    realm::js::flush_ui_workaround::reset_js_call_invoker();
 #if DEBUG
   // Immediately close any open sync sessions to prevent race condition with new
   // JS thread when hot reloading
@@ -122,30 +124,11 @@ RCT_EXPORT_MODULE(Realm)
           }
           s_currentJSThread = [NSThread currentThread];
 
+          realm::js::flush_ui_workaround::inject_js_call_invoker([bridge jsCallInvoker]);
+
           auto &rt = *static_cast<facebook::jsi::Runtime *>(bridge.runtime);
           auto exports = jsi::Object(rt);
-          realm_jsi_init(rt, exports, ^{
-            // Calling jsCallInvokver->invokeAsync tells React Native to execute the lambda passed
-            // in on the JS thread, and then flush the internal "microtask queue", which has the
-            // effect of flushing any pending UI updates.
-            //
-            // We call this after we have called into JS from C++, in order to ensure that the RN
-            // UI updates in response to any changes from Realm. We need to do this as we bypass
-            // the usual RN bridge mechanism for communicating between C++ and JS, so without doing
-            // this RN has no way to know that a change has occurred which might require an update
-            // (see #4389, facebook/react-native#33006).
-            //
-            // Calls are debounced using the waitingForUiFlush flag, so if an async flush is already
-            // pending when another JS to C++ call happens, we don't call invokeAsync again. This works
-            // because the work is performed before the microtask queue is flushed - see sequence
-            // diagram at https://bit.ly/3kexhHm. It might be possible to further optimize this,
-            // e.g. only flush the queue a maximum of once per frame, but this seems reasonable.
-            if (!self->waitingForUiFlush) {
-                self->waitingForUiFlush = true;
-              [bridge jsCallInvoker]->invokeAsync(
-                  [&]() { self->waitingForUiFlush = false; });
-            }
-          });
+          realm_jsi_init(rt, exports);
           // Exposing this via a global for the JS wrapper to read
           rt.global().setProperty(rt, "__injectedRealmBinding", exports);
         }

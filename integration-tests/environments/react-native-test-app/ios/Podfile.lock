@@ -1182,13 +1182,14 @@ PODS:
     - React-graphics
     - React-ImageManager
     - React-NativeModulesApple
+    - React-RCTAppDelegate
     - React-RCTFabric
     - React-rendererdebug
     - React-utils
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - ReactTestApp-DevSupport (3.7.3):
+  - ReactTestApp-DevSupport (3.7.6):
     - React-Core
     - React-jsi
   - ReactTestApp-Resources (1.0.0-dev)
@@ -1446,9 +1447,9 @@ SPEC CHECKSUMS:
   React-perflogger: 3d31e0d1e8ad891e43a09ac70b7b17a79773003a
   React-RCTActionSheet: c4a3a134f3434c9d7b0c1054f1a8cfed30c7a093
   React-RCTAnimation: 0e5d15320eeece667fcceb6c785acf9a184e9da1
-  React-RCTAppDelegate: c4f6c0700b8950a8b18c2e004996eec1807d430a
+  React-RCTAppDelegate: 3ab57e497300ec1c54b798ba2d0834ee048229f4
   React-RCTBlob: c46aaaee693d371a1c7cae2a8c8ee2aa7fbc1adb
-  React-RCTFabric: 0dbf28ce96c7f2843483e32a725a5b5793584ff3
+  React-RCTFabric: 82f15dc5a981288bfa806545f943cbd18e794ad7
   React-RCTImage: a04dba5fcc823244f5822192c130ecf09623a57f
   React-RCTLinking: 533bf13c745fcb2a0c14e0e49fd149586a7f0d14
   React-RCTNetwork: a29e371e0d363d7b4c10ab907bc4d6ae610541e9
@@ -1464,10 +1465,10 @@ SPEC CHECKSUMS:
   React-runtimescheduler: e2152ed146b6a35c07386fc2ac4827b27e6aad12
   React-utils: 3285151c9d1e3a28a9586571fc81d521678c196d
   ReactCommon: f42444e384d82ab89184aed5d6f3142748b54768
-  ReactNativeHost: a365307db1ece0c4825b9d0f8b35de1bb2a61b0a
-  ReactTestApp-DevSupport: 9052e9a0ba3a96a3cc574ee66c7b6089ee76b341
+  ReactNativeHost: 76f58edded6537ed8a03cfce6327e31d667bd802
+  ReactTestApp-DevSupport: f245efd91bcd4d8e4bd1f742eeaae031e46304ed
   ReactTestApp-Resources: d200e68756fa45c648f369210bd7ee0c14759f5a
-  RealmJS: e599a5e9f221759699b43e2a839d26d7489998be
+  RealmJS: 71f3fb918d414dba2f3c476a2de7033010b64cc1
   RNFS: 4ac0f0ea233904cb798630b3c077808c06931688
   SocketRocket: abac6f5de4d4d62d24e11868d7a2f427e0ef940d
   Yoga: 348f8b538c3ed4423eb58a8e5730feec50bce372

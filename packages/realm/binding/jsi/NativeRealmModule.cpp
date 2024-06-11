@@ -17,7 +17,8 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #include "NativeRealmModule.h"
-#include <jsi_init.h>
+#include "jsi_init.h"
+#include "flush_ui_queue_workaround.h"
 
 #include <ReactCommon/CallInvoker.h>
 #include <ReactCommon/TurboModule.h>
@@ -30,13 +31,10 @@ namespace jsi = facebook::jsi;
 NativeRealmModule::NativeRealmModule(std::shared_ptr<facebook::react::CallInvoker> js_invoker)
     : TurboModule("Realm", js_invoker)
 {
+    realm::js::flush_ui_workaround::inject_js_call_invoker(js_invoker);
     auto get_binding = [] (jsi::Runtime& rt, TurboModule& turbo_module, const jsi::Value* args, size_t count) {
         auto exports = jsi::Object(rt);
-        auto &realm_module = static_cast<NativeRealmModule&>(turbo_module);
         realm_jsi_init(rt, exports);
-        realm_jsi_inject_flush_ui_queue([&] () {
-            realm_module.flush_ui_queue();
-        });
         return jsi::Value(rt, exports);
     };
     // Registering the get_binding method on the turbo module
@@ -45,34 +43,14 @@ NativeRealmModule::NativeRealmModule(std::shared_ptr<facebook::react::CallInvoke
 
 NativeRealmModule::~NativeRealmModule()
 {
+    // Resetting to allow the js_invoker to destruct
+    realm::js::flush_ui_workaround::reset_js_call_invoker();
 #if DEBUG
     // Immediately close any open sync sessions to prevent race condition with new
     // JS thread when hot reloading
     realm_jsi_close_sync_sessions();
 #endif
     realm_jsi_invalidate_caches();
-}
-void NativeRealmModule::flush_ui_queue() {
-    if (!this->waiting_for_ui_flush) {
-        this->waiting_for_ui_flush = true;
-        // Calling invokeAsync tells React Native to execute the lambda passed
-        // in on the JS thread, and then flush the internal "microtask queue", which has the
-        // effect of flushing any pending UI updates.
-        // 
-        // We call this after we have called into JS from C++, in order to ensure that the RN
-        // UI updates in response to any changes from Realm. We need to do this as we bypass
-        // the usual RN bridge mechanism for communicating between C++ and JS, so without doing
-        // this RN has no way to know that a change has occurred which might require an update
-        // (see #4389, facebook/react-native#33006).
-        this->jsInvoker_->invokeAsync([&] {
-            // Calls are debounced using the waiting_for_ui_flush flag, so if an async flush is already
-            // pending when another JS to C++ call happens, we don't call invokeAsync again. This works
-            // because the work is performed before the microtask queue is flushed - see sequence
-            // diagram at https://bit.ly/3kexhHm. It might be possible to further optimize this,
-            // e.g. only flush the queue a maximum of once per frame, but this seems reasonable.
-            this->waiting_for_ui_flush = false;
-        });
-    }
 }
 
 } // namespace realm
