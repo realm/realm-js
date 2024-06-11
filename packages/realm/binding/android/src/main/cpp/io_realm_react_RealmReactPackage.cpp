@@ -1,3 +1,4 @@
+#include <__config>
 #include <jni.h>
 
 ////////////////////////////////////////////////////////////////////////////
@@ -46,18 +47,6 @@ namespace realm::js {
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_io_realm_react_RealmReactPackage_registerModule(JNIEnv *env, jclass clazz) {
-#if RCT_NEW_ARCH_ENABLED
-    __android_log_print(ANDROID_LOG_VERBOSE, "Realm", "Registering native module");
-    react::registerCxxModuleToGlobalModuleMap("Realm", [&](std::shared_ptr<react::CallInvoker> js_invoker) {
-        __android_log_print(ANDROID_LOG_VERBOSE, "Realm", "Constructing native module");
-        return std::make_shared<realm::NativeRealmModule>(js_invoker);
-    });
-#endif
-}
-
-extern "C"
-JNIEXPORT void JNICALL
 Java_io_realm_react_RealmReactPackage_setDefaultRealmFileDirectory(JNIEnv *env, jclass clazz,
                                                                    jstring file_dir,
                                                                    jobject assets) {
@@ -80,20 +69,21 @@ Java_io_realm_react_RealmReactPackage_setDefaultRealmFileDirectory(JNIEnv *env, 
                         realm::js::JsPlatformHelpers::default_realm_file_directory().c_str());
 }
 
+#if RCT_NEW_ARCH_ENABLED
+
 extern "C"
 JNIEXPORT void JNICALL
-Java_io_realm_react_RealmReactPackage_invalidateCaches(JNIEnv *env, jclass clazz) {
-    __android_log_print(ANDROID_LOG_VERBOSE, "Realm", "Invalidating caches");
-#if DEBUG
-    realm_jsi_close_sync_sessions();
+Java_io_realm_react_RealmReactPackage_registerModule(JNIEnv *env, jclass clazz) {
+#if RCT_NEW_ARCH_ENABLED
+    __android_log_print(ANDROID_LOG_VERBOSE, "Realm", "Registering native module");
+    react::registerCxxModuleToGlobalModuleMap("Realm", [](std::shared_ptr<react::CallInvoker> js_invoker) {
+        __android_log_print(ANDROID_LOG_VERBOSE, "Realm", "Constructing native module");
+        return std::make_shared<realm::js::NativeRealmModule>(js_invoker);
+    });
 #endif
-    realm_jsi_invalidate_caches();
 }
 
-
-#if not RCT_NEW_ARCH_ENABLED
-
-
+#else
 
 extern "C"
 JNIEXPORT void JNICALL
@@ -113,7 +103,7 @@ Java_io_realm_react_RealmReactPackage_injectModuleIntoJSGlobal(JNIEnv *env, jcla
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_io_realm_react_RealmReactPackage_injectFlushUiQueue(JNIEnv *env, jclass clazz,
+Java_io_realm_react_RealmReactPackage_injectCallInvoker(JNIEnv *env, jclass clazz,
                                                          jobject call_invoker) {
     __android_log_print(ANDROID_LOG_VERBOSE, "Realm", "Getting JS call invoker");
     // React Native uses the fbjni library for handling JNI, which has the concept of "hybrid objects",
@@ -141,14 +131,20 @@ Java_io_realm_react_RealmReactPackage_injectFlushUiQueue(JNIEnv *env, jclass cla
     // 4. Cast the mNativePointer back to its C++ type
     auto nativePointer = reinterpret_cast<facebook::react::CallInvokerHolder*>(nativePointerValue);
 
-    realm_jsi_inject_flush_ui_queue([&, nativePointer]() {
-        if (!realm::js::waiting_for_ui_flush) {
-            realm::js::waiting_for_ui_flush = true;
-            nativePointer->getCallInvoker()->invokeAsync([]() {
-                realm::js::waiting_for_ui_flush = false;
-            });
-        }
-    });
+    // 5. Store the JS call invoker for the workaround to use
+    realm::js::flush_ui_workaround::inject_js_call_invoker(nativePointer->getCallInvoker());
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_io_realm_react_RealmReactPackage_invalidateCaches(JNIEnv *env, jclass clazz) {
+    // Disable the flush ui workaround
+    realm::js::flush_ui_workaround::reset_js_call_invoker();
+    __android_log_print(ANDROID_LOG_VERBOSE, "Realm", "Invalidating caches");
+#if DEBUG
+    realm_jsi_close_sync_sessions();
+#endif
+    realm_jsi_invalidate_caches();
 }
 
 #endif

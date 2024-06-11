@@ -47,7 +47,7 @@ class RealmReactModule extends ReactContextBaseJavaModule {
     @Override
     public void initialize() {
         CallInvokerHolderImpl callInvokerHolder = (CallInvokerHolderImpl) getReactApplicationContext().getCatalystInstance().getJSCallInvokerHolder();
-        RealmReactPackage.injectFlushUiQueue(callInvokerHolder);
+        RealmReactPackage.injectCallInvoker(callInvokerHolder);
     }
 
     @Override

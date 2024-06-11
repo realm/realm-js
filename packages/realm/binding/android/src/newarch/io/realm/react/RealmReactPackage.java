@@ -45,9 +45,9 @@ public class RealmReactPackage implements ReactPackage {
         registerModule();
     }
 
-    static native void registerModule();
-
     static native void setDefaultRealmFileDirectory(String fileDir, AssetManager assets);
+
+    static native void registerModule();
 
     // Used to create a native AssetManager in C++ in order to load file from APK
     // Note: We keep a VM reference to the assetManager to prevent its being

@@ -44,13 +44,13 @@ import java.util.Map;
         SoLoader.loadLibrary("realm");
     }
 
+    static native void setDefaultRealmFileDirectory(String fileDir, AssetManager assets);
+
     // Passes the React Native jsCallInvokerHolder over to C++ so we can setup our UI queue flushing
 
     static native void injectModuleIntoJSGlobal(long runtimePointer);
 
-    static native void injectFlushUiQueue(CallInvokerHolderImpl callInvoker);
-
-    static native void setDefaultRealmFileDirectory(String fileDir, AssetManager assets);
+    static native void injectCallInvoker(CallInvokerHolderImpl callInvoker);
 
     static native void invalidateCaches();
 
