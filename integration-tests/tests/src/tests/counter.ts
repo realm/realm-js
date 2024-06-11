@@ -168,7 +168,7 @@ describe("Counter", () => {
       it("can create nullable counter with int or null", function (this: RealmContext) {
         const { counter1, counter2 } = this.realm.write(() => {
           const counter1 = this.realm.create<IWithNullableCounter>(WithNullableCounterSchema.name, {
-            nullableCounter: 0,
+            nullableCounter: 10,
           }).nullableCounter;
 
           const counter2 = this.realm.create<IWithNullableCounter>(WithNullableCounterSchema.name, {
@@ -180,7 +180,7 @@ describe("Counter", () => {
 
         expect(this.realm.objects(WithNullableCounterSchema.name).length).equals(2);
         expectCounter(counter1);
-        expect(counter1.value).equals(0);
+        expect(counter1.value).equals(10);
         expect(counter2).to.be.null;
       });
 
