@@ -24,6 +24,7 @@ import { generatePartition } from "../../utils/generators";
 import { baseUrl } from "../../hooks/import-app-before";
 import { select } from "../../utils/select";
 import { buildAppConfig } from "../../utils/build-app-config";
+import { createPromiseHandle } from "../../utils/promise-handle";
 
 const TestObjectSchema: Realm.ObjectSchema = {
   primaryKey: "_id",
@@ -233,6 +234,55 @@ describe("App", () => {
 
       await user1.logOut();
       expect(this.app.currentUser).to.be.null;
+    });
+
+    it("currentUser is available from an App listener", async function (this: Mocha.Context &
+      AppContext &
+      RealmContext) {
+      expect(this.app.currentUser).to.be.null;
+
+      const credentials = Realm.Credentials.anonymous();
+
+      const handle = createPromiseHandle();
+      const listener = () => {
+        expect(this.app.currentUser).instanceOf(Realm.User);
+        this.app.removeListener(listener);
+        handle.resolve();
+      };
+
+      this.app.addListener(listener);
+      await this.app.logIn(credentials);
+
+      await this.app.currentUser?.logOut();
+      expect(this.app.currentUser).to.be.null;
+
+      await handle;
+    });
+
+    it("currentUser is available from a User listener", async function (this: Mocha.Context &
+      AppContext &
+      RealmContext) {
+      expect(this.app.currentUser).to.be.null;
+
+      const credentials = Realm.Credentials.anonymous();
+      const user = await this.app.logIn(credentials);
+
+      const handle = createPromiseHandle();
+      const listener = () => {
+        expect(this.app.currentUser).instanceOf(Realm.User);
+        expect(this.app.currentUser?.id).equals(user.id);
+        user.removeListener(listener);
+        handle.resolve();
+      };
+      user.addListener(listener);
+
+      // Refresh custom data to fire the listener
+      await user.refreshCustomData();
+
+      await user.logOut();
+      expect(this.app.currentUser).to.be.null;
+
+      await handle;
     });
 
     it("changeListeners works", async function (this: Mocha.Context & AppContext & RealmContext) {
