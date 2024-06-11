@@ -51,21 +51,19 @@ export type RealmProviderProps = {
 /**
   Represents the provider returned from using an existing realm at context creation i.e. `createRealmContext(new Realm))`.
  */
-export type RealmProviderFromRealmInstanceFC = React.FC<{
-  children: React.ReactNode;
-}>;
+export type RealmProviderFromRealmInstanceFC = React.FC<Pick<RealmProviderProps, "children">>;
 
 /**
  * Represents the provider returned from using a Realm configuration at context creation i.e. `createRealmContext({schema: []}))`.
  */
 export type RealmProviderFromConfigFC = React.FC<
-  Pick<RealmProviderProps, "closeOnUnmount" | "realmRef" | "fallback" | "children"> & PartialRealmConfiguration
+  Pick<RealmProviderProps, "closeOnUnmount" | "realmRef" | "fallback" | "children" | keyof PartialRealmConfiguration>
 >;
 
 /**
  * Explicitly sets the unpicked properties of a type to never instead of dropping them like in Pick.
  * Useful for ensuring different prop types are mutually exclusive as React expects the union type
- * of different prop types to be compatible by including all the fields.
+ * of different prop types to include all the fields.
  */
 type RestrictivePick<T, K extends keyof T> = Pick<T, K> & { [RestrictedKey in keyof Omit<T, K>]?: never };
 
