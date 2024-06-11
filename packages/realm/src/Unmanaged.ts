@@ -45,12 +45,22 @@ type RealmDictionaryRemappedModelPart<T> = {
     : never;
 };
 
+/**
+ * Exchanges properties defined as {@link Realm.Object} with their unmanaged version.
+ */
+type RealmObjectRemappedModelPart<T> = {
+  [K in ExtractPropertyNamesOfType<T, AnyRealmObject>]?: T[K] extends Realm.Object<infer Type>
+    ? T[K] | Unmanaged<Type>
+    : never;
+};
+
 /** Omits all properties of a model which are not defined by the schema */
 export type OmittedRealmTypes<T> = Omit<
   T,
   | keyof AnyRealmObject
   /* eslint-disable-next-line @typescript-eslint/ban-types */
   | ExtractPropertyNamesOfType<T, Function> // TODO: Figure out the use-case for this
+  | ExtractPropertyNamesOfType<T, AnyRealmObject>
   | ExtractPropertyNamesOfType<T, AnyCollection>
   | ExtractPropertyNamesOfType<T, AnyDictionary>
 >;
@@ -68,7 +78,9 @@ type OmittedRealmTypesWithRequired<T, RequiredProperties extends keyof OmittedRe
 >;
 
 /** Remaps realm types to "simpler" types (arrays and objects) */
-type RemappedRealmTypes<T> = RealmListsRemappedModelPart<T> & RealmDictionaryRemappedModelPart<T>;
+type RemappedRealmTypes<T> = RealmListsRemappedModelPart<T> &
+  RealmDictionaryRemappedModelPart<T> &
+  RealmObjectRemappedModelPart<T>;
 
 /**
  * Joins `T` stripped of all keys which value extends {@link Collection} and all inherited from {@link Realm.Object},

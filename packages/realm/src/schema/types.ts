@@ -21,9 +21,10 @@ import { BSON, Realm, RealmObject } from "../internal";
 export type DefaultObject = Record<string, unknown>;
 /* eslint-disable-next-line @typescript-eslint/no-explicit-any -- Using `any` instead of `unknown` here to make it easier to pass */
 export type Constructor<T = unknown> = { new (...args: any): T };
-export type RealmObjectConstructor<T extends RealmObject = RealmObject> = {
+/* eslint-disable-next-line @typescript-eslint/no-explicit-any -- Using `any` instead of `unknown` here to make it easier to pass */
+export type RealmObjectConstructor<T extends RealmObject = RealmObject, Args extends unknown[] = any[]> = {
   /* eslint-disable-next-line @typescript-eslint/no-explicit-any -- Using `any` instead of `unknown` here to make it easier to pass */
-  new (...args: any): T;
+  new (...args: Args): T;
   // We need to declare schema as optional to support the babel plugin.
   // Otherwise it will produce a type error.
   schema?: ObjectSchema;
