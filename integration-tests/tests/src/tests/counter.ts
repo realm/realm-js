@@ -464,149 +464,63 @@ describe("Counter", () => {
   });
 
   describe("invalid operations", () => {
-    it("throws when incrementing by non-integer", function (this: RealmContext) {
-      const { counter } = this.realm.write(() => {
-        return this.realm.create<IWithCounter>(WithCounterSchema.name, {
-          counter: 10,
+    const operations = [
+      { opName: "increment", argName: "by" },
+      { opName: "decrement", argName: "by" },
+      { opName: "set", argName: "value" },
+    ] as const;
+
+    for (const { opName, argName } of operations) {
+      it(`throws when calling ${opName} with non-integer`, function (this: RealmContext) {
+        const { counter } = this.realm.write(() => {
+          return this.realm.create<IWithCounter>(WithCounterSchema.name, {
+            counter: 10,
+          });
         });
+        expectCounter(counter);
+        expect(counter.value).equals(10);
+
+        const operation = counter[opName].bind(counter);
+
+        expect(() => {
+          this.realm.write(() => {
+            operation(1.1);
+          });
+        }).to.throw(`Expected '${argName}' to be an integer, got a decimal number`);
+        expect(counter.value).equals(10);
+
+        expect(() => {
+          this.realm.write(() => {
+            operation(NaN);
+          });
+        }).to.throw(`Expected '${argName}' to be an integer, got NaN`);
+        expect(counter.value).equals(10);
+
+        expect(() => {
+          this.realm.write(() => {
+            // @ts-expect-error Testing incorrect type.
+            operation(new Number(1));
+          });
+        }).to.throw(`Expected '${argName}' to be an integer, got an instance of Number`);
+        expect(counter.value).equals(10);
+
+        expect(() => {
+          this.realm.write(() => {
+            // @ts-expect-error Testing incorrect type.
+            operation("1");
+          });
+        }).to.throw(`Expected '${argName}' to be an integer, got a string`);
+        expect(counter.value).equals(10);
+
+        expect(() => {
+          this.realm.write(() => {
+            // @ts-expect-error Testing incorrect type.
+            operation(BigInt(1));
+          });
+        }).to.throw(`Expected '${argName}' to be an integer, got a bigint`);
+        expect(counter.value).equals(10);
       });
-      expectCounter(counter);
-      expect(counter.value).equals(10);
-
-      expect(() => {
-        this.realm.write(() => {
-          counter.increment(1.1);
-        });
-      }).to.throw("Expected 'by' to be an integer, got a decimal number");
-      expect(counter.value).equals(10);
-
-      expect(() => {
-        this.realm.write(() => {
-          counter.increment(NaN);
-        });
-      }).to.throw("Expected 'by' to be an integer, got NaN");
-      expect(counter.value).equals(10);
-
-      expect(() => {
-        this.realm.write(() => {
-          // @ts-expect-error Testing incorrect type.
-          counter.increment(new Number(1));
-        });
-      }).to.throw("Expected 'by' to be an integer, got an instance of Number");
-      expect(counter.value).equals(10);
-
-      expect(() => {
-        this.realm.write(() => {
-          // @ts-expect-error Testing incorrect type.
-          counter.increment("1");
-        });
-      }).to.throw("Expected 'by' to be an integer, got a string");
-      expect(counter.value).equals(10);
-
-      expect(() => {
-        this.realm.write(() => {
-          // @ts-expect-error Testing incorrect type.
-          counter.increment(BigInt(1));
-        });
-      }).to.throw("Expected 'by' to be an integer, got a bigint");
-      expect(counter.value).equals(10);
-    });
-
-    it("throws when decrementing by non-integer", function (this: RealmContext) {
-      const { counter } = this.realm.write(() => {
-        return this.realm.create<IWithCounter>(WithCounterSchema.name, {
-          counter: 10,
-        });
-      });
-      expectCounter(counter);
-      expect(counter.value).equals(10);
-
-      expect(() => {
-        this.realm.write(() => {
-          counter.decrement(1.1);
-        });
-      }).to.throw("Expected 'by' to be an integer, got a decimal number");
-      expect(counter.value).equals(10);
-
-      expect(() => {
-        this.realm.write(() => {
-          counter.decrement(NaN);
-        });
-      }).to.throw("Expected 'by' to be an integer, got NaN");
-      expect(counter.value).equals(10);
-
-      expect(() => {
-        this.realm.write(() => {
-          // @ts-expect-error Testing incorrect type.
-          counter.decrement(new Number(1));
-        });
-      }).to.throw("Expected 'by' to be an integer, got an instance of Number");
-      expect(counter.value).equals(10);
-
-      expect(() => {
-        this.realm.write(() => {
-          // @ts-expect-error Testing incorrect type.
-          counter.decrement("1");
-        });
-      }).to.throw("Expected 'by' to be an integer, got a string");
-      expect(counter.value).equals(10);
-
-      expect(() => {
-        this.realm.write(() => {
-          // @ts-expect-error Testing incorrect type.
-          counter.decrement(BigInt(1));
-        });
-      }).to.throw("Expected 'by' to be an integer, got a bigint");
-      expect(counter.value).equals(10);
-    });
-
-    it("throws when setting to non-integer", function (this: RealmContext) {
-      const { counter } = this.realm.write(() => {
-        return this.realm.create<IWithCounter>(WithCounterSchema.name, {
-          counter: 10,
-        });
-      });
-      expectCounter(counter);
-      expect(counter.value).equals(10);
-
-      expect(() => {
-        this.realm.write(() => {
-          counter.set(1.1);
-        });
-      }).to.throw("Expected 'value' to be an integer, got a decimal number");
-      expect(counter.value).equals(10);
-
-      expect(() => {
-        this.realm.write(() => {
-          counter.set(NaN);
-        });
-      }).to.throw("Expected 'value' to be an integer, got NaN");
-      expect(counter.value).equals(10);
-
-      expect(() => {
-        this.realm.write(() => {
-          // @ts-expect-error Testing incorrect type.
-          counter.set(new Number(1));
-        });
-      }).to.throw("Expected 'value' to be an integer, got an instance of Number");
-      expect(counter.value).equals(10);
-
-      expect(() => {
-        this.realm.write(() => {
-          // @ts-expect-error Testing incorrect type.
-          counter.set("1");
-        });
-      }).to.throw("Expected 'value' to be an integer, got a string");
-      expect(counter.value).equals(10);
-
-      expect(() => {
-        this.realm.write(() => {
-          // @ts-expect-error Testing incorrect type.
-          counter.set(BigInt(1));
-        });
-      }).to.throw("Expected 'value' to be an integer, got a bigint");
-      expect(counter.value).equals(10);
-    });
+    }
 
     it("throws when setting 'Counter.value' directly", function (this: RealmContext) {
       const { counter } = this.realm.write(() => {
