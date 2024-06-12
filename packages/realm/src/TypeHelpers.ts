@@ -20,10 +20,12 @@ import {
   BSON,
   ClassHelpers,
   Collection,
+  Counter,
   Dictionary,
   INTERNAL,
   List,
   ObjCreator,
+  PresentationPropertyTypeName,
   REALM,
   Realm,
   RealmObject,
@@ -93,6 +95,7 @@ export type TypeOptions = {
   optional: boolean;
   objectType: string | undefined;
   objectSchemaName: string | undefined;
+  presentation?: PresentationPropertyTypeName;
   getClassHelpers(nameOrTableKey: string | binding.TableKey): ClassHelpers;
 };
 
@@ -114,6 +117,7 @@ export function mixedToBinding(
   value: unknown,
   { isQueryArg } = { isQueryArg: false },
 ): binding.MixedArg {
+  const displayedType = isQueryArg ? "a query argument" : "a Mixed value";
   if (typeof value === "string" || typeof value === "number" || typeof value === "boolean" || value === null) {
     // Fast track pass through for the most commonly used types
     return value;
@@ -123,13 +127,17 @@ export function mixedToBinding(
     return binding.Timestamp.fromDate(value);
   } else if (value instanceof RealmObject) {
     if (value.objectSchema().embedded) {
-      throw new Error(`Using an embedded object (${value.constructor.name}) as a Mixed value is not supported.`);
+      throw new Error(`Using an embedded object (${value.constructor.name}) as ${displayedType} is not supported.`);
     }
     const otherRealm = value[REALM].internal;
     assert.isSameRealm(realm, otherRealm, "Realm object is from another Realm");
     return value[INTERNAL];
   } else if (value instanceof RealmSet || value instanceof Set) {
-    throw new Error(`Using a ${value.constructor.name} as a Mixed value is not supported.`);
+    throw new Error(`Using a ${value.constructor.name} as ${displayedType} is not supported.`);
+  } else if (value instanceof Counter) {
+    let errMessage = `Using a Counter as ${displayedType} is not supported.`;
+    errMessage += isQueryArg ? " Use 'Counter.value'." : "";
+    throw new Error(errMessage);
   } else {
     if (isQueryArg) {
       if (value instanceof Collection || Array.isArray(value)) {
@@ -217,13 +225,18 @@ function nullPassthrough<T, R extends any[], F extends (value: unknown, ...rest:
 }
 
 const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => TypeHelpers> = {
-  [binding.PropertyType.Int]({ optional }) {
+  [binding.PropertyType.Int]({ presentation, optional }) {
     return {
       toBinding: nullPassthrough((value) => {
         if (typeof value === "number") {
           return binding.Int64.numToInt(value);
         } else if (binding.Int64.isInt(value)) {
           return value;
+        } else if (value instanceof Counter) {
+          if (presentation !== "counter") {
+            throw new Error(`Counters can only be used when 'counter' is declared in the property schema.`);
+          }
+          return binding.Int64.numToInt(value.value);
         } else {
           throw new TypeAssertionError("a number or bigint", value);
         }

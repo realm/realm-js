@@ -56,6 +56,12 @@ export type PrimitivePropertyTypeName =
   | "uuid";
 
 /**
+ * The names of the supported Realm primitive property types and their
+ * presentation types used in {@link PropertySchemaShorthand}.
+ */
+export type ShorthandPrimitivePropertyTypeName = PrimitivePropertyTypeName | PresentationPropertyTypeName;
+
+/**
  * The names of the supported Realm collection property types.
  */
 export type CollectionPropertyTypeName = "list" | "dictionary" | "set";
@@ -64,6 +70,15 @@ export type CollectionPropertyTypeName = "list" | "dictionary" | "set";
  * The names of the supported Realm relationship property types.
  */
 export type RelationshipPropertyTypeName = "object" | "linkingObjects";
+
+/**
+ * The names of the supported Realm presentation property types.
+ *
+ * Some types can be presented as a type different from the database type.
+ * For instance, an integer that should behave like a logical counter is
+ * presented as a `"counter"` type.
+ */
+export type PresentationPropertyTypeName = "counter";
 
 /**
  * The name of a user-defined Realm object type. It must contain at least 1 character
@@ -89,10 +104,11 @@ export type IndexedType = boolean | "full-text";
 export type CanonicalPropertySchema = {
   name: string;
   type: PropertyTypeName;
+  objectType?: string;
+  presentation?: PresentationPropertyTypeName;
   optional: boolean;
   indexed: IndexedType;
   mapTo: string; // TODO: Make this optional and leave it out when it equals the name
-  objectType?: string;
   property?: string;
   default?: unknown;
 };
@@ -165,7 +181,7 @@ export type CanonicalPropertiesTypes<K extends symbol | number | string = string
  * Realm object property.
  *
  * Required string structure:
- * - ({@link PrimitivePropertyTypeName} | {@link UserTypeName})(`"?"` | `""`)(`"[]"` | `"{}"` | `"<>"` | `""`)
+ * - ({@link ShorthandPrimitivePropertyTypeName} | {@link UserTypeName})(`"?"` | `""`)(`"[]"` | `"{}"` | `"<>"` | `""`)
  *   - `"?"`
  *     - The marker to declare an optional type or an optional element in a collection
  *       if the type itself is a collection. Can only be used when declaring property
@@ -204,8 +220,8 @@ export type ObjectSchemaProperty = PropertySchema;
  * @see {@link PropertySchemaShorthand} for a shorthand representation of a property
  * schema.
  * @see {@link PropertySchemaStrict} for a precise type definition of the requirements
- * with the allowed combinations. This type is less strict in order to provide a more
- * user-friendly option due to misleading TypeScript error messages when working with
+ * with the allowed combinations. {@link PropertySchema} is less strict in order to provide
+ * a more user-friendly option due to misleading TypeScript error messages when working with
  * the strict type. This type is currently recommended for that reason, but the strict
  * type is provided as guidance. (Exact errors will always be shown when creating a
  * {@link Realm} instance if the schema is invalid.)
@@ -220,6 +236,20 @@ export type PropertySchema = {
    * or the specific Realm object type if `type` is a {@link RelationshipPropertyTypeName}.
    */
   objectType?: PrimitivePropertyTypeName | UserTypeName;
+  /**
+   * The presentation type of the property.
+   *
+   * Some types can be presented as a type different from the database type.
+   * For instance, an integer that should behave like a logical counter is
+   * presented as a `"counter"` type.
+   * @example
+   * // A counter
+   * {
+   *    type: "int",
+   *    presentation: "counter",
+   * }
+   */
+  presentation?: PresentationPropertyTypeName;
   /**
    * The name of the property of the object specified in `objectType` that creates this
    * link. (Can only be set for linking objects.)
@@ -257,6 +287,7 @@ export type PropertySchema = {
  * Keys used in the property schema that are common among all variations of {@link PropertySchemaStrict}.
  */
 export type PropertySchemaCommon = {
+  presentation: never;
   indexed?: IndexedType;
   mapTo?: string;
   default?: unknown;
@@ -265,7 +296,7 @@ export type PropertySchemaCommon = {
 /**
  * The strict schema for specifying the type of a specific Realm object property.
  *
- * Unlike the less strict {@link PropertySchema}, this type precisely defines the type
+ * Unlike the less strict {@link PropertySchema}, the strict type precisely defines the type
  * requirements and their allowed combinations; however, TypeScript error messages tend
  * to be more misleading. {@link PropertySchema} is recommended for that reason, but the
  * strict type is provided as guidance.
@@ -275,8 +306,13 @@ export type PropertySchemaCommon = {
 export type PropertySchemaStrict = PropertySchemaCommon &
   (
     | {
-        type: Exclude<PrimitivePropertyTypeName, "mixed">;
+        type: Exclude<PrimitivePropertyTypeName, "mixed" | "int">;
         optional?: boolean;
+      }
+    | {
+        type: "int";
+        optional?: boolean;
+        presentation?: "counter";
       }
     | {
         type: "mixed";

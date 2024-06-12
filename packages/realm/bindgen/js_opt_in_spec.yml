@@ -302,6 +302,7 @@ classes:
       - get_any
       - set_any
       - set_collection
+      - add_int
       - get_linked_object
       - get_backlink_count
       - get_backlink_view

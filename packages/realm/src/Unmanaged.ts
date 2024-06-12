@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import type { AnyRealmObject, Collection, Dictionary, List, Realm } from "./internal";
+import type { AnyRealmObject, Collection, Counter, Dictionary, List, Realm, RealmSet } from "./internal";
 
 /* eslint-disable-next-line @typescript-eslint/no-explicit-any -- We define these once to avoid using "any" through the code */
 export type AnyCollection = Collection<any, any, any, any, any>;
@@ -24,15 +24,21 @@ export type AnyCollection = Collection<any, any, any, any, any>;
 export type AnyDictionary = Dictionary<any>;
 /* eslint-disable-next-line @typescript-eslint/no-explicit-any -- We define these once to avoid using "any" through the code */
 export type AnyList = List<any>;
+/* eslint-disable-next-line @typescript-eslint/no-explicit-any -- We define these once to avoid using "any" through the code */
+export type AnySet = RealmSet<any>;
 
 type ExtractPropertyNamesOfType<T, PropType> = {
   [K in keyof T]: T[K] extends PropType ? K : never;
 }[keyof T];
 
+type ExtractPropertyNamesOfTypeExcludingNullability<T, PropType> = {
+  [K in keyof T]: Exclude<T[K], null | undefined> extends PropType ? K : never;
+}[keyof T];
+
 /**
  * Exchanges properties defined as {@link List} with an optional {@link Array}.
  */
-type RealmListsRemappedModelPart<T> = {
+type RealmListRemappedModelPart<T> = {
   [K in ExtractPropertyNamesOfType<T, AnyList>]?: T[K] extends List<infer GT> ? Array<GT | Unmanaged<GT>> : never;
 };
 
@@ -45,6 +51,20 @@ type RealmDictionaryRemappedModelPart<T> = {
     : never;
 };
 
+/**
+ * Exchanges properties defined as {@link RealmSet} with an optional {@link Array}.
+ */
+type RealmSetRemappedModelPart<T> = {
+  [K in ExtractPropertyNamesOfType<T, AnySet>]?: T[K] extends RealmSet<infer GT> ? Array<GT | Unmanaged<GT>> : never;
+};
+
+/**
+ * Exchanges properties defined as a {@link Counter} with a `number`.
+ */
+type RealmCounterRemappedModelPart<T> = {
+  [K in ExtractPropertyNamesOfTypeExcludingNullability<T, Counter>]?: Counter | number | Exclude<T[K], Counter>;
+};
+
 /** Omits all properties of a model which are not defined by the schema */
 export type OmittedRealmTypes<T> = Omit<
   T,
@@ -53,6 +73,7 @@ export type OmittedRealmTypes<T> = Omit<
   | ExtractPropertyNamesOfType<T, Function> // TODO: Figure out the use-case for this
   | ExtractPropertyNamesOfType<T, AnyCollection>
   | ExtractPropertyNamesOfType<T, AnyDictionary>
+  | ExtractPropertyNamesOfTypeExcludingNullability<T, Counter>
 >;
 
 /** Make all fields optional except those specified in K */
@@ -68,7 +89,10 @@ type OmittedRealmTypesWithRequired<T, RequiredProperties extends keyof OmittedRe
 >;
 
 /** Remaps realm types to "simpler" types (arrays and objects) */
-type RemappedRealmTypes<T> = RealmListsRemappedModelPart<T> & RealmDictionaryRemappedModelPart<T>;
+type RemappedRealmTypes<T> = RealmListRemappedModelPart<T> &
+  RealmDictionaryRemappedModelPart<T> &
+  RealmSetRemappedModelPart<T> &
+  RealmCounterRemappedModelPart<T>;
 
 /**
  * Joins `T` stripped of all keys which value extends {@link Collection} and all inherited from {@link Realm.Object},
