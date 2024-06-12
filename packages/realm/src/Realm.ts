@@ -662,8 +662,6 @@ export class Realm {
       if (extras) {
         objectSchema.ctor = extras.constructor;
       }
-      // Some tests require that the properties exist on the object, even
-      // if the value is `undefined`. Thus, explicitly set to `undefined`.
       for (const property of Object.values(objectSchema.properties)) {
         property.default = extras ? extras.defaults[property.name] : undefined;
         property.presentation = extras ? extras.presentations[property.name] : undefined;
