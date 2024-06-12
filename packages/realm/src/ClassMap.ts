@@ -153,7 +153,7 @@ export class ClassMap {
       // Get the uninitialized property map
       const { properties } = getClassHelpers(constructor as typeof RealmObject);
       // Initialize the property map, now that all classes have helpers set
-      properties.initialize(objectSchema, defaults, {
+      properties.initialize(objectSchema, canonicalObjectSchema, defaults, {
         realm,
         getClassHelpers: (name: string) => this.getHelpers(name),
       });

@@ -85,6 +85,9 @@
         "ios/Podfile.lock"
       ],
       "env": {
+        "USE_CCACHE": {
+          "external": true
+        },
         "USE_HERMES": {
           "external": true,
           "default": "1"
@@ -102,6 +105,9 @@
     "pod-install:ci": {
       "command": "pod-install",
       "env": {
+        "USE_CCACHE": {
+          "external": true
+        },
         "USE_HERMES": {
           "external": true,
           "default": "1"

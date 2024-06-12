@@ -45,6 +45,14 @@ export class TypeAssertionError extends AssertionError {
       return typeof value;
     } else if (typeof value === "function") {
       return `a function or class named ${value.name}`;
+    } else if (typeof value === "number") {
+      if (Number.isNaN(value)) {
+        return "NaN";
+      } else if (!Number.isInteger(value)) {
+        return "a decimal number";
+      } else {
+        return "a number";
+      }
     } else {
       return "a " + typeof value;
     }

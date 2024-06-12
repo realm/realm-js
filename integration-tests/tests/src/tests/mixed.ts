@@ -20,6 +20,7 @@ import Realm, { BSON, ObjectSchema } from "realm";
 import { expect } from "chai";
 
 import { openRealmBefore, openRealmBeforeEach } from "../hooks";
+import { expectRealmDictionary, expectRealmList, expectRealmResults } from "../utils/expects";
 
 interface ISingle {
   a: Realm.Mixed;
@@ -366,18 +367,6 @@ describe("Mixed", () => {
         EmbeddedObjectSchema,
       ],
     });
-
-    function expectRealmList(value: unknown): asserts value is Realm.List<unknown> {
-      expect(value).instanceOf(Realm.List);
-    }
-
-    function expectRealmDictionary(value: unknown): asserts value is Realm.Dictionary<unknown> {
-      expect(value).instanceOf(Realm.Dictionary);
-    }
-
-    function expectRealmResults(value: unknown): asserts value is Realm.Results<unknown> {
-      expect(value).instanceOf(Realm.Results);
-    }
 
     /**
      * Expects the provided value to contain:
