@@ -28,9 +28,9 @@ export function generate(context: TemplateContext): void {
   out(`
     /* eslint-disable @typescript-eslint/no-var-requires */
     /* global global, require */
-    const nativeModule = require("#realm.node");
+    const nativeBinding = require("#realm.node");
 
-    if(!nativeModule) {
+    if(!nativeBinding) {
       throw new Error("Could not find the Realm binary. Please consult our troubleshooting guide: https://www.mongodb.com/docs/realm-sdks/js/latest/#md:troubleshooting-missing-binary");
     }
 

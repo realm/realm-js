@@ -16,15 +16,25 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#import <Foundation/Foundation.h>
+#import "NativeRealmLoader.h"
+#import "NativeRealmModule.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#import <jsi_init.h>
 
-@interface RealmReact : NSObject
+#import <ReactCommon/CallInvoker.h>
+#import <ReactCommon/CxxTurboModuleUtils.h>
+
+namespace react = facebook::react;
+
+@interface NativeRealmLoader()
 @end
 
-#ifdef __cplusplus
+@implementation NativeRealmLoader
+
++ (void) load {
+    react::registerCxxModuleToGlobalModuleMap("Realm", [](std::shared_ptr<react::CallInvoker> js_invoker) {
+        return std::make_shared<realm::js::NativeRealmModule>(js_invoker);
+    });
 }
-#endif
+
+@end

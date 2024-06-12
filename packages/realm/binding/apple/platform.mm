@@ -37,7 +37,7 @@ static NSString *error_description(NSError *error) {
 
 static std::string s_default_realm_directory;
 
-namespace realm {
+namespace realm::js {
 
 void JsPlatformHelpers::set_default_realm_file_directory(std::string dir)
 {

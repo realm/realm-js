@@ -4,16 +4,15 @@
 #include <realm_helpers.h>
 #include <type_traits>
 
-namespace realm::js {
-extern std::function<void()> flush_ui_queue;
-}
+#include <flush_ui_queue_workaround.h>
+
 namespace realm::js::JSI {
 namespace {
 
 struct FlushMicrotaskQueueGuard {
     ~FlushMicrotaskQueueGuard()
     {
-        flush_ui_queue();
+        realm::js::flush_ui_workaround::flush_ui_queue();
     }
 };
 

@@ -83,7 +83,8 @@
       "clean": "if-file-deleted",
       "files": [
         "ios/Podfile",
-        "../../../packages/realm/RealmJS.podspec"
+        "../../../packages/realm/RealmJS.podspec",
+        "../../../packages/realm/binding/apple"
       ],
       "output": [
         "ios/Pods",
@@ -99,6 +100,10 @@
           "default": "1"
         },
         "RCT_NEW_ARCH_ENABLED": {
+          "external": true,
+          "default": "1"
+        },
+        "USE_BRIDGELESS": {
           "external": true,
           "default": "1"
         }
@@ -170,6 +175,6 @@
     "concurrently": "^8.2.2",
     "mocha-remote-cli": "^1.12.2",
     "pod-install": "^0.2.2",
-    "react-native-test-app": "^3.7.3"
+    "react-native-test-app": "^3.7.6"
   }
 }

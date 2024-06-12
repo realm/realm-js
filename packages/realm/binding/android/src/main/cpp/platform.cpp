@@ -40,16 +40,16 @@ static inline bool is_realm_file(const char* str)
 static AAssetManager* s_asset_manager;
 static std::string s_default_realm_directory;
 
-namespace realm {
-
-void JsPlatformHelpers::set_default_realm_file_directory(std::string dir)
-{
-    s_default_realm_directory = dir;
-}
+namespace realm::js {
 
 void set_asset_manager(AAssetManager* asset_manager)
 {
     s_asset_manager = asset_manager;
+}
+
+void JsPlatformHelpers::set_default_realm_file_directory(std::string dir)
+{
+    s_default_realm_directory = dir;
 }
 
 std::string JsPlatformHelpers::default_realm_file_directory()

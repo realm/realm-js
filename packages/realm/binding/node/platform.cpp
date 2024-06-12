@@ -26,7 +26,7 @@
 
 static std::string s_default_realm_directory;
 
-namespace realm {
+namespace realm::js {
 
 class UVException : public std::runtime_error {
 public:

@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2021 Realm Inc.
+// Copyright 2024 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,18 +18,20 @@
 
 #pragma once
 
-#import <functional>
-#import <jsi/jsi.h>
+#include <ReactCommon/CallInvoker.h>
+#include <ReactCommon/TurboModule.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
+namespace realm::js {
 namespace jsi = facebook::jsi;
-void realm_jsi_init(jsi::Runtime& rt, jsi::Object& exports);
-void realm_jsi_invalidate_caches();
-void realm_jsi_close_sync_sessions();
+namespace react = facebook::react;
 
-#ifdef __cplusplus
+class JSI_EXPORT NativeRealmModule: public react::TurboModule {
+public:
+    NativeRealmModule(std::shared_ptr<react::CallInvoker> js_invoker);
+    ~NativeRealmModule();
+    void flush_ui_queue();
+private:
+    bool waiting_for_ui_flush;
+};
+
 }
-#endif

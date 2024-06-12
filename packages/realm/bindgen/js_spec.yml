@@ -5,6 +5,7 @@ headers:
 
 classes:
   JsPlatformHelpers:
+    cppName: js::JsPlatformHelpers
     abstract: true
     staticMethods:
       set_default_realm_file_directory: '(dir: std::string)'

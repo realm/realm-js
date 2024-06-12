@@ -178,8 +178,6 @@ class JsiAddon extends CppClass {
                 1,
                 std::bind(&${this.name}::injectInjectables, this, _1, _2, _3, _4)
             ));
-
-            _env.global().setProperty(_env, "__RealmFuncs", exports);
             `,
       }),
     );
@@ -1094,10 +1092,7 @@ export function generate({ rawSpec, spec, file: makeFile }: TemplateContext): vo
       #include <jsi/jsi.h>
       #include <chrono>
       #include <realm_js_jsi_helpers.h>
-
-      namespace realm::js {
-      std::function<void()> flush_ui_queue;
-      }
+      #include <flush_ui_queue_workaround.h>
 
       // Using all-caps JSI to avoid risk of conflicts with jsi namespace from fb.
       namespace realm::js::JSI {
@@ -1121,9 +1116,8 @@ export function generate({ rawSpec, spec, file: makeFile }: TemplateContext): vo
             // Blow away the addon state.
             RealmAddon::self.reset();
         }
-        void realm_jsi_init(jsi::Runtime& rt, jsi::Object& exports, std::function<void()> flush_ui_queue) {
+        void realm_jsi_init(jsi::Runtime& rt, jsi::Object& exports) {
             realm_jsi_invalidate_caches();
-            js::flush_ui_queue = flush_ui_queue;
             RealmAddon::self = std::make_unique<RealmAddon>(rt, exports);
         }
         void realm_jsi_close_sync_sessions() {

@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2021 Realm Inc.
+// Copyright 2024 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,20 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#pragma once
+import { TurboModule, TurboModuleRegistry } from "react-native";
 
-#import <functional>
-#import <jsi/jsi.h>
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-namespace jsi = facebook::jsi;
-void realm_jsi_init(jsi::Runtime& rt, jsi::Object& exports);
-void realm_jsi_invalidate_caches();
-void realm_jsi_close_sync_sessions();
-
-#ifdef __cplusplus
+export interface Spec extends TurboModule {
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  getBinding(): Object;
 }
-#endif
+
+export default TurboModuleRegistry.get<Spec>("Realm");

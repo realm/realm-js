@@ -120,7 +120,7 @@ export function generate({ spec: boundSpec }: TemplateContext, out: Outputter): 
 
       // Eagerly bind the name once from the native module.
       const native = `_native_${method.id}`;
-      out(`const ${native} = nativeModule.${method.id};`);
+      out(`const ${native} = nativeBinding.${method.id};`);
       // TODO consider pre-extracting class-typed arguments while still in JIT VM.
       const asyncSig = method.sig.asyncTransform();
       const params = (asyncSig ?? method.sig).args.map((a) => a.name);
@@ -151,12 +151,12 @@ export function generate({ spec: boundSpec }: TemplateContext, out: Outputter): 
 
     if (cls.iterable) {
       const native = `_native_${cls.iteratorMethodId()}`;
-      out(`const ${native} = nativeModule.${cls.iteratorMethodId()};`);
+      out(`const ${native} = nativeBinding.${cls.iteratorMethodId()};`);
       body += `\n[Symbol.iterator]() { return ${native}(this[${symb}]); }`;
     }
 
     out(`export class ${cls.jsName} ${cls.base ? `extends ${cls.base.jsName}` : ""} { ${body} }`);
   }
 
-  out(`nativeModule.injectInjectables({ ${injectables} });`);
+  out(`nativeBinding.injectInjectables({ ${injectables} });`);
 }
