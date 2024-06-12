@@ -20,6 +20,7 @@
 
 ### Internal
 * Upgraded Realm Core from v14.7.0 to v14.10.0. ([#6701](https://github.com/realm/realm-js/issues/6701))
+* Added [privacy manifest](https://developer.apple.com/documentation/bundleresources/privacy_manifest_files) for Apple App Store. First released in v12.8.1-alpha.0 only. ([#6638](https://github.com/realm/realm-js/issues/6638))
 
 ## 12.10.0-rc.0 (2024-05-31)
 
