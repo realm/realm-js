@@ -48,13 +48,11 @@ const catSchema: Realm.ObjectSchema = {
   },
 };
 
-const realmContextWithConfig = createRealmContext({
+const withConfigRealmContext = createRealmContext({
   schema: [dogSchema],
   inMemory: true,
   path: randomRealmPath(),
 });
-
-const EmptyRealmContext = createRealmContext();
 
 describe("RealmProvider", () => {
   afterEach(() => {
@@ -62,7 +60,7 @@ describe("RealmProvider", () => {
   });
 
   describe("with a Realm Configuration", () => {
-    const { RealmProvider, useRealm } = realmContextWithConfig;
+    const { RealmProvider, useRealm } = withConfigRealmContext;
 
     it("returns the configured realm with useRealm", async () => {
       const wrapper = ({ children }: { children: React.ReactNode }) => <RealmProvider>{children}</RealmProvider>;
@@ -98,17 +96,6 @@ describe("RealmProvider", () => {
         <RealmProvider schema={[catSchema]}>{children}</RealmProvider>
       );
       const { result } = renderHook(() => useRealm(), { wrapper });
-      await waitFor(() => expect(result.current).not.toBe(null));
-      const realm = result.current;
-      expect(realm).not.toBe(null);
-      expect(realm.schema[0].name).toBe("cat");
-    });
-
-    it("can be used with an initially empty realm context", async () => {
-      const wrapper = ({ children }: { children: React.ReactNode }) => (
-        <EmptyRealmContext.RealmProvider schema={[catSchema]}>{children}</EmptyRealmContext.RealmProvider>
-      );
-      const { result } = renderHook(() => EmptyRealmContext.useRealm(), { wrapper });
       await waitFor(() => expect(result.current).not.toBe(null));
       const realm = result.current;
       expect(realm).not.toBe(null);
@@ -290,7 +277,7 @@ describe("RealmProvider", () => {
     });
   });
 
-  describe("with an existing Realm Instance", () => {
+  describe("with an existing Realm instance", () => {
     let existingRealmInstance: Realm;
     let realmContextWithRealmInstance: RealmContext<RealmProviderFromRealmInstanceFC>;
 
@@ -328,6 +315,62 @@ describe("RealmProvider", () => {
     });
   });
 
+  describe("with an initially empty context", () => {
+    const emptyRealmContext = createRealmContext();
+
+    it("should use Realm instance if realm prop is passed", () => {
+      const existingRealm = new Realm({
+        schema: [dogSchema],
+        inMemory: true,
+        path: randomRealmPath(),
+      });
+      const { RealmProvider, useRealm } = emptyRealmContext;
+
+      const wrapper = ({ children }: { children: React.ReactNode }) => (
+        <RealmProvider realm={existingRealm}>{children}</RealmProvider>
+      );
+      const { result, unmount } = renderHook(() => useRealm(), { wrapper });
+
+      expect(result.current.isClosed).toBe(false);
+      expect(result.current).toStrictEqual(existingRealm);
+
+      unmount();
+      // Closing a realm should not be managed by the provider if an existing instance was given
+      expect(result.current.isClosed).toBe(false);
+    });
+
+    it("should use Realm configuration if any config props are passed", () => {
+      const { RealmProvider, useRealm } = emptyRealmContext;
+
+      const wrapper = ({ children }: { children: React.ReactNode }) => (
+        <RealmProvider schema={[dogSchema]}>{children}</RealmProvider>
+      );
+      const { result, unmount } = renderHook(() => useRealm(), { wrapper });
+
+      expect(result.current.schema.length).toEqual(1);
+      expect(result.current.schema[0].name).toEqual(dogSchema.name);
+
+      expect(result.current.isClosed).toBe(false);
+      unmount();
+      // Closing a realm should be managed by the provider by default if an existing instance was given
+      expect(result.current.isClosed).toBe(true);
+    });
+
+    it("should use an empty Realm configuration by default if no props are passed", () => {
+      const { RealmProvider, useRealm } = emptyRealmContext;
+
+      const wrapper = ({ children }: { children: React.ReactNode }) => <RealmProvider>{children}</RealmProvider>;
+      const { result, unmount } = renderHook(() => useRealm(), { wrapper });
+
+      expect(result.current.schema.length).toEqual(0);
+
+      expect(result.current.isClosed).toBe(false);
+      unmount();
+      // Closing a realm should be managed by the provider by default if an existing instance was given
+      expect(result.current.isClosed).toBe(true);
+    });
+  });
+
   describe("with multiple providers", () => {
     const createRealmObjectCreator =
       (realmContext: RealmContext<unknown>) =>
@@ -346,22 +389,17 @@ describe("RealmProvider", () => {
           />
         );
       };
-    let existingRealmInstance: Realm;
-    let WithRealmInstance: RealmContext<RealmProviderFromRealmInstanceFC>;
 
-    const WithConfig = realmContextWithConfig;
+    const WithConfig = withConfigRealmContext;
 
-    beforeEach(() => {
-      existingRealmInstance = new Realm({
+    it("can have multiple providers with config and with realm", async () => {
+      const existingRealmInstance = new Realm({
         schema: [dogSchema],
         inMemory: true,
         path: randomRealmPath(),
       });
 
-      WithRealmInstance = createRealmContext(existingRealmInstance);
-    });
-
-    it("can have multiple providers with config and with realm", async () => {
+      const WithRealmInstance = createRealmContext(existingRealmInstance);
       const WithConfigObjectCreator = createRealmObjectCreator(WithConfig);
       const WithConfigProviderComponent = ({ children }: { children?: React.ReactNode }) => (
         <View testID="firstRealmProvider">
@@ -438,6 +476,41 @@ describe("RealmProvider", () => {
         expect(existingRealmInstance.objects(dogSchema.name).length).toEqual(1);
         expect(withRealmInstanceRealm.objects(dogSchema.name).length).toEqual(1);
       });
+    });
+
+    it("can have nested flexible providers with config and with realm", async () => {
+      const { RealmProvider, useRealm } = createRealmContext();
+
+      const customRealm = new Realm({ schema: [dogSchema], inMemory: true, path: randomRealmPath() });
+
+      const InstanceFirstWrapper = ({ children }: React.PropsWithChildren) => {
+        return (
+          <RealmProvider schema={[catSchema]} inMemory={true}>
+            <RealmProvider realm={customRealm}>{children}</RealmProvider>
+          </RealmProvider>
+        );
+      };
+
+      const { result: instanceResult } = renderHook(() => useRealm(), { wrapper: InstanceFirstWrapper });
+
+      expect(instanceResult.current).toStrictEqual(customRealm);
+
+      const ConfigFirstWrapper = ({ children }: React.PropsWithChildren) => {
+        return (
+          <>
+            <RealmProvider realm={customRealm}>
+              <RealmProvider schema={[catSchema]} inMemory={true}>
+                {children}
+              </RealmProvider>
+            </RealmProvider>
+          </>
+        );
+      };
+      const { result: configFirstResult } = renderHook(() => useRealm(), { wrapper: ConfigFirstWrapper });
+
+      expect(configFirstResult.current).not.toStrictEqual(customRealm);
+      expect(configFirstResult.current.schema.length).toEqual(1);
+      expect(configFirstResult.current.schema[0].name).toEqual(catSchema.name);
     });
   });
 
