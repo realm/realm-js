@@ -55,6 +55,10 @@ export * from "./ClassHelpers";
 export * from "./ClassMap";
 /** @internal */
 export * from "./TypeHelpers";
+/** @internal */
+export { mixedToBinding } from "./type-helpers/Mixed";
+/** @internal */
+export { toArrayBuffer } from "./type-helpers/array-buffer";
 
 export * from "./PromiseHandle";
 
