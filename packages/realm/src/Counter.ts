@@ -48,18 +48,16 @@ const COLUMN_KEY = Symbol("Counter#columnKey");
  * ### Creating a counter
  *
  * Use a `number` when creating your counter on a {@link Realm.Object}.
- * ```ts
+ *
+ * ```typescript
  * realm.write(() => {
  *   realm.create(MyObject, { _id: "123", counter: 0 });
  * });
  * ```
  *
- * To update a `null` counter, use {@link UpdateMode.Modified} or {@link UpdateMode.All}.
- * ```ts
- * realm.write(() => {
- *   realm.create(MyObject, { _id: "123", counter: 0 }, UpdateMode.Modified);
- * });
- * ```
+ * ### Updating the count
+ *
+ * Use the instance methods to update the underlying count.
  *
  * ### Nullability
  *
@@ -67,12 +65,14 @@ const COLUMN_KEY = Symbol("Counter#columnKey");
  * A `Counter` never stores `null` values itself, but the counter property
  * on the {@link Realm.Object} (e.g. `myRealmObject.myCounter`) can be `null`.
  *
- * ### Not a live object
+ * To create a counter from a previously `null` value, or to reset a nullable
+ * counter to `null`, use {@link UpdateMode.Modified} or {@link UpdateMode.All}.
  *
- * The `Counter` instance itself is *not* a live object. Calling `myCounter.value`
- * will always return the most recent locally persisted (and synced) state, and
- * calling `myRealmObject.myCounter` always returns a new `Counter` instance (or
- * potentially `null` for nullable counters).
+ * ```typescript
+ * realm.write(() => {
+ *   realm.create(MyObject, { _id: "123", counter: 0 }, UpdateMode.Modified);
+ * });
+ * ```
  */
 export class Counter {
   /** @internal */
