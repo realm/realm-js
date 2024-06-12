@@ -135,26 +135,20 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
         },
         set(obj, value, isCreating) {
           // We only allow resetting a counter this way (e.g. realmObject.counter = 5)
-          // when it is first created, or when a nullable/optional counter was
-          // previously `null`, or when resetting a nullable counter to `null`.
-          if (isCreating) {
-            defaultSet(options)(obj, value);
-            return;
-          }
+          // when it is first created, or when resetting a nullable/optional counter
+          // to `null`, or when a nullable counter was previously `null`.
+          const isAllowed =
+            isCreating || (optional && (value === null || value === undefined || obj.getAny(columnKey) === null));
 
-          if (optional) {
-            const isUninitialized = obj.getAny(columnKey) === null;
-            const resettingToNull = value === null || value === undefined;
-            if (isUninitialized || resettingToNull) {
-              defaultSet(options)(obj, value);
-              return;
-            }
+          if (isAllowed) {
+            defaultSet(options)(obj, value);
+          } else {
+            throw new Error(
+              "You can only reset a Counter instance when initializing a previously " +
+                "null Counter or resetting a nullable Counter to null. To update the " +
+                "value of the Counter, use its instance methods.",
+            );
           }
-          throw new Error(
-            "You can only reset a Counter instance when initializing a previously " +
-              "null Counter or resetting a nullable Counter to null. To update the " +
-              "value of the Counter, use its instance methods.",
-          );
         },
       };
     } else {
