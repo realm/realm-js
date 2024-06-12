@@ -31,7 +31,7 @@ type ExtractPropertyNamesOfType<T, PropType> = {
   [K in keyof T]: T[K] extends PropType ? K : never;
 }[keyof T];
 
-type ExtractPropertyNamesOfTypeExclNullability<T, PropType> = {
+type ExtractPropertyNamesOfTypeExcludingNullability<T, PropType> = {
   [K in keyof T]: Exclude<T[K], null | undefined> extends PropType ? K : never;
 }[keyof T];
 
@@ -62,7 +62,7 @@ type RealmSetRemappedModelPart<T> = {
  * Exchanges properties defined as a {@link Counter} with a `number`.
  */
 type RealmCounterRemappedModelPart<T> = {
-  [K in ExtractPropertyNamesOfTypeExclNullability<T, Counter>]?: Counter | number | Exclude<T[K], Counter>;
+  [K in ExtractPropertyNamesOfTypeExcludingNullability<T, Counter>]?: Counter | number | Exclude<T[K], Counter>;
 };
 
 /** Omits all properties of a model which are not defined by the schema */
@@ -73,7 +73,7 @@ export type OmittedRealmTypes<T> = Omit<
   | ExtractPropertyNamesOfType<T, Function> // TODO: Figure out the use-case for this
   | ExtractPropertyNamesOfType<T, AnyCollection>
   | ExtractPropertyNamesOfType<T, AnyDictionary>
-  | ExtractPropertyNamesOfTypeExclNullability<T, Counter>
+  | ExtractPropertyNamesOfTypeExcludingNullability<T, Counter>
 >;
 
 /** Make all fields optional except those specified in K */
