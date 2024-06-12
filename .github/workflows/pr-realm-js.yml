@@ -264,8 +264,8 @@ jobs:
       BAAS_BRANCH: master
       # Pin the Xcode version
       DEVELOPER_DIR: /Applications/Xcode_14.3.1.app
-      IOS_DEVICE_NAME: iPhone 15
-      IOS_VERSION: 17.0
+      IOS_DEVICE_NAME: 'iPhone 15'
+      IOS_VERSION: '17.0'
     runs-on: ${{ matrix.variant.runner }}
     strategy:
       fail-fast: false
@@ -386,7 +386,7 @@ jobs:
         uses: futureware-tech/simulator-action@v3
         with:
           model: ${{ env.IOS_DEVICE_NAME }}
-          os_version: ${{ ENV.IOS_VERSION }}
+          os_version: ${{ env.IOS_VERSION }}
 
       - name: Start BaaS test server
         id: baas
