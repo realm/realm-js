@@ -40,12 +40,12 @@ export type RealmContext<RealmProvider = FlexibleRealmProviderFC> = {
    *   )
    * }
    * ```
-   * @param props - The {@link Realm.Configuration} for this Realm defaults to
-   * the config passed to `createRealmProvider`, but individual config keys can
-   * be overridden when creating a `<RealmProvider>` by passing them as props.
-   * For example, to override the `path` config value, use a prop named `path`
-   * e.g., `path="newPath.realm"`
-   * an attribute of the same key.
+   * @param props - The {@link Realm.Configuration} or {@link Realm} of the provider
+   * are set based on the options passed to `createRealmProvider`. When using a
+   * {@link Realm.Configuration}, individual config keys can be overridden when
+   * creating a `<RealmProvider>` by passing them as props. For example, to override
+   * the `path` config value, use a prop named `path` e.g., `path="newPath.realm"` an
+   * attribute of the same key.
    */
   RealmProvider: RealmProvider;
   /**

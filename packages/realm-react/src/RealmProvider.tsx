@@ -26,7 +26,7 @@ type PartialRealmConfiguration = Omit<Partial<Realm.Configuration>, "sync"> & {
   sync?: Partial<Realm.SyncConfiguration>;
 };
 
-export type RealmProviderProps = {
+type RealmProviderProps = {
   /**
    * The Realm instance to be used by the provider.
    */
