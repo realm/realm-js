@@ -19,6 +19,14 @@
 import Realm from "realm";
 import { useContext } from "react";
 
+/**
+ * Returns the instance of the {@link Realm} opened by the `RealmProvider`.
+ * @example
+ * ```
+ * const realm = useRealm();
+ * ```
+ * @returns a realm instance
+ */
 export type UseRealmHook = {
   (): Realm;
 };

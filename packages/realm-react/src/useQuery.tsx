@@ -22,8 +22,8 @@ import Realm from "realm";
 import { createCachedCollection } from "./cachedCollection";
 import { AnyRealmObject, RealmClassType, getObjects, isClassModelConstructor } from "./helpers";
 
-type QueryCallback<T> = (collection: Realm.Results<T>) => Realm.Results<T>;
-type DependencyList = ReadonlyArray<unknown>;
+export type QueryCallback<T> = (collection: Realm.Results<T>) => Realm.Results<T>;
+export type DependencyList = ReadonlyArray<unknown>;
 
 export type QueryHookOptions<T> = {
   type: string;
@@ -31,16 +31,53 @@ export type QueryHookOptions<T> = {
   keyPaths?: string | string[];
 };
 
-export type QueryHookClassBasedOptions<T> = {
+export type QueryHookClassBasedOptions<T extends AnyRealmObject> = {
   type: RealmClassType<T>;
   query?: QueryCallback<T>;
   keyPaths?: string | string[];
 };
 
-export type UseQueryHook = {
+/**
+ * Returns a {@link Realm.Collection} of {@link Realm.Object}s from a given type.
+ * The hook will update on any changes to any object in the collection
+ * and return an empty array if the collection is empty.
+ *
+ * The result of this can be consumed directly by the `data` argument of any React Native
+ * VirtualizedList or FlatList.  If the component used for the list's `renderItem` prop is memoized,
+ * then only the modified object will re-render.
+ * @example
+ * ```tsx
+ * // Return all collection items
+ * const collection = useQuery({ type: Object });
+ *
+ * // Return all collection items sorted by name and filtered by category
+ * const filteredAndSorted = useQuery({
+ *   type: Object,
+ *   query: (collection) => collection.filtered('category == $0',category).sorted('name'),
+ * }, [category]);
+ *
+ * // Return all collection items sorted by name and filtered by category, triggering re-renders only if "name" changes
+ * const filteredAndSorted = useQuery({
+ *   type: Object,
+ *   query: (collection) => collection.filtered('category == $0',category).sorted('name'),
+ *   keyPaths: ["name"]
+ * }, [category]);
+ * ```
+ * @param options
+ * @param options.type - The object type, depicted by a string or a class extending Realm.Object
+ * @param options.query - A function that takes a {@link Realm.Collection} and returns a {@link Realm.Collection} of the same type. This allows for filtering and sorting of the collection, before it is returned.
+ * @param options.keyPaths - Indicates a lower bound on the changes relevant for the hook. This is a lower bound, since if multiple hooks add listeners (each with their own `keyPaths`) the union of these key-paths will determine the changes that are considered relevant for all listeners registered on the collection. In other words: A listener might fire and cause a re-render more than the key-paths specify, if other listeners with different key-paths are present.
+ * @param deps - An array of dependencies that will be passed to {@link useMemo}
+ * @returns a collection of realm objects or an empty array
+ */
+export interface UseQueryHook {
+  /** ... */
   <T>(options: QueryHookOptions<T>, deps?: DependencyList): Realm.Results<T & Realm.Object<T>>;
+  /** ... */
   <T extends AnyRealmObject>(options: QueryHookClassBasedOptions<T>, deps?: DependencyList): Realm.Results<T>;
+  /** ... */
   <T>(type: string): Realm.Results<T & Realm.Object<T>>;
+  /** ... */
   <T extends AnyRealmObject>(type: RealmClassType<T>): Realm.Results<T>;
 
   /** @deprecated To help the `react-hooks/exhaustive-deps` eslint rule detect missing dependencies, we've suggest passing a option object as the first argument */
@@ -51,7 +88,7 @@ export type UseQueryHook = {
     query?: QueryCallback<T>,
     deps?: DependencyList,
   ): Realm.Results<T>;
-};
+}
 
 /**
  * Maps a value to itself

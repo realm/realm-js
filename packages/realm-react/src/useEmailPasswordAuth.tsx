@@ -23,7 +23,7 @@ import { AuthOperationName, AuthResult } from "./types";
 import { useApp, useAuthResult } from "./AppProvider";
 import { useAuthOperation } from "./useAuthOperation";
 
-interface UseEmailPasswordAuth {
+export interface EmailPasswordAuthMethods {
   /**
    * Convenience function to log in a user with an email and password - users
    * could also call `logIn(Realm.Credentials.emailPassword(email, password))`.
@@ -107,7 +107,7 @@ interface UseEmailPasswordAuth {
  * code.
  * @returns An object containing operations and state related to Email/Password authentication.
  */
-export function useEmailPasswordAuth(): UseEmailPasswordAuth {
+export function useEmailPasswordAuth(): EmailPasswordAuthMethods {
   const app = useApp();
   const [result] = useAuthResult();
 
