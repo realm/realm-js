@@ -4,7 +4,28 @@
 * None
 
 ### Enhancements
-* None
+* Added the ability to use an existing Realm instance in `RealmProvider` and `createRealmContext`. ([#6714](https://github.com/realm/realm-js/pull/6714))
+```jsx
+// Using RealmProvider
+import { RealmProvider } from "@realm/react";
+...
+  const realm = new Realm(...);
+  ...
+  return <RealmProvider realm={realm}> 
+    ...
+  </RealmProvider>
+
+// Using createRealmContext
+import { createRealmContext } from "@realm/react";
+...
+  const realm = new Realm(...);
+
+  const { RealmProvider, useRealm } = createRealmContext(realm);
+  ...
+  return <RealmProvider> 
+    ...
+  </RealmProvider>
+```
 
 ### Fixed
 * None
