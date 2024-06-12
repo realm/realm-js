@@ -192,8 +192,8 @@ export function createRealmProviderFromConfig(
 }
 
 /**
- * Generates a flexible `RealmProvider` which is either based on configuration or based on a realm
- * depending on its props.
+ * Generates a flexible `RealmProvider` which is either based on a configuration
+ * or based on a realm, depending on its props.
  * @param RealmContext - The context that will contain the Realm instance
  * @returns a RealmProvider component that provides context to all context hooks
  */
