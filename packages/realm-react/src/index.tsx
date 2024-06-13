@@ -20,7 +20,7 @@ import Realm from "realm";
 import React, { createContext } from "react";
 
 import {
-  FlexibleRealmProviderFC,
+  GeneralizedRealmProviderFC,
   RealmProviderFromConfigFC,
   RealmProviderFromRealmInstanceFC,
   createRealmProvider,
@@ -93,10 +93,10 @@ export function createRealmContext(realm: Realm): RealmContext<RealmProviderFrom
  * ```
  * @returns An object containing a `RealmProvider` component, and `useRealm`, `useQuery` and `useObject` hooks
  */
-export function createRealmContext(): RealmContext<FlexibleRealmProviderFC>;
+export function createRealmContext(): RealmContext<GeneralizedRealmProviderFC>;
 export function createRealmContext(
   realmOrRealmConfig?: Realm | Realm.Configuration,
-): RealmContext<RealmProviderFromConfigFC | RealmProviderFromRealmInstanceFC | FlexibleRealmProviderFC> {
+): RealmContext<RealmProviderFromConfigFC | RealmProviderFromRealmInstanceFC | GeneralizedRealmProviderFC> {
   const RealmContext = createContext<Realm | null>(realmOrRealmConfig instanceof Realm ? realmOrRealmConfig : null);
   const RealmProvider = createRealmProvider(realmOrRealmConfig, RealmContext);
 

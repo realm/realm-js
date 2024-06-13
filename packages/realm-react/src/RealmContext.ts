@@ -19,9 +19,9 @@
 import { createUseObject } from "./useObject";
 import { createUseQuery } from "./useQuery";
 import { createUseRealm } from "./useRealm";
-import { FlexibleRealmProviderFC } from "./RealmProvider";
+import { GeneralizedRealmProviderFC } from "./RealmProvider";
 
-export type RealmContext<RealmProvider = FlexibleRealmProviderFC> = {
+export type RealmContext<RealmProvider = GeneralizedRealmProviderFC> = {
   /**
    * The Provider component that is required to wrap any component using
    * the Realm hooks.

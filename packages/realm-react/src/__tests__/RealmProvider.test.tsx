@@ -478,7 +478,7 @@ describe("RealmProvider", () => {
       });
     });
 
-    it("can have nested flexible providers with config and with realm", async () => {
+    it("can have nested generalized providers with config and with realm", async () => {
       const { RealmProvider, useRealm } = createRealmContext();
 
       const customRealm = new Realm({ schema: [dogSchema], inMemory: true, path: randomRealmPath() });
