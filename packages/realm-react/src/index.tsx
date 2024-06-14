@@ -40,7 +40,7 @@ export type { UseQueryHook, QueryHookOptions, QueryHookClassBasedOptions } from 
  *class Task extends Realm.Object {
  *  ...
  *
- *  static schema = {
+ *  static schema: ObjectSchema = {
  *    name: 'Task',
  *    primaryKey: '_id',
  *    properties: {
@@ -72,7 +72,7 @@ export function createRealmContext(realm: Realm): RealmContext<RealmProviderFrom
  * ```
  * class Task extends Realm.Object {
  *  ...
- *  static schema = {
+ *  static schema: ObjectSchema = {
  *    name: 'Task',
  *    primaryKey: '_id',
  *    properties: {
@@ -84,9 +84,9 @@ export function createRealmContext(realm: Realm): RealmContext<RealmProviderFrom
  * ...
  * <RealmProvider schema={[Task]}></RealmProvider>
  * ```
- *  @example
+ * @example
  * ```
- * const realm = await Realm.open({ path: "example.realm" });
+ * const realm = await Realm.open({ path: "example.realm", schema: [Task] });
  * const {RealmProvider} = createRealmContext();
  * ...
  * <RealmProvider realm={realm}></RealmProvider>
@@ -95,10 +95,10 @@ export function createRealmContext(realm: Realm): RealmContext<RealmProviderFrom
  */
 export function createRealmContext(): RealmContext<GeneralizedRealmProviderFC>;
 export function createRealmContext(
-  realmOrRealmConfig?: Realm | Realm.Configuration,
+  realmOrConfig?: Realm | Realm.Configuration,
 ): RealmContext<RealmProviderFromConfigFC | RealmProviderFromRealmInstanceFC | GeneralizedRealmProviderFC> {
-  const RealmContext = createContext<Realm | null>(realmOrRealmConfig instanceof Realm ? realmOrRealmConfig : null);
-  const RealmProvider = createRealmProvider(realmOrRealmConfig, RealmContext);
+  const RealmContext = createContext<Realm | null>(realmOrConfig instanceof Realm ? realmOrConfig : null);
+  const RealmProvider = createRealmProvider(realmOrConfig, RealmContext);
 
   const useRealm = createUseRealm(RealmContext);
   const useQuery = createUseQuery(useRealm);

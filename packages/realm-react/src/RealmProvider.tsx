@@ -192,41 +192,39 @@ export function createRealmProviderFromConfig(
 }
 
 /**
- * Generates a flexible `RealmProvider` which is either based on a configuration
+ * Generates a `RealmProvider` which is either based on a configuration
  * or based on a realm, depending on its props.
  * @param RealmContext - The context that will contain the Realm instance
  * @returns a RealmProvider component that provides context to all context hooks
  */
 export function createGeneralizedRealmProvider(RealmContext: React.Context<Realm | null>): GeneralizedRealmProviderFC {
   return ({ realm, ...restProps }) => {
-    return useMemo(() => {
-      if (realm != null) {
-        const RealmProviderFromRealm = createRealmProviderFromRealm(realm, RealmContext);
-        return <RealmProviderFromRealm {...restProps} />;
-      } else {
-        const RealmProviderFromConfig = createRealmProviderFromConfig({}, RealmContext);
-        return <RealmProviderFromConfig {...restProps} />;
-      }
-    }, [realm]);
+    if (realm) {
+      const RealmProviderFromRealm = createRealmProviderFromRealm(realm, RealmContext);
+      return <RealmProviderFromRealm {...restProps} />;
+    } else {
+      const RealmProviderFromConfig = createRealmProviderFromConfig({}, RealmContext);
+      return <RealmProviderFromConfig {...restProps} />;
+    }
   };
 }
 
 /**
  * Generates the appropriate `RealmProvider` based on whether there is a config, realm, or neither given.
- * @param realmOrRealmConfig - An existing Realm, a configuration, or undefined (including default provider).
+ * @param realmOrConfig - An existing Realm, a configuration, or undefined (including default provider).
  * @param RealmContext - The context that will contain the Realm instance
  * @returns a RealmProvider component that provides context to all context hooks
  */
 export function createRealmProvider(
-  realmOrRealmConfig: Realm.Configuration | Realm | undefined,
+  realmOrConfig: Realm.Configuration | Realm | undefined,
   RealmContext: React.Context<Realm | null>,
 ): RealmProviderFromConfigFC | RealmProviderFromRealmInstanceFC | GeneralizedRealmProviderFC {
-  if (realmOrRealmConfig == undefined) {
+  if (!realmOrConfig) {
     return createGeneralizedRealmProvider(RealmContext);
-  } else if (realmOrRealmConfig instanceof Realm) {
-    return createRealmProviderFromRealm(realmOrRealmConfig, RealmContext);
+  } else if (realmOrConfig instanceof Realm) {
+    return createRealmProviderFromRealm(realmOrConfig, RealmContext);
   } else {
-    return createRealmProviderFromConfig(realmOrRealmConfig, RealmContext);
+    return createRealmProviderFromConfig(realmOrConfig, RealmContext);
   }
 }
 
