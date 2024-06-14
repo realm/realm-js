@@ -189,6 +189,7 @@ function expectDictionary(value: unknown): asserts value is Realm.Dictionary {
 ### Internal
 * Upgraded Realm Core from v14.6.2 to v14.7.0.
 * Upgraded `@trunk/launcher` from v1.3.0 to v1.3.1 to support Apple's versioning scheme for macOS.
+* Switched to Xcode 15.2 and CocoaPods v1.15.2 on GHA. ([#6538](https://github.com/realm/realm-js/issues/6538))
 
 ## 12.8.1 (2024-05-15)
 
