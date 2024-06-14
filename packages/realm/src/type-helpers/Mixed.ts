@@ -109,6 +109,7 @@ export function mixedToBinding(
   }
 }
 
+/** @internal */
 function mixedFromBinding(options: TypeOptions, value: binding.MixedArg): unknown {
   const { realm, getClassHelpers } = options;
   if (binding.Int64.isInt(value)) {
@@ -140,6 +141,7 @@ function mixedFromBinding(options: TypeOptions, value: binding.MixedArg): unknow
   }
 }
 
+/** @internal */
 export function createMixedTypeHelpers(options: TypeOptions): TypeHelpers {
   return {
     toBinding: mixedToBinding.bind(null, options.realm.internal),

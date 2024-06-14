@@ -21,6 +21,7 @@ import { defaultFromBinding } from "./default";
 import { nullPassthrough } from "./null-passthrough";
 import { TypeHelpers, TypeOptions } from "./types";
 
+/** @internal */
 export function createUuidTypeHelpers({ optional }: TypeOptions): TypeHelpers {
   return {
     toBinding: nullPassthrough((value) => {

@@ -20,6 +20,7 @@ import { assert, binding } from "../internal";
 import { nullPassthrough } from "./null-passthrough";
 import { TypeHelpers, TypeOptions } from "./types";
 
+/** @internal */
 export function createFloatTypeHelpers({ optional }: TypeOptions): TypeHelpers {
   return {
     toBinding: nullPassthrough((value) => {

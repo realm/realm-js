@@ -21,6 +21,7 @@ import { createDefaultPropertyAccessor } from "./default";
 
 import type { PropertyAccessor, PropertyOptions } from "./types";
 
+/** @internal */
 export function createIntPropertyAccessor(options: PropertyOptions): PropertyAccessor {
   const { realm, columnKey, presentation, optional } = options;
   const defaultAccessor = createDefaultPropertyAccessor(options);

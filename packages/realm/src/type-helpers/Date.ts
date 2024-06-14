@@ -20,6 +20,7 @@ import { assert, binding } from "../internal";
 import { nullPassthrough } from "./null-passthrough";
 import { TypeOptions } from "./types";
 
+/** @internal */
 export function createDateTypeHelpers({ optional }: TypeOptions) {
   return {
     toBinding: nullPassthrough((value) => {

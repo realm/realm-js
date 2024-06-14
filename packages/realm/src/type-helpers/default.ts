@@ -18,10 +18,12 @@
 
 import type { binding } from "../internal";
 
+/** @internal */
 export function defaultToBinding(value: unknown): binding.MixedArg {
   return value as binding.MixedArg;
 }
 
+/** @internal */
 export function defaultFromBinding(value: unknown) {
   return value;
 }

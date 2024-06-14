@@ -29,6 +29,7 @@ import {
 } from "../internal";
 import type { PropertyAccessor, PropertyOptions } from "./types";
 
+/** @internal */
 export function createArrayPropertyAccessor({
   realm,
   type,

@@ -19,7 +19,7 @@
 import { assert, binding } from "../internal";
 import { createDefaultPropertyAccessor } from "./default";
 
-export function createEmbeddedSet({ typeHelpers: { toBinding }, columnKey }: PropertyOptions) {
+function createEmbeddedSet({ typeHelpers: { toBinding }, columnKey }: PropertyOptions) {
   return (obj: binding.Obj, value: unknown) => {
     // Asking for the toBinding will create the object and link it to the parent in one operation.
     // Thus, no need to actually set the value on the `obj` unless it's an optional null value.
@@ -35,6 +35,7 @@ export function createEmbeddedSet({ typeHelpers: { toBinding }, columnKey }: Pro
 
 import type { PropertyAccessor, PropertyHelpers, PropertyOptions } from "./types";
 
+/** @internal */
 export function createObjectPropertyAccessor(options: PropertyOptions): PropertyAccessor {
   const {
     columnKey,

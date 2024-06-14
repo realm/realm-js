@@ -59,6 +59,8 @@ export * from "./TypeHelpers";
 export { mixedToBinding } from "./type-helpers/Mixed";
 /** @internal */
 export { toArrayBuffer } from "./type-helpers/array-buffer";
+/** @internal */
+export type { TypeHelpers, TypeOptions } from "./type-helpers/types";
 
 export * from "./PromiseHandle";
 

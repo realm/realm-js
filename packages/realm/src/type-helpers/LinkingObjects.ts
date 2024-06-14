@@ -20,6 +20,7 @@ import { assert, binding } from "../internal";
 import { defaultToBinding } from "./default";
 import { TypeHelpers, TypeOptions } from "./types";
 
+/** @internal */
 export function createLinkingObjectsTypeHelpers({ objectType, getClassHelpers }: TypeOptions): TypeHelpers {
   assert(objectType);
   const { wrapObject } = getClassHelpers(objectType);

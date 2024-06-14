@@ -19,6 +19,7 @@
 import { List, assert, binding } from "../internal";
 import { TypeHelpers, TypeOptions } from "./types";
 
+/** @internal */
 export function createArrayTypeHelpers({ realm, getClassHelpers, name, objectSchemaName }: TypeOptions): TypeHelpers {
   assert.string(objectSchemaName, "objectSchemaName");
   const classHelpers = getClassHelpers(objectSchemaName);

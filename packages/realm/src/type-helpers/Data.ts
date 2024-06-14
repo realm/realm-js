@@ -21,6 +21,7 @@ import { nullPassthrough } from "./null-passthrough";
 import { TypeHelpers, TypeOptions } from "./types";
 import { toArrayBuffer } from "./array-buffer";
 
+/** @internal */
 export function createDataTypeHelpers({ optional }: TypeOptions): TypeHelpers {
   return {
     toBinding: nullPassthrough((value) => {

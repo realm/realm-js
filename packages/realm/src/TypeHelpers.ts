@@ -34,7 +34,6 @@ import { createUuidTypeHelpers } from "./type-helpers/Uuid";
 import { createArrayTypeHelpers } from "./type-helpers/Array";
 
 import type { TypeHelpers, TypeOptions } from "./type-helpers/types";
-export type { TypeHelpers, TypeOptions };
 
 function createUnsupportedTypeHelpers(): TypeHelpers {
   return {
@@ -47,6 +46,7 @@ function createUnsupportedTypeHelpers(): TypeHelpers {
   };
 }
 
+/** @internal */
 export type MappableTypeHelpers = Exclude<
   binding.PropertyType,
   binding.PropertyType.Nullable | binding.PropertyType.Collection | binding.PropertyType.Flags

@@ -20,6 +20,7 @@ import { INTERNAL, REALM, RealmObject, UpdateMode, assert, binding } from "../in
 import { nullPassthrough } from "./null-passthrough";
 import { TypeHelpers, TypeOptions } from "./types";
 
+/** @internal */
 export function createObjectTypeHelpers({
   realm,
   name,

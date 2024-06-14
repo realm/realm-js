@@ -31,6 +31,7 @@ import {
 import { createDefaultPropertyAccessor } from "./default";
 import type { PropertyAccessor, PropertyOptions } from "./types";
 
+/** @internal */
 export function createMixedPropertyAccessor(options: PropertyOptions): PropertyAccessor {
   const { realm, columnKey, typeHelpers } = options;
   const { fromBinding, toBinding } = typeHelpers;

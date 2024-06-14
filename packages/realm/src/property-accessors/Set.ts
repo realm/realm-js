@@ -19,6 +19,7 @@
 import { RealmSet, assert, binding, createSetAccessor, getTypeHelpers, toItemType } from "../internal";
 import { PropertyAccessor, PropertyOptions } from "./types";
 
+/** @internal */
 export function createSetPropertyAccessor({
   columnKey,
   realm,

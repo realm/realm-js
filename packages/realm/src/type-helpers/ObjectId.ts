@@ -22,6 +22,7 @@ import { TypeHelpers, TypeOptions } from "./types";
 
 import { BSON, assert } from "../internal";
 
+/** @internal */
 export function createObjectIdTypeHelpers({ optional }: TypeOptions): TypeHelpers {
   return {
     toBinding: nullPassthrough((value) => {

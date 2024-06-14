@@ -20,6 +20,7 @@ import { Counter, TypeAssertionError, binding } from "../internal";
 import { nullPassthrough } from "./null-passthrough";
 import type { TypeHelpers, TypeOptions } from "./types";
 
+/** @internal */
 export function createIntTypeHelpers({ presentation, optional }: TypeOptions): TypeHelpers {
   return {
     toBinding: nullPassthrough((value) => {

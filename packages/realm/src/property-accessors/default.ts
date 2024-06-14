@@ -19,6 +19,7 @@
 import { assert, binding } from "../internal";
 import { PropertyAccessor, PropertyOptions } from "./types";
 
+/** @internal */
 export function createDefaultPropertyAccessor({
   realm,
   typeHelpers: { fromBinding, toBinding },

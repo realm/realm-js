@@ -18,6 +18,7 @@
 
 import type { ClassHelpers, ObjCreator, PresentationPropertyTypeName, Realm, UpdateMode, binding } from "../internal";
 
+/** @internal */
 export type TypeHelpers<T = unknown> = {
   toBinding(
     value: T,

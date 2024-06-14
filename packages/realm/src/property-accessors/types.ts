@@ -19,6 +19,7 @@
 import { ClassHelpers, ListAccessor, PresentationPropertyTypeName, Realm, binding } from "../internal";
 import type { TypeHelpers } from "../type-helpers/types";
 
+/** @internal */
 export type PropertyContext = binding.Property & {
   type: binding.PropertyType;
   objectSchemaName: string;
@@ -33,6 +34,7 @@ export type HelperOptions = {
   getClassHelpers: (name: string) => ClassHelpers;
 };
 
+/** @internal */
 export type PropertyOptions = {
   typeHelpers: TypeHelpers;
   columnKey: binding.ColKey;
@@ -42,6 +44,7 @@ export type PropertyOptions = {
 } & HelperOptions &
   binding.Property_Relaxed;
 
+/** @internal */
 export type PropertyAccessor = {
   get(obj: binding.Obj): unknown;
   set(obj: binding.Obj, value: unknown, isCreating?: boolean): unknown;
