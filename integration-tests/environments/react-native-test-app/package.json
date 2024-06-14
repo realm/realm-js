@@ -100,7 +100,11 @@
         },
         "RCT_NEW_ARCH_ENABLED": {
           "external": true,
-          "default": "1"
+          "default": "0"
+        },
+        "USE_BRIDGELESS": {
+          "external": true,
+          "default": "0"
         }
       }
     },
@@ -117,13 +121,16 @@
         "ios/RealmTests.xcworkspace"
       ],
       "env": {
+        "USE_CCACHE": {
+          "external": true
+        },
         "USE_HERMES": {
           "external": true,
           "default": "1"
         },
         "RCT_NEW_ARCH_ENABLED": {
           "external": true,
-          "default": "1"
+          "default": "0"
         },
         "USE_BRIDGELESS": {
           "external": true,
