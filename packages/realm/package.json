@@ -1,6 +1,6 @@
 {
   "name": "realm",
-  "version": "12.9.0",
+  "version": "12.10.0",
   "description": "Realm by MongoDB is an offline-first mobile database: an alternative to SQLite and key-value stores",
   "license": "apache-2.0",
   "homepage": "https://www.mongodb.com/docs/realm/",
@@ -74,6 +74,7 @@
     "scripts/submit-analytics.mjs",
     "react-native.config.js",
     "RealmJS.podspec",
+    "PrivacyInfo.xcprivacy",
     "binding.gyp"
   ],
   "scripts": {
@@ -361,7 +362,7 @@
     "cross-env": "^7.0.3",
     "mocha": "^10.1.0",
     "prebuild": "^12.1.0",
-    "react-native": "0.73.6",
+    "react-native": "0.74.1",
     "typedoc-plugin-rename-defaults": "^0.7.0"
   },
   "engines": {

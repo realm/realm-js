@@ -43,25 +43,27 @@ import {
 } from "./internal";
 
 /**
- * The update mode to use when creating an object that already exists.
+ * The update mode to use when creating an object that already exists,
+ * which is determined by a matching primary key.
  */
 export enum UpdateMode {
   /**
-   * Objects are only created. If an existing object exists, an exception is thrown.
+   * Objects are only created. If an existing object exists (determined by a
+   * matching primary key), an exception is thrown.
    */
   Never = "never",
   /**
-   * If an existing object exists, only properties where the value has actually
-   * changed will be updated. This improves notifications and server side
-   * performance but also have implications for how changes across devices are
-   * merged. For most use cases, the behavior will match the intuitive behavior
-   * of how changes should be merged, but if updating an entire object is
-   * considered an atomic operation, this mode should not be used.
+   * If an existing object exists (determined by a matching primary key), only
+   * properties where the value has actually changed will be updated. This improves
+   * notifications and server side performance but also have implications for how
+   * changes across devices are merged. For most use cases, the behavior will match
+   * the intuitive behavior of how changes should be merged, but if updating an
+   * entire object is considered an atomic operation, this mode should not be used.
    */
   Modified = "modified",
   /**
-   * If an existing object is found, all properties provided will be updated,
-   * any other properties will remain unchanged.
+   * If an existing object exists (determined by a matching primary key), all
+   * properties provided will be updated, any other properties will remain unchanged.
    */
   All = "all",
 }
@@ -218,24 +220,27 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
     const result = wrapObject(obj);
     assert(result);
     // Persist any values provided
-    // TODO: Consider using the property helpers directly to improve performance
     for (const property of persistedProperties) {
       const propertyName = property.publicName || property.name;
-      const { default: defaultValue } = properties.get(propertyName);
+      const { default: defaultValue, get: getProperty, set: setProperty } = properties.get(propertyName);
       if (property.isPrimary) {
         continue; // Skip setting this, as we already provided it on object creation
       }
       const propertyValue = values[propertyName];
       if (typeof propertyValue !== "undefined") {
-        if (mode !== UpdateMode.Modified || result[propertyName] !== propertyValue) {
-          // This will call into the property setter in PropertyHelpers.ts.
+        if (mode !== UpdateMode.Modified || getProperty(obj) !== propertyValue) {
+          // Calling `set`/`setProperty` (or `result[propertyName] = propertyValue`)
+          // will call into the property setter in PropertyHelpers.ts.
           // (E.g. the setter for [binding.PropertyType.Array] in the case of lists.)
-          result[propertyName] = propertyValue;
+          setProperty(obj, propertyValue, created);
         }
       } else {
+        // If the user has omitted a value for the `property`, and the underlying
+        // object was just created, set the `property` to the default if provided.
         if (created) {
           if (typeof defaultValue !== "undefined") {
-            result[propertyName] = typeof defaultValue === "function" ? defaultValue() : defaultValue;
+            const extractedValue = typeof defaultValue === "function" ? defaultValue() : defaultValue;
+            setProperty(obj, extractedValue, created);
           } else if (
             !(property.type & binding.PropertyType.Collection) &&
             !(property.type & binding.PropertyType.Nullable)

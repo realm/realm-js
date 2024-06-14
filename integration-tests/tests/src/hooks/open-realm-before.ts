@@ -69,9 +69,10 @@ export function openRealmHook(config: OpenRealmConfiguration = {}) {
 export function closeThisRealm(this: RealmContext & Mocha.Context): void {
   if (this.closeRealm) {
     this.closeRealm({ clearTestState: true, deleteFile: true });
+  } else {
+    // Clearing the test state to ensure the sync session gets completely reset and nothing is cached between tests
+    Realm.clearTestState();
   }
-  // Clearing the test state to ensure the sync session gets completely reset and nothing is cached between tests
-  Realm.clearTestState();
 }
 
 export function openRealmBeforeEach(config: OpenRealmConfiguration = {}): void {

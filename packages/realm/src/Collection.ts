@@ -155,7 +155,7 @@ export abstract class Collection<
    * Add a listener `callback` which will be called when a **live** collection instance changes.
    * @param callback - A function to be called when changes occur.
    * @param keyPaths - Indicates a lower bound on the changes relevant for the listener. This is a lower bound, since if multiple listeners are added (each with their own `keyPaths`) the union of these key-paths will determine the changes that are considered relevant for all listeners registered on the collection. In other words: A listener might fire more than the key-paths specify, if other listeners with different key-paths are present.
-   * @note `deletions and `oldModifications` report the indices in the collection before the change happened,
+   * @note `deletions` and `oldModifications` report the indices in the collection before the change happened,
    * while `insertions` and `newModifications` report the indices into the new version of the collection.
    * @throws A {@link TypeAssertionError} if `callback` is not a function.
    * @example

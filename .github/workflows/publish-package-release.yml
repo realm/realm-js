@@ -142,6 +142,9 @@ jobs:
         submodules: recursive
         ref: ${{ steps.find-pull-request.outputs.base-ref }}
 
+    - name: Install node modules
+      run: npm ci --ignore-scripts
+      
     - name: Extract Changelog
       run: node scripts/extract-changelog.js ${{ steps.get-version.outputs.version }} ${{ github.workspace }}/${{ env.PACKAGE_PATH }}/CHANGELOG.md > EXTRACTED_CHANGELOG.md
 

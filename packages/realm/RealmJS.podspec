@@ -43,6 +43,7 @@ Pod::Spec.new do |s|
 
   s.source_files           = 'react-native/ios/RealmReact/*.mm'
   s.public_header_files    = 'react-native/ios/RealmReact/*.h'
+  s.resource_bundles       = { 'RealmJS' => ['PrivacyInfo.xcprivacy'] }
 
   s.frameworks             = uses_frameworks ? ['React'] : []
 
@@ -52,9 +53,6 @@ Pod::Spec.new do |s|
                                 # Setting up clang
                                 'CLANG_CXX_LANGUAGE_STANDARD' => 'c++17',
                                 'CLANG_CXX_LIBRARY' => 'libc++',
-                                # Setting the current project version and versioning system to get a symbol for analytics
-                                'CURRENT_PROJECT_VERSION' => s.version,
-                                'VERSIONING_SYSTEM' => 'apple-generic',
                                 # Header search paths are prefixes to the path specified in #include macros
                                 'HEADER_SEARCH_PATHS' => [
                                   '"$(PODS_TARGET_SRCROOT)/react-native/ios/RealmReact/"',

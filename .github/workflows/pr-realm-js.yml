@@ -7,6 +7,7 @@ on:
     paths-ignore:
       - "**.md"
       - "**.png"
+      - "packages/realm-web/**"
   pull_request:
     # Note that the workflow will still run if paths outside of `paths-ignore` have
     # been modified in the PR, irrespective of an individual commit only modifying
@@ -14,6 +15,7 @@ on:
     paths-ignore:
       - "**.md"
       - "**.png"
+      - "packages/realm-web/**"
   workflow_dispatch:
 
 concurrency:
@@ -410,6 +412,9 @@ jobs:
       - name: Run ${{matrix.variant.target}} (${{ matrix.variant.os}} / ${{ matrix.variant.environment }})
         if: ${{ matrix.variant.os == 'ios' }}
         env:
+          WIREIT_LOGGER: simple
+          USE_CCACHE: 1
+          USE_BRIDGELESS: 0 # Disabling bridgeless for now
           MOCHA_REMOTE_CONTEXT: ${{ steps.mocha-env.outputs.context }}
         timeout-minutes: 75
         run: npm run ${{ matrix.variant.target}} --prefix integration-tests/environments/${{ matrix.variant.environment }}

@@ -18,9 +18,11 @@
 
 import {
   ClassHelpers,
+  Counter,
   Dictionary,
   List,
   ListAccessor,
+  PresentationPropertyTypeName,
   Realm,
   RealmSet,
   Results,
@@ -45,6 +47,7 @@ type PropertyContext = binding.Property & {
   type: binding.PropertyType;
   objectSchemaName: string;
   embedded: boolean;
+  presentation?: PresentationPropertyTypeName;
   default?: unknown;
 };
 
@@ -59,12 +62,13 @@ type PropertyOptions = {
   columnKey: binding.ColKey;
   optional: boolean;
   embedded: boolean;
+  presentation?: PresentationPropertyTypeName;
 } & HelperOptions &
   binding.Property_Relaxed;
 
 type PropertyAccessor = {
   get(obj: binding.Obj): unknown;
-  set(obj: binding.Obj, value: unknown): unknown;
+  set(obj: binding.Obj, value: unknown, isCreating?: boolean): unknown;
   listAccessor?: ListAccessor;
 };
 
@@ -121,6 +125,39 @@ function embeddedSet({ typeHelpers: { toBinding }, columnKey }: PropertyOptions)
 type AccessorFactory = (options: PropertyOptions) => PropertyAccessor;
 
 const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>> = {
+  [binding.PropertyType.Int](options) {
+    const { realm, columnKey, presentation, optional } = options;
+
+    if (presentation === "counter") {
+      return {
+        get(obj) {
+          return obj.getAny(columnKey) === null ? null : new Counter(realm, obj, columnKey);
+        },
+        set(obj, value, isCreating) {
+          // We only allow resetting a counter this way (e.g. realmObject.counter = 5)
+          // when it is first created, or when resetting a nullable/optional counter
+          // to `null`, or when a nullable counter was previously `null`.
+          const isAllowed =
+            isCreating || (optional && (value === null || value === undefined || obj.getAny(columnKey) === null));
+
+          if (isAllowed) {
+            defaultSet(options)(obj, value);
+          } else {
+            throw new Error(
+              "You can only reset a Counter instance when initializing a previously " +
+                "null Counter or resetting a nullable Counter to null. To update the " +
+                "value of the Counter, use its instance methods.",
+            );
+          }
+        },
+      };
+    } else {
+      return {
+        get: defaultGet(options),
+        set: defaultSet(options),
+      };
+    }
+  },
   [binding.PropertyType.Object](options) {
     const {
       columnKey,
@@ -370,6 +407,7 @@ export function createPropertyHelpers(property: PropertyContext, options: Helper
     objectType: property.objectType,
     objectSchemaName: property.objectSchemaName,
     optional: !!(property.type & binding.PropertyType.Nullable),
+    presentation: property.presentation,
   };
   if (collectionType) {
     return getPropertyHelpers(collectionType, {

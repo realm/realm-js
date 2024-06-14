@@ -1,5 +1,5 @@
-x.x.x Release notes (yyyy-MM-dd)
-=============================================================
+## vNext (TBD)
+
 ### Breaking changes
 * None
 

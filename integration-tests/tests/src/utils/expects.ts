@@ -16,17 +16,25 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import fs from "node:fs";
-import path from "node:path";
+import { expect } from "chai";
+import Realm, { Counter } from "realm";
 
-const version = process.env.npm_package_version as string;
-if (typeof version !== "string") {
-  throw new Error("Failed to determine package version");
+export function expectRealmList(value: unknown): asserts value is Realm.List<unknown> {
+  expect(value).instanceOf(Realm.List);
 }
 
-const readmePath = path.resolve(__dirname, "../README.md");
+export function expectRealmDictionary(value: unknown): asserts value is Realm.Dictionary<unknown> {
+  expect(value).instanceOf(Realm.Dictionary);
+}
 
-// Update the readme file to use the new version in the script-tag.
-const readmeContent = fs.readFileSync(readmePath, "utf8");
-const readmeContentReplaced = readmeContent.replace(/realm-web@[^"/]+/, `realm-web@${version}`);
-fs.writeFileSync(readmePath, readmeContentReplaced);
+export function expectRealmResults(value: unknown): asserts value is Realm.Results<unknown> {
+  expect(value).instanceOf(Realm.Results);
+}
+
+export function expectRealmSet(value: unknown): asserts value is Realm.Set<unknown> {
+  expect(value).instanceOf(Realm.Set);
+}
+
+export function expectCounter(value: unknown): asserts value is Counter {
+  expect(value).to.be.instanceOf(Counter);
+}

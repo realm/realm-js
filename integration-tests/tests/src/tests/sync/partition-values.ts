@@ -125,7 +125,7 @@ describe("Partition-values", () => {
   });
 
   describe("integer", () => {
-    importAppBefore(buildAppConfig("pv-int-tests").partitionBasedSync({ key: "realm_id", type: "long" }));
+    importAppBefore(buildAppConfig("pv-int-tests").anonAuth().partitionBasedSync({ key: "realm_id", type: "long" }));
     authenticateUserBefore();
 
     it("works", async function (this: Mocha.Context & AppContext & UserContext) {
@@ -165,7 +165,9 @@ describe("Partition-values", () => {
   });
 
   describe("string", () => {
-    importAppBefore(buildAppConfig("pv-string-tests").partitionBasedSync({ key: "realm_id", type: "string" }));
+    importAppBefore(
+      buildAppConfig("pv-string-tests").anonAuth().partitionBasedSync({ key: "realm_id", type: "string" }),
+    );
     authenticateUserBefore();
 
     it("works", async function (this: Mocha.Context & AppContext & UserContext) {
@@ -205,7 +207,7 @@ describe("Partition-values", () => {
   });
 
   describe("UUID", () => {
-    importAppBefore(buildAppConfig("pv-uuid-tests").partitionBasedSync({ key: "realm_id", type: "uuid" }));
+    importAppBefore(buildAppConfig("pv-uuid-tests").anonAuth().partitionBasedSync({ key: "realm_id", type: "uuid" }));
     authenticateUserBefore();
 
     it("works", async function (this: Mocha.Context & AppContext & UserContext) {
@@ -253,7 +255,9 @@ describe("Partition-values", () => {
   });
 
   describe("objectId", () => {
-    importAppBefore(buildAppConfig("pv-objectid-tests").partitionBasedSync({ key: "realm_id", type: "objectId" }));
+    importAppBefore(
+      buildAppConfig("pv-objectid-tests").anonAuth().partitionBasedSync({ key: "realm_id", type: "objectId" }),
+    );
     authenticateUserBefore();
 
     it("works", async function (this: Mocha.Context & AppContext & UserContext) {

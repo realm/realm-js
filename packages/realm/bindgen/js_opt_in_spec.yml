@@ -302,6 +302,7 @@ classes:
       - get_any
       - set_any
       - set_collection
+      - add_int
       - get_linked_object
       - get_backlink_count
       - get_backlink_view
@@ -514,6 +515,7 @@ classes:
       - make_streaming_request
       - update_base_url
       - get_base_url
+      - immediately_run_file_actions
 
   WatchStream:
     methods:

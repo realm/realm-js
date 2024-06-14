@@ -32,6 +32,7 @@ export namespace Types {
   export import Decimal128 = internal.BSON.Decimal128;
   export import ObjectId = internal.BSON.ObjectId;
   export import UUID = internal.BSON.UUID;
+  export import Counter = internal.Counter;
 
   export type Date = GlobalDate;
   export const Date = GlobalDate;

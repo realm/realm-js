@@ -76,8 +76,7 @@ jobs:
       - name: Update package.json
         working-directory: ${{ github.workspace }}/${{env.PACKAGE_PATH}}
         run: |
-          jq '.version="${{ steps.update-changelog.outputs.new-version }}"' package.json > package.tmp
-          mv package.tmp package.json
+          npm version ${{ steps.update-changelog.outputs.new-version }}
 
       - name: Create Release PR
         uses: peter-evans/create-pull-request@v4
