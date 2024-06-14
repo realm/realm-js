@@ -1193,7 +1193,7 @@ PODS:
     - React-Core
     - React-jsi
   - ReactTestApp-Resources (1.0.0-dev)
-  - RealmJS (12.9.0):
+  - RealmJS (12.10.0):
     - React
   - RNFS (2.20.0):
     - React-Core
@@ -1446,14 +1446,14 @@ SPEC CHECKSUMS:
   React-runtimescheduler: e2152ed146b6a35c07386fc2ac4827b27e6aad12
   React-utils: 3285151c9d1e3a28a9586571fc81d521678c196d
   ReactCommon: f42444e384d82ab89184aed5d6f3142748b54768
-  ReactNativeHost: 35df5fb9d51dc99eaec21e993642f1232ec8b380
+  ReactNativeHost: 76f58edded6537ed8a03cfce6327e31d667bd802
   ReactTestApp-DevSupport: 9052e9a0ba3a96a3cc574ee66c7b6089ee76b341
   ReactTestApp-Resources: d200e68756fa45c648f369210bd7ee0c14759f5a
-  RealmJS: b9a864b417a4c8e65952990037d8540d068041b8
+  RealmJS: 49d581b10bc4362a12818988657fff29fabe68b7
   RNFS: 4ac0f0ea233904cb798630b3c077808c06931688
   SocketRocket: abac6f5de4d4d62d24e11868d7a2f427e0ef940d
   Yoga: 348f8b538c3ed4423eb58a8e5730feec50bce372
 
-PODFILE CHECKSUM: ba37156b0bddb64052f2f6885355287c2356ac29
+PODFILE CHECKSUM: 31a428908a285ec58ff867a2a56fd19780e5be51
 
 COCOAPODS: 1.15.2
