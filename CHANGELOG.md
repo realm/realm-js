@@ -6,28 +6,6 @@
 ### Enhancements
 * Report the originating error that caused a client reset to occur. ([realm/realm-core#6154](https://github.com/realm/realm-core/issues/6154))
 * Reduce the size of the local transaction log produced by creating objects, improving the performance of insertion-heavy transactions. ([realm/realm-core#7734](https://github.com/realm/realm-core/pull/7734))
-* Added the ability to use an existing Realm instance in `RealmProvider` and `createRealmContext`. ([#6714](https://github.com/realm/realm-js/pull/6714))
-```jsx
-// Using RealmProvider
-import { RealmProvider } from "@realm/react";
-...
-  const realm = new Realm(...);
-  ...
-  return <RealmProvider realm={realm}> 
-    ...
-  </RealmProvider>
-
-// Using createRealmContext
-import { createRealmContext } from "@realm/react";
-...
-  const realm = new Realm(...);
-
-  const { RealmProvider, useRealm } = createRealmContext(realm);
-  ...
-  return <RealmProvider> 
-    ...
-  </RealmProvider>
-```
 
 
 ### Fixed

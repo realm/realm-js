@@ -51,12 +51,12 @@ type RealmProviderProps = {
 /**
   Represents the provider returned from using an existing realm at context creation i.e. `createRealmContext(new Realm))`.
  */
-export type RealmProviderFromRealmInstanceFC = React.FC<Pick<RealmProviderProps, "children">>;
+export type RealmProviderFromRealmFC = React.FC<Pick<RealmProviderProps, "children">>;
 
 /**
  * Represents the provider returned from using a Realm configuration at context creation i.e. `createRealmContext({schema: []}))`.
  */
-export type RealmProviderFromConfigFC = React.FC<
+export type RealmProviderFromConfiguration = React.FC<
   Pick<RealmProviderProps, "closeOnUnmount" | "realmRef" | "fallback" | "children" | keyof PartialRealmConfiguration>
 >;
 
@@ -71,7 +71,7 @@ type RestrictivePick<T, K extends keyof T> = Pick<T, K> & { [RestrictedKey in ke
  * Represents properties of a generic RealmProvider where the realm is set and therefore all other
  * props should be disallowed.
  */
-export type RealmProviderWithRealmInstanceProps = RestrictivePick<RealmProviderProps, "realm" | "children">;
+export type RealmProviderWithRealmProps = RestrictivePick<RealmProviderProps, "realm" | "children">;
 
 /*
  * Represents properties of a generic RealmProvider where Realm configuration props are used and no realm is set
@@ -85,14 +85,12 @@ export type RealmProviderWithConfigurationProps = RestrictivePick<
  * Represents the provider returned from creating context with no arguments (including the default context).
  * Supports either passing a `realm` as a property or the schema configuration.
  */
-export type GeneralizedRealmProviderFC = React.FC<
-  RealmProviderWithRealmInstanceProps | RealmProviderWithConfigurationProps
->;
+export type DynamicRealmProvider = React.FC<RealmProviderWithRealmProps | RealmProviderWithConfigurationProps>;
 
 export function createRealmProviderFromRealm(
   realm: Realm | null,
   RealmContext: React.Context<Realm | null>,
-): RealmProviderFromRealmInstanceFC {
+): RealmProviderFromRealmFC {
   return ({ children }) => {
     return <RealmContext.Provider value={realm} children={children} />;
   };
@@ -107,7 +105,7 @@ export function createRealmProviderFromRealm(
 export function createRealmProviderFromConfig(
   realmConfig: Realm.Configuration,
   RealmContext: React.Context<Realm | null>,
-): RealmProviderFromConfigFC {
+): RealmProviderFromConfiguration {
   return ({ children, fallback: Fallback, closeOnUnmount = true, realmRef, ...restProps }) => {
     const [realm, setRealm] = useState<Realm | null>(() =>
       realmConfig.sync === undefined && restProps.sync === undefined
@@ -197,7 +195,7 @@ export function createRealmProviderFromConfig(
  * @param RealmContext - The context that will contain the Realm instance
  * @returns a RealmProvider component that provides context to all context hooks
  */
-export function createGeneralizedRealmProvider(RealmContext: React.Context<Realm | null>): GeneralizedRealmProviderFC {
+export function createDynamicRealmProvider(RealmContext: React.Context<Realm | null>): DynamicRealmProvider {
   return ({ realm, ...restProps }) => {
     if (realm) {
       const RealmProviderFromRealm = createRealmProviderFromRealm(realm, RealmContext);
@@ -218,9 +216,9 @@ export function createGeneralizedRealmProvider(RealmContext: React.Context<Realm
 export function createRealmProvider(
   realmOrConfig: Realm.Configuration | Realm | undefined,
   RealmContext: React.Context<Realm | null>,
-): RealmProviderFromConfigFC | RealmProviderFromRealmInstanceFC | GeneralizedRealmProviderFC {
+): RealmProviderFromConfiguration | RealmProviderFromRealmFC | DynamicRealmProvider {
   if (!realmOrConfig) {
-    return createGeneralizedRealmProvider(RealmContext);
+    return createDynamicRealmProvider(RealmContext);
   } else if (realmOrConfig instanceof Realm) {
     return createRealmProviderFromRealm(realmOrConfig, RealmContext);
   } else {

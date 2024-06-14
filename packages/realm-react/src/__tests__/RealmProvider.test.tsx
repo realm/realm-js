@@ -22,11 +22,7 @@ import { Button, Text, View } from "react-native";
 import { act, fireEvent, render, renderHook, waitFor } from "@testing-library/react-native";
 
 import { createRealmContext } from "..";
-import {
-  RealmProviderFromRealmInstanceFC,
-  areConfigurationsIdentical,
-  mergeRealmConfiguration,
-} from "../RealmProvider";
+import { RealmProviderFromRealmFC, areConfigurationsIdentical, mergeRealmConfiguration } from "../RealmProvider";
 import { randomRealmPath } from "./helpers";
 import { RealmContext } from "../RealmContext";
 
@@ -279,7 +275,7 @@ describe("RealmProvider", () => {
 
   describe("with an existing Realm instance", () => {
     let existingRealmInstance: Realm;
-    let realmContextWithRealmInstance: RealmContext<RealmProviderFromRealmInstanceFC>;
+    let realmContextWithRealmInstance: RealmContext<RealmProviderFromRealmFC>;
 
     beforeEach(() => {
       existingRealmInstance = new Realm({
