@@ -27,14 +27,14 @@ const { RealmProvider, useRealm } = createRealmContext(realm);
 
 function MyApp() {
   return (
-	<>
-    <RealmProvider> 
-      ...
-    </RealmProvider>
-	<AnotherComponent>
-	{/* Note: The hooks returned from `createRealmContext` using an existing Realm can be used outside of the scope of the provider! */}
-	</AnotherComponent>
-	</>
+    <>
+      <RealmProvider> 
+        ...
+      </RealmProvider>
+      <AnotherComponent>
+        {/* Note: The hooks returned from `createRealmContext` using an existing Realm can be used outside of the scope of the provider! */}
+      </AnotherComponent>
+    </>
   );
 ```
 
