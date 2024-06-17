@@ -138,6 +138,8 @@ export type RealmContext<RealmProvider = DynamicRealmProvider> = {
 export function createRealmContext(realmConfig: Realm.Configuration): RealmContext<RealmProviderFromConfiguration>;
 /**
  * Creates Realm React hooks and Provider component for a given Realm instance.
+ *
+ * **Note:** the hooks returned from `createRealmContext` using an existing Realm can be used outside of the scope of the provider.
  * @example
  * ```
  * const realm = new Realm({ schema: [...] });

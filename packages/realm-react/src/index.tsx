@@ -43,8 +43,7 @@ const defaultContext = createRealmContext();
  *   )
  * }
  * ```
- * @param props - The {@link Realm.Configuration} for this Realm, passed as props.
- * By default, this is the main configuration for the Realm.
+ * @param props - The {@link Realm.Configuration} or {@link Realm} for this Provider, passed as props.
  */
 export const RealmProvider = defaultContext.RealmProvider;
 
@@ -111,7 +110,7 @@ export const useObject = defaultContext.useObject;
  * @ignore This will end up documenting all of Realm, which is documented elsewhere
  */
 export { Realm };
-export { createRealmContext, RealmContext } from "./RealmContext";
+export { createRealmContext } from "./RealmContext";
 export * from "./AppProvider";
 export { useUser, UserProvider } from "./UserProvider";
 export * from "./useAuth";
