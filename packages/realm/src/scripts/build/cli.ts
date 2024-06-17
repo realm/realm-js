@@ -154,7 +154,6 @@ program
   .addOption(configurationOption)
   .option("--ndk-version <version>", "The NDK version used when building", android.DEFAULT_NDK_VERSION)
   .option("--skip-collecting-headers", "Skip collecting headers from the build directory and copy them to the SDK")
-  // .option("--skip-generating-version-file", "Skip generating a Version.java file")
   .action(
     actionWrapper(({ architecture: rawArchitectures, configuration, ndkVersion, clean }) => {
       assert(fs.existsSync(REALM_CORE_PATH), `Expected Realm Core at '${REALM_CORE_PATH}'`);
@@ -165,7 +164,7 @@ program
       const ndkPath = path.resolve(ANDROID_HOME, "ndk", ndkVersion);
       assert(fs.existsSync(ndkPath), `Missing Android NDK v${ndkVersion} (at ${ndkPath}) - run: ${installNdkCommand}`);
 
-      const architectures = android.validateArchitectures(rawArchitectures);
+      const architectures = android.pickArchitectures(rawArchitectures);
 
       architectures.map((architecture) => {
         return group(`Build ${architecture} / ${configuration}`, () => {

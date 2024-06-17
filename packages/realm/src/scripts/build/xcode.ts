@@ -19,6 +19,7 @@
 import assert from "node:assert";
 import { execSync, spawnSync } from "node:child_process";
 import path from "node:path";
+
 import { PACKAGE_PATH } from "./common";
 
 const { env } = process;
@@ -83,7 +84,6 @@ export const xcode = {
         "-scheme",
         scheme,
         ...targets.flatMap((target) => ["-target", target]),
-        // "-project"
         "-configuration",
         configuration,
         "-sdk",

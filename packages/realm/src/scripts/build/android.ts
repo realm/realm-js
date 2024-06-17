@@ -47,7 +47,7 @@ export const SUPPORTED_ARCHITECTURES = [
   "x86_64",
 ] as const satisfies readonly AndroidArchitecture[];
 
-export function validateArchitectures(
+export function pickArchitectures(
   values: readonly (AndroidArchitecture | "all" | "infer")[],
 ): readonly AndroidArchitecture[] {
   if (values.includes("all")) {
@@ -153,27 +153,3 @@ export function buildArchive({ cmakePath, ndkPath, architecture, configuration, 
   console.log("Deleting unwanted docs directory", installedDocsPath);
   fs.rmSync(installedDocsPath, { recursive: true, force: true });
 }
-
-// TODO: Determine if this could happen all natively by passing a declaration through Cmake instead
-// export function generateVersionFile() {
-//   const targetFile = path.resolve(
-//     PACKAGE_PATH,
-//     "react-native",
-//     "android",
-//     "src",
-//     "main",
-//     "java",
-//     "io",
-//     "realm",
-//     "react",
-//     "Version.java",
-//   );
-//   const versionFileContents = `package io.realm.react;
-
-// public class Version {
-//     public static final String VERSION = "${PACKAGE_VERSION}";
-// }
-// `;
-
-//   fs.writeFileSync(targetFile, versionFileContents);
-// }
