@@ -46,6 +46,9 @@
       ]
     }
   },
+  "dependencies": {
+    "lodash": "^4.17.21"
+  },
   "devDependencies": {
     "@babel/core": "^7.24.6",
     "@babel/preset-env": "^7.24.6",
@@ -55,8 +58,8 @@
     "@realm/app-importer": "*",
     "@testing-library/react-native": "^12.5.1",
     "@types/jest": "^29.5.12",
+    "@types/lodash-es": "^4.17.6",
     "@types/react": "^18.2.6",
-    "@types/lodash.isequal": "^4.5.8",
     "babel-jest": "^29.7.0",
     "babel-plugin-module-resolver": "^5.0.0",
     "fb-watchman": "^2.0.1",
@@ -103,8 +106,5 @@
   "bugs": {
     "url": "https://github.com/realm/realm-js/issues"
   },
-  "license": "Apache-2.0",
-  "dependencies": {
-    "lodash.isequal": "^4.5.0"
-  }
+  "license": "Apache-2.0"
 }

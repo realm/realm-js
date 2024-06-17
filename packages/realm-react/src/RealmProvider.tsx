@@ -18,7 +18,7 @@
 
 import React, { useContext, useEffect, useRef, useState } from "react";
 import Realm from "realm";
-import { isEqual } from "lodash.isequal";
+import { isEqual } from "lodash";
 
 import { UserContext } from "./UserProvider";
 
