@@ -4,21 +4,15 @@
 * None
 
 ### Enhancements
-* Building for iOS and Android has been optimized for compatibility with future React Native versions, by deferring compilation of JSI dependent code to the dependent app's build.
+* Building for iOS and Android has been optimized for compatibility with future React Native versions, by deferring compilation of JSI dependent code to the dependent app's build. ([#6650](https://github.com/realm/realm-js/pull/6650))
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
 * None
 
 ### Compatibility
 * React Native >= v0.71.4
 * Realm Studio v15.0.0.
 * File format: generates Realms with format v24 (reads and upgrades file format v10).
-
-### Internal
-<!-- * Either mention core version or upgrade -->
-<!-- * Using Realm Core vX.Y.Z -->
-<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
 
 ## 12.10.0 (2024-06-14)
 
