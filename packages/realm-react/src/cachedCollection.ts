@@ -199,6 +199,7 @@ export function createCachedCollection<T extends Realm.Object<any>>({
     if (!isDerived) {
       if (setImmediateId) {
         clearImmediate(setImmediateId);
+        setImmediateId = undefined;
       }
       collection.removeListener(listenerCallback);
       objectCache.clear();
