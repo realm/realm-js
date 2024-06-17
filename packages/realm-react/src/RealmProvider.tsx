@@ -200,9 +200,9 @@ export function createRealmProviderFromConfig(
  * @returns a RealmProvider component that provides context to all context hooks
  */
 export function createDynamicRealmProvider(RealmContext: React.Context<Realm | null>): DynamicRealmProvider {
-  return ({ realm, children, ...restProps }) => {
+  return ({ realm, children, ...configurationProps }) => {
     if (realm) {
-      if (!isEqual(restProps, {})) {
+      if (!isEqual(configurationProps, {})) {
         throw new Error("Cannot use configuration props when using an existing Realm instance.");
       }
 
@@ -210,7 +210,7 @@ export function createDynamicRealmProvider(RealmContext: React.Context<Realm | n
       return <RealmProviderFromRealm>{children}</RealmProviderFromRealm>;
     } else {
       const RealmProviderFromConfig = createRealmProviderFromConfig({}, RealmContext);
-      return <RealmProviderFromConfig {...restProps}>{children}</RealmProviderFromConfig>;
+      return <RealmProviderFromConfig {...configurationProps}>{children}</RealmProviderFromConfig>;
     }
   };
 }
