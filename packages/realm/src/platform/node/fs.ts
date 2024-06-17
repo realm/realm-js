@@ -78,7 +78,7 @@ inject({
         dirent.name.endsWith(".realm.fresh.lock") ||
         dirent.name.endsWith(".realm.log")
       ) {
-        unlinkSync(direntPath);
+        rmSync(direntPath, { force: true });
       }
     }
   },
