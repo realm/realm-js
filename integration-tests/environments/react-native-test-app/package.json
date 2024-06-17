@@ -13,7 +13,9 @@
     "test:ios": "wireit",
     "test:ci:android": "wireit",
     "test:ci:ios": "wireit",
-    "pod-install:simulator": "wireit",
+    "pod-install": "wireit",
+    "realm:build-android:debug": "wireit",
+    "realm:build-android:release": "wireit",
     "metro": "react-native start --reset-cache",
     "runner": "node harness/runner.js"
   },
@@ -21,7 +23,6 @@
     "test:android": {
       "command": "mocha-remote --reporter @realm/mocha-reporter -- concurrently --kill-others-on-fail npm:metro npm:runner",
       "dependencies": [
-        "../../../packages/realm:build:android",
         "../../../packages/realm:build:ts",
         "../../../packages/mocha-reporter:bundle"
       ],
@@ -44,7 +45,7 @@
     "test:ios": {
       "command": "mocha-remote --reporter @realm/mocha-reporter -- concurrently --kill-others-on-fail npm:metro npm:runner",
       "dependencies": [
-        "pod-install:simulator",
+        "pod-install",
         "../../../packages/realm:build:ts",
         "../../../packages/mocha-reporter:bundle"
       ],
@@ -55,7 +56,10 @@
     "test:ci:android": {
       "command": "mocha-remote -- concurrently --kill-others-on-fail npm:metro npm:runner",
       "env": {
-        "PLATFORM": "android"
+        "PLATFORM": "android",
+        "SKIP_RUNNER": {
+          "external": true
+        }
       }
     },
     "test:ci:ios": {
@@ -64,25 +68,27 @@
         "pod-install:ci"
       ],
       "env": {
-        "PLATFORM": "ios"
+        "PLATFORM": "ios",
+        "SKIP_RUNNER": {
+          "external": true
+        }
       }
     },
-    "pod-install:simulator": {
+    "pod-install": {
       "command": "pod-install",
       "dependencies": [
-        {
-          "script": "../../../packages/realm:build:ios:debug:simulator",
-          "cascade": false
-        }
+        "../../../packages/realm:prebuild-apple:simulator",
+        "../../../packages/realm:bindgen:jsi"
       ],
       "clean": "if-file-deleted",
       "files": [
         "ios/Podfile",
-        "../../../packages/realm/react-native/ios/realm-js-ios.xcframework"
+        "../../../packages/realm/RealmJS.podspec"
       ],
       "output": [
         "ios/Pods",
-        "ios/Podfile.lock"
+        "ios/Podfile.lock",
+        "ios/RealmTests.xcworkspace"
       ],
       "env": {
         "USE_CCACHE": {
@@ -94,7 +100,7 @@
         },
         "RCT_NEW_ARCH_ENABLED": {
           "external": true,
-          "default": "1"
+          "default": "0"
         },
         "USE_BRIDGELESS": {
           "external": true,
@@ -104,6 +110,16 @@
     },
     "pod-install:ci": {
       "command": "pod-install",
+      "clean": "if-file-deleted",
+      "files": [
+        "ios/Podfile",
+        "../../../packages/realm/RealmJS.podspec"
+      ],
+      "output": [
+        "ios/Pods",
+        "ios/Podfile.lock",
+        "ios/RealmTests.xcworkspace"
+      ],
       "env": {
         "USE_CCACHE": {
           "external": true
@@ -114,13 +130,25 @@
         },
         "RCT_NEW_ARCH_ENABLED": {
           "external": true,
-          "default": "1"
+          "default": "0"
         },
         "USE_BRIDGELESS": {
           "external": true,
           "default": "0"
         }
       }
+    },
+    "realm:build-android:debug": {
+      "command": "cd android && ./gradlew realm:assembleDebug",
+      "dependencies": [
+        "../../../packages/realm/:bindgen:jsi"
+      ]
+    },
+    "realm:build-android:release": {
+      "command": "cd android && ./gradlew realm:assembleRelease",
+      "dependencies": [
+        "../../../packages/realm/:bindgen:jsi"
+      ]
     }
   },
   "dependencies": {

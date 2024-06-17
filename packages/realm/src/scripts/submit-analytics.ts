@@ -42,7 +42,6 @@
 //   the other information on.
 
 import fs from "node:fs";
-import { fileURLToPath } from "node:url";
 import path from "node:path";
 import process from "node:process";
 import https from "node:https";
@@ -56,12 +55,7 @@ import machineId from "node-machine-id";
 import createDebug from "debug";
 export const debug = createDebug("realm:submit-analytics");
 
-export { collectPlatformData };
-
-// emulate old __dirname: https://flaviocopes.com/fix-dirname-not-defined-es-module-scope/
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const realmPackagePath = path.resolve(__dirname, "..");
+const realmPackagePath = path.resolve(__dirname, "../..");
 const realmCorePackagePath = path.resolve(realmPackagePath, "bindgen", "vendor", "realm-core");
 
 /**
@@ -74,14 +68,14 @@ const ANALYTICS_BASE_URL = "https://data.mongodb-api.com/app/realmsdkmetrics-zmh
  * @param payload Information that will be submitted through the webhook.
  * @returns Complete analytics submission URL
  */
-const getAnalyticsRequestUrl = (payload) =>
-  ANALYTICS_BASE_URL + "?data=" + Buffer.from(JSON.stringify(payload.webHook), "utf8").toString("base64");
+const getAnalyticsRequestUrl = (payload: unknown) =>
+  ANALYTICS_BASE_URL + "?data=" + Buffer.from(JSON.stringify(payload), "utf8").toString("base64");
 
 /**
  * Generate a hash value of data using salt.
  * @returns base64 encoded SHA256 of data
  */
-function sha256(data) {
+function sha256(data: string) {
   const salt = "Realm is great";
   return createHmac("sha256", Buffer.from(salt)).update(data).digest().toString("base64");
 }
@@ -104,7 +98,7 @@ function getProjectRoot() {
  * Finds and read package.json
  * @returns package.json as a JavaScript object
  */
-function readPackageJson(packagePath) {
+function readPackageJson(packagePath: string) {
   const packageJsonPath = path.resolve(packagePath, "package.json");
   return JSON.parse(fs.readFileSync(packageJsonPath, "utf-8"));
 }
@@ -112,7 +106,7 @@ function readPackageJson(packagePath) {
 /**
  * Finds and write package.json
  */
-function writePackageJson(packagePath, content) {
+function writePackageJson(packagePath: string, content: string) {
   const packageJsonPath = path.resolve(packagePath, "package.json");
   fs.writeFileSync(packageJsonPath, JSON.stringify(content, null, 2), "utf-8");
 }
@@ -121,18 +115,18 @@ function writePackageJson(packagePath, content) {
  * Heuristics to decide if analytics should be disabled.
  * @returns true if analytics is disabled
  */
-function isAnalyticsDisabled() {
-  let isDisabled = false;
-
-  // NODE_ENV is commonly used by JavaScript framework
-  if ("NODE_ENV" in process.env) {
-    isDisabled |= process.env["NODE_ENV"] === "production" || process.env["NODE_ENV"] === "test";
+function isAnalyticsDisabled(): boolean {
+  if ("REALM_DISABLE_ANALYTICS" in process.env || "CI" in process.env) {
+    return true;
+  } else if (
+    // NODE_ENV is commonly used by JavaScript framework
+    process.env["NODE_ENV"] === "production" ||
+    process.env["NODE_ENV"] === "test"
+  ) {
+    return true;
+  } else {
+    return false;
   }
-
-  // If the user has specifically opted-out or if we're running in a CI environment
-  isDisabled |= "REALM_DISABLE_ANALYTICS" in process.env || "CI" in process.env;
-
-  return isDisabled;
 }
 
 function getRealmVersion() {
@@ -150,13 +144,16 @@ function getRealmCoreVersion() {
     .readFileSync(dependenciesListPath, "utf8")
     .split("\n")
     .map((s) => s.split(":"));
-  return dependenciesList.find((e) => e[0] === "VERSION")[1];
+  const versionLine = dependenciesList.find((e) => e[0] === "VERSION");
+  if (versionLine) {
+    return versionLine[1];
+  }
 }
 
 /**
  * Save the anonymized bundle ID for later usage at runtime.
  */
-function saveBundleId(anonymizedBundleId) {
+function saveBundleId(anonymizedBundleId: string) {
   const packageJson = readPackageJson(realmPackagePath);
   // Initialize an object if it's missing
   if (typeof packageJson.config !== "object") {
@@ -175,7 +172,7 @@ function getInstallationMethod() {
   if (userAgent) {
     return userAgent.split(" ")[0].split("/");
   } else {
-    return "unknown";
+    return ["unknown", "?.?.?"];
   }
 }
 
@@ -183,7 +180,7 @@ function getInstallationMethod() {
  * Collect analytics data from the runtime system
  * @returns Analytics payload
  */
-async function collectPlatformData(packagePath = getProjectRoot()) {
+export async function collectPlatformData(packagePath = getProjectRoot()) {
   // node-machine-id returns the ID SHA-256 hashed, if we cannot get the ID we send hostname instead
   let identifier;
   try {
@@ -309,13 +306,11 @@ async function collectPlatformData(packagePath = getProjectRoot()) {
  * Collect and send analytics data to MongoDB over HTTPS
  * If `REALM_DISABLE_ANALYTICS` is set, no data is submitted to MongoDB
  */
-async function submitAnalytics() {
+export async function submitAnalytics() {
   const data = await collectPlatformData();
   const payload = {
-    webHook: {
-      event: "install",
-      properties: data,
-    },
+    event: "install",
+    properties: data,
   };
   debug(`payload: ${JSON.stringify(payload)}`);
 
@@ -348,8 +343,4 @@ async function submitAnalytics() {
         reject(err);
       });
   });
-}
-
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  submitAnalytics().catch(console.error);
 }

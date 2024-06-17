@@ -4,7 +4,7 @@
 * None
 
 ### Enhancements
-* None
+* Building for iOS and Android has been optimized for compatibility with future React Native versions, by deferring compilation of JSI dependent code to the dependent app's build.
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
