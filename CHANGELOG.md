@@ -7,7 +7,6 @@
 * Report the originating error that caused a client reset to occur. ([realm/realm-core#6154](https://github.com/realm/realm-core/issues/6154))
 * Reduce the size of the local transaction log produced by creating objects, improving the performance of insertion-heavy transactions. ([realm/realm-core#7734](https://github.com/realm/realm-core/pull/7734))
 
-
 ### Fixed
 * After compacting, a file upgrade would be triggered. This could cause loss of data for synced Realms. ([realm/realm-core#7747](https://github.com/realm/realm-core/issues/7747), since 12.7.0-rc.0)
 * The function `immediatelyRunFileActions` was not added to the bindgen's opt-list. This could lead to the error `TypeError: app.internal.immediatelyRunFileActions is not a function`. ([#6708](https://github.com/realm/realm-js/issues/6708), since v12.8.0)
