@@ -202,7 +202,7 @@ export function createRealmProviderFromConfig(
 export function createDynamicRealmProvider(RealmContext: React.Context<Realm | null>): DynamicRealmProvider {
   return ({ realm, children, ...configurationProps }) => {
     if (realm) {
-      if (Object.keys(configurationProps).length === 0) {
+      if (Object.keys(configurationProps).length > 0) {
         throw new Error("Cannot use configuration props when using an existing Realm instance.");
       }
 
