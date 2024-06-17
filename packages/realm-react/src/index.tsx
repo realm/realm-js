@@ -43,6 +43,20 @@ const defaultContext = createRealmContext();
  *   )
  * }
  * ```
+ * @example
+ *  const syncConfig = {
+ *     flexible: true,
+ *     user: currentUser
+ *   };
+ *  const realm = new Realm(schema:[Task, User], path:"data.realm", sync: syncConfig)
+ *  ...
+ *  const AppRoot = () => {
+ *   return (
+ *     <RealmProvider >
+ *       <App/>
+ *     </RealmProvider>
+ *   )
+ * }
  * @param props - The {@link Realm.Configuration} or {@link Realm} for this Provider, passed as props.
  */
 export const RealmProvider = defaultContext.RealmProvider;
