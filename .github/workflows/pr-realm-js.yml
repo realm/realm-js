@@ -8,6 +8,9 @@ on:
       - "**.md"
       - "**.png"
       - "packages/realm-web/**"
+      - "packages/realm-web-integration-tests/**"
+      - "packages/realm-react/**"
+      - "packages/realm-tools/**"
   pull_request:
     # Note that the workflow will still run if paths outside of `paths-ignore` have
     # been modified in the PR, irrespective of an individual commit only modifying
@@ -16,6 +19,9 @@ on:
       - "**.md"
       - "**.png"
       - "packages/realm-web/**"
+      - "packages/realm-web-integration-tests/**"
+      - "packages/realm-react/**"
+      - "packages/realm-tools/**"
   workflow_dispatch:
 
 concurrency:
