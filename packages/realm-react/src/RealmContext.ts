@@ -19,7 +19,14 @@
 import { createUseObject } from "./useObject";
 import { createUseQuery } from "./useQuery";
 import { createUseRealm } from "./useRealm";
-import { DynamicRealmProvider } from "./RealmProvider";
+import {
+  DynamicRealmProvider,
+  RealmProviderFromConfiguration,
+  RealmProviderFromRealm,
+  createRealmProvider,
+} from "./RealmProvider";
+import { createContext } from "react";
+import Realm from "realm";
 
 export type RealmContext<RealmProvider = DynamicRealmProvider> = {
   /**
@@ -107,3 +114,82 @@ export type RealmContext<RealmProvider = DynamicRealmProvider> = {
    */
   useObject: ReturnType<typeof createUseObject>;
 };
+
+/**
+ * Creates Realm React hooks and Provider component for a given Realm configuration
+ * @example
+ * ```
+ *class Task extends Realm.Object {
+ *  ...
+ *
+ *  static schema: ObjectSchema = {
+ *    name: 'Task',
+ *    primaryKey: '_id',
+ *    properties: {
+ *      ...
+ *    },
+ *  };
+ *}
+ *
+ *const {useRealm, useQuery, useObject, RealmProvider} = createRealmContext({schema: [Task]});
+ * ```
+ * @param realmConfig - {@link Realm.Configuration} used to open the Realm
+ * @returns An object containing a `RealmProvider` component, and `useRealm`, `useQuery` and `useObject` hooks
+ */
+export function createRealmContext(realmConfig: Realm.Configuration): RealmContext<RealmProviderFromConfiguration>;
+/**
+ * Creates Realm React hooks and Provider component for a given Realm instance.
+ * @example
+ * ```
+ * const realm = new Realm({ schema: [...] });
+ * const {useRealm, useQuery, useObject, RealmProvider} = createRealmContext(realm);
+ * ```
+ * @param realm - {@link Realm} instance
+ * @returns An object containing a `RealmProvider` component, and `useRealm`, `useQuery` and `useObject` hooks
+ */
+export function createRealmContext(realm: Realm): RealmContext<RealmProviderFromRealm>;
+/**
+ * Creates Realm React hooks and Provider component.
+ * @example
+ * ```
+ * class Task extends Realm.Object {
+ *  ...
+ *  static schema: ObjectSchema = {
+ *    name: 'Task',
+ *    primaryKey: '_id',
+ *    properties: {
+ *      ...
+ *    },
+ *  };
+ * }
+ * const {useRealm, useQuery, useObject, RealmProvider} = createRealmContext();
+ * ...
+ * <RealmProvider schema={[Task]}></RealmProvider>
+ * ```
+ * @example
+ * ```
+ * const realm = await Realm.open({ path: "example.realm", schema: [Task] });
+ * const {RealmProvider} = createRealmContext();
+ * ...
+ * <RealmProvider realm={realm}></RealmProvider>
+ * ```
+ * @returns An object containing a `RealmProvider` component, and `useRealm`, `useQuery` and `useObject` hooks
+ */
+export function createRealmContext(): RealmContext<DynamicRealmProvider>;
+export function createRealmContext(
+  realmOrConfig?: Realm | Realm.Configuration,
+): RealmContext<RealmProviderFromConfiguration | RealmProviderFromRealm | DynamicRealmProvider> {
+  const RealmContext = createContext<Realm | null>(realmOrConfig instanceof Realm ? realmOrConfig : null);
+  const RealmProvider = createRealmProvider(realmOrConfig, RealmContext);
+
+  const useRealm = createUseRealm(RealmContext);
+  const useQuery = createUseQuery(useRealm);
+  const useObject = createUseObject(useRealm);
+
+  return {
+    RealmProvider,
+    useRealm,
+    useQuery,
+    useObject,
+  };
+}

@@ -21,6 +21,7 @@ import Realm from "realm";
 import { isEqual } from "lodash";
 
 import { UserContext } from "./UserProvider";
+import { RestrictivePick } from "./helpers";
 
 type PartialRealmConfiguration = Omit<Partial<Realm.Configuration>, "sync"> & {
   sync?: Partial<Realm.SyncConfiguration>;
@@ -50,36 +51,32 @@ type RealmProviderRealmProps = {
   /**
    * The Realm instance to be used by the provider.
    */
-  realm?: Realm;
+  realm: Realm;
   children: React.ReactNode;
 };
 
 type RealmProviderProps = RealmProviderConfigurationProps & RealmProviderRealmProps;
 
 /**
- * Explicitly sets the unpicked properties of a type to never instead of dropping them like in Pick.
- * Useful for ensuring different prop types are mutually exclusive as React expects the union type
- * of different prop types to include all the fields.
- */
-type RestrictivePick<T, K extends keyof T> = Pick<T, K> & { [RestrictedKey in keyof Omit<T, K>]?: never };
-/**
-  Represents the provider returned from using an existing realm at context creation i.e. `createRealmContext(new Realm))`.
-  Omits "realm" as it gets set from `createRealmContext` and should not be changed.
+ * Represents the provider returned from using an existing Realm at context creation i.e. `createRealmContext(new Realm(...))`.
+ * Omits "realm" as it gets set at creation and cannot be changed.
+ 
+ * **Note:** this provider is not required and the hooks returned from `createRealmContext` with an existing Realm can be used outside of its scope.
  */
 export type RealmProviderFromRealm = React.FC<Omit<RealmProviderRealmProps, "realm">>;
 
 /**
- * Represents the provider returned from using a Realm configuration at context creation i.e. `createRealmContext({schema: []}))`.
+ * Represents the provider returned from using a Realm configuration using `createRealmContext({schema: [...]}))`.
  */
 export type RealmProviderFromConfiguration = React.FC<RealmProviderConfigurationProps>;
 
 /**
- * Represents properties of a {@link DynamicRealmProvider} where a Realm instance is set and Configuration props are disallowed.
+ * Represents properties of a {@link DynamicRealmProvider} where Realm instance props are set and Configuration props are disallowed.
  */
 export type DynamicRealmProviderWithRealmProps = RestrictivePick<RealmProviderProps, keyof RealmProviderRealmProps>;
 
-/*
- * Represents properties of a {@link DynamicRealmProvider} where Realm configuration props are used and Realm instance props are disallowed.
+/**
+ * Represents properties of a {@link DynamicRealmProvider} where Realm configuration props are set and Realm instance props are disallowed.
  */
 export type DynamicsRealmProviderWithConfigurationProps = RestrictivePick<
   RealmProviderProps,
@@ -216,7 +213,7 @@ export function createDynamicRealmProvider(RealmContext: React.Context<Realm | n
 
 /**
  * Generates the appropriate `RealmProvider` based on whether there is a config, realm, or neither given.
- * @param realmOrConfig - An existing Realm, a configuration, or undefined (including default provider).
+ * @param realmOrConfig - A Realm instance, a configuration, or undefined (including default provider).
  * @param RealmContext - The context that will contain the Realm instance
  * @returns a RealmProvider component that provides context to all context hooks
  */
