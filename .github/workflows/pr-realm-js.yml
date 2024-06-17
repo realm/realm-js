@@ -384,7 +384,17 @@ jobs:
             README.md
             packages/realm/prebuilds/android/${{ matrix.architecture }}/
           if-no-files-found: error
-        
+
+  merge-prebuilds:
+    runs-on: ubuntu-latest
+    needs:  [prebuild-node, prebuild-apple, prebuild-android]
+    steps:
+      - name: Merge prebuild artifacts into a single artifact
+        uses: actions/upload-artifact/merge@v4
+        with:
+          name: prebuilds
+          pattern: '*-prebuild'
+
   integration-tests:
     name: Test ${{ matrix.variant.environment }} on ${{ matrix.variant.os }} (${{matrix.variant.target}})
     needs: [generate-jsi, build-ts, prebuild-node, prebuild-apple, prebuild-android]
