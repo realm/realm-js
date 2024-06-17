@@ -37,6 +37,6 @@ export default [
       },
     ],
     plugins: [nodeResolve(), typescript({ noEmitOnError: true })],
-    external: ["realm", "react", "@realm/common", "lodash"],
+    external: ["realm", "react", "@realm/common", "lodash.isequal"],
   },
 ];
