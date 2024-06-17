@@ -4,7 +4,39 @@
 * None
 
 ### Enhancements
-* None
+* Added the ability to use an existing Realm instance in `RealmProvider` and `createRealmContext`. ([#6714](https://github.com/realm/realm-js/pull/6714))
+```jsx
+// Using RealmProvider
+import { RealmProvider } from "@realm/react";
+
+const realm = new Realm(...);
+
+function MyApp() {
+  return (
+    <RealmProvider realm={realm}> 
+      ...
+    </RealmProvider>
+  );
+}
+
+// Using createRealmContext
+import { createRealmContext } from "@realm/react";
+
+const realm = new Realm(...);
+const { RealmProvider, useRealm } = createRealmContext(realm);
+
+function MyApp() {
+  return (
+    <>
+      <RealmProvider> 
+        ...
+      </RealmProvider>
+      <AnotherComponent>
+        {/* Note: The hooks returned from `createRealmContext` using an existing Realm can be used outside of the scope of the provider! */}
+      </AnotherComponent>
+    </>
+  );
+```
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
