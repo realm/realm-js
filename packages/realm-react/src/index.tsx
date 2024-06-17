@@ -48,7 +48,7 @@ const defaultContext = createRealmContext();
  *     flexible: true,
  *     user: currentUser
  *   };
- *  const realm = new Realm(schema:[Task, User], path:"data.realm", sync: syncConfig)
+ *  const realm = new Realm(schema:[Task, User], path:"data.realm", sync: syncConfig);
  *  ...
  *  const AppRoot = () => {
  *   return (
