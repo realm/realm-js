@@ -22,7 +22,7 @@ import React, { createContext } from "react";
 import {
   DynamicRealmProvider,
   RealmProviderFromConfiguration,
-  RealmProviderFromRealmFC,
+  RealmProviderFromRealm,
   createRealmProvider,
 } from "./RealmProvider";
 import { createUseObject } from "./useObject";
@@ -65,7 +65,7 @@ export function createRealmContext(realmConfig: Realm.Configuration): RealmConte
  * @param realm - {@link Realm} instance
  * @returns An object containing a `RealmProvider` component, and `useRealm`, `useQuery` and `useObject` hooks
  */
-export function createRealmContext(realm: Realm): RealmContext<RealmProviderFromRealmFC>;
+export function createRealmContext(realm: Realm): RealmContext<RealmProviderFromRealm>;
 /**
  * Creates Realm React hooks and Provider component.
  * @example
@@ -96,7 +96,7 @@ export function createRealmContext(realm: Realm): RealmContext<RealmProviderFrom
 export function createRealmContext(): RealmContext<DynamicRealmProvider>;
 export function createRealmContext(
   realmOrConfig?: Realm | Realm.Configuration,
-): RealmContext<RealmProviderFromConfiguration | RealmProviderFromRealmFC | DynamicRealmProvider> {
+): RealmContext<RealmProviderFromConfiguration | RealmProviderFromRealm | DynamicRealmProvider> {
   const RealmContext = createContext<Realm | null>(realmOrConfig instanceof Realm ? realmOrConfig : null);
   const RealmProvider = createRealmProvider(realmOrConfig, RealmContext);
 

@@ -22,7 +22,7 @@ import { Button, Text, View } from "react-native";
 import { act, fireEvent, render, renderHook, waitFor } from "@testing-library/react-native";
 
 import { createRealmContext } from "..";
-import { RealmProviderFromRealmFC, areConfigurationsIdentical, mergeRealmConfiguration } from "../RealmProvider";
+import { RealmProviderFromRealm, areConfigurationsIdentical, mergeRealmConfiguration } from "../RealmProvider";
 import { randomRealmPath } from "./helpers";
 import { RealmContext } from "../RealmContext";
 
@@ -63,7 +63,7 @@ describe("RealmProvider", () => {
       const { result } = renderHook(() => useRealm(), { wrapper });
       await waitFor(() => expect(result.current).not.toBe(null));
       const realm = result.current;
-      expect(realm).not.toBe(null);
+      expect(realm).toBeInstanceOf(Realm);
       expect(realm.schema[0].name).toBe("dog");
     });
 
@@ -87,14 +87,14 @@ describe("RealmProvider", () => {
       expect(realm.isClosed).toBe(false);
     });
 
-    it("will override the the configuration provided in createRealmContext", async () => {
+    it("will override the configuration provided in createRealmContext", async () => {
       const wrapper = ({ children }: { children: React.ReactNode }) => (
         <RealmProvider schema={[catSchema]}>{children}</RealmProvider>
       );
       const { result } = renderHook(() => useRealm(), { wrapper });
       await waitFor(() => expect(result.current).not.toBe(null));
       const realm = result.current;
-      expect(realm).not.toBe(null);
+      expect(realm).toBeInstanceOf(Realm);
       expect(realm.schema[0].name).toBe("cat");
     });
 
@@ -275,7 +275,7 @@ describe("RealmProvider", () => {
 
   describe("with an existing Realm instance", () => {
     let existingRealmInstance: Realm;
-    let realmContextWithRealmInstance: RealmContext<RealmProviderFromRealmFC>;
+    let realmContextWithRealmInstance: RealmContext<RealmProviderFromRealm>;
 
     beforeEach(() => {
       existingRealmInstance = new Realm({
@@ -291,6 +291,17 @@ describe("RealmProvider", () => {
       const { RealmProvider, useRealm } = realmContextWithRealmInstance;
 
       const wrapper = ({ children }: { children: React.ReactNode }) => <RealmProvider>{children}</RealmProvider>;
+      const { result } = renderHook(() => useRealm(), { wrapper });
+      await waitFor(() => expect(result.current).not.toBe(null));
+      const realm = result.current;
+
+      expect(realm).toStrictEqual(existingRealmInstance);
+    });
+
+    it("does not need a RealmProvider to be wrapped", async () => {
+      const { useRealm } = realmContextWithRealmInstance;
+
+      const wrapper = ({ children }: { children: React.ReactNode }) => <>{children}</>;
       const { result } = renderHook(() => useRealm(), { wrapper });
       await waitFor(() => expect(result.current).not.toBe(null));
       const realm = result.current;
