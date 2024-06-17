@@ -61,7 +61,7 @@ function getDestinations(platform: XcodeSDKName) {
   return destinations;
 }
 
-export function validatePlatforms(values: readonly (XcodeSDKName | "all" | "none")[]): readonly XcodeSDKName[] {
+export function pickPlatforms(values: readonly (XcodeSDKName | "all" | "none")[]): readonly XcodeSDKName[] {
   if (values.includes("none")) {
     assert(values.length === 1, "Expected 'none' to be the only platform");
     return [];

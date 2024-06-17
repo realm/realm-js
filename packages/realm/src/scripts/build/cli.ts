@@ -98,7 +98,7 @@ program
       ({ clean, platform: rawPlatforms, configuration, skipCollectingHeaders, skipCreatingXcframework }) => {
         assert(fs.existsSync(REALM_CORE_PATH), `Expected Realm Core at '${REALM_CORE_PATH}'`);
         const { CMAKE_PATH: cmakePath = execSync("which cmake", { encoding: "utf8" }).trim() } = env;
-        const platforms = apple.validatePlatforms(rawPlatforms);
+        const platforms = apple.pickPlatforms(rawPlatforms);
 
         if (platforms.length > 0) {
           group("Generate Xcode project", () => {
