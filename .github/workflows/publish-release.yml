@@ -82,7 +82,7 @@ jobs:
         workflow_conclusion: "" # Ignores workflow conclusion
         github_token: ${{ secrets.REALM_CI_PAT }}
         name_is_regexp: true
-        name: +*-prebuild
+        name: *-prebuild
 
     - name: Read version
       id: get-version
