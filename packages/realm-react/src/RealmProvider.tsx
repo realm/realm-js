@@ -61,7 +61,7 @@ type RealmProviderProps = RealmProviderConfigurationProps & RealmProviderRealmPr
  * Represents the provider returned from using an existing Realm at context creation i.e. `createRealmContext(new Realm(...))`.
  * Omits "realm" as it gets set at creation and cannot be changed.
  
- * **Note:** this provider is not required and the hooks returned from `createRealmContext` with an existing Realm can be used outside of its scope.
+ * **Note:** the hooks returned from `createRealmContext` using an existing Realm can be used outside of the scope of the provider.
  */
 export type RealmProviderFromRealm = React.FC<Omit<RealmProviderRealmProps, "realm">>;
 
