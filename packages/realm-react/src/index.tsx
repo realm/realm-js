@@ -52,7 +52,7 @@ const defaultContext = createRealmContext();
  *  ...
  *  const AppRoot = () => {
  *   return (
- *     <RealmProvider >
+ *     <RealmProvider>
  *       <App/>
  *     </RealmProvider>
  *   )
