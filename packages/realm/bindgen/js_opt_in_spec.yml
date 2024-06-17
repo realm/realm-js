@@ -217,6 +217,11 @@ records:
      - longitude
      - altitude
 
+  SaltedFileIdent:
+    fields:
+      - ident
+      - salt
+
 classes:
   ######################
   # FROM JS EXTRA SPEC #
@@ -583,6 +588,7 @@ classes:
       - force_close
       - handle_reconnect
       - user
+      - get_file_ident
       # JS-specific
       - DOLLAR_resetSharedPtr
 
