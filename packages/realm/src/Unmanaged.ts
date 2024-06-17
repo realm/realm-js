@@ -61,9 +61,9 @@ type RealmSetRemappedModelPart<T> = {
 /**
  * Exchanges properties defined as a {@link Counter} with a `number`.
  */
-type RealmCounterRemappedModelPart<T, RequiredProperties extends keyof RequirableProperties<T>> = OptionalExcept<{
+type RealmCounterRemappedModelPart<T, RequiredProperties extends keyof RequirableProperties<T>> = OptionalExceptRequired<T, {
   [K in ExtractPropertyNamesOfTypeExcludingNullability<T, Counter>]: Counter | number | Exclude<T[K], Counter>;
-}, RequiredProperties & ExtractPropertyNamesOfTypeExcludingNullability<T, Counter>>;
+}, RequiredProperties>;
 
 /** Omits all properties of a model which are not defined by the schema */
 export type OmittedRealmTypes<T> = Omit<
@@ -78,16 +78,17 @@ export type OmittedRealmTypes<T> = Omit<
 
 export type RequirableProperties<T> = Omit<T, keyof AnyRealmObject>;
 
-/** Make all fields optional except those specified in K */
-type OptionalExcept<T, K extends keyof T> = Partial<T> & Pick<T, K>;
+/** Make all fields optional except those specified in RequiredProperties */
+type OptionalExceptRequired<T, TPart, RequiredProperties extends keyof RequirableProperties<T>> = Partial<TPart> & Pick<TPart, RequiredProperties & keyof TPart>;
 
 /**
  * Omits all properties of a model which are not defined by the schema,
  * making all properties optional except those specified in RequiredProperties.
  */
-type OmittedRealmTypesWithRequired<T, RequiredProperties extends keyof RequirableProperties<T>> = OptionalExcept<
+type OmittedRealmTypesWithRequired<T, RequiredProperties extends keyof RequirableProperties<T>> = OptionalExceptRequired<
+  T,
   OmittedRealmTypes<T>,
-  RequiredProperties & keyof OmittedRealmTypes<T>
+  RequiredProperties
 >;
 
 /** Remaps realm types to "simpler" types (arrays and objects) */
