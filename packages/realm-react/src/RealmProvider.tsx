@@ -202,8 +202,13 @@ export function createRealmProviderFromConfig(
 export function createDynamicRealmProvider(RealmContext: React.Context<Realm | null>): DynamicRealmProvider {
   return ({ realm, ...restProps }) => {
     if (realm) {
+      const { children, ...disallowedProps } = restProps;
+      if (!isEqual(disallowedProps, {})) {
+        throw new Error("Cannot use configuration props when using an existing Realm instance.");
+      }
+
       const RealmProviderFromRealm = createRealmProviderFromRealm(realm, RealmContext);
-      return <RealmProviderFromRealm {...restProps} />;
+      return <RealmProviderFromRealm>{children}</RealmProviderFromRealm>;
     } else {
       const RealmProviderFromConfig = createRealmProviderFromConfig({}, RealmContext);
       return <RealmProviderFromConfig {...restProps} />;

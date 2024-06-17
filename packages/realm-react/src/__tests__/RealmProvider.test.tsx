@@ -21,7 +21,7 @@ import Realm, { User } from "realm";
 import { Button, Text, View } from "react-native";
 import { act, fireEvent, render, renderHook, waitFor } from "@testing-library/react-native";
 
-import { createRealmContext } from "..";
+import { RealmProvider, createRealmContext } from "..";
 import { RealmProviderFromRealm, areConfigurationsIdentical, mergeRealmConfiguration } from "../RealmProvider";
 import { randomRealmPath } from "./helpers";
 import { RealmContext } from "../RealmContext";
@@ -375,6 +375,17 @@ describe("RealmProvider", () => {
       unmount();
       // Closing a realm should be managed by the provider by default if an existing instance was given
       expect(result.current.isClosed).toBe(true);
+    });
+
+    it("throws an error when both realm and configuration props are provided", () => {
+      expect(() =>
+        render(
+          // @ts-expect-error The realm and configuration props should be mutually exclusive
+          <RealmProvider realm={new Realm()} schema={[]}>
+            ...
+          </RealmProvider>,
+        ),
+      ).toThrow("Cannot use configuration props when using an existing Realm instance.");
     });
   });
 
