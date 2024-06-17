@@ -67,8 +67,7 @@ export type RealmContext<RealmProvider = DynamicRealmProvider> = {
 
   /**
    * Returns a {@link Realm.Collection} of {@link Realm.Object}s from a given type.
-   * The hook will update on any changes to any object in the collection
-   * and return an empty array if the collection is empty.
+   * The hook will update on any changes to any object in the collection.
    *
    * The result of this can be consumed directly by the `data` argument of any React Native
    * VirtualizedList or FlatList.  If the component used for the list's `renderItem` prop is {@link React.Memo}ized,
