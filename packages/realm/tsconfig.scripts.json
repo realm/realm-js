@@ -1,0 +1,15 @@
+{
+    "extends": "@tsconfig/node-lts",
+    "compilerOptions": {
+      "outDir": "dist/scripts",
+      "rootDir": "src/scripts",
+      "sourceMap": true,
+      "declaration": false,
+      "types": [
+        "node"
+      ],
+    },
+    "include": [
+      "src/scripts/**/*"
+    ]
+  }

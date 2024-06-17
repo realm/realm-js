@@ -24,7 +24,7 @@
 #include <android/asset_manager.h>
 #include <android/log.h>
 
-#include "../platform.hpp"
+#include "platform.hpp"
 
 #define REALM_FILE_FILTER ".realm"
 #define REALM_FILE_FILTER_LEN 6

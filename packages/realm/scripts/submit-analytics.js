@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2021 Realm Inc.
+// Copyright 2024 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,15 +17,11 @@
 ////////////////////////////////////////////////////////////////////////////
 
 /* eslint-env node */
+/* eslint-disable -- console */
 
-module.exports = {
-  // config for a library is scoped under "dependency" key
-  dependency: {
-    platforms: {
-      android: {
-        sourceDir: "binding/android",
-      },
-      ios: {},
-    },
-  },
-};
+try {
+  const { submitAnalytics } = require("../dist/scripts/submit-analytics");
+  submitAnalytics().catch(console.error);
+} catch (err) {
+  console.error(err instanceof Error ? err.message : err);
+}

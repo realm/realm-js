@@ -18,8 +18,6 @@
 
 #import "RealmReact.h"
 
-#import <realm-js-ios/jsi_init.h>
-
 #import <React/RCTBridge+Private.h>
 #import <React/RCTInvalidating.h>
 #import <ReactCommon/CallInvoker.h>
@@ -30,6 +28,8 @@
 #import <net/if.h>
 #import <netdb.h>
 #import <objc/runtime.h>
+
+#import "jsi/jsi_init.h"
 
 // the part of the RCTCxxBridge private class we care about
 @interface RCTBridge (Realm_RCTCxxBridge)
@@ -144,10 +144,10 @@ RCT_EXPORT_MODULE(Realm)
             // because the work is performed before the microtask queue is flushed - see sequence
             // diagram at https://bit.ly/3kexhHm. It might be possible to further optimize this,
             // e.g. only flush the queue a maximum of once per frame, but this seems reasonable.
-            if (!waitingForUiFlush) {
-              waitingForUiFlush = true;
+            if (!self->waitingForUiFlush) {
+              self->waitingForUiFlush = true;
               [bridge jsCallInvoker]->invokeAsync(
-                  [&]() { waitingForUiFlush = false; });
+                  [&]() { self->waitingForUiFlush = false; });
             }
           });
         }

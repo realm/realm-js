@@ -18,7 +18,7 @@
 
 import React, { useContext, useEffect, useRef, useState } from "react";
 import Realm from "realm";
-import { isEqual } from "lodash";
+import { isEqual } from "lodash.isequal";
 
 import { UserContext } from "./UserProvider";
 import { RestrictivePick } from "./helpers";

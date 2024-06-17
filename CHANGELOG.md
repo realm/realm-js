@@ -4,14 +4,58 @@
 * None
 
 ### Enhancements
+* Building for iOS and Android has been optimized for compatibility with future React Native versions, by deferring compilation of JSI dependent code to the dependent app's build. ([#6650](https://github.com/realm/realm-js/pull/6650))
+
+### Fixed
+* None
+
+### Compatibility
+* React Native >= v0.71.4
+* Realm Studio v15.0.0.
+* File format: generates Realms with format v24 (reads and upgrades file format v10).
+
+## 12.10.0 (2024-06-14)
+
+### Enhancements
 * Report the originating error that caused a client reset to occur. ([realm/realm-core#6154](https://github.com/realm/realm-core/issues/6154))
 * Reduce the size of the local transaction log produced by creating objects, improving the performance of insertion-heavy transactions. ([realm/realm-core#7734](https://github.com/realm/realm-core/pull/7734))
+* A `counter` presentation data type has been introduced. The `int` data type can now be used as a logical counter for performing numeric updates that need to be synchronized as sequentially consistent events rather than individual reassignments of the number. ([#6694](https://github.com/realm/realm-js/pull/6694))
+  * See the [API docs](https://www.mongodb.com/docs/realm-sdks/js/latest/classes/Realm.Types.Counter.html) for more information about the usage, or get a high-level introduction about counters in the [documentation](https://www.mongodb.com/docs/atlas/app-services/sync/details/conflict-resolution/#counters).
+```typescript
+class MyObject extends Realm.Object {
+  _id!: BSON.ObjectId;
+  counter!: Realm.Types.Counter;
+
+  static schema: ObjectSchema = {
+    name: "MyObject",
+    primaryKey: "_id",
+    properties: {
+      _id: { type: "objectId", default: () => new BSON.ObjectId() },
+      counter: "counter",
+      // or: counter: { type: "int", presentation: "counter" },
+    },
+  };
+}
+
+const realm = await Realm.open({ schema: [MyObject] });
+const object = realm.write(() => {
+  return realm.create(MyObject, { counter: 0 });
+});
+
+realm.write(() => {
+  object.counter.increment();
+  object.counter.value; // 1
+  object.counter.decrement(2);
+  object.counter.value; // -1
+});
+```
 
 ### Fixed
 * After compacting, a file upgrade would be triggered. This could cause loss of data for synced Realms. ([realm/realm-core#7747](https://github.com/realm/realm-core/issues/7747), since 12.7.0-rc.0)
 * The function `immediatelyRunFileActions` was not added to the bindgen's opt-list. This could lead to the error `TypeError: app.internal.immediatelyRunFileActions is not a function`. ([#6708](https://github.com/realm/realm-js/issues/6708), since v12.8.0)
 * Encrypted files on Windows had a maximum size of 2 GB even on x64 due to internal usage of `off_t`, which is a 32-bit type on 64-bit Windows. ([realm/realm-core#7698](https://github.com/realm/realm-core/pull/7698), since the introduction of encryption support on Windows - likely in v1.11.0)
 * Tokenizing strings for full-text search could lead to undefined behavior. ([realm/realm-core#7698](https://github.com/realm/realm-core/pull/7698), since v11.3.0-rc.0)
+* A non-streaming progress notifier would not immediately call its callback after registration. Instead you would have to wait for a download message to be received to get your first update - if you were already caught up when you registered the notifier you could end up waiting a long time for the server to deliver a download that would call/expire your notifier. ([#7627](https://github.com/realm/realm-core/issues/7627), since v12.8.0)
 
 ### Compatibility
 * React Native >= v0.71.4
@@ -20,6 +64,7 @@
 
 ### Internal
 * Upgraded Realm Core from v14.7.0 to v14.10.0. ([#6701](https://github.com/realm/realm-js/issues/6701))
+* Added [privacy manifest](https://developer.apple.com/documentation/bundleresources/privacy_manifest_files) for Apple App Store. First released in v12.8.1-alpha.0 only. ([#6638](https://github.com/realm/realm-js/issues/6638))
 
 ## 12.10.0-rc.0 (2024-05-31)
 

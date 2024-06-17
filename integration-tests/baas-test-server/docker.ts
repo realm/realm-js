@@ -90,7 +90,7 @@ export async function fetchBaasTag(branch: string) {
 }
 
 export function getLatestLocalId() {
-  const imagesOutput = execSync("docker images --format json", { encoding: "utf8" });
+  const imagesOutput = execSync("docker images --format '{{json .}}'", { encoding: "utf8" });
   for (const line of imagesOutput.split("\n")) {
     if (line) {
       const { Repository: repository, Tag: tag, ID: id } = JSON.parse(line.trim());

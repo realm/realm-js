@@ -23,11 +23,10 @@
 #include <android/asset_manager_jni.h>
 #include <jsi/jsi.h>
 
-#include "../jsi/jsi_init.h"
-#include "../jsi/jsi_externs.hpp"
-#include "../platform.hpp"
+#include "jsi/jsi_init.h"
+#include "jsi/jsi_externs.hpp"
+#include "platform.hpp"
 #include "jni_utils.hpp"
-#include "hack.hpp"
 
 #include "io_realm_react_RealmReactModule.h"
 
@@ -48,9 +47,6 @@ bool waiting_for_ui_flush = false;
 
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void*)
 {
-    // Workaround for some known bugs in system calls on specific devices.
-    hack_init();
-
     JNIEnv* env;
     if (vm->GetEnv((void**)&env, JNI_VERSION_1_6) != JNI_OK) {
         return JNI_ERR;

@@ -102,17 +102,23 @@ Consult our [`COMPATIBILITY.md`](https://github.com/realm/realm-js/blob/HEAD/COM
 ### React Native
 
 #### iOS
-Typically this error occurs when the pod dependencies haven't been updating.  Try running the following command
+
+Typically this error occurs when the pod dependencies haven't been updating.
+Try running the following command:
+
 ```
 npx pod-install
 ```
+
 If that still doesn't help it's possible there are some caching errors with your build or your pod dependencies.  The following commands can be used to safely clear these caches:
+
 ```
 rm -rf ios/Pods
 rm ios/Podfile.lock
 rm -rf ~/Library/Developer/Xcode/DerivedData
 ```
-Afterwards, reinstall pods and try again.  If this still doesn't work, ensure that `node_modules/realm/react-native/ios/realm-js-ios.xcframework` exists and contains a binary for your architecture.  If this is missing, try reinstalling the `realm`` npm package.
+
+Afterwards, reinstall pods and try again.  If this still doesn't work, ensure that `prebuilds/apple/realm-core.xcframework` directory exists and contains a binary for your platform and architecture. If this is missing, try reinstalling the `realm` npm package and as well as CocoaPods.
 
 #### Android
 This can occur when installing `realm` and not performing a clean build.  The following commands can be used to clear your cache:
