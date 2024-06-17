@@ -28,3 +28,4 @@ declare function setImmediate(cb: (...args: unknown[]) => void);
 
 declare type Timer = unknown;
 declare function clearImmediate(timer: Timer): void;
+
