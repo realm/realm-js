@@ -54,7 +54,7 @@ jobs:
       run: npm ci
 
     - name: Download JSI binding source-code from PR
-      uses: dawidd6/action-download-artifact@09f2f74827fd3a8607589e5ad7f9398816f540fe
+      uses: dawidd6/action-download-artifact@bf251b5aa9c2f7eeb574a96ee720e24f801b7c11
       with:
         workflow: pr-realm-js.yml
         commit: ${{ inputs.commit || github.sha }}
@@ -64,7 +64,7 @@ jobs:
         name: jsi-binding-source
 
     - name: Download TypeScript build from PR
-      uses: dawidd6/action-download-artifact@09f2f74827fd3a8607589e5ad7f9398816f540fe
+      uses: dawidd6/action-download-artifact@bf251b5aa9c2f7eeb574a96ee720e24f801b7c11
       with:
         workflow: pr-realm-js.yml
         commit: ${{ inputs.commit || github.sha }}
@@ -74,15 +74,14 @@ jobs:
         name: ts-build
 
     - name: Download prebuilds from PR
-      uses: dawidd6/action-download-artifact@09f2f74827fd3a8607589e5ad7f9398816f540fe
+      uses: dawidd6/action-download-artifact@bf251b5aa9c2f7eeb574a96ee720e24f801b7c11
       with:
         workflow: pr-realm-js.yml
         commit: ${{ inputs.commit || github.sha }}
         path: ${{ github.workspace }}
         workflow_conclusion: "" # Ignores workflow conclusion
         github_token: ${{ secrets.REALM_CI_PAT }}
-        name_is_regexp: true
-        name: "*-prebuild"
+        name: prebuilds
 
     - name: Read version
       id: get-version

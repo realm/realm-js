@@ -1,7 +1,4 @@
-## vNext (TBD)
-
-### Deprecations
-* None
+## 12.11.0 (2024-06-17)
 
 ### Enhancements
 * Building for iOS and Android has been optimized for compatibility with future React Native versions, by deferring compilation of JSI dependent code to the dependent app's build. ([#6650](https://github.com/realm/realm-js/pull/6650))
