@@ -17,12 +17,14 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #import <Foundation/Foundation.h>
+#import <React/RCTBridgeModule.h>
+#import <React/RCTInvalidating.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-@interface RealmReact : NSObject
+@interface RealmReactModule : NSObject <RCTBridgeModule, RCTInvalidating>
 @end
 
 #ifdef __cplusplus
