@@ -27,11 +27,10 @@ import {
   JSONCacheMap,
   ObjectChangeCallback,
   ObjectListeners,
-  OmittedRealmTypes,
+  OmittedRealmObjectProperties,
   OrderedCollection,
   Realm,
   RealmObjectConstructor,
-  RequirableProperties,
   Results,
   TypeAssertionError,
   TypeHelpers,
@@ -153,7 +152,7 @@ const PROXY_HANDLER: ProxyHandler<RealmObject<any>> = {
  * properties not specified will be optional, and will default to a sensible
  * null value if no default is specified elsewhere.
  */
-export class RealmObject<T = DefaultObject, RequiredProperties extends keyof RequirableProperties<T> = never> {
+export class RealmObject<T = DefaultObject, RequiredProperties extends keyof OmittedRealmObjectProperties<T> = never> {
   /**
    * This property is stored on the per class prototype when transforming the schema.
    * @internal

@@ -16,7 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import type { AnyRealmObject, Collection, Counter, Dictionary, List, Realm, RealmSet } from "./internal";
+// TODO(lj): Uncomment
+// import type { AnyRealmObject, Collection, Counter, Dictionary, List, Realm, RealmSet } from "./internal";
+
+// -------
+// TESTING
+import type { AnyRealmObject, Collection, Counter, Dictionary, List, ObjectSchema, RealmSet } from "./internal";
+import { Realm } from "./internal";
+// -------
 
 /* eslint-disable-next-line @typescript-eslint/no-explicit-any -- We define these once to avoid using "any" through the code */
 export type AnyCollection = Collection<any, any, any, any, any>;
@@ -34,6 +41,22 @@ type ExtractPropertyNamesOfType<T, PropType> = {
 type ExtractPropertyNamesOfTypeExcludingNullability<T, PropType> = {
   [K in keyof T]: Exclude<T[K], null | undefined> extends PropType ? K : never;
 }[keyof T];
+
+/**
+ * Exchanges properties defined as {@link Realm.Object} with a JS object.
+ */
+type RealmObjectRemappedModelPart<T, RequiredProperties extends keyof OmittedRealmObjectProperties<T>> = OptionalExcept<
+  T,
+  {
+    [K in ExtractPropertyNamesOfTypeExcludingNullability<T, AnyRealmObject>]?: Exclude<
+      T[K],
+      null | undefined
+    > extends Realm.Object<infer NestedT, infer NestedRequiredProperties>
+      ? NestedT | Unmanaged<NestedT, NestedRequiredProperties> | null
+      : never;
+  },
+  RequiredProperties
+>;
 
 /**
  * Exchanges properties defined as {@link List} with an optional {@link Array}.
@@ -61,15 +84,21 @@ type RealmSetRemappedModelPart<T> = {
 /**
  * Exchanges properties defined as a {@link Counter} with a `number`.
  */
-type RealmCounterRemappedModelPart<T, RequiredProperties extends keyof RequirableProperties<T>> = OptionalExceptRequired<T, {
-  [K in ExtractPropertyNamesOfTypeExcludingNullability<T, Counter>]: Counter | number | Exclude<T[K], Counter>;
-}, RequiredProperties>;
+type RealmCounterRemappedModelPart<
+  T,
+  RequiredProperties extends keyof OmittedRealmObjectProperties<T>,
+> = OptionalExcept<
+  T,
+  {
+    [K in ExtractPropertyNamesOfTypeExcludingNullability<T, Counter>]: Counter | number | Exclude<T[K], Counter>;
+  },
+  RequiredProperties
+>;
 
-type RealmObjectRemappedModelPart<T, RequiredProperties extends keyof RequirableProperties<T>> = OptionalExceptRequired<T, {
-  [K in ExtractPropertyNamesOfTypeExcludingNullability<T, Realm.Object<any>>]: Unmanaged<T[K]> | undefined | null;
-}, RequiredProperties>;
-
-/** Omits all properties of a model which are not defined by the schema */
+/**
+ * Omits all properties of a model which are not defined by the schema, as well
+ * as properties containing a Realm collection, object, and counter.
+ */
 export type OmittedRealmTypes<T> = Omit<
   T,
   | keyof AnyRealmObject
@@ -77,40 +106,242 @@ export type OmittedRealmTypes<T> = Omit<
   | ExtractPropertyNamesOfType<T, Function> // TODO: Figure out the use-case for this
   | ExtractPropertyNamesOfType<T, AnyCollection>
   | ExtractPropertyNamesOfType<T, AnyDictionary>
+  | ExtractPropertyNamesOfTypeExcludingNullability<T, AnyRealmObject>
   | ExtractPropertyNamesOfTypeExcludingNullability<T, Counter>
-  | ExtractPropertyNamesOfTypeExcludingNullability<T, Realm.Object<any>>
 >;
 
-export type RequirableProperties<T> = Omit<T, keyof AnyRealmObject>;
+/**
+ * Omits all properties of a model which are not defined by the schema.
+ */
+export type OmittedRealmObjectProperties<T> = Omit<T, keyof AnyRealmObject>;
 
-/** Make all fields optional except those specified in RequiredProperties */
-type OptionalExceptRequired<T, TPart, RequiredProperties extends keyof RequirableProperties<T>> = Partial<TPart> & Pick<TPart, RequiredProperties & keyof TPart>;
+/**
+ * Makes all fields optional except those specified in RequiredProperties.
+ */
+type OptionalExcept<T, TPart, RequiredProperties extends keyof OmittedRealmObjectProperties<T>> = Partial<TPart> &
+  Pick<TPart, RequiredProperties & keyof TPart>;
 
 /**
  * Omits all properties of a model which are not defined by the schema,
  * making all properties optional except those specified in RequiredProperties.
  */
-type OmittedRealmTypesWithRequired<T, RequiredProperties extends keyof RequirableProperties<T>> = OptionalExceptRequired<
+type OmittedRealmTypesWithRequired<
   T,
-  OmittedRealmTypes<T>,
-  RequiredProperties
->;
+  RequiredProperties extends keyof OmittedRealmObjectProperties<T>,
+> = OptionalExcept<T, OmittedRealmTypes<T>, RequiredProperties>;
 
-/** Remaps realm types to "simpler" types (arrays and objects) */
-type RemappedRealmTypes<T, RequiredProperties extends keyof RequirableProperties<T>> =
-  & RealmListRemappedModelPart<T>
-  & RealmDictionaryRemappedModelPart<T>
-  & RealmSetRemappedModelPart<T>
-  & RealmCounterRemappedModelPart<T, RequiredProperties>
-  & RealmObjectRemappedModelPart<T, RequiredProperties>;
+/**
+ * Remaps Realm types to "unmanaged" types.
+ */
+type RemappedRealmTypes<
+  T,
+  RequiredProperties extends keyof OmittedRealmObjectProperties<T>,
+> = RealmListRemappedModelPart<T> &
+  RealmDictionaryRemappedModelPart<T> &
+  RealmSetRemappedModelPart<T> &
+  RealmCounterRemappedModelPart<T, RequiredProperties> &
+  RealmObjectRemappedModelPart<T, RequiredProperties>;
 
+// TODO(lj): Update docs for this type.
 /**
  * Joins `T` stripped of all keys which value extends {@link Collection} and all inherited from {@link Realm.Object},
  * with only the keys which value extends {@link List}, remapped as {@link Array}. All properties are optional
  * except those specified in `RequiredProperties`.
  */
-export type Unmanaged<T, RequiredProperties extends keyof RequirableProperties<T> = never> = OmittedRealmTypesWithRequired<
-  T,
-  RequiredProperties
-> &
+export type Unmanaged<T, RequiredProperties extends keyof OmittedRealmObjectProperties<T> = never> = {
+  [K in keyof T]?: K extends keyof OmittedRealmObjectProperties<T> ? unknown : never;
+} & OmittedRealmTypesWithRequired<T, RequiredProperties> &
   RemappedRealmTypes<T, RequiredProperties>;
+
+// -------------------
+// MANUAL TYPE TESTING
+// (uncomment to test)
+// -------------------
+
+/*
+
+class GrandChild extends Realm.Object<GrandChild, "leaf"> {
+  leaf!: string;
+
+  static schema: ObjectSchema = {
+    name: "GrandChild",
+    properties: {
+      leaf: "string",
+    },
+  };
+}
+
+class Child extends Realm.Object<Child> {
+  grandChild!: GrandChild;
+  childListOfStrings!: Realm.List<string>;
+
+  static schema: ObjectSchema = {
+    name: "Child",
+    properties: {
+      grandChild: "GrandChild",
+      childListOfStrings: "string[]",
+    },
+  };
+}
+
+class Parent1 extends Realm.Object<Parent1, "parentInt"> {
+  child!: Child;
+  parentListOfChildren!: Realm.List<Child>;
+  parentInt!: number;
+
+  static schema: ObjectSchema = {
+    name: "Parent",
+    properties: {
+      child: "Child",
+      parentListOfChildren: "Child[]",
+      parentInt: "int",
+    },
+  };
+}
+
+class Parent2 extends Realm.Object<Parent2, "parentListOfChildren"> {
+  child?: Child | null;
+  parentListOfChildren!: Realm.List<Child | null>;
+  parentInt?: number;
+
+  static schema: ObjectSchema = {
+    name: "Parent",
+    properties: {
+      child: "Child?",
+      parentListOfChildren: "Child?[]",
+      parentInt: "int?",
+    },
+  };
+}
+
+const realm = new Realm({ schema: [Parent1, Parent2, Child, GrandChild] });
+realm.write(() => {
+  // VALID
+  // ('realm.create' does not take RequiredProperties into account for the top-level object.)
+  const grandChild = realm.create(GrandChild, { leaf: "Hello" });
+  const child = realm.create(Child, { grandChild });
+  realm.create(Parent1, {});
+  realm.create(Parent1, { child });
+  realm.create(Parent1, { child: { grandChild } });
+  realm.create(Parent1, { child: { grandChild: { leaf: "Hello" } } });
+  realm.create(Parent1, { child: { childListOfStrings: ["Hello"] } });
+  realm.create(Parent1, { parentListOfChildren: [child, { grandChild }, { grandChild: { leaf: "Hello" } }] });
+
+  realm.create(Parent2, {});
+  realm.create(Parent2, { child });
+  realm.create(Parent2, { child: null });
+  realm.create(Parent2, { child: undefined });
+  realm.create(Parent2, { child: { grandChild } });
+  realm.create(Parent2, { child: { grandChild: { leaf: "Hello" } } });
+  realm.create(Parent2, { child: { childListOfStrings: ["Hello"] } });
+  realm.create(Parent2, { parentListOfChildren: [child, { grandChild }, { grandChild: { leaf: "Hello" } }, null] });
+
+  // VALID
+  // (The constructor takes RequiredProperties into account for all levels of nesting)
+  new Parent1(realm, { parentInt: 0 });
+  new Parent1(realm, { parentInt: 0, child });
+  new Parent1(realm, { parentInt: 0, child: { grandChild: { leaf: "Hello" } } });
+
+  // (Parent2 only uses RequiredProperties for a list which we never
+  // treat as required. Should we though if the user wants to?)
+  new Parent2(realm, {});
+  new Parent2(realm, { child: null });
+  new Parent2(realm, { child: { grandChild: { leaf: "Hello" } } });
+
+  // INVALID
+  realm.create(Parent1, 2);
+  realm.create(Parent1, [2]);
+  realm.create(Parent1, () => {});
+  realm.create(Parent1, { child: 2 });
+  realm.create(Parent1, { child: [2] });
+  realm.create(Parent1, { child: () => {} });
+  realm.create(Parent1, { child: grandChild });
+  realm.create(Parent1, { child: { grandChild: 2 } });
+  realm.create(Parent1, { child: { grandChild: [2] } });
+  realm.create(Parent1, { child: { grandChild: () => {} } });
+  realm.create(Parent1, { child: { grandChild: child } });
+  realm.create(Parent1, { child: { grandChild: { leaf: 2 } } });
+  realm.create(Parent1, { child: { invalidKey: { leaf: "Hello" } } });
+  realm.create(Parent1, { child: { grandChild: { invalidKey: "Hello" } } });
+  realm.create(Parent1, { child: { childListOfStrings: 2 } });
+  realm.create(Parent1, { child: { childListOfStrings: [2] } });
+  realm.create(Parent1, { parentListOfChildren: 2 });
+  realm.create(Parent1, { parentListOfChildren: [2] });
+  realm.create(Parent1, { parentListOfChildren: [{ invalidKey: { leaf: "Hello" } }] });
+  realm.create(Parent1, { parentListOfChildren: [null] });
+
+  realm.create(Parent2, 2);
+  realm.create(Parent2, [2]);
+  realm.create(Parent2, () => {});
+  realm.create(Parent2, { child: 2 });
+  realm.create(Parent2, { child: [2] });
+  realm.create(Parent2, { child: () => {} });
+  realm.create(Parent2, { child: grandChild });
+  realm.create(Parent2, { child: { grandChild: 2 } });
+  realm.create(Parent2, { child: { grandChild: [2] } });
+  realm.create(Parent2, { child: { grandChild: () => {} } });
+  realm.create(Parent2, { child: { grandChild: child } });
+  realm.create(Parent2, { child: { grandChild: { leaf: 2 } } });
+  realm.create(Parent2, { child: { invalidKey: { leaf: "Hello" } } });
+  realm.create(Parent2, { child: { grandChild: { invalidKey: "Hello" } } });
+  realm.create(Parent2, { child: { childListOfStrings: 2 } });
+  realm.create(Parent2, { child: { childListOfStrings: [2] } });
+  realm.create(Parent2, { parentListOfChildren: 2 });
+  realm.create(Parent2, { parentListOfChildren: [2] });
+  realm.create(Parent2, { parentListOfChildren: [{ invalidKey: { leaf: "Hello" } }] });
+
+  // INVALID
+  // (Needs the RequiredProperties at all levels.)
+  new Parent1(realm, {});
+  new Parent1(realm, { parentInt: 0, child: { grandChild: {} } });
+
+  new Parent2(realm, { child: { grandChild: {} } });
+});
+
+type MyObj = {
+  counter1: Counter;
+  counter2: Counter;
+  counter3: Counter;
+  counter4: Counter;
+  nullableCounter1?: Counter | null;
+  nullableCounter2?: Counter | null;
+  nullableCounter3?: Counter | null;
+  counterOrUndefined1?: Counter;
+  counterOrUndefined2?: Counter;
+  counterOrUndefined3?: Counter;
+
+  stringProp1: string;
+  stringProp2: string;
+  nullableStringProp1: string | null;
+  nullableStringProp2: string | null;
+  stringOrUndefined1?: string;
+  stringOrUndefined2?: string;
+};
+
+declare const counter: Counter;
+declare const nonCounterObject: List;
+const counterTest: Unmanaged<MyObj, "counter1"> = {
+  // VALID
+  counter1: 5,
+  counter2: counter,
+  nullableCounter1: null,
+  nullableCounter2: 10,
+  nullableCounter3: counter,
+  counterOrUndefined1: undefined,
+  counterOrUndefined2: 10,
+  counterOrUndefined3: counter,
+
+  stringProp1: "test",
+  nullableStringProp1: null,
+  nullableStringProp2: "blah",
+  stringOrUndefined1: undefined,
+  stringOrUndefined2: "sad",
+
+  // INVALID
+  counter3: null,
+  counter4: nonCounterObject,
+  stringProp2: null,
+};
+counterTest;
+
+*/
