@@ -71,6 +71,12 @@ android {
             packagingOptions {
                 doNotStrip "**/librealm.so"
             }
+            // TODO: Remove the comments and test this
+            // externalNativeBuild {
+            //     cmake {
+            //         arguments "-DDEBUG=true"
+            //     }
+            // }
         }
         release {
             externalNativeBuild {
