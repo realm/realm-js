@@ -23,6 +23,7 @@
       "command": "mocha-remote --reporter @realm/mocha-reporter -- concurrently --kill-others-on-fail npm:metro npm:runner",
       "dependencies": [
         "../../../packages/realm:build:ts",
+        "../../../packages/realm:bindgen:jsi",
         "../../../packages/mocha-reporter:bundle"
       ],
       "env": {
@@ -37,7 +38,7 @@
         },
         "ORG_GRADLE_PROJECT_bridgelessEnabled": {
           "external": true,
-          "default": "false"
+          "default": "true"
         }
       }
     },
@@ -78,7 +79,7 @@
         },
         "RCT_NEW_ARCH_ENABLED": {
           "external": true,
-          "default": "0"
+          "default": "1"
         },
         "USE_BRIDGELESS": {
           "external": true,
