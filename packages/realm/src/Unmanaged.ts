@@ -102,12 +102,12 @@ type RealmCounterRemappedModelPart<
 export type OmittedRealmTypes<T> = Omit<
   T,
   | keyof AnyRealmObject
-  /* eslint-disable-next-line @typescript-eslint/ban-types */
-  | ExtractPropertyNamesOfType<T, Function> // TODO: Figure out the use-case for this
+  | ExtractPropertyNamesOfTypeExcludingNullability<T, AnyRealmObject>
   | ExtractPropertyNamesOfType<T, AnyCollection>
   | ExtractPropertyNamesOfType<T, AnyDictionary>
-  | ExtractPropertyNamesOfTypeExcludingNullability<T, AnyRealmObject>
   | ExtractPropertyNamesOfTypeExcludingNullability<T, Counter>
+  /* eslint-disable-next-line @typescript-eslint/ban-types */
+  | ExtractPropertyNamesOfType<T, Function> // TODO: Figure out the use-case for this
 >;
 
 /**
@@ -136,11 +136,11 @@ type OmittedRealmTypesWithRequired<
 type RemappedRealmTypes<
   T,
   RequiredProperties extends keyof OmittedRealmObjectProperties<T>,
-> = RealmListRemappedModelPart<T> &
+> = RealmObjectRemappedModelPart<T, RequiredProperties> &
+  RealmListRemappedModelPart<T> &
   RealmDictionaryRemappedModelPart<T> &
   RealmSetRemappedModelPart<T> &
-  RealmCounterRemappedModelPart<T, RequiredProperties> &
-  RealmObjectRemappedModelPart<T, RequiredProperties>;
+  RealmCounterRemappedModelPart<T, RequiredProperties>;
 
 // TODO(lj): Update docs for this type.
 /**
@@ -155,10 +155,7 @@ export type Unmanaged<T, RequiredProperties extends keyof OmittedRealmObjectProp
 
 // -------------------
 // MANUAL TYPE TESTING
-// (uncomment to test)
 // -------------------
-
-/*
 
 class GrandChild extends Realm.Object<GrandChild, "leaf"> {
   leaf!: string;
@@ -217,7 +214,7 @@ class Parent2 extends Realm.Object<Parent2, "parentListOfChildren"> {
 const realm = new Realm({ schema: [Parent1, Parent2, Child, GrandChild] });
 realm.write(() => {
   // VALID
-  // ('realm.create' does not take RequiredProperties into account for the top-level object.)
+  // ('realm.create' takes RequiredProperties into account for all levels of nesting except at the top level.)
   const grandChild = realm.create(GrandChild, { leaf: "Hello" });
   const child = realm.create(Child, { grandChild });
   realm.create(Parent1, {});
@@ -234,68 +231,73 @@ realm.write(() => {
   realm.create(Parent2, { child: { grandChild } });
   realm.create(Parent2, { child: { grandChild: { leaf: "Hello" } } });
   realm.create(Parent2, { child: { childListOfStrings: ["Hello"] } });
+  realm.create(Parent2, { parentListOfChildren: [child, { grandChild }, { grandChild: { leaf: "Hello" } }] });
   realm.create(Parent2, { parentListOfChildren: [child, { grandChild }, { grandChild: { leaf: "Hello" } }, null] });
 
   // VALID
-  // (The constructor takes RequiredProperties into account for all levels of nesting)
+  // (The constructor takes RequiredProperties into account for all levels of nesting.)
   new Parent1(realm, { parentInt: 0 });
   new Parent1(realm, { parentInt: 0, child });
   new Parent1(realm, { parentInt: 0, child: { grandChild: { leaf: "Hello" } } });
 
-  // (Parent2 only uses RequiredProperties for a list which we never
-  // treat as required. Should we though if the user wants to?)
+  // (Parent2 only uses RequiredProperties for a list which we never treat as required.
+  // Should we though if the user wants to?)
   new Parent2(realm, {});
   new Parent2(realm, { child: null });
   new Parent2(realm, { child: { grandChild: { leaf: "Hello" } } });
 
   // INVALID
-  realm.create(Parent1, 2);
-  realm.create(Parent1, [2]);
+  realm.create(Parent1, 0);
+  realm.create(Parent1, [0]);
   realm.create(Parent1, () => {});
-  realm.create(Parent1, { child: 2 });
-  realm.create(Parent1, { child: [2] });
+  realm.create(Parent1, { child: 0 });
+  realm.create(Parent1, { child: [0] });
   realm.create(Parent1, { child: () => {} });
   realm.create(Parent1, { child: grandChild });
-  realm.create(Parent1, { child: { grandChild: 2 } });
-  realm.create(Parent1, { child: { grandChild: [2] } });
+  realm.create(Parent1, { child: { grandChild: 0 } });
+  realm.create(Parent1, { child: { grandChild: [0] } });
   realm.create(Parent1, { child: { grandChild: () => {} } });
   realm.create(Parent1, { child: { grandChild: child } });
-  realm.create(Parent1, { child: { grandChild: { leaf: 2 } } });
+  realm.create(Parent1, { child: { grandChild: { leaf: 0 } } });
   realm.create(Parent1, { child: { invalidKey: { leaf: "Hello" } } });
   realm.create(Parent1, { child: { grandChild: { invalidKey: "Hello" } } });
-  realm.create(Parent1, { child: { childListOfStrings: 2 } });
-  realm.create(Parent1, { child: { childListOfStrings: [2] } });
-  realm.create(Parent1, { parentListOfChildren: 2 });
-  realm.create(Parent1, { parentListOfChildren: [2] });
+  realm.create(Parent1, { child: { childListOfStrings: 0 } });
+  realm.create(Parent1, { child: { childListOfStrings: [0] } });
+  realm.create(Parent1, { parentListOfChildren: 0 });
+  realm.create(Parent1, { parentListOfChildren: [0] });
   realm.create(Parent1, { parentListOfChildren: [{ invalidKey: { leaf: "Hello" } }] });
   realm.create(Parent1, { parentListOfChildren: [null] });
+  realm.create(Parent1, { parentListOfChildren: [{ grandChild: {} }] });
 
-  realm.create(Parent2, 2);
-  realm.create(Parent2, [2]);
+  realm.create(Parent2, 0);
+  realm.create(Parent2, [0]);
   realm.create(Parent2, () => {});
-  realm.create(Parent2, { child: 2 });
-  realm.create(Parent2, { child: [2] });
+  realm.create(Parent2, { child: 0 });
+  realm.create(Parent2, { child: [0] });
   realm.create(Parent2, { child: () => {} });
   realm.create(Parent2, { child: grandChild });
-  realm.create(Parent2, { child: { grandChild: 2 } });
-  realm.create(Parent2, { child: { grandChild: [2] } });
+  realm.create(Parent2, { child: { grandChild: 0 } });
+  realm.create(Parent2, { child: { grandChild: [0] } });
   realm.create(Parent2, { child: { grandChild: () => {} } });
   realm.create(Parent2, { child: { grandChild: child } });
-  realm.create(Parent2, { child: { grandChild: { leaf: 2 } } });
+  realm.create(Parent2, { child: { grandChild: { leaf: 0 } } });
   realm.create(Parent2, { child: { invalidKey: { leaf: "Hello" } } });
   realm.create(Parent2, { child: { grandChild: { invalidKey: "Hello" } } });
-  realm.create(Parent2, { child: { childListOfStrings: 2 } });
-  realm.create(Parent2, { child: { childListOfStrings: [2] } });
-  realm.create(Parent2, { parentListOfChildren: 2 });
-  realm.create(Parent2, { parentListOfChildren: [2] });
+  realm.create(Parent2, { child: { childListOfStrings: 0 } });
+  realm.create(Parent2, { child: { childListOfStrings: [0] } });
+  realm.create(Parent2, { parentListOfChildren: 0 });
+  realm.create(Parent2, { parentListOfChildren: [0] });
   realm.create(Parent2, { parentListOfChildren: [{ invalidKey: { leaf: "Hello" } }] });
+  realm.create(Parent2, { parentListOfChildren: [{ grandChild: {} }] });
 
   // INVALID
   // (Needs the RequiredProperties at all levels.)
   new Parent1(realm, {});
   new Parent1(realm, { parentInt: 0, child: { grandChild: {} } });
+  new Parent1(realm, { parentInt: 0, parentListOfChildren: [{ grandChild: {} }] });
 
   new Parent2(realm, { child: { grandChild: {} } });
+  new Parent2(realm, { parentListOfChildren: [{ grandChild: {} }] });
 });
 
 type MyObj = {
@@ -343,5 +345,3 @@ const counterTest: Unmanaged<MyObj, "counter1"> = {
   stringProp2: null,
 };
 counterTest;
-
-*/
