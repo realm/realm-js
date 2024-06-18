@@ -23,12 +23,10 @@
 #include <android/asset_manager_jni.h>
 #include <jsi/jsi.h>
 
-#include "jsi/jsi_init.h"
-#include "jsi/jsi_externs.hpp"
+#include "jsi_init.h"
+#include "flush_ui_queue_workaround.h"
 #include "platform.hpp"
 #include "jni_utils.hpp"
-
-#include "io_realm_react_RealmReactModule.h"
 
 namespace jsi = facebook::jsi;
 
@@ -37,11 +35,8 @@ using namespace realm::jni_util;
 jclass ssl_helper_class;
 
 namespace realm {
-// set the AssetManager used to access bundled files within the APK
-void set_asset_manager(AAssetManager* assetManager);
-// Keep track of whether we are already waiting for the React Native UI queue
-// to be flushed asynchronously
-bool waiting_for_ui_flush = false;
+    // set the AssetManager used to access bundled files within the APK
+    void set_asset_manager(AAssetManager* assetManager);
 } // namespace realm
 
 
@@ -74,51 +69,54 @@ JNIEXPORT void JNI_OnUnload(JavaVM* vm, void*)
     }
 }
 
-JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_setDefaultRealmFileDirectory(JNIEnv* env, jobject,
-                                                                                         jstring fileDir,
-                                                                                         jobject javaAssetManager)
-{
-    __android_log_print(ANDROID_LOG_VERBOSE, "JSRealm", "setDefaultRealmFileDirectory");
+extern "C"
+JNIEXPORT void JNICALL
+Java_io_realm_react_RealmReactModule_injectModuleIntoJSGlobal(JNIEnv *env, jobject thiz,
+                                                              jlong runtime_pointer) {
+
+    __android_log_print(ANDROID_LOG_VERBOSE, "Realm", "install");
+    auto runtime = reinterpret_cast<jsi::Runtime*>(runtime_pointer);
+    if (runtime) {
+        __android_log_print(ANDROID_LOG_VERBOSE, "Realm", "Building an exports object");
+        auto exports = jsi::Object(*runtime);
+        __android_log_print(ANDROID_LOG_VERBOSE, "Realm", "Initializing ...");
+        realm_jsi_init(*runtime, exports);
+        // Store this as a global for JavaScript to read
+        runtime->global().setProperty(*runtime, "__injectedRealmBinding", exports);
+    }
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_io_realm_react_RealmReactModule_setDefaultRealmFileDirectoryImpl(JNIEnv *env, jobject thiz,
+                                                                      jstring file_dir,
+                                                                      jobject asset_manager) {
+
+    __android_log_print(ANDROID_LOG_VERBOSE, "Realm", "setDefaultRealmFileDirectory");
 
     // Get the assetManager in case we want to copy files from the APK (assets)
-    AAssetManager* assetManager = AAssetManager_fromJava(env, javaAssetManager);
+    AAssetManager* assetManager = AAssetManager_fromJava(env, asset_manager);
     if (assetManager == NULL) {
-        __android_log_print(ANDROID_LOG_ERROR, "JSRealm", "Error loading the AssetManager");
+        __android_log_print(ANDROID_LOG_ERROR, "Realm", "Error loading the AssetManager");
     }
     realm::set_asset_manager(assetManager);
 
     // Setting the internal storage path for the application
-    const char* strFileDir = env->GetStringUTFChars(fileDir, NULL);
-    realm::JsPlatformHelpers::set_default_realm_file_directory(strFileDir);
-    env->ReleaseStringUTFChars(fileDir, strFileDir);
+    const char* file_dir_utf = env->GetStringUTFChars(file_dir, NULL);
+    realm::JsPlatformHelpers::set_default_realm_file_directory(file_dir_utf);
+    env->ReleaseStringUTFChars(file_dir, file_dir_utf);
 
-    __android_log_print(ANDROID_LOG_DEBUG, "JSRealm", "Absolute path: %s",
+    __android_log_print(ANDROID_LOG_DEBUG, "Realm", "Absolute path: %s",
                         realm::JsPlatformHelpers::default_realm_file_directory().c_str());
 }
 
-JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_install(JNIEnv*, jobject, jlong runtimePointer)
-{
-    __android_log_print(ANDROID_LOG_VERBOSE, "JSRealm", "install");
-    auto runtime = reinterpret_cast<jsi::Runtime*>(runtimePointer);
-    if (runtime) {
-        __android_log_print(ANDROID_LOG_VERBOSE, "JSRealm", "Building an exports object");
-        auto exports = jsi::Object(*runtime);
-        __android_log_print(ANDROID_LOG_VERBOSE, "JSRealm", "Initializing ...");
-        realm_jsi_init(*runtime, exports, [] {});
-    }
-}
+extern "C"
+JNIEXPORT void JNICALL
+Java_io_realm_react_RealmReactModule_injectCallInvoker(JNIEnv *env, jobject thiz,
+                                                       jobject call_invoker) {
+    // TODO: Skip when the microtask queue is enabled:
+    // See https://github.com/facebook/react-native/pull/43396/files#diff-b7fda5d350ac535115fa683faa7317b43aa11f3448f95266ef9ff051c3753a6fR270-R281
 
-JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_invalidateCaches(JNIEnv*, jobject)
-{
-    __android_log_print(ANDROID_LOG_VERBOSE, "JSRealm", "invalidateCaches");
-    realm_jsi_invalidate_caches();
-}
-
-// Setup the flush_ui_queue function we use to flush the React Native UI queue whenever we call from C++ to JS.
-// See RealmReact.mm's setBridge method for details, this is the equivalent for Android.
-JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_setupFlushUiQueue(JNIEnv* env, jobject,
-                                                                              jobject callInvokerHolderJavaObj)
-{
     // React Native uses the fbjni library for handling JNI, which has the concept of "hybrid objects",
     // which are Java objects containing a pointer to a C++ object. The CallInvokerHolder, which has the
     // invokeAsync method we want access to, is one such hybrid object.
@@ -126,14 +124,14 @@ JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_setupFlushUiQueue(JN
     // object `callInvokerHolderJavaObj` manually, based on reverse engineering the fbjni code.
 
     // 1. Get the Java object referred to by the mHybridData field of the Java holder object
-    auto callInvokerHolderClass = env->GetObjectClass(callInvokerHolderJavaObj);
+    auto callInvokerHolderClass = env->GetObjectClass(call_invoker);
     auto hybridDataField = env->GetFieldID(callInvokerHolderClass, "mHybridData", "Lcom/facebook/jni/HybridData;");
-    auto hybridDataObj = env->GetObjectField(callInvokerHolderJavaObj, hybridDataField);
+    auto hybridDataObj = env->GetObjectField(call_invoker, hybridDataField);
 
     // 2. Get the destructor Java object referred to by the mDestructor field from the myHybridData Java object
     auto hybridDataClass = env->FindClass("com/facebook/jni/HybridData");
     auto destructorField =
-        env->GetFieldID(hybridDataClass, "mDestructor", "Lcom/facebook/jni/HybridData$Destructor;");
+            env->GetFieldID(hybridDataClass, "mDestructor", "Lcom/facebook/jni/HybridData$Destructor;");
     auto destructorObj = env->GetObjectField(hybridDataObj, destructorField);
 
     // 3. Get the mNativePointer field from the mDestructor Java object
@@ -144,12 +142,18 @@ JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_setupFlushUiQueue(JN
     // 4. Cast the mNativePointer back to its C++ type
     auto nativePointer = reinterpret_cast<facebook::react::CallInvokerHolder*>(nativePointerValue);
 
-    realm::js::flush_ui_queue = [&, nativePointer]() {
-        if (!realm::waiting_for_ui_flush) {
-            realm::waiting_for_ui_flush = true;
-            nativePointer->getCallInvoker()->invokeAsync([]() {
-                realm::waiting_for_ui_flush = false;
-            });
-        }
-    };
+    // 5. Inject the JS call invoker for the workaround to use
+    realm::js::flush_ui_workaround::inject_js_call_invoker(nativePointer->getCallInvoker());
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_io_realm_react_RealmReactModule_invalidateCaches(JNIEnv *env, jobject thiz) {
+    // Disable the flush ui workaround
+    realm::js::flush_ui_workaround::reset_js_call_invoker();
+    __android_log_print(ANDROID_LOG_VERBOSE, "Realm", "Invalidating caches");
+#if DEBUG
+    realm_jsi_close_sync_sessions();
+#endif
+    realm_jsi_invalidate_caches();
 }

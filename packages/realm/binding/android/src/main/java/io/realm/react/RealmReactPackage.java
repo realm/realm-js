@@ -16,51 +16,27 @@
 
 package io.realm.react;
 
-import android.util.Log;
+import androidx.annotation.NonNull;
 
 import com.facebook.react.ReactPackage;
-import com.facebook.react.TurboReactPackage;
 import com.facebook.react.bridge.NativeModule;
 import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.module.annotations.ReactModule;
-import com.facebook.react.module.model.ReactModuleInfo;
-import com.facebook.react.module.model.ReactModuleInfoProvider;
-import com.facebook.react.turbomodule.core.interfaces.TurboModule;
+import com.facebook.react.uimanager.ViewManager;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Collections;
+import java.util.List;
 
-public class RealmReactPackage extends TurboReactPackage implements ReactPackage {
-    @Override
-    public NativeModule getModule(String name, final ReactApplicationContext reactContext) {
-        if (name.equals(RealmReactModule.NAME)) {
-            return new RealmReactModule(reactContext);
-        } else {
-            return null;
-        }
-    }
+public class RealmReactPackage implements ReactPackage {
+    
+  @NonNull
+  @Override
+  public List<NativeModule> createNativeModules(@NonNull ReactApplicationContext reactContext) {
+    return Collections.singletonList(new RealmReactModule(reactContext));
+  }
 
-    @Override
-    public ReactModuleInfoProvider getReactModuleInfoProvider() {
-        final Map<String, ReactModuleInfo> reactModuleInfoMap = new HashMap<>();
-        ReactModule reactModule = RealmReactModule.class.getAnnotation(ReactModule.class);
-
-        reactModuleInfoMap.put(
-                reactModule.name(),
-                new ReactModuleInfo(
-                        reactModule.name(),
-                        RealmReactModule.class.getName(),
-                        false,
-                        reactModule.needsEagerInit(),
-                        reactModule.hasConstants(),
-                        reactModule.isCxxModule(),
-                        TurboModule.class.isAssignableFrom(RealmReactModule.class)));
-
-        return new ReactModuleInfoProvider() {
-            @Override
-            public Map<String, ReactModuleInfo> getReactModuleInfos() {
-                return reactModuleInfoMap;
-            }
-        };
-    }
+  @NonNull
+  @Override
+  public List<ViewManager> createViewManagers(@NonNull ReactApplicationContext reactApplicationContext) {
+    return Collections.emptyList();
+  }
 }

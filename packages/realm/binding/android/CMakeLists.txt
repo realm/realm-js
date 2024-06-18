@@ -13,6 +13,7 @@ endif()
 
 add_library(realm-js-android-binding SHARED
     ../jsi/jsi_init.cpp
+    ../jsi/flush_ui_queue_workaround.cpp
     src/main/cpp/platform.cpp
     src/main/cpp/jni_utils.cpp
     src/main/cpp/io_realm_react_RealmReactModule.cpp
@@ -32,6 +33,7 @@ target_link_options(realm-js-android-binding PUBLIC -fvisibility=hidden)
 
 target_include_directories(realm-js-android-binding PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/.."
+    "${CMAKE_CURRENT_SOURCE_DIR}/../../binding/jsi"
     "${CMAKE_CURRENT_SOURCE_DIR}/../../bindgen/src"
     "${CMAKE_CURRENT_SOURCE_DIR}/../../bindgen/vendor/realm-core/bindgen/src"
 
