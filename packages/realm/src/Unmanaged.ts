@@ -45,7 +45,7 @@ type ExtractPropertyNamesOfTypeExcludingNullability<T, PropType> = {
 /**
  * Exchanges properties defined as {@link Realm.Object} with a JS object.
  */
-type RealmObjectRemappedModelPart<T, RequiredProperties extends keyof OmittedRealmObjectProperties<T>> = OptionalExcept<
+type RemappedRealmObject<T, RequiredProperties extends keyof OmittedRealmObjectProperties<T>> = OptionalExcept<
   T,
   {
     [K in ExtractPropertyNamesOfTypeExcludingNullability<T, AnyRealmObject>]?: Exclude<
@@ -61,14 +61,16 @@ type RealmObjectRemappedModelPart<T, RequiredProperties extends keyof OmittedRea
 /**
  * Exchanges properties defined as {@link List} with an optional {@link Array}.
  */
-type RealmListRemappedModelPart<T> = {
-  [K in ExtractPropertyNamesOfType<T, AnyList>]?: T[K] extends List<infer GT> ? Array<GT | Unmanaged<GT>> : never;
+type RemappedRealmList<T> = {
+  [K in ExtractPropertyNamesOfType<T, AnyList>]?: T[K] extends List<infer ItemType>
+    ? Array<ItemType | Unmanaged<ItemType>>
+    : never;
 };
 
 /**
  * Exchanges properties defined as {@link Dictionary} with an optional key to mixed value object.
  */
-type RealmDictionaryRemappedModelPart<T> = {
+type RemappedRealmDictionary<T> = {
   [K in ExtractPropertyNamesOfType<T, AnyDictionary>]?: T[K] extends Dictionary<infer ValueType>
     ? { [key: string]: ValueType }
     : never;
@@ -77,17 +79,16 @@ type RealmDictionaryRemappedModelPart<T> = {
 /**
  * Exchanges properties defined as {@link RealmSet} with an optional {@link Array}.
  */
-type RealmSetRemappedModelPart<T> = {
-  [K in ExtractPropertyNamesOfType<T, AnySet>]?: T[K] extends RealmSet<infer GT> ? Array<GT | Unmanaged<GT>> : never;
+type RemappedRealmSet<T> = {
+  [K in ExtractPropertyNamesOfType<T, AnySet>]?: T[K] extends RealmSet<infer ItemType>
+    ? Array<ItemType | Unmanaged<ItemType>>
+    : never;
 };
 
 /**
  * Exchanges properties defined as a {@link Counter} with a `number`.
  */
-type RealmCounterRemappedModelPart<
-  T,
-  RequiredProperties extends keyof OmittedRealmObjectProperties<T>,
-> = OptionalExcept<
+type RemappedCounter<T, RequiredProperties extends keyof OmittedRealmObjectProperties<T>> = OptionalExcept<
   T,
   {
     [K in ExtractPropertyNamesOfTypeExcludingNullability<T, Counter>]: Counter | number | Exclude<T[K], Counter>;
@@ -133,14 +134,14 @@ type OmittedRealmTypesWithRequired<
 /**
  * Remaps Realm types to "unmanaged" types.
  */
-type RemappedRealmTypes<
+type RemappedRealmTypes<T, RequiredProperties extends keyof OmittedRealmObjectProperties<T>> = RemappedRealmObject<
   T,
-  RequiredProperties extends keyof OmittedRealmObjectProperties<T>,
-> = RealmObjectRemappedModelPart<T, RequiredProperties> &
-  RealmListRemappedModelPart<T> &
-  RealmDictionaryRemappedModelPart<T> &
-  RealmSetRemappedModelPart<T> &
-  RealmCounterRemappedModelPart<T, RequiredProperties>;
+  RequiredProperties
+> &
+  RemappedRealmList<T> &
+  RemappedRealmDictionary<T> &
+  RemappedRealmSet<T> &
+  RemappedCounter<T, RequiredProperties>;
 
 // TODO(lj): Update docs for this type.
 /**
