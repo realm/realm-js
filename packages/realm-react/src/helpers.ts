@@ -48,6 +48,13 @@ export type AnyRealmObject = Realm.Object<any>;
 
 export type RealmClassType<T = any> = { new (...args: any): T };
 
+/**
+ * Explicitly sets the unpicked properties of a type to never instead of dropping them like in Pick.
+ * Useful for ensuring different prop types are mutually exclusive as React expects the union type
+ * of different prop types to include all the fields.
+ */
+export type RestrictivePick<T, K extends keyof T> = Pick<T, K> & { [RestrictedKey in keyof Omit<T, K>]?: never };
+
 export function isClassModelConstructor(value: unknown): value is RealmClassType<unknown> {
   return Object.getPrototypeOf(value) === Realm.Object;
 }

@@ -912,6 +912,12 @@ class JsiCppDecls extends CppDecls {
             )
             .join("\n")}
 
+
+          // Silence these warnings as they might be confusing to developers as they build the binding
+
+          #pragma GCC diagnostic push
+          #pragma GCC diagnostic ignored "-Wswitch"
+
           // We are returning sentinel values for lists and dictionaries in the
           // form of Symbol singletons. This is due to not being able to construct
           // the actual list or dictionary in the current context.
@@ -920,6 +926,8 @@ class JsiCppDecls extends CppDecls {
 
           case realm::type_Dictionary:
             return ${this.addon.accessCtor("Symbol_for")}.call(_env, "Realm.Dictionary");
+
+          #pragma GCC diagnostic pop
 
           // The remaining cases are never stored in a Mixed.
           ${spec.mixedInfo.unusedDataTypes.map((t) => `case DataType::Type::${t}: break;`).join("\n")}

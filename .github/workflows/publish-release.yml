@@ -53,25 +53,35 @@ jobs:
     - name: Install node modules
       run: npm ci
 
-    - name: Download prebuild artifacts from PR
-      uses: dawidd6/action-download-artifact@d0f291cf39bd21965ea9c4c6e210fc355c3844ed
+    - name: Download JSI binding source-code from PR
+      uses: dawidd6/action-download-artifact@bf251b5aa9c2f7eeb574a96ee720e24f801b7c11
       with:
         workflow: pr-realm-js.yml
         commit: ${{ inputs.commit || github.sha }}
         path: ${{ github.workspace }}
         workflow_conclusion: "" # Ignores workflow conclusion
         github_token: ${{ secrets.REALM_CI_PAT }}
-        name: realm-js-prebuilds
+        name: jsi-binding-source
 
-    - name: Download bundle artifacts from PR
-      uses: dawidd6/action-download-artifact@d0f291cf39bd21965ea9c4c6e210fc355c3844ed
+    - name: Download TypeScript build from PR
+      uses: dawidd6/action-download-artifact@bf251b5aa9c2f7eeb574a96ee720e24f801b7c11
       with:
         workflow: pr-realm-js.yml
         commit: ${{ inputs.commit || github.sha }}
         path: ${{ github.workspace }}
         workflow_conclusion: "" # Ignores workflow conclusion
         github_token: ${{ secrets.REALM_CI_PAT }}
-        name: realm-js-bundles
+        name: ts-build
+
+    - name: Download prebuilds from PR
+      uses: dawidd6/action-download-artifact@bf251b5aa9c2f7eeb574a96ee720e24f801b7c11
+      with:
+        workflow: pr-realm-js.yml
+        commit: ${{ inputs.commit || github.sha }}
+        path: ${{ github.workspace }}
+        workflow_conclusion: "" # Ignores workflow conclusion
+        github_token: ${{ secrets.REALM_CI_PAT }}
+        name: prebuilds
 
     - name: Read version
       id: get-version

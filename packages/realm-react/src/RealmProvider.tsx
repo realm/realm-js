@@ -18,19 +18,17 @@
 
 import React, { useContext, useEffect, useRef, useState } from "react";
 import Realm from "realm";
-import { isEqual } from "lodash";
+import isEqual from "lodash.isequal";
 
 import { UserContext } from "./UserProvider";
+import { RestrictivePick } from "./helpers";
 
 type PartialRealmConfiguration = Omit<Partial<Realm.Configuration>, "sync"> & {
   sync?: Partial<Realm.SyncConfiguration>;
 };
 
-type ProviderProps = PartialRealmConfiguration & {
-  /**
-   * The fallback component to render if the Realm is not opened.
-   */
-  fallback?: React.ComponentType<unknown> | React.ReactElement | null | undefined;
+/** Props used for a configuration-based Realm provider */
+type RealmProviderConfigurationProps = {
   /**
    * If false, Realm will not be closed when the component unmounts.
    * @default true
@@ -41,8 +39,66 @@ type ProviderProps = PartialRealmConfiguration & {
    * instance outside of a component that uses the Realm hooks.
    */
   realmRef?: React.MutableRefObject<Realm | null>;
+  /**
+   * The fallback component to render if the Realm is not open.
+   */
+  fallback?: React.ComponentType<unknown> | React.ReactElement | null | undefined;
+  children: React.ReactNode;
+} & PartialRealmConfiguration;
+
+/** Props used for a Realm instance-based Realm provider */
+type RealmProviderRealmProps = {
+  /**
+   * The Realm instance to be used by the provider.
+   */
+  realm: Realm;
   children: React.ReactNode;
 };
+
+type RealmProviderProps = RealmProviderConfigurationProps & RealmProviderRealmProps;
+
+/**
+ * Represents the provider returned from `createRealmContext` with a Realm instance  i.e. `createRealmContext(new Realm(...))`.
+ * Omits "realm" as it gets set at creation and cannot be changed.
+ 
+ * **Note:** the hooks returned from `createRealmContext` using an existing Realm can be used outside of the scope of the provider.
+ */
+export type RealmProviderFromRealm = React.FC<Omit<RealmProviderRealmProps, "realm">>;
+
+/**
+ * Represents the provider returned from `createRealmContext` with a configuration, i.e. `createRealmContext({schema: [...]})`.
+ */
+export type RealmProviderFromConfiguration = React.FC<RealmProviderConfigurationProps>;
+
+/**
+ * Represents properties of a {@link DynamicRealmProvider} where Realm instance props are set and Configuration props are disallowed.
+ */
+export type DynamicRealmProviderWithRealmProps = RestrictivePick<RealmProviderProps, keyof RealmProviderRealmProps>;
+
+/**
+ * Represents properties of a {@link DynamicRealmProvider} where Realm configuration props are set and Realm instance props are disallowed.
+ */
+export type DynamicsRealmProviderWithConfigurationProps = RestrictivePick<
+  RealmProviderProps,
+  keyof RealmProviderConfigurationProps
+>;
+
+/**
+ * Represents the provider returned from creating context with no arguments (including the default context).
+ * Supports either {@link RealmProviderRealmProps} or {@link RealmProviderConfigurationProps}.
+ */
+export type DynamicRealmProvider = React.FC<
+  DynamicRealmProviderWithRealmProps | DynamicsRealmProviderWithConfigurationProps
+>;
+
+export function createRealmProviderFromRealm(
+  realm: Realm,
+  RealmContext: React.Context<Realm | null>,
+): RealmProviderFromRealm {
+  return ({ children }) => {
+    return <RealmContext.Provider value={realm} children={children} />;
+  };
+}
 
 /**
  * Generates a `RealmProvider` given a {@link Realm.Configuration} and {@link React.Context}.
@@ -50,34 +106,10 @@ type ProviderProps = PartialRealmConfiguration & {
  * @param RealmContext - The context that will contain the Realm instance
  * @returns a RealmProvider component that provides context to all context hooks
  */
-export function createRealmProvider(
+export function createRealmProviderFromConfig(
   realmConfig: Realm.Configuration,
   RealmContext: React.Context<Realm | null>,
-): React.FC<ProviderProps> {
-  /**
-   * Returns a Context Provider component that is required to wrap any component using
-   * the Realm hooks.
-   * @example
-   * ```
-   * const AppRoot = () => {
-   *   const syncConfig = {
-   *     flexible: true,
-   *     user: currentUser
-   *   };
-   *
-   *   return (
-   *     <RealmProvider path="data.realm" sync={syncConfig}>
-   *       <App/>
-   *     </RealmProvider>
-   *   )
-   * }
-   * ```
-   * @param props - The {@link Realm.Configuration} for this Realm defaults to
-   * the config passed to `createRealmProvider`, but individual config keys can
-   * be overridden when creating a `<RealmProvider>` by passing them as props.
-   * For example, to override the `path` config value, use a prop named `path`,
-   * e.g. `path="newPath.realm"`
-   */
+): RealmProviderFromConfiguration {
   return ({ children, fallback: Fallback, closeOnUnmount = true, realmRef, ...restProps }) => {
     const [realm, setRealm] = useState<Realm | null>(() =>
       realmConfig.sync === undefined && restProps.sync === undefined
@@ -159,6 +191,47 @@ export function createRealmProvider(
 
     return <RealmContext.Provider value={realm} children={children} />;
   };
+}
+
+/**
+ * Generates a `RealmProvider` which is either based on a configuration
+ * or based on a realm, depending on its props.
+ * @param RealmContext - The context that will contain the Realm instance
+ * @returns a RealmProvider component that provides context to all context hooks
+ */
+export function createDynamicRealmProvider(RealmContext: React.Context<Realm | null>): DynamicRealmProvider {
+  return ({ realm, children, ...configurationProps }) => {
+    if (realm) {
+      if (Object.keys(configurationProps).length > 0) {
+        throw new Error("Cannot use configuration props when using an existing Realm instance.");
+      }
+
+      const RealmProvider = createRealmProviderFromRealm(realm, RealmContext);
+      return <RealmProvider>{children}</RealmProvider>;
+    } else {
+      const RealmProvider = createRealmProviderFromConfig({}, RealmContext);
+      return <RealmProvider {...configurationProps}>{children}</RealmProvider>;
+    }
+  };
+}
+
+/**
+ * Generates the appropriate `RealmProvider` based on whether there is a config, realm, or neither given.
+ * @param realmOrConfig - A Realm instance, a configuration, or undefined (including default provider).
+ * @param RealmContext - The context that will contain the Realm instance
+ * @returns a RealmProvider component that provides context to all context hooks
+ */
+export function createRealmProvider(
+  realmOrConfig: Realm.Configuration | Realm | undefined,
+  RealmContext: React.Context<Realm | null>,
+): RealmProviderFromConfiguration | RealmProviderFromRealm | DynamicRealmProvider {
+  if (!realmOrConfig) {
+    return createDynamicRealmProvider(RealmContext);
+  } else if (realmOrConfig instanceof Realm) {
+    return createRealmProviderFromRealm(realmOrConfig, RealmContext);
+  } else {
+    return createRealmProviderFromConfig(realmOrConfig, RealmContext);
+  }
 }
 
 /**

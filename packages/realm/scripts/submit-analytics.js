@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2023 Realm Inc.
+// Copyright 2024 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,28 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import nodeResolve from "@rollup/plugin-node-resolve";
-import commonjs from "@rollup/plugin-commonjs";
-import typescript from "@rollup/plugin-typescript";
+/* eslint-env node */
+/* eslint-disable -- console */
 
-import pkg from "./package.json" assert { type: "json" };
-
-export default [
-  {
-    input: "src/index.tsx",
-    output: [
-      {
-        file: pkg.main,
-        format: "cjs",
-        sourcemap: true,
-      },
-      {
-        file: pkg.module,
-        format: "esm",
-        sourcemap: true,
-      },
-    ],
-    plugins: [nodeResolve(), commonjs(), typescript({ noEmitOnError: true })],
-    external: ["realm", "react", "@realm/common"],
-  },
-];
+try {
+  const { submitAnalytics } = require("../dist/scripts/submit-analytics");
+  submitAnalytics().catch(console.error);
+} catch (err) {
+  console.error(err instanceof Error ? err.message : err);
+}

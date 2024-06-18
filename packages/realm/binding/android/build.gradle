@@ -1,0 +1,106 @@
+import java.nio.file.Paths
+
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+        mavenLocal()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:7.3.1'
+    }
+}
+apply plugin: 'com.android.library'
+
+/**
+ * Highly simplified implementation of the Node modules resolution algorithm to locate the React Native directory.
+ */
+static def findReactNative(startDir) {
+  def currentPath = startDir.toPath().normalize()
+  while (currentPath) {
+    def candidateFile = currentPath.resolve("node_modules/react-native").toFile()
+    if (candidateFile.exists()) {
+      return candidateFile.path
+    }
+    currentPath = currentPath.getParent()
+  }
+  throw new GradleException("Unable to find the React Native directory")
+}
+
+/**
+ * Replaces all occurrences of the file path separator with '/' if it isn't already '/'.
+ */
+def sanitizeFilePath(String filePath) {
+   return File.separatorChar === '/' as char ? filePath : filePath.replace(File.separatorChar, '/' as char)
+}
+
+// We're resolving this only to pass it to CMake for a workaround which relies on a private React Native API / header.
+def REACT_NATIVE_ROOT_DIR = sanitizeFilePath(findReactNative(rootProject.projectDir));
+
+def reactNativeArchitectures() {
+    def value = project.getProperties().get("reactNativeArchitectures")
+    return value ? value.split(",") : ["armeabi-v7a", "x86", "x86_64", "arm64-v8a"]
+}
+
+
+android {
+    namespace 'io.realm.react'
+    compileSdkVersion rootProject.hasProperty('compileSdkVersion') ? rootProject.compileSdkVersion : 28
+    buildToolsVersion rootProject.hasProperty('buildToolsVersion') ? rootProject.buildToolsVersion : '28.0.3'
+    buildFeatures {
+        prefab = true
+    }
+    defaultConfig {
+        minSdkVersion rootProject.hasProperty('minSdkVersion') ? rootProject.minSdkVersion : 16
+        targetSdkVersion rootProject.hasProperty('targetSdkVersion') ? rootProject.targetSdkVersion : 28
+        externalNativeBuild {
+            cmake {
+                arguments "-DANDROID_STL=c++_shared",
+                          "-DCMAKE_CXX_VISIBILITY_PRESET=hidden",
+                          "-DREACT_NATIVE_ROOT_DIR=${REACT_NATIVE_ROOT_DIR}"
+                targets 'realm-js-android-binding'
+                cppFlags '-std=c++20'
+                abiFilters (*reactNativeArchitectures())
+            }
+        }
+    }
+
+    buildTypes {
+        debug {
+            jniDebuggable true
+            packagingOptions {
+                doNotStrip "**/librealm.so"
+            }
+        }
+        release {
+            externalNativeBuild {
+                cmake {
+                    arguments "-DCMAKE_BUILD_TYPE=Release"
+                }
+            }
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path file('CMakeLists.txt')
+            version '3.22.1'
+        }
+    }
+
+    packagingOptions {
+        excludes = [
+                "META-INF",
+                "META-INF/**",
+                "**/libc++_shared.so",
+                "**/libfbjni.so",
+                "**/libjsi.so",
+                "**/libreactnativejni.so",
+                "**/libturbomodulejsijni.so",
+        ]
+    }
+}
+
+project.dependencies {
+    implementation "com.facebook.react:react-android"
+}

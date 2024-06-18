@@ -32,7 +32,7 @@ target_compile_definitions(realm-js PRIVATE
     NAPI_VERSION=6
 )
 
-if(REALM_JS_BUILD_CORE_FROM_SOURCE AND TARGET ObjectStore)
+if(TARGET ObjectStore)
     # we need to tell ObjectStore to use the libuv provided by Node.js
     target_link_libraries(ObjectStore PUBLIC NodeJS)
     target_compile_definitions(ObjectStore PUBLIC
