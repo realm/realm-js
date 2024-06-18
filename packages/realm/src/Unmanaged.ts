@@ -43,7 +43,7 @@ type ExtractPropertyNamesOfTypeExcludingNullability<T, PropType> = {
 }[keyof T];
 
 /**
- * Exchanges properties defined as {@link Realm.Object} with a JS object.
+ * Exchanges properties defined as {@link Realm.Object} with an optional JS object.
  */
 type RemappedRealmObject<T, RequiredProperties extends keyof OmittedRealmObjectProperties<T>> = OptionalExcept<
   T,
@@ -68,11 +68,11 @@ type RemappedRealmList<T> = {
 };
 
 /**
- * Exchanges properties defined as {@link Dictionary} with an optional key to mixed value object.
+ * Exchanges properties defined as {@link Dictionary} with an optional JS object.
  */
 type RemappedRealmDictionary<T> = {
   [K in ExtractPropertyNamesOfType<T, AnyDictionary>]?: T[K] extends Dictionary<infer ValueType>
-    ? { [key: string]: ValueType }
+    ? { [key: string]: ValueType | Unmanaged<ValueType> }
     : never;
 };
 
@@ -185,6 +185,7 @@ class Child extends Realm.Object<Child> {
 class Parent1 extends Realm.Object<Parent1, "parentInt"> {
   child!: Child;
   parentListOfChildren!: Realm.List<Child>;
+  parentDictionaryOfChildren!: Realm.Dictionary<Child>;
   parentInt!: number;
 
   static schema: ObjectSchema = {
@@ -192,6 +193,7 @@ class Parent1 extends Realm.Object<Parent1, "parentInt"> {
     properties: {
       child: "Child",
       parentListOfChildren: "Child[]",
+      parentDictionaryOfChildren: "Child{}",
       parentInt: "int",
     },
   };
@@ -200,6 +202,7 @@ class Parent1 extends Realm.Object<Parent1, "parentInt"> {
 class Parent2 extends Realm.Object<Parent2, "parentListOfChildren"> {
   child?: Child | null;
   parentListOfChildren!: Realm.List<Child | null>;
+  parentDictionaryOfChildren!: Realm.Dictionary<Child | null>;
   parentInt?: number;
 
   static schema: ObjectSchema = {
@@ -207,6 +210,7 @@ class Parent2 extends Realm.Object<Parent2, "parentListOfChildren"> {
     properties: {
       child: "Child?",
       parentListOfChildren: "Child?[]",
+      parentDictionaryOfChildren: "Child?{}",
       parentInt: "int?",
     },
   };
@@ -224,6 +228,9 @@ realm.write(() => {
   realm.create(Parent1, { child: { grandChild: { leaf: "Hello" } } });
   realm.create(Parent1, { child: { childListOfStrings: ["Hello"] } });
   realm.create(Parent1, { parentListOfChildren: [child, { grandChild }, { grandChild: { leaf: "Hello" } }] });
+  realm.create(Parent1, {
+    parentDictionaryOfChildren: { key1: child, key2: { grandChild }, key3: { grandChild: { leaf: "Hello" } } },
+  });
 
   realm.create(Parent2, {});
   realm.create(Parent2, { child });
@@ -233,7 +240,11 @@ realm.write(() => {
   realm.create(Parent2, { child: { grandChild: { leaf: "Hello" } } });
   realm.create(Parent2, { child: { childListOfStrings: ["Hello"] } });
   realm.create(Parent2, { parentListOfChildren: [child, { grandChild }, { grandChild: { leaf: "Hello" } }] });
-  realm.create(Parent2, { parentListOfChildren: [child, { grandChild }, { grandChild: { leaf: "Hello" } }, null] });
+  realm.create(Parent2, { parentListOfChildren: [null] });
+  realm.create(Parent2, {
+    parentDictionaryOfChildren: { key1: child, key2: { grandChild }, key3: { grandChild: { leaf: "Hello" } } },
+  });
+  realm.create(Parent2, { parentDictionaryOfChildren: { key1: null } });
 
   // VALID
   // (The constructor takes RequiredProperties into account for all levels of nesting.)
@@ -266,9 +277,14 @@ realm.write(() => {
   realm.create(Parent1, { child: { childListOfStrings: [0] } });
   realm.create(Parent1, { parentListOfChildren: 0 });
   realm.create(Parent1, { parentListOfChildren: [0] });
-  realm.create(Parent1, { parentListOfChildren: [{ invalidKey: { leaf: "Hello" } }] });
   realm.create(Parent1, { parentListOfChildren: [null] });
+  realm.create(Parent1, { parentListOfChildren: [{ invalidKey: { leaf: "Hello" } }] });
   realm.create(Parent1, { parentListOfChildren: [{ grandChild: {} }] });
+  realm.create(Parent1, { parentDictionaryOfChildren: 0 });
+  realm.create(Parent1, { parentDictionaryOfChildren: { key1: 0 } });
+  realm.create(Parent1, { parentDictionaryOfChildren: { key1: null } });
+  realm.create(Parent1, { parentDictionaryOfChildren: { key1: { invalidKey: { leaf: "Hello" } } } });
+  realm.create(Parent1, { parentDictionaryOfChildren: { key1: { grandChild: {} } } });
 
   realm.create(Parent2, 0);
   realm.create(Parent2, [0]);
@@ -290,15 +306,21 @@ realm.write(() => {
   realm.create(Parent2, { parentListOfChildren: [0] });
   realm.create(Parent2, { parentListOfChildren: [{ invalidKey: { leaf: "Hello" } }] });
   realm.create(Parent2, { parentListOfChildren: [{ grandChild: {} }] });
+  realm.create(Parent2, { parentDictionaryOfChildren: 0 });
+  realm.create(Parent2, { parentDictionaryOfChildren: { key1: 0 } });
+  realm.create(Parent2, { parentDictionaryOfChildren: { key1: { invalidKey: { leaf: "Hello" } } } });
+  realm.create(Parent2, { parentDictionaryOfChildren: { key1: { grandChild: {} } } });
 
   // INVALID
   // (Needs the RequiredProperties at all levels.)
   new Parent1(realm, {});
   new Parent1(realm, { parentInt: 0, child: { grandChild: {} } });
   new Parent1(realm, { parentInt: 0, parentListOfChildren: [{ grandChild: {} }] });
+  new Parent1(realm, { parentInt: 0, parentDictionaryOfChildren: { key1: { grandChild: {} } } });
 
   new Parent2(realm, { child: { grandChild: {} } });
   new Parent2(realm, { parentListOfChildren: [{ grandChild: {} }] });
+  new Parent2(realm, { parentDictionaryOfChildren: { key1: { grandChild: {} } } });
 });
 
 type MyObj = {
