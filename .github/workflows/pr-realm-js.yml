@@ -592,8 +592,8 @@ jobs:
         env:
           USE_CCACHE: 1
           USE_HERMES: 1
-          USE_BRIDGELESS: 0 # Disabling for now
-          RCT_NEW_ARCH_ENABLED: 0 # Disabled for now
+          USE_BRIDGELESS: 1
+          RCT_NEW_ARCH_ENABLED: 1
         working-directory: integration-tests/environments/react-native-test-app/ios
         timeout-minutes: 15
         run: pod install --verbose
