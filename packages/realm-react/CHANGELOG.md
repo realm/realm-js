@@ -1,7 +1,4 @@
-## vNext (TBD)
-
-### Deprecations
-* None
+## 0.8.0 (2024-06-18)
 
 ### Enhancements
 * Added the ability to use an existing Realm instance in `RealmProvider` and `createRealmContext`. ([#6714](https://github.com/realm/realm-js/pull/6714))
