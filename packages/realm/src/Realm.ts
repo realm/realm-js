@@ -759,18 +759,18 @@ export class Realm {
   create<T = DefaultObject>(
     type: string,
     values: Partial<T> | Partial<Unmanaged<T>>,
-    mode?: UpdateMode.Never | UpdateMode.All | UpdateMode.Modified | boolean,
+    mode?: UpdateMode | boolean,
   ): RealmObject<T> & T;
   create<T extends AnyRealmObject>(
     type: Constructor<T>,
     values: Partial<T> | Partial<Unmanaged<T>>,
-    mode?: UpdateMode.Never | UpdateMode.All | UpdateMode.Modified | boolean,
+    mode?: UpdateMode | boolean,
   ): T;
-  create<T extends AnyRealmObject>(
-    type: string | Constructor<T>,
-    values: DefaultObject,
+  create<T extends AnyRealmObject | DefaultObject>(
+    type: T extends AnyRealmObject ? Constructor<T> : string,
+    values: Partial<T> | Partial<Unmanaged<T>>,
     mode: UpdateMode | boolean = UpdateMode.Never,
-  ): RealmObject<DefaultObject, never> | undefined {
+  ) {
     // Supporting a boolean overload for mode
     if (mode === true) {
       mode = UpdateMode.All;
