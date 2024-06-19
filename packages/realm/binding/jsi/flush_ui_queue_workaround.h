@@ -21,7 +21,7 @@
 #include <ReactCommon/CallInvoker.h>
 
 namespace realm::js::flush_ui_workaround {
-    void inject_js_call_invoker(std::shared_ptr<facebook::react::CallInvoker> js_invoker);
-    void reset_js_call_invoker();
-    void flush_ui_queue();
-}
+void inject_js_call_invoker(std::shared_ptr<facebook::react::CallInvoker> js_invoker);
+void reset_js_call_invoker();
+void flush_ui_queue();
+} // namespace realm::js::flush_ui_workaround
