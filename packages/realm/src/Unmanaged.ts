@@ -42,17 +42,18 @@ type ExtractPropertyNamesOfTypeExcludingNullability<T, PropType> = {
   [K in keyof T]: Exclude<T[K], null | undefined> extends PropType ? K : never;
 }[keyof T];
 
+type ExcludeNullability<T> = Exclude<T, null | undefined>;
+
 /**
  * Exchanges properties defined as {@link Realm.Object} with an optional JS object.
  */
 type RemappedRealmObject<T, RequiredProperties extends keyof OmittedRealmObjectProperties<T>> = OptionalExcept<
   T,
   {
-    [K in ExtractPropertyNamesOfTypeExcludingNullability<T, AnyRealmObject>]?: Exclude<
-      T[K],
-      null | undefined
+    [K in ExtractPropertyNamesOfTypeExcludingNullability<T, AnyRealmObject>]?: ExcludeNullability<
+      T[K]
     > extends Realm.Object<infer NestedT, infer NestedRequiredProperties>
-      ? NestedT | Unmanaged<NestedT, NestedRequiredProperties> | null
+      ? T[K] | Unmanaged<NestedT, NestedRequiredProperties>
       : never;
   },
   RequiredProperties
@@ -63,7 +64,9 @@ type RemappedRealmObject<T, RequiredProperties extends keyof OmittedRealmObjectP
  */
 type RemappedRealmList<T> = {
   [K in ExtractPropertyNamesOfType<T, AnyList>]?: T[K] extends List<infer ItemType>
-    ? Array<ItemType | Unmanaged<ItemType>>
+    ? ExcludeNullability<ItemType> extends Realm.Object<infer NestedT, infer NestedRequiredProperties>
+      ? Array<ItemType | Unmanaged<NestedT, NestedRequiredProperties>>
+      : Array<ItemType | Unmanaged<ItemType>>
     : never;
 };
 
@@ -72,7 +75,9 @@ type RemappedRealmList<T> = {
  */
 type RemappedRealmDictionary<T> = {
   [K in ExtractPropertyNamesOfType<T, AnyDictionary>]?: T[K] extends Dictionary<infer ValueType>
-    ? { [key: string]: ValueType | Unmanaged<ValueType> }
+    ? ExcludeNullability<ValueType> extends Realm.Object<infer NestedT, infer NestedRequiredProperties>  
+      ? { [key: string]: ValueType | Unmanaged<NestedT, NestedRequiredProperties> }
+      : { [key: string]: ValueType | Unmanaged<ValueType> }
     : never;
 };
 
@@ -81,7 +86,9 @@ type RemappedRealmDictionary<T> = {
  */
 type RemappedRealmSet<T> = {
   [K in ExtractPropertyNamesOfType<T, AnySet>]?: T[K] extends RealmSet<infer ItemType>
-    ? Array<ItemType | Unmanaged<ItemType>>
+    ? ExcludeNullability<ItemType> extends Realm.Object<infer NestedT, infer NestedRequiredProperties>
+      ? Array<ItemType | Unmanaged<NestedT, NestedRequiredProperties>>
+      : Array<ItemType | Unmanaged<ItemType>>
     : never;
 };
 
@@ -186,6 +193,7 @@ class Parent1 extends Realm.Object<Parent1, "parentInt"> {
   child!: Child;
   parentListOfChildren!: Realm.List<Child>;
   parentDictionaryOfChildren!: Realm.Dictionary<Child>;
+  parentListOfStrings!: Realm.List<string>;
   parentInt!: number;
 
   static schema: ObjectSchema = {
@@ -194,23 +202,28 @@ class Parent1 extends Realm.Object<Parent1, "parentInt"> {
       child: "Child",
       parentListOfChildren: "Child[]",
       parentDictionaryOfChildren: "Child{}",
+      parentListOfStrings: "string[]",
       parentInt: "int",
     },
   };
 }
 
-class Parent2 extends Realm.Object<Parent2, "parentListOfChildren"> {
+class Parent2 extends Realm.Object<Parent2, "parentDictionaryOfChildren"> {
   child?: Child | null;
-  parentListOfChildren!: Realm.List<Child | null>;
+  // Cannot have nullable objects in list.
+  parentListOfChildren!: Realm.List<Child>;
   parentDictionaryOfChildren!: Realm.Dictionary<Child | null>;
-  parentInt?: number;
+  parentListOfStrings!: Realm.List<string | null>;
+  parentInt?: number | null;
 
   static schema: ObjectSchema = {
     name: "Parent",
     properties: {
       child: "Child?",
-      parentListOfChildren: "Child?[]",
+      // Cannot have nullable objects in list.
+      parentListOfChildren: "Child[]",
       parentDictionaryOfChildren: "Child?{}",
+      parentListOfStrings: "string?[]",
       parentInt: "int?",
     },
   };
@@ -231,6 +244,8 @@ realm.write(() => {
   realm.create(Parent1, {
     parentDictionaryOfChildren: { key1: child, key2: { grandChild }, key3: { grandChild: { leaf: "Hello" } } },
   });
+  realm.create(Parent1, { parentListOfStrings: [] });
+  realm.create(Parent1, { parentListOfStrings: ["Hello"] });
 
   realm.create(Parent2, {});
   realm.create(Parent2, { child });
@@ -240,11 +255,13 @@ realm.write(() => {
   realm.create(Parent2, { child: { grandChild: { leaf: "Hello" } } });
   realm.create(Parent2, { child: { childListOfStrings: ["Hello"] } });
   realm.create(Parent2, { parentListOfChildren: [child, { grandChild }, { grandChild: { leaf: "Hello" } }] });
-  realm.create(Parent2, { parentListOfChildren: [null] });
   realm.create(Parent2, {
     parentDictionaryOfChildren: { key1: child, key2: { grandChild }, key3: { grandChild: { leaf: "Hello" } } },
   });
   realm.create(Parent2, { parentDictionaryOfChildren: { key1: null } });
+  realm.create(Parent2, { parentListOfStrings: [] });
+  realm.create(Parent2, { parentListOfStrings: ["Hello"] });
+  realm.create(Parent2, { parentListOfStrings: [null] });
 
   // VALID
   // (The constructor takes RequiredProperties into account for all levels of nesting.)
@@ -252,7 +269,7 @@ realm.write(() => {
   new Parent1(realm, { parentInt: 0, child });
   new Parent1(realm, { parentInt: 0, child: { grandChild: { leaf: "Hello" } } });
 
-  // (Parent2 only uses RequiredProperties for a list which we never treat as required.
+  // (Parent2 only uses RequiredProperties for a dictionary which we never treat as required.
   // Should we though if the user wants to?)
   new Parent2(realm, {});
   new Parent2(realm, { child: null });
@@ -264,6 +281,7 @@ realm.write(() => {
   realm.create(Parent1, () => {});
   realm.create(Parent1, { child: 0 });
   realm.create(Parent1, { child: [0] });
+  realm.create(Parent1, { child: null });
   realm.create(Parent1, { child: () => {} });
   realm.create(Parent1, { child: grandChild });
   realm.create(Parent1, { child: { grandChild: 0 } });
@@ -285,6 +303,9 @@ realm.write(() => {
   realm.create(Parent1, { parentDictionaryOfChildren: { key1: null } });
   realm.create(Parent1, { parentDictionaryOfChildren: { key1: { invalidKey: { leaf: "Hello" } } } });
   realm.create(Parent1, { parentDictionaryOfChildren: { key1: { grandChild: {} } } });
+  realm.create(Parent1, { parentListOfStrings: 0 });
+  realm.create(Parent1, { parentListOfStrings: [0] });
+  realm.create(Parent1, { parentListOfStrings: [null] });
 
   realm.create(Parent2, 0);
   realm.create(Parent2, [0]);
@@ -304,12 +325,15 @@ realm.write(() => {
   realm.create(Parent2, { child: { childListOfStrings: [0] } });
   realm.create(Parent2, { parentListOfChildren: 0 });
   realm.create(Parent2, { parentListOfChildren: [0] });
+  realm.create(Parent2, { parentListOfChildren: [null] });
   realm.create(Parent2, { parentListOfChildren: [{ invalidKey: { leaf: "Hello" } }] });
   realm.create(Parent2, { parentListOfChildren: [{ grandChild: {} }] });
   realm.create(Parent2, { parentDictionaryOfChildren: 0 });
   realm.create(Parent2, { parentDictionaryOfChildren: { key1: 0 } });
   realm.create(Parent2, { parentDictionaryOfChildren: { key1: { invalidKey: { leaf: "Hello" } } } });
   realm.create(Parent2, { parentDictionaryOfChildren: { key1: { grandChild: {} } } });
+  realm.create(Parent2, { parentListOfStrings: 0 });
+  realm.create(Parent2, { parentListOfStrings: [0] });
 
   // INVALID
   // (Needs the RequiredProperties at all levels.)
