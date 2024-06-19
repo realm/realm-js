@@ -23,6 +23,7 @@ import com.facebook.react.bridge.JavaScriptContextHolder;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
+import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags;
 import com.facebook.react.module.annotations.ReactModule;
 import com.facebook.react.turbomodule.core.CallInvokerHolderImpl;
 import com.facebook.soloader.SoLoader;
@@ -74,9 +75,12 @@ class RealmReactModule extends ReactContextBaseJavaModule {
             throw new IllegalStateException(e);
         }
 
-
-        CallInvokerHolderImpl jsCallInvokerHolder = (CallInvokerHolderImpl) reactContext.getCatalystInstance().getJSCallInvokerHolder();
-        injectCallInvoker(jsCallInvokerHolder);
+        // Since https://github.com/facebook/react-native/pull/43396 this should only be needed when bridgeless is not enabled.
+        // We can use the enablement of "microtasks" to avoid the overhead of calling the invokeAsync on every call from C++ into JS.
+        if (!ReactNativeFeatureFlags.enableMicrotasks()) {
+            CallInvokerHolderImpl jsCallInvokerHolder = (CallInvokerHolderImpl) reactContext.getCatalystInstance().getJSCallInvokerHolder();
+            injectCallInvoker(jsCallInvokerHolder);
+        }
 
         // Get the javascript runtime and inject our native module with it
         JavaScriptContextHolder jsContext = reactContext.getJavaScriptContextHolder();
@@ -105,7 +109,6 @@ class RealmReactModule extends ReactContextBaseJavaModule {
      * Passes the React Native jsCallInvokerHolder over to C++ so we can setup our UI queue flushing.
      * This is needed as a workaround for https://github.com/facebook/react-native/issues/33006
      * where we call the invokeAsync method to flush the React Native UI queue whenever we call from C++ to JS.
-     * NOTE: Since https://github.com/facebook/react-native/pull/43396 this should only be needed when bridgeless is not enabled.
      */
     private native void injectCallInvoker(CallInvokerHolderImpl callInvoker);
 
