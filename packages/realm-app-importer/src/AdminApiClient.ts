@@ -348,6 +348,14 @@ export class AdminApiClient {
     });
   }
 
+  public async forceSyncReset(appId: string, fileIdent: number) {
+    await this.fetch({
+      route: ["groups", await this.groupId, "apps", appId, "sync", "force_reset"],
+      method: "PUT",
+      body: { file_ident: fileIdent },
+    });
+  }
+
   public async applyAllowedRequestOrigins(appId: string, origins: string[]) {
     await this.fetch({
       route: ["groups", await this.groupId, "apps", appId, "security", "allowed_request_origins"],
