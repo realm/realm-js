@@ -18,45 +18,18 @@
 
 import Realm, { AppConfiguration } from "realm";
 
-import { AppConfig, AppImporter, Credentials } from "@realm/app-importer";
+import { AppConfig } from "@realm/app-importer";
 import { mongodbServiceType } from "../utils/ExtendedAppConfigBuilder";
 import { printWarningBox } from "../utils/print-warning-box";
+import { baasAppImporter } from "../utils/baas-app-importer";
 
 const REALM_LOG_LEVELS = ["all", "trace", "debug", "detail", "info", "warn", "error", "fatal", "off"];
 
-const {
-  syncLogLevel = "warn",
-  baseUrl = "http://localhost:9090",
-  reuseApp = false,
-  username = "unique_user@domain.com",
-  password = "password",
-  publicKey,
-  privateKey,
-  missingServer,
-} = environment;
+const { syncLogLevel = "warn", baseUrl = "http://localhost:9090", missingServer } = environment;
 
 export { baseUrl };
 
 const allowSkippingServerTests = typeof environment.baseUrl === "undefined" && missingServer !== false;
-
-const credentials: Credentials =
-  typeof publicKey === "string" && typeof privateKey === "string"
-    ? {
-        kind: "api-key",
-        publicKey,
-        privateKey,
-      }
-    : {
-        kind: "username-password",
-        username,
-        password,
-      };
-
-const importer = new AppImporter({
-  baseUrl,
-  credentials,
-  reuseApp,
-});
 
 function isConnectionRefused(err: unknown) {
   return (
@@ -105,7 +78,7 @@ export function importAppBefore(
       throw new Error("Unexpected app on context, use only one importAppBefore per test");
     } else {
       try {
-        const { appId } = await importer.importApp(config);
+        const { appId } = await baasAppImporter.importApp(config);
         this.app = new Realm.App({ id: appId, baseUrl, ...sdkConfig });
       } catch (err) {
         if (isConnectionRefused(err) && allowSkippingServerTests) {

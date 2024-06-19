@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2020 Realm Inc.
+// Copyright 2024 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,22 +16,13 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export type { Credentials } from "./AdminApiClient";
-export type { AppImporterOptions } from "./AppImporter";
-export type {
-  AppConfig,
-  AuthProviderConfig,
-  FunctionConfig,
-  ServiceConfig,
-  ServiceRule,
-  SyncConfig,
-  PartitionSyncConfig,
-  PartitionConfig,
-  FlexibleSyncConfig,
-  CustomTokenAuthMetadataField,
-  EmailPasswordAuthConfig,
-} from "./AppConfigBuilder";
+import { AppImporter } from "@realm/app-importer";
 
-export { AdminApiClient } from "./AdminApiClient";
-export { AppImporter } from "./AppImporter";
-export { AppConfigBuilder } from "./AppConfigBuilder";
+import { baasAdminClient } from "./baas-admin-api";
+
+const { reuseApp = false } = environment;
+
+export const baasAppImporter = new AppImporter({
+  client: baasAdminClient,
+  reuseApp,
+});

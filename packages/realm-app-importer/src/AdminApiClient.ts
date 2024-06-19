@@ -53,6 +53,7 @@ export type Credentials =
 export type AuthenticationMode = "access" | "refresh" | "none";
 
 type ClientFetchRequest = Omit<RequestInit, "headers" | "body"> & {
+  baseRoute?: string;
   route: string[];
   headers?: Record<string, string>;
   authentication?: AuthenticationMode;
@@ -61,6 +62,11 @@ type ClientFetchRequest = Omit<RequestInit, "headers" | "body"> & {
 
 type AdminApiClientConfig = {
   baseUrl: string;
+
+  /**
+   * Administrative credentials to use when authenticating against the server.
+   */
+  credentials: Credentials;
 };
 
 /**
@@ -68,12 +74,13 @@ type AdminApiClientConfig = {
  */
 export class AdminApiClient {
   private static readonly baseRoute = "api/admin/v3.0";
+  private static readonly privateBaseRoute = "api/private/v1.0";
 
   private accessToken: string | null = null;
   private refreshToken: string | null = null;
   private _groupId: Promise<string> | null = null;
 
-  constructor(private config: AdminApiClientConfig) {}
+  constructor(public readonly config: AdminApiClientConfig) {}
 
   public get groupId(): Promise<string> {
     if (!this._groupId) {
@@ -114,9 +121,9 @@ export class AdminApiClient {
     }
   }
 
-  public async ensureLogIn(credentials: Credentials) {
+  public async ensureLogIn() {
     if (!this.accessToken) {
-      await this.logIn(credentials);
+      await this.logIn(this.config.credentials);
     }
   }
 
@@ -363,8 +370,15 @@ export class AdminApiClient {
   }
 
   private async fetch(request: ClientFetchRequest): Promise<unknown> {
-    const { route, body, headers = {}, authentication = "access", ...rest } = request;
-    const url = [this.config.baseUrl, AdminApiClient.baseRoute, ...route].join("/");
+    const {
+      baseRoute = AdminApiClient.baseRoute,
+      route,
+      body,
+      headers = {},
+      authentication = "access",
+      ...rest
+    } = request;
+    const url = [this.config.baseUrl, baseRoute, ...route].join("/");
     try {
       if (authentication === "access") {
         if (!this.accessToken) {
@@ -394,7 +408,7 @@ export class AdminApiClient {
         const error = isErrorResponse(json) ? json.error : "No error message";
         throw new Error(`Failed to fetch ${url}: ${error} (${response.status} ${response.statusText})`);
       } else {
-        throw new Error(`Failed to fetch ${url}: ${response.status} ${response.statusText})`);
+        throw new Error(`Failed to fetch ${url} (${response.status} ${response.statusText})`);
       }
     } catch (err) {
       if (err instanceof Error && err.message.includes("invalid session: access token expired")) {
