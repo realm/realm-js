@@ -630,8 +630,6 @@ jobs:
       - build-ts
       - generate-jsi
       - prebuild-android
-    env:
-      SPAWN_LOGCAT: true
     runs-on: macos-latest-large
     timeout-minutes: 60
     steps:
