@@ -612,8 +612,6 @@ jobs:
       - build-ts
       - generate-jsi
       - prebuild-android
-    env:
-      SPAWN_LOGCAT: true
     runs-on: macos-latest-large
     timeout-minutes: 60
     steps:
@@ -701,6 +699,7 @@ jobs:
       - name: Run tests
         env:
           PLATFORM: android
+          SPAWN_LOGCAT: true
           MOCHA_REMOTE_CONTEXT: ${{ steps.mocha-env.outputs.context }}
           # TODO: Consider passing ORG_GRADLE_PROJECT_reactNativeArchitectures=x86 to limit increase build speed
         timeout-minutes: 75
