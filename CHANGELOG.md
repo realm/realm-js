@@ -4,11 +4,12 @@
 * None
 
 ### Enhancements
-* None
+* It is no longer an error to set a base url for an App with a trailing slash - for example, `https://services.cloud.mongodb.com/` instead of `https://services.cloud.mongodb.com` - before this change that would result in a 404 error from the server. ([realm/realm-core#7791](https://github.com/realm/realm-core/pull/7791))
+* Performance has been improved for range queries on integers and timestamps when using the `BETWEEN` operator. ([realm/realm-core#7785](https://github.com/realm/realm-core/pull/7785))
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None
+* Opening an Flexible Sync Realm asynchronously may not wait to download all data. ([realm/realm-core#7720](https://github.com/realm/realm-core/issues/7720), since v10.12.0)
+* Clearing a list of `mixed` in an upgraded file would lead to an assertion failing. ([realm/realm-core#7771](https://github.com/realm/realm-core/issues/7771), since 12.7.0-rc.0)
 
 ### Compatibility
 * React Native >= v0.71.4
@@ -16,9 +17,7 @@
 * File format: generates Realms with format v24 (reads and upgrades file format v10).
 
 ### Internal
-<!-- * Either mention core version or upgrade -->
-<!-- * Using Realm Core vX.Y.Z -->
-<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
+* Upgraded Realm Core from v14.10.0 to v14.10.1.
 
 ## 12.11.1 (2024-06-25)
 
