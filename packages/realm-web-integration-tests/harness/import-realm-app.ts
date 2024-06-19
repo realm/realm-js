@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { AppImporter, AppConfigBuilder } from "@realm/app-importer";
+import { AppImporter, AppConfigBuilder, AdminApiClient } from "@realm/app-importer";
 
 const {
   BAAS_BASE_URL = "http://localhost:9090",
@@ -33,12 +33,14 @@ export async function importRealmApp() {
     return { appId: BAAS_APP_ID, baseUrl };
   } else {
     const importer = new AppImporter({
-      baseUrl,
-      credentials: {
-        kind: "username-password",
-        username: BAAS_USERNAME,
-        password: BAAS_PASSWORD,
-      },
+      client: new AdminApiClient({
+        baseUrl,
+        credentials: {
+          kind: "username-password",
+          username: BAAS_USERNAME,
+          password: BAAS_PASSWORD,
+        },
+      }),
     });
     const builder = new AppConfigBuilder("my-test-app")
       .security({ allowed_request_origins: ["http://localhost:8080"] })
