@@ -21,6 +21,7 @@
 #import <React/RCTBridge+Private.h>
 #import <React/RCTInvalidating.h>
 #import <ReactCommon/CallInvoker.h>
+#import <React-featureflags/react/featureflags/ReactNativeFeatureFlags.h>
 #import <jsi/jsi.h>
 
 #import <arpa/inet.h>
@@ -35,7 +36,6 @@
 // the part of the RCTCxxBridge private class we care about
 @interface RCTBridge (Realm_RCTCxxBridge)
 - (void *)runtime;
-// Expose the CallInvoker so that we can call `invokeAsync`
 - (std::shared_ptr<facebook::react::CallInvoker>)jsCallInvoker;
 @end
 
@@ -74,7 +74,9 @@ RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD(injectModuleIntoJSGlobal) {
   RCTBridge* bridge = [RCTBridge currentBridge];
   auto &rt = *static_cast<facebook::jsi::Runtime *>(bridge.runtime);
 
-  realm::js::flush_ui_workaround::inject_js_call_invoker([bridge jsCallInvoker]);
+  if (!facebook::react::ReactNativeFeatureFlags::enableMicrotasks()) {
+    realm::js::flush_ui_workaround::inject_js_call_invoker([bridge jsCallInvoker]);
+  }
 
   auto exports = jsi::Object(rt);
   realm_jsi_init(rt, exports);
