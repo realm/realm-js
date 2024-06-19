@@ -76,11 +76,13 @@ class RealmReactModule extends ReactContextBaseJavaModule {
         }
 
         // Since https://github.com/facebook/react-native/pull/43396 this should only be needed when bridgeless is not enabled.
-        // We can use the enablement of "microtasks" to avoid the overhead of calling the invokeAsync on every call from C++ into JS.
-        if (!ReactNativeFeatureFlags.enableMicrotasks()) {
-            CallInvokerHolderImpl jsCallInvokerHolder = (CallInvokerHolderImpl) reactContext.getCatalystInstance().getJSCallInvokerHolder();
-            injectCallInvoker(jsCallInvokerHolder);
-        }
+        // but unfortunately, that doesn't seem to be the case.
+        // See https://github.com/facebook/react-native/pull/43396#issuecomment-2178586017 for context
+        // If it was, we could use the enablement of "microtasks" to avoid the overhead of calling the invokeAsync on every call from C++ into JS.
+        // if (!ReactNativeFeatureFlags.enableMicrotasks())
+
+        CallInvokerHolderImpl jsCallInvokerHolder = (CallInvokerHolderImpl) reactContext.getCatalystInstance().getJSCallInvokerHolder();
+        injectCallInvoker(jsCallInvokerHolder);
 
         // Get the javascript runtime and inject our native module with it
         JavaScriptContextHolder jsContext = reactContext.getJavaScriptContextHolder();

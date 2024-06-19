@@ -74,9 +74,12 @@ RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD(injectModuleIntoJSGlobal) {
   RCTBridge* bridge = [RCTBridge currentBridge];
   auto &rt = *static_cast<facebook::jsi::Runtime *>(bridge.runtime);
 
-  if (!facebook::react::ReactNativeFeatureFlags::enableMicrotasks()) {
-    realm::js::flush_ui_workaround::inject_js_call_invoker([bridge jsCallInvoker]);
-  }
+  // Since https://github.com/facebook/react-native/pull/43396 this should only be needed when bridgeless is not enabled.
+  // but unfortunately, that doesn't seem to be the case.
+  // See https://github.com/facebook/react-native/pull/43396#issuecomment-2178586017 for context
+  // If it was, we could use the enablement of "microtasks" to avoid the overhead of calling the invokeAsync on every call from C++ into JS.
+  // if (!facebook::react::ReactNativeFeatureFlags::enableMicrotasks()) {
+  realm::js::flush_ui_workaround::inject_js_call_invoker([bridge jsCallInvoker]);
 
   auto exports = jsi::Object(rt);
   realm_jsi_init(rt, exports);
