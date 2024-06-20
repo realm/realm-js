@@ -576,10 +576,10 @@ jobs:
 
       # Hermes doesn't work with Cocoapods 1.15.0
       # https://forums.developer.apple.com/forums/thread/745518
-      - name: Install older Cocoapods version
+      - name: Pin Cocoapods version
         uses: maxim-lobanov/setup-cocoapods@v1
         with:
-          version: 1.14.3
+          version: 1.15.2
 
       - name: Install iOS tools
         run: |
