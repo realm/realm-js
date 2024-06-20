@@ -705,6 +705,7 @@ jobs:
         timeout-minutes: 75
         uses: reactivecircus/android-emulator-runner@v2
         with:
+          ram-size: 2048M
           api-level: 29
           force-avd-creation: false
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
