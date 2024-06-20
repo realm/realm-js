@@ -18,7 +18,7 @@
 
 import { expect } from "chai";
 import Realm, { ConnectionState, ObjectSchema, BSON, SyncConfiguration } from "realm";
-import { importAppBefore } from "../../hooks";
+import { authenticateUserBefore, importAppBefore, openRealmBefore } from "../../hooks";
 import { DogSchema } from "../../schemas/person-and-dog-with-object-ids";
 import { getRegisteredEmailPassCredentials } from "../../utils/credentials";
 import { generatePartition } from "../../utils/generators";
@@ -1057,6 +1057,26 @@ describe("SessionTest", () => {
       }
 
       expect(realm3).to.be.undefined;
+    });
+  });
+});
+
+describe("Flexible sync session", () => {
+  importAppBefore(buildAppConfig().anonAuth().flexibleSync());
+
+  describe("internal file ident", () => {
+    authenticateUserBefore();
+    openRealmBefore({ sync: { flexible: true } });
+
+    it("returns a file ident", async function (this: RealmContext) {
+      const { syncSession } = this.realm;
+      if (syncSession === null) {
+        throw new Error("Expected a sync session");
+      }
+      const { fileIdent } = syncSession as unknown as Record<string, unknown>;
+      if (typeof fileIdent !== "bigint") {
+        throw new Error("Expected a file identifier");
+      }
     });
   });
 });

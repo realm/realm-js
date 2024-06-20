@@ -370,6 +370,15 @@ export class SyncSession {
     return fromBindingConnectionState(this.withInternal((internal) => internal.connectionState));
   }
 
+  /**
+   * Get the identifier of the database file on the server.
+   * @internal
+   */
+  get fileIdent() {
+    const { ident } = this.withInternal((internal) => internal.getFileIdent());
+    return ident;
+  }
+
   // TODO: Make this a getter instead of a method
   /**
    * Returns `true` if the session is currently active and connected to the server, `false` if not.
