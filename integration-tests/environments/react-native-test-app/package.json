@@ -109,7 +109,7 @@
       }
     },
     "pod-install:ci": {
-      "command": "pod-install",
+      "command": "cd ios && pod install --verbose",
       "clean": "if-file-deleted",
       "files": [
         "ios/Podfile",
