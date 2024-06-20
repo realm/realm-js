@@ -182,16 +182,7 @@ jobs:
         with:
           key: ${{ runner.os }}-${{ matrix.os }}-${{ matrix.arch }}
           max-size: '2.0G'
-
-      - name: Prepend ccache executables to the PATH
-        if: ${{ runner.os != 'Windows' }}
-        run: |
-          echo "/usr/lib/ccache:/usr/local/opt/ccache/libexec" >> $GITHUB_PATH
-
-      # in CI file timestamps change with every run so instead rely on file content hashing
-      # https://reactnative.dev/docs/build-speed#using-this-approach-on-a-ci
-      - name: Configure ccache
-        run: ccache --set-config="compiler_check=content"
+          create-symlink: true
 
       - name: Install dependencies
         # Ignoring scripts to prevent a prebuilt from getting fetched / built
@@ -265,10 +256,8 @@ jobs:
         with:
           key: ${{ runner.os }}-${{ matrix.platform }}
           max-size: '2.0G'
-      # On CI, file timestamps change with every run so instead rely on file content hashing
-      # https://reactnative.dev/docs/build-speed#using-this-approach-on-a-ci
-      - name: Configure ccache
-        run: ccache --set-config="compiler_check=content"
+          create-symlink: true
+          
       - name: Install dependencies
         run: npm ci
       - name: Build archive
@@ -351,11 +340,7 @@ jobs:
         with:
           key: ${{ runner.os }}-android-${{ matrix.architecture }}
           max-size: '2.0G'
-
-      # On CI, file timestamps change with every run so instead rely on file content hashing
-      # https://reactnative.dev/docs/build-speed#using-this-approach-on-a-ci
-      - name: Configure ccache
-        run: ccache --set-config="compiler_check=content"
+          create-symlink: true
 
       - name: Setup Java
         uses: actions/setup-java@v3
@@ -495,12 +480,7 @@ jobs:
         with:
           key: ${{ runner.os }}-${{ matrix.variant.os }}-${{ matrix.variant.arch }}
           max-size: '2.0G'
-
-      # in CI file timestamps change with every run so instead rely on file content hashing
-      # https://reactnative.dev/docs/build-speed#using-this-approach-on-a-ci
-      - name: Configure ccache
-        if: ${{ matrix.variant.environment == 'react-native-test-app' }}
-        run: ccache --set-config="compiler_check=content"
+          create-symlink: true
 
       # Hermes doesn't work with Cocoapods 1.15.0
       # https://forums.developer.apple.com/forums/thread/745518
