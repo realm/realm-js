@@ -167,7 +167,6 @@ jobs:
         if: ${{ matrix.runner == 'ubuntu-latest' }}
         run: sudo apt-get install ccache ninja-build
 
-
       # The ccache installed by github doesn't want to be moved around. Let the ccache action download a new one.
       - name: Remove pre-installed ccache
         if: ${{ runner.os == 'Windows' }}
@@ -182,7 +181,7 @@ jobs:
         with:
           key: ${{ runner.os }}-${{ matrix.os }}-${{ matrix.arch }}
           max-size: '2.0G'
-          create-symlink: true
+          create-symlink: ${{ runner.os != 'Windows' }}
 
       - name: Install dependencies
         # Ignoring scripts to prevent a prebuilt from getting fetched / built
@@ -480,7 +479,7 @@ jobs:
         with:
           key: ${{ runner.os }}-${{ matrix.variant.os }}-${{ matrix.variant.arch }}
           max-size: '2.0G'
-          create-symlink: true
+          create-symlink: ${{ runner.os != 'Windows' }}
 
       # Hermes doesn't work with Cocoapods 1.15.0
       # https://forums.developer.apple.com/forums/thread/745518
