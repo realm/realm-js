@@ -48,7 +48,6 @@ import { createSyncConfig } from "../../utils/open-realm";
 import { createPromiseHandle } from "../../utils/promise-handle";
 import { buildAppConfig } from "../../utils/build-app-config";
 import { spy } from "sinon";
-import { beforeEach } from "mocha";
 
 export const PersonSchema: Realm.ObjectSchema = {
   name: "Person",
