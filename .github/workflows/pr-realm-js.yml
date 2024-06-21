@@ -570,17 +570,6 @@ jobs:
           max-size: '2.0G'
           create-symlink: true
 
-      - name: Create symbolic link for ccache
-        # This is needed for Xcode to hit it
-        run: ln -s /opt/homebrew/bin/ccache /usr/local/bin/ccache
-
-      # Hermes doesn't work with Cocoapods 1.15.0
-      # https://forums.developer.apple.com/forums/thread/745518
-      - name: Pin Cocoapods version
-        uses: maxim-lobanov/setup-cocoapods@v1
-        with:
-          version: 1.15.2
-
       - name: Install iOS tools
         run: |
           npm install -g ios-deploy
