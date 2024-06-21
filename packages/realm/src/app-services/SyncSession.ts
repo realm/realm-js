@@ -53,6 +53,7 @@ export enum ProgressMode {
   ForCurrentlyOutstandingWork = "forCurrentlyOutstandingWork",
 }
 
+/** @deprecated */
 export type PartitionBasedSyncProgressNotificationCallback =
   /**
    * This notification callback only supports Partition Based Sync.
