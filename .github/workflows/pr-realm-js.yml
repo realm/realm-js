@@ -628,7 +628,6 @@ jobs:
       - generate-jsi
       - build-ts
       - prebuild-android
-    if: ${{ success() || failure() }}
     env:
       SPAWN_LOGCAT: true
     runs-on: macos-latest-large
