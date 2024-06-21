@@ -438,57 +438,48 @@ describe("Flexible sync", function () {
       });
     });
   });
-
-  describe("Progress notifications", () => {
-    let realm: Realm;
-
-    beforeEach(async function () {
-      realm = await Realm.open({
-        schema: [Person, Dog],
-        sync: {
-          flexible: true,
-          user: this.user,
-        },
-      });
-
-      await realm.subscriptions.update((mutableSubs) => {
-        mutableSubs.add(realm.objects(Person));
+  describe("Progress notification", () => {
+    openRealmBeforeEach({
+      schema: [Person, Dog],
+      sync: {
+        flexible: true,
+      },
+    });
+    beforeEach(async function (this: RealmContext) {
+      await this.realm.subscriptions.update((mutableSubs) => {
+        mutableSubs.add(this.realm.objects(Person));
       });
     });
 
-    afterEach(() => {
-      realm.close();
+    it("only estimate callback is allowed", async function (this: RealmContext) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-function
+      const callback = spy((estimate: number) => {});
+      this.realm.syncSession?.addProgressNotification(
+        Realm.ProgressDirection.Download,
+        Realm.ProgressMode.ForCurrentlyOutstandingWork,
+        callback,
+      );
     });
 
-    it("only estimate callback is allowed", async function () {
+    it("old callback style is not allowed", async function (this: RealmContext) {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-function
-      const callback = (estimate: number) => {};
-
-      expect(() =>
-        realm.syncSession?.addProgressNotification(
-          Realm.ProgressDirection.Download,
-          Realm.ProgressMode.ForCurrentlyOutstandingWork,
-          callback,
-        ),
-      ).not.to.throw();
-    });
-
-    it("old callback style is not allowed", async function () {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-function
-      const callback = (transferable: number, transferred: number) => {};
+      const callback = spy((transferable: number, transferred: number) => {});
       expect(() => {
-        realm.syncSession?.addProgressNotification(
+        this.realm.syncSession?.addProgressNotification(
           Realm.ProgressDirection.Download,
           Realm.ProgressMode.ForCurrentlyOutstandingWork,
           callback,
         );
       }).to.throw();
+
+      expect(callback.notCalled).to.be.true;
     });
 
     describe("with ProgressDirection.Upload", function () {
       this.timeout(5000);
 
-      it("should not call the callback when there is no upload", async function () {
+      it("should only call the callback once with 1.0 when there is no upload", async function (this: RealmContext) {
+        const realm = this.realm;
         // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
         const callback = spy((estimate: number) => {});
 
@@ -502,11 +493,11 @@ describe("Flexible sync", function () {
 
         expect(callback.callCount).equals(1);
 
-        // The callback does get called once as 1 on initialization.
         expect(callback.withArgs(1.0).calledOnce).to.be.true;
       });
 
-      it("should show progress", async function () {
+      it("should show progress", async function (this: RealmContext) {
+        const realm = this.realm;
         // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
         const callback = spy((estimate: number) => {});
 
@@ -534,7 +525,8 @@ describe("Flexible sync", function () {
         expect(callback.withArgs(1.0).called).to.be.true;
       });
 
-      it("should have a correct start and finish states", async function () {
+      it("should have a correct start and finish states", async function (this: RealmContext) {
+        const realm = this.realm;
         // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
         const callback = spy((estimate: number) => {});
 
@@ -623,7 +615,7 @@ describe("Flexible sync", function () {
       realm.write(() => {
         //Outside subscriptions
         const tom = realm.create(Person, {
-          _id: new BSON.ObjectId(),
+          _id: person1Id,
           name: "Tom",
           age: 36,
         });

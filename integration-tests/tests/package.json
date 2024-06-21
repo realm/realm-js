@@ -88,15 +88,15 @@
     "mocha": "^10.1.0",
     "nyc": "^15.1.0",
     "platform": "^1.3.6",
-    "realm": "*",
-    "sinon": "^18.0.0"
+    "realm": "*"
   },
   "dependencies": {
     "@thi.ng/bench": "^3.4.24",
     "chai": "4.3.6",
     "chai-as-promised": "^7.1.1",
     "jsrsasign": "^11.0.0",
-    "node-fetch": "^3.3.2"
+    "node-fetch": "^3.3.2",
+    "sinon": "^18.0.0"
   },
   "files": [
     "/src"
