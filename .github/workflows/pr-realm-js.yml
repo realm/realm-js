@@ -616,18 +616,23 @@ jobs:
         id: mocha-env
         run: echo "context=syncLogLevel=warn,longTimeoutMs=${{ env.LONG_TIMEOUT }},baseUrl=${{ steps.baas.outputs.baas-url }}" >> $GITHUB_OUTPUT
 
-      - name: Debugging with ssh
-        uses: lhotari/action-upterm@v1
+      # Because the Xcode project injects its own CCACHE_CONFIGPATH,
+      # the configuration set by the ccache action doesn't propagate.
+      - name: Expose Ccache config to Xcode
+        run: |
+          echo "CCACHE_DIR=`ccache --get-config cache_dir`" >> $GITHUB_ENV
+          echo "CCACHE_MAXSIZE=`ccache --get-config max_size`" >> $GITHUB_ENV
+          echo "CCACHE_COMPILERCHECK=`ccache --get-config compiler_check`" >> $GITHUB_ENV
     
-      # - name: Run tests
-      #   env:
-      #     WIREIT_LOGGER: simple
-      #     USE_CCACHE: 1
-      #     USE_BRIDGELESS: 0 # Disabling for now
-      #     RCT_NEW_ARCH_ENABLED: 0 # Disabled for now
-      #     MOCHA_REMOTE_CONTEXT: ${{ steps.mocha-env.outputs.context }}
-      #   timeout-minutes: 75
-      #   run: npm run test:ci:ios --prefix integration-tests/environments/react-native-test-app
+      - name: Run tests
+        env:
+          WIREIT_LOGGER: simple
+          USE_CCACHE: 1
+          USE_BRIDGELESS: 0 # Disabling for now
+          RCT_NEW_ARCH_ENABLED: 0 # Disabled for now
+          MOCHA_REMOTE_CONTEXT: ${{ steps.mocha-env.outputs.context }}
+        timeout-minutes: 75
+        run: npm run test:ci:ios --prefix integration-tests/environments/react-native-test-app
 
   android-tests:
     if: false
