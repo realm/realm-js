@@ -517,7 +517,7 @@ jobs:
     env:
       DEVELOPER_DIR: /Applications/Xcode_14.3.1.app
       IOS_DEVICE_NAME: iPhone 14
-    runs-on: macos-latest-xlarge
+    runs-on: macos-latest-large
     timeout-minutes: 60
     steps:
       - name: Checkout code
@@ -545,13 +545,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
 
-      - name: Restore React Native cache
-        uses: actions/cache@v4
-        with:
-          path: '**/Pods'
-          key: ${{ runner.os }}-react-native-test-app-${{ hashFiles('**/Podfile.lock', './src/**', './vendor/**') }}
-          restore-keys: |
-            ${{ runner.os }}-react-native-test-app-
+      # - name: Restore React Native cache
+      #   uses: actions/cache@v4
+      #   with:
+      #     path: '**/Pods'
+      #     key: ${{ runner.os }}-react-native-test-app-${{ hashFiles('**/Podfile.lock', './src/**', './vendor/**') }}
+      #     restore-keys: |
+      #       ${{ runner.os }}-react-native-test-app-
 
       - name: MSVC Setup
         if: ${{ runner.os == 'Windows' }}
