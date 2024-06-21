@@ -68,7 +68,7 @@ function(add_cxx_flag_if_supported flag)
 endfunction()
 
 
-if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
+if(WIN32)
   set(CMAKE_CXX_STANDARD 17)
 else()
   set(CMAKE_CXX_STANDARD 20)
