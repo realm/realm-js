@@ -22,7 +22,7 @@ export const AppWrapper: React.FC<{
                 flexible: true,
                 onError: (_, error) => {
                   // Uncomment to make errors visible
-                  // console.error(error);
+                  console.error(error);
                 },
                 existingRealmFileBehavior: {
                   type: OpenRealmBehaviorType.OpenImmediately,

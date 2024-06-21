@@ -17,6 +17,7 @@ import { useSyncedQuery, useSyncedRealm } from "./syncedRealm";
 import { ListingsAndReview } from "./syncedModels";
 import FastImage from "react-native-fast-image";
 import RNFS from "react-native-fs";
+import { DefaultUserProfileData } from "realm";
 
 enum ResultMethod {
   None = "Search Not Performed",
@@ -24,6 +25,8 @@ enum ResultMethod {
   Local = "Local Full Text Search",
   Remote = "Atlas Search",
 }
+
+type SearchFunction = ({searchPhrase, pageNumber, pageSize}: {searchPhrase: string, pageNumber: number, pageSize: number}) => Promise<{error: string, result: ListingsAndReview[]}>;
 
 export const AirbnbList = () => {
   // The results of the most recent search
@@ -57,7 +60,7 @@ export const AirbnbList = () => {
   const syncedRealm = useSyncedRealm();
 
   // Get the current user in order to call the search function
-  const user = useUser();
+  const user = useUser<{searchListings: SearchFunction}, Record<string, unknown>, DefaultUserProfileData  >();
 
   // Check the local cache for search results
   const cache = useLocalQuery(
@@ -88,7 +91,6 @@ export const AirbnbList = () => {
       return acc;
     }, []);
     const uniqueIds = [...new Set(allIds)];
-    console.log("Updating subscription to: ", uniqueIds);
     syncedRealm
       .objects(ListingsAndReview)
       .filtered("_id in $0", uniqueIds)
@@ -102,7 +104,6 @@ export const AirbnbList = () => {
     if (searchTerm !== "") {
       // Check the cache first
       if (cache.length > 0) {
-        console.log("Cache hit!: ", JSON.stringify(cache));
         const ids = cache[0].results.reduce((res, cur) => {
           res.push(cur);
           return res;
@@ -167,15 +168,20 @@ export const AirbnbList = () => {
       Platform.OS == "ios"
         ? `${RNFS.CachesDirectoryPath}/com.hackemist.SDImageCache/default`
         : `${RNFS.CachesDirectoryPath}/image_manager_disk_cache`;
-    console.log("Cache dir: ", cacheDir);
-    const files = await RNFS.readDir(cacheDir);
-    let totalSize = 0;
-    for (const file of files) {
-      const fileInfo = await RNFS.stat(file.path);
-      totalSize += fileInfo.size;
+
+    if(await RNFS.exists(cacheDir)) {
+      const files = await RNFS.readDir(cacheDir);
+      let totalSize = 0;
+      for (const file of files) {
+        const fileInfo = await RNFS.stat(file.path);
+        totalSize += fileInfo.size;
+      }
+      const sizeInMB = totalSize / (1024 * 1024);
+      setCacheSize(parseFloat(sizeInMB.toFixed(2))); // Round to 2 decimal places
     }
-    const sizeInMB = totalSize / (1024 * 1024);
-    setCacheSize(parseFloat(sizeInMB.toFixed(2))); // Round to 2 decimal places
+    else{
+      setCacheSize(0);
+    }
   }, []);
 
   // Clear the image cache and Realm databases
