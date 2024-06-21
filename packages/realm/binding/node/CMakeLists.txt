@@ -68,7 +68,7 @@ function(add_cxx_flag_if_supported flag)
 endfunction()
 
 
-if(WIN32)
+if(MSVC)
   set(CMAKE_CXX_STANDARD 17)
 else()
   set(CMAKE_CXX_STANDARD 20)
