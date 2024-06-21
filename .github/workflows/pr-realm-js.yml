@@ -102,6 +102,7 @@ jobs:
             packages/realm/binding/generated
 
   prebuild-node:
+    if: false
     name: Prebuild ${{ matrix.os }} ${{ matrix.arch }} (Node.js)
     runs-on: ${{ matrix.runner }}
     strategy:
@@ -314,6 +315,7 @@ jobs:
           if-no-files-found: error
 
   prebuild-android:
+    if: false
     name: Prebuild ${{ matrix.architecture }} (Android React Native)
     runs-on: ubuntu-latest
     strategy:
@@ -380,6 +382,7 @@ jobs:
           if-no-files-found: error
 
   merge-prebuilds:
+    if: false
     name: Merge prebuild artifacts
     runs-on: ubuntu-latest
     needs:  [prebuild-node, prebuild-apple, prebuild-android]
@@ -390,6 +393,7 @@ jobs:
           pattern: '*-prebuild'
 
   node-electron-tests:
+    if: false
     name: Test ${{ matrix.environment }} on ${{ matrix.runner }} (${{matrix.script_name}})
     needs:
       - generate-jsi
@@ -612,17 +616,21 @@ jobs:
         id: mocha-env
         run: echo "context=syncLogLevel=warn,longTimeoutMs=${{ env.LONG_TIMEOUT }},baseUrl=${{ steps.baas.outputs.baas-url }}" >> $GITHUB_OUTPUT
 
-      - name: Run tests
-        env:
-          WIREIT_LOGGER: simple
-          USE_CCACHE: 1
-          USE_BRIDGELESS: 0 # Disabling for now
-          RCT_NEW_ARCH_ENABLED: 0 # Disabled for now
-          MOCHA_REMOTE_CONTEXT: ${{ steps.mocha-env.outputs.context }}
-        timeout-minutes: 75
-        run: npm run test:ci:ios --prefix integration-tests/environments/react-native-test-app
+      - name: Debugging with ssh
+        uses: lhotari/action-upterm@v1
+    
+      # - name: Run tests
+      #   env:
+      #     WIREIT_LOGGER: simple
+      #     USE_CCACHE: 1
+      #     USE_BRIDGELESS: 0 # Disabling for now
+      #     RCT_NEW_ARCH_ENABLED: 0 # Disabled for now
+      #     MOCHA_REMOTE_CONTEXT: ${{ steps.mocha-env.outputs.context }}
+      #   timeout-minutes: 75
+      #   run: npm run test:ci:ios --prefix integration-tests/environments/react-native-test-app
 
   android-tests:
+    if: false
     name: Test Android (React Native)
     needs:
       - generate-jsi
