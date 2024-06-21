@@ -22,7 +22,7 @@ import { authenticateUserBefore, importAppBefore, openRealmBefore } from "../../
 import { DogSchema } from "../../schemas/person-and-dog-with-object-ids";
 import { getRegisteredEmailPassCredentials } from "../../utils/credentials";
 import { generatePartition } from "../../utils/generators";
-import { sleep, throwAfterTimeout } from "../../utils/sleep";
+import { sleep } from "../../utils/sleep";
 import { buildAppConfig } from "../../utils/build-app-config";
 import { spy } from "sinon";
 
@@ -50,6 +50,7 @@ const PersonForSyncSchema: Realm.ObjectSchema = {
   },
 };
 
+// TODO: Fix this.
 function waitForConnectionState(session: Realm.App.Sync.Session, state: string) {
   return async () => {
     const callback = (newState: ConnectionState) => {
@@ -294,7 +295,7 @@ describe("SessionTest", () => {
       const progressCallback = spy();
       await Realm.open(config).progress(progressCallback);
 
-      expect(progressCallback.called);
+      expect(progressCallback.called).is.true;
     });
 
     it("removing progress notification does not invoke callback again", async function (this: AppContext) {

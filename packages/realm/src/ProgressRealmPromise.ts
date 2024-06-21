@@ -18,11 +18,11 @@
 
 import {
   Configuration,
+  DynamicProgressNotificationCallback,
   OpenRealmBehaviorType,
   OpenRealmTimeOutBehavior,
+  PartitionBasedSyncProgressNotificationCallback,
   ProgressNotificationCallback,
-  ProgressNotificationCallback1,
-  ProgressNotificationCallback2,
   PromiseHandle,
   Realm,
   SubscriptionSetState,
@@ -176,10 +176,10 @@ export class ProgressRealmPromise implements Promise<Realm> {
   progress(callback: ProgressNotificationCallback): this {
     this.listeners.add(callback);
     if (callback.length === 1) {
-      const estimateCallback = callback as ProgressNotificationCallback2;
+      const estimateCallback = callback as DynamicProgressNotificationCallback;
       estimateCallback(0.0);
     } else {
-      const pbsCallback = callback as ProgressNotificationCallback1;
+      const pbsCallback = callback as PartitionBasedSyncProgressNotificationCallback;
       pbsCallback(0.0, 0.0);
     }
     return this;
@@ -194,10 +194,10 @@ export class ProgressRealmPromise implements Promise<Realm> {
     const transferable = binding.Int64.intToNum(transferableArg);
     for (const listener of this.listeners) {
       if (listener.length === 1) {
-        const estimateListener = listener as ProgressNotificationCallback2;
+        const estimateListener = listener as DynamicProgressNotificationCallback;
         estimateListener(progressEstimate);
       } else {
-        const pbsListener = listener as ProgressNotificationCallback1;
+        const pbsListener = listener as PartitionBasedSyncProgressNotificationCallback;
         pbsListener(transferred, transferable);
       }
     }

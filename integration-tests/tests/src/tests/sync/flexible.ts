@@ -42,7 +42,6 @@ import Realm, {
   ProgressMode,
   Credentials,
   OpenRealmBehaviorType,
-  ConnectionState,
 } from "realm";
 
 import { authenticateUserBefore, importAppBefore, openRealmBeforeEach } from "../../hooks";
@@ -65,22 +64,6 @@ export const PersonSchema: Realm.ObjectSchema = {
     nonQueryable: "string?",
   },
 };
-
-function waitForConnectionState(session: Realm.App.Sync.Session, state: string) {
-  return new Promise<void>(async (resolve, reject) => {
-    const callback = (newState: ConnectionState) => {
-      if (newState === state) {
-        session.removeConnectionNotification(callback);
-        resolve();
-        return;
-      }
-    };
-    session.addConnectionNotification(callback);
-    callback(session.connectionState);
-    await sleep(10_000);
-    reject("Connection state notification timed out");
-  });
-}
 
 export class Person extends Realm.Object<Person> {
   _id!: Realm.BSON.ObjectId;
