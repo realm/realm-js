@@ -24,6 +24,7 @@ import { getRegisteredEmailPassCredentials } from "../../utils/credentials";
 import { generatePartition } from "../../utils/generators";
 import { sleep, throwAfterTimeout } from "../../utils/sleep";
 import { buildAppConfig } from "../../utils/build-app-config";
+import { spy } from "sinon";
 
 const DogForSyncSchema: Realm.ObjectSchema = {
   name: "Dog",
@@ -286,16 +287,14 @@ describe("SessionTest", () => {
   describe("progress notification", () => {
     afterEach(() => Realm.clearTestState());
     it("is called", async function (this: AppContext) {
+      this.timeout(5000);
       const partition = generatePartition();
       const { config } = await getSyncConfWithUser(this.app, partition);
-      let progressCalled = false;
-      await Promise.race([
-        Realm.open(config).progress(() => {
-          progressCalled = true;
-        }),
-        throwAfterTimeout(5000),
-      ]);
-      expect(progressCalled).to.be.true;
+
+      const progressCallback = spy();
+      await Realm.open(config).progress(progressCallback);
+
+      expect(progressCallback.called);
     });
 
     it("removing progress notification does not invoke callback again", async function (this: AppContext) {

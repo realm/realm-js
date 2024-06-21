@@ -47,6 +47,8 @@ import { expectClientResetError } from "../../utils/expect-sync-error";
 import { createSyncConfig } from "../../utils/open-realm";
 import { createPromiseHandle } from "../../utils/promise-handle";
 import { buildAppConfig } from "../../utils/build-app-config";
+import { spy } from "sinon";
+import { beforeEach } from "mocha";
 
 export const PersonSchema: Realm.ObjectSchema = {
   name: "Person",
@@ -438,9 +440,11 @@ describe("Flexible sync", function () {
     });
   });
 
-  describe("Progress notification", () => {
-    it("only estimate callback is allowed", async function () {
-      const realm = await Realm.open({
+  describe("Progress notifications", () => {
+    let realm: Realm;
+
+    beforeEach(async function () {
+      realm = await Realm.open({
         schema: [Person, Dog],
         sync: {
           flexible: true,
@@ -448,25 +452,25 @@ describe("Flexible sync", function () {
         },
       });
 
+      await realm.subscriptions.update((mutableSubs) => {
+        mutableSubs.add(realm.objects(Person));
+      });
+    });
+
+    it("only estimate callback is allowed", async function () {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-function
       const callback = (estimate: number) => {};
-      realm.syncSession?.addProgressNotification(
-        Realm.ProgressDirection.Download,
-        Realm.ProgressMode.ForCurrentlyOutstandingWork,
-        callback,
-      );
-      realm.close();
+
+      expect(() =>
+        realm.syncSession?.addProgressNotification(
+          Realm.ProgressDirection.Download,
+          Realm.ProgressMode.ForCurrentlyOutstandingWork,
+          callback,
+        ),
+      ).not.to.throw();
     });
 
     it("old callback style is not allowed", async function () {
-      const realm = await Realm.open({
-        schema: [Person, Dog],
-        sync: {
-          flexible: true,
-          user: this.user,
-        },
-      });
-
       // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-function
       const callback = (transferable: number, transferred: number) => {};
       expect(() => {
@@ -476,7 +480,84 @@ describe("Flexible sync", function () {
           callback,
         );
       }).to.throw();
-      realm.close();
+    });
+
+    describe("with ProgressDirection.Upload", function () {
+      this.timeout(5000);
+
+      it("should not call the callback when there is no upload", async function () {
+        // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
+        const callback = spy((estimate: number) => {});
+
+        await realm.syncSession?.uploadAllLocalChanges();
+
+        realm.syncSession?.addProgressNotification(
+          Realm.ProgressDirection.Upload,
+          Realm.ProgressMode.ReportIndefinitely,
+          callback,
+        );
+
+        expect(callback.callCount).equals(1);
+
+        // The callback does get called once as 1 on initialization.
+        expect(callback.withArgs(1.0).calledOnce).to.be.true;
+      });
+
+      it("should show progress", async function () {
+        // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
+        const callback = spy((estimate: number) => {});
+
+        realm.syncSession?.addProgressNotification(
+          Realm.ProgressDirection.Upload,
+          Realm.ProgressMode.ReportIndefinitely,
+          callback,
+        );
+
+        realm.write(() => {
+          for (let i = 0; i < 3; i++) {
+            realm.create(Person, {
+              _id: new BSON.ObjectId(),
+              name: "Person",
+              age: i,
+            });
+          }
+        });
+
+        await realm.syncSession?.uploadAllLocalChanges();
+
+        // There should be at least one point where the progress is not yet finished.
+        expect(callback.args.find(([estimate]) => estimate < 1)).to.not.be.undefined;
+
+        expect(callback.withArgs(1.0).called).to.be.true;
+      });
+
+      it("should have a correct start and finish states", async function () {
+        // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
+        const callback = spy((estimate: number) => {});
+
+        realm.syncSession?.addProgressNotification(
+          Realm.ProgressDirection.Upload,
+          Realm.ProgressMode.ReportIndefinitely,
+          callback,
+        );
+
+        realm.write(() => {
+          for (let i = 0; i < 3; i++) {
+            realm.create(Person, {
+              _id: new BSON.ObjectId(),
+              name: "Person",
+              age: i,
+            });
+          }
+        });
+
+        await realm.syncSession?.uploadAllLocalChanges();
+
+        // There should be at least one point where the progress is not yet finished.
+        expect(callback.args.find(([estimate]) => estimate < 1)).to.not.be.undefined;
+
+        expect(callback.calledWithExactly(1.0)).to.be.true;
+      });
     });
   });
 
@@ -539,7 +620,7 @@ describe("Flexible sync", function () {
       realm.write(() => {
         //Outside subscriptions
         const tom = realm.create(Person, {
-          _id: person1Id,
+          _id: new BSON.ObjectId(),
           name: "Tom",
           age: 36,
         });
