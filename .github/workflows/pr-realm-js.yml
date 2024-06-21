@@ -186,7 +186,7 @@ jobs:
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1
         with:
-          key: ${{ runner.os }}-${{ matrix.os }}-${{ matrix.arch }}
+          key: ${{ github.job }}-${{ matrix.os }}-${{ matrix.arch }}
           max-size: '2.0G'
           create-symlink: ${{ runner.os != 'Windows' }}
 
@@ -260,7 +260,7 @@ jobs:
       - name: Setup Ccache
         uses: hendrikmuhs/ccache-action@v1
         with:
-          key: ${{ runner.os }}-${{ matrix.platform }}
+          key: ${{ github.job }}-${{ matrix.platform }}
           max-size: '2.0G'
           create-symlink: true
           
@@ -346,7 +346,7 @@ jobs:
       - name: Setup Ccache
         uses: hendrikmuhs/ccache-action@v1
         with:
-          key: ${{ runner.os }}-android-${{ matrix.architecture }}
+          key: ${{ github.job }}-${{ matrix.architecture }}
           max-size: '2.0G'
           create-symlink: true
 
@@ -566,7 +566,7 @@ jobs:
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1
         with:
-          key: ${{ github.job }}-${{ runner.os }}
+          key: ${{ github.job }}
           max-size: '2.0G'
           create-symlink: true
 
@@ -673,7 +673,7 @@ jobs:
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1
         with:
-          key: ${{ github.job }}-${{ runner.os }}
+          key: ${{ github.job }}
           max-size: '2.0G'
           create-symlink: true
 
