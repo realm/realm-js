@@ -456,6 +456,10 @@ describe("Flexible sync", function () {
       });
     });
 
+    afterEach(() => {
+      realm.close();
+    });
+
     it("only estimate callback is allowed", async function () {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-function
       const callback = (estimate: number) => {};
