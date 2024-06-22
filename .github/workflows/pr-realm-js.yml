@@ -503,13 +503,13 @@ jobs:
           node-version: 20
           cache: npm
 
-      # - name: Restore React Native cache
-      #   uses: actions/cache@v4
-      #   with:
-      #     path: '**/Pods'
-      #     key: ${{ runner.os }}-react-native-test-app-${{ hashFiles('**/Podfile.lock', './src/**', './vendor/**') }}
-      #     restore-keys: |
-      #       ${{ runner.os }}-react-native-test-app-
+      - name: Cached React Native Test App CocoaPods
+        uses: actions/cache@v4
+        with:
+          path: 'integration-tests/environments/react-native-test-app/ios/Pods'
+          key: ${{ github.job }}-pods-${{ hashFiles('integration-tests/environments/react-native-test-app/ios/Podfile.lock') }}
+          restore-keys: |
+            ${{ github.job }}-pods-
 
       - name: MSVC Setup
         if: ${{ runner.os == 'Windows' }}
