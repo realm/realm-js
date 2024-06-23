@@ -11,8 +11,6 @@
     "start": "react-native start",
     "test:android": "wireit",
     "test:ios": "wireit",
-    "test:ci:android": "wireit",
-    "test:ci:ios": "wireit",
     "pod-install": "wireit",
     "realm:build-android:debug": "wireit",
     "realm:build-android:release": "wireit",
@@ -51,27 +49,6 @@
       ],
       "env": {
         "PLATFORM": "ios"
-      }
-    },
-    "test:ci:android": {
-      "command": "mocha-remote -- concurrently --kill-others-on-fail npm:metro npm:runner",
-      "env": {
-        "PLATFORM": "android",
-        "SKIP_RUNNER": {
-          "external": true
-        }
-      }
-    },
-    "test:ci:ios": {
-      "command": "mocha-remote -- concurrently --kill-others-on-fail npm:metro npm:runner",
-      "dependencies": [
-        "pod-install:ci"
-      ],
-      "env": {
-        "PLATFORM": "ios",
-        "SKIP_RUNNER": {
-          "external": true
-        }
       }
     },
     "pod-install": {
