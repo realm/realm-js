@@ -489,6 +489,8 @@ jobs:
     env:
       DEVELOPER_DIR: /Applications/Xcode_14.3.1.app
       IOS_DEVICE_NAME: iPhone 14
+      # See https://guides.cocoapods.org/using/faq.html#can-i-change-the-default-cocoapods-repositories-folder
+      CP_HOME_DIR: ${{ github.workspace }}/.cocoapods
     runs-on: macos-latest-large
     timeout-minutes: 60
     steps:
@@ -502,6 +504,12 @@ jobs:
         with:
           node-version: 20
           cache: npm
+
+      - name: CocoaPods cache
+        uses: actions/cache@v4
+        with:
+          key: ${{ github.job }}-cocoapods
+          path: ${{ env.CP_HOME_DIR }}
 
       - name: Cached React Native Test App CocoaPods
         uses: actions/cache@v4
