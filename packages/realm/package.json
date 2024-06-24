@@ -36,11 +36,13 @@
   "types": "./dist/public-types/index.d.ts",
   "main": "./dist/platform/node/index.js",
   "react-native": "./index.react-native.js",
+  "browser": "./dist/platform/browser/index.js",
   "exports": {
     ".": {
       "types": "./dist/public-types/index.d.ts",
       "node": "./dist/platform/node/index.js",
-      "react-native": "./index.react-native.js"
+      "react-native": "./index.react-native.js",
+      "browser": "./dist/platform/browser/index.js"
     },
     "./experimental/base-url": {
       "types": "./dist/public-types/experimental/base-url.d.ts",

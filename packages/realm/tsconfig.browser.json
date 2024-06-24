@@ -1,0 +1,20 @@
+{
+    "extends": "@tsconfig/recommended",
+    "compilerOptions": {
+      "composite": true,
+      "outDir": "dist/platform/browser",
+      "rootDir": "src/platform/browser",
+      "sourceMap": true,
+      "resolveJsonModule": true,
+      "noEmit": false,
+      "allowImportingTsExtensions": false,
+      "types": ["@realm/fetch"],
+      "lib": ["ES2020", "DOM"]
+    },
+    "include": [
+      "src/platform/browser/**/*"
+    ],
+    "references": [
+      { "path": "./tsconfig.shared.json" }
+    ]
+  }
