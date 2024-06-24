@@ -34,7 +34,6 @@ export function createDefaultPropertyAccessor({
         throw err;
       }
     },
-
     set(obj: binding.Obj, value: unknown) {
       assert.inTransaction(realm);
       try {

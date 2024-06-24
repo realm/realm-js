@@ -18,6 +18,7 @@
 
 import { assert, binding, safeGlobalThis } from "../internal";
 
+/** @internal */
 export const TYPED_ARRAY_CONSTRUCTORS = new Set(
   [
     DataView,
@@ -36,6 +37,7 @@ export const TYPED_ARRAY_CONSTRUCTORS = new Set(
   ].filter((ctor) => ctor !== undefined),
 );
 
+/** @internal */
 export function toArrayBuffer(value: unknown, stringToBase64 = true) {
   if (typeof value === "string" && stringToBase64) {
     return binding.Helpers.base64Decode(value);

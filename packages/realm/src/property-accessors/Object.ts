@@ -33,7 +33,7 @@ function createEmbeddedSet({ typeHelpers: { toBinding }, columnKey }: PropertyOp
   };
 }
 
-import type { PropertyAccessor, PropertyHelpers, PropertyOptions } from "./types";
+import type { PropertyAccessor, PropertyOptions } from "./types";
 
 /** @internal */
 export function createObjectPropertyAccessor(options: PropertyOptions): PropertyAccessor {
@@ -47,7 +47,7 @@ export function createObjectPropertyAccessor(options: PropertyOptions): Property
   const { set: defaultSet } = createDefaultPropertyAccessor(options);
 
   return {
-    get(this: PropertyHelpers, obj) {
+    get(obj) {
       return fromBinding(obj.getLinkedObject(columnKey));
     },
     set: embedded ? createEmbeddedSet(options) : defaultSet,
