@@ -470,6 +470,8 @@ describe("Flexible sync", async function () {
           user: this.user,
         },
       });
+      await this.realm.syncSession?.uploadAllLocalChanges();
+      await this.realm.syncSession?.downloadAllServerChanges();
     });
 
     afterEach(async function (this: RealmContext) {
@@ -510,13 +512,13 @@ describe("Flexible sync", async function () {
           // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
           const callback = spy((estimate: number) => {});
 
-          await realm.syncSession?.uploadAllLocalChanges();
-
           realm.syncSession?.addProgressNotification(
             Realm.ProgressDirection.Upload,
             ProgressMode.ReportIndefinitely,
             callback,
           );
+
+          realm.objects(HugeSyncObject).subscribe();
 
           expect(callback.callCount).equals(1);
 
@@ -533,6 +535,8 @@ describe("Flexible sync", async function () {
             Realm.ProgressMode.ReportIndefinitely,
             callback,
           );
+
+          realm.objects(HugeSyncObject).subscribe();
 
           realm.write(() => {
             realm.create(HugeSyncObject, {
@@ -559,6 +563,8 @@ describe("Flexible sync", async function () {
             Realm.ProgressMode.ReportIndefinitely,
             callback,
           );
+
+          realm.objects(HugeSyncObject).subscribe();
 
           realm.write(() => {
             realm.create(HugeSyncObject, {
@@ -598,6 +604,8 @@ describe("Flexible sync", async function () {
             callback,
           );
 
+          realm.objects(HugeSyncObject).subscribe();
+
           expect(callback.callCount).equals(1);
 
           expect(callback.withArgs(1.0).calledOnce).to.be.true;
@@ -624,6 +632,8 @@ describe("Flexible sync", async function () {
             Realm.ProgressMode.ReportIndefinitely,
             callback,
           );
+
+          realm.objects(HugeSyncObject).subscribe();
 
           realm.write(() => {
             realm.create(HugeSyncObject, {
@@ -661,6 +671,8 @@ describe("Flexible sync", async function () {
             Realm.ProgressMode.ReportIndefinitely,
             callback,
           );
+
+          realm.objects(HugeSyncObject).subscribe();
 
           realm.write(() => {
             realm.create(HugeSyncObject, {
@@ -725,6 +737,8 @@ describe("Flexible sync", async function () {
               callback,
             );
 
+            realm.objects(HugeSyncObject).subscribe();
+
             realm.write(() => {
               realm.create(HugeSyncObject, {
                 _id: new BSON.ObjectId(),
@@ -773,6 +787,8 @@ describe("Flexible sync", async function () {
                 },
               },
             });
+
+            realm.objects(HugeSyncObject).subscribe();
 
             realm.write(() => {
               realm.create(HugeSyncObject, {
