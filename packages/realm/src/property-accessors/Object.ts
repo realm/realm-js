@@ -18,6 +18,7 @@
 
 import { assert, binding } from "../internal";
 import { createDefaultPropertyAccessor } from "./default";
+import type { PropertyAccessor, PropertyOptions } from "./types";
 
 function createEmbeddedSet({ typeHelpers: { toBinding }, columnKey }: PropertyOptions) {
   return (obj: binding.Obj, value: unknown) => {
@@ -32,8 +33,6 @@ function createEmbeddedSet({ typeHelpers: { toBinding }, columnKey }: PropertyOp
     }
   };
 }
-
-import type { PropertyAccessor, PropertyOptions } from "./types";
 
 /** @internal */
 export function createObjectPropertyAccessor(options: PropertyOptions): PropertyAccessor {
