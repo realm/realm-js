@@ -413,7 +413,7 @@ describe("Flexible sync", function () {
 
           it("sets the correct path from the configuration", async function () {
             const realm = await Realm.open({
-              path: "custom_path.realm.realm",
+              path: "custom_path.realm",
               ...getSuccessConfig(this.user, {}),
             });
 
