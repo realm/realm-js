@@ -460,15 +460,15 @@ describe("Flexible sync", async function () {
   });
   describe("Progress notification", () => {
     beforeEach(async function (this: RealmContext) {
+      beforeEach(() => {
+        Realm.clearTestState();
+      });
       this.realm = await Realm.open({
         schema: [HugeSyncObject],
         sync: {
           flexible: true,
           user: this.user,
         },
-      });
-      await this.realm.subscriptions.update((mutableSubs) => {
-        mutableSubs.add(this.realm.objects(HugeSyncObject));
       });
     });
 
