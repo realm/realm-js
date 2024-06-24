@@ -459,15 +459,22 @@ describe("Flexible sync", async function () {
     });
   });
   describe("Progress notification", () => {
-    openRealmBeforeEach({
-      schema: [HugeSyncObject],
-      sync: {
-        flexible: true,
-      },
-    });
     beforeEach(async function (this: RealmContext) {
+      this.realm = await Realm.open({
+        schema: [HugeSyncObject],
+        sync: {
+          flexible: true,
+          user: this.user,
+        },
+      });
       await this.realm.subscriptions.update((mutableSubs) => {
         mutableSubs.add(this.realm.objects(HugeSyncObject));
+      });
+    });
+
+    afterEach(async function (this: RealmContext) {
+      await this.realm.subscriptions.update((mutableSubs) => {
+        mutableSubs.removeAll();
       });
     });
 
