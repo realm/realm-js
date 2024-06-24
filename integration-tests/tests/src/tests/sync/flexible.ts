@@ -51,7 +51,6 @@ import { createSyncConfig } from "../../utils/open-realm";
 import { createPromiseHandle } from "../../utils/promise-handle";
 import { buildAppConfig } from "../../utils/build-app-config";
 import { spy } from "sinon";
-import { sleep } from "../../utils/sleep";
 
 export const PersonSchema: Realm.ObjectSchema = {
   name: "Person",
@@ -100,6 +99,23 @@ type AddSubscriptionResult<T extends Realm.Object<T>> = {
   sub: Realm.App.Sync.Subscription;
   query: Realm.Results<T>;
 };
+
+export const HugeSyncObjectSchema: Realm.ObjectSchema = {
+  name: "HugeSyncObject",
+  primaryKey: "_id",
+  properties: {
+    _id: "objectId",
+    data: "data",
+  },
+};
+
+/** An object that takes binary data. Useful for dumping large sync chunks. */
+export class HugeSyncObject extends Realm.Object<HugeSyncObject> {
+  _id!: Realm.BSON.ObjectId;
+  data!: Realm.Types.Data;
+
+  static schema: Realm.ObjectSchema = HugeSyncObjectSchema;
+}
 
 /**
  * Add a subscription for all objects of type "Person"
@@ -444,20 +460,20 @@ describe("Flexible sync", async function () {
   });
   describe("Progress notification", () => {
     openRealmBeforeEach({
-      schema: [Person, Dog],
+      schema: [HugeSyncObject],
       sync: {
         flexible: true,
       },
     });
     beforeEach(async function (this: RealmContext) {
       await this.realm.subscriptions.update((mutableSubs) => {
-        mutableSubs.add(this.realm.objects(Person));
+        mutableSubs.add(this.realm.objects(HugeSyncObject));
       });
     });
 
     it("only estimate callback is allowed", async function (this: RealmContext) {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-function
-      const callback = spy((estimate: number) => {});
+      const callback = (estimate: number) => {};
       this.realm.syncSession?.addProgressNotification(
         Realm.ProgressDirection.Download,
         Realm.ProgressMode.ForCurrentlyOutstandingWork,
@@ -512,13 +528,10 @@ describe("Flexible sync", async function () {
           );
 
           realm.write(() => {
-            for (let i = 0; i < 3; i++) {
-              realm.create(Person, {
-                _id: new BSON.ObjectId(),
-                name: "Person",
-                age: i,
-              });
-            }
+            realm.create(HugeSyncObject, {
+              _id: new BSON.ObjectId(),
+              data: new ArrayBuffer(1_000_000),
+            });
           });
 
           await realm.syncSession?.uploadAllLocalChanges();
@@ -553,10 +566,10 @@ describe("Flexible sync", async function () {
           // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
           const callback = spy((estimate: number) => {});
           const realm2 = await Realm.open({
-            schema: [Person, Dog],
+            schema: [HugeSyncObject],
             sync: {
               flexible: true,
-              user: await this.app.logIn(Credentials.anonymous()),
+              user: await this.app.logIn(Credentials.anonymous(false)),
               newRealmFileBehavior: {
                 type: OpenRealmBehaviorType.OpenImmediately,
               },
@@ -569,21 +582,20 @@ describe("Flexible sync", async function () {
             callback,
           );
 
-          await realm2.objects(Person).subscribe();
-
-          for (let i = 0; i < 100; i++) {
+          for (let i = 0; i < 3; i++) {
             realm.write(() => {
-              realm.create(Person, {
+              realm.create(HugeSyncObject, {
                 _id: new BSON.ObjectId(),
-                name: "Person",
-                age: i,
+                data: new ArrayBuffer(1_000_000),
               });
             });
           }
-          await realm.syncSession?.uploadAllLocalChanges();
 
+          await realm.syncSession?.uploadAllLocalChanges();
+          await realm2.objects(HugeSyncObject).subscribe();
           await realm2.syncSession?.downloadAllServerChanges();
 
+          expect(callback.args.find(([estimate]) => estimate < 1)).to.not.be.undefined;
           expect(callback.withArgs(1.0).callCount).is.greaterThanOrEqual(2);
           realm2.close();
         });
@@ -621,13 +633,10 @@ describe("Flexible sync", async function () {
           );
 
           realm.write(() => {
-            for (let i = 0; i < 3; i++) {
-              realm.create(Person, {
-                _id: new BSON.ObjectId(),
-                name: "Person",
-                age: i,
-              });
-            }
+            realm.create(HugeSyncObject, {
+              _id: new BSON.ObjectId(),
+              data: new ArrayBuffer(1_000_000),
+            });
           });
 
           await realm.syncSession?.uploadAllLocalChanges();
@@ -662,29 +671,27 @@ describe("Flexible sync", async function () {
           // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
           const callback = spy((estimate: number) => {});
           const realm2 = await Realm.open({
-            schema: [Person, Dog],
+            schema: [HugeSyncObject],
             sync: {
               flexible: true,
-              user: await this.app.logIn(Credentials.anonymous()),
+              user: await this.app.logIn(Credentials.anonymous(false)),
               newRealmFileBehavior: {
                 type: OpenRealmBehaviorType.OpenImmediately,
               },
             },
           });
 
-          await realm2.objects(Person).subscribe();
-
-          for (let i = 0; i < 100; i++) {
+          for (let i = 0; i < 3; i++) {
             realm.write(() => {
-              realm.create(Person, {
+              realm.create(HugeSyncObject, {
                 _id: new BSON.ObjectId(),
-                name: "Person",
-                age: i,
+                data: new ArrayBuffer(1_000_000),
               });
             });
           }
 
           await realm.syncSession?.uploadAllLocalChanges();
+          await realm2.objects(HugeSyncObject).subscribe();
           await realm2.syncSession?.downloadAllServerChanges();
 
           // At this point there is no other work.
