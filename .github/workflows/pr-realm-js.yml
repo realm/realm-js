@@ -269,7 +269,7 @@ jobs:
   prebuild-apple:
     name: Combine Xcframework (Apple React Native)
     runs-on: macos-latest-large
-    needs: [prebuild-apple-archives]
+    needs: prebuild-apple-archives
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -368,7 +368,10 @@ jobs:
   merge-prebuilds:
     name: Merge prebuild artifacts
     runs-on: ubuntu-latest
-    needs:  [prebuild-node, prebuild-apple, prebuild-android]
+    needs:
+      - prebuild-node
+      - prebuild-apple
+      - prebuild-android
     steps:
       - uses: actions/upload-artifact/merge@v4
         with:
@@ -378,7 +381,6 @@ jobs:
   node-electron-tests:
     name: Test ${{ matrix.environment }} on ${{ matrix.runner }} (${{matrix.script_name}})
     needs:
-      - generate-jsi
       - build-ts
       - prebuild-node
     runs-on: ${{ matrix.runner }}
@@ -483,8 +485,8 @@ jobs:
   apple-tests:
     name: Test iOS (React Native)
     needs:
-      - generate-jsi
       - build-ts
+      - generate-jsi
       - prebuild-apple
     env:
       DEVELOPER_DIR: /Applications/Xcode_14.3.1.app
@@ -607,8 +609,8 @@ jobs:
   android-tests:
     name: Test Android (React Native)
     needs:
-      - generate-jsi
       - build-ts
+      - generate-jsi
       - prebuild-android
     env:
       SPAWN_LOGCAT: true
