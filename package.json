@@ -60,6 +60,7 @@
     "packages/mocha-reporter",
     "packages/realm-web-integration-tests",
     "integration-tests/tests",
+    "integration-tests/environments/browser",
     "integration-tests/environments/node",
     "integration-tests/environments/electron",
     "integration-tests/environments/react-native-test-app",
