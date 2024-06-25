@@ -15,8 +15,7 @@ realm.syncSession.addProgressNotification(
   ProgressMode.ReportIndefinitely,
   (transferred, transferable) => console.log(`progress: ${(transferred / transferable)}/1.0`),
 );
-``` 
-Please use the new `(transferred: number, transferable: number) => void;`
+```
 
 ### Enhancements
 * Added progress notifications support for flexible sync using a new callback argument.
