@@ -2132,7 +2132,7 @@ describe("Realmtest", () => {
       expect(realm.path).equals(defaultDir + testPath);
       const path = realm.path;
       realm.close();
-      const pathExistAfterInitialization = fs.exists(path);
+      const pathExistAfterInitialization = await fs.exists(path);
       expect(pathExistAfterInitialization).to.be.true;
     });
 
@@ -2145,10 +2145,10 @@ describe("Realmtest", () => {
       const realm = new Realm(config);
       const path = realm.path;
       realm.close();
-      const pathExistBeforeDelete = fs.exists(path);
+      const pathExistBeforeDelete = await fs.exists(path);
       expect(pathExistBeforeDelete).to.be.true;
       Realm.deleteFile(config);
-      const pathExistAfterDelete = fs.exists(path);
+      const pathExistAfterDelete = await fs.exists(path);
       expect(pathExistAfterDelete).to.be.false;
     });
   });
