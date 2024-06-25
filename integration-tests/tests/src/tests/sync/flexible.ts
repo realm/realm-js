@@ -411,15 +411,6 @@ describe("Flexible sync", function () {
             closeRealm(realm2);
           });
 
-          it("sets custom path from the configuration", async function () {
-            const realm = await Realm.open({
-              path: "custom_path.realm",
-              ...getSuccessConfig(this.user, {}),
-            });
-
-            expect(realm.path).to.contain("custom_path.realm");
-          });
-
           it("does not update the subscriptions on second open if rerunOnOpen is false", async function (this: RealmContext) {
             const realm = await testSuccess(this.user, { rerunOnOpen: false }, false);
             if (!realm) throw new Error("Valid realm was not returned from testSuccess");

@@ -2111,21 +2111,45 @@ describe("Realmtest", () => {
   describe("with sync", () => {
     importAppBefore(buildAppConfig("with-anon").anonAuth().partitionBasedSync());
 
-    it("data is deleted on realm with custom path", function (this: RealmContext & AppContext) {
-      return this.app.logIn(Realm.Credentials.anonymous()).then(async (user) => {
-        const config = {
-          schema: [TestObjectWithPkSchema],
-          sync: { user, partitionValue: '"Lolo"' },
-        };
-        const realm = new Realm(config);
-        const path = realm.path;
-        realm.close();
-        const pathExistBeforeDelete = await fs.exists(path);
-        expect(pathExistBeforeDelete).to.be.true;
-        Realm.deleteFile(config);
-        const pathExistAfterDelete = await fs.exists(path);
-        expect(pathExistAfterDelete).to.be.false;
+    it("custom path gets correctly set", async function (this: RealmContext & AppContext) {
+      const user = await this.app.logIn(Realm.Credentials.anonymous());
+      const testPath = "custom_path.realm";
+      const pathSeparator = "/";
+      const defaultDir =
+        Realm.defaultPath.substring(0, Realm.defaultPath.lastIndexOf(pathSeparator) + 1) +
+        "mongodb-realm" +
+        pathSeparator +
+        this.app.id +
+        pathSeparator +
+        user.id +
+        pathSeparator;
+
+      const realm = await Realm.open({
+        path: testPath,
+        schema: [TestObjectWithPkSchema],
+        sync: { user, partitionValue: '"Lolo"' },
       });
+      expect(realm.path).equals(defaultDir + testPath);
+      const path = realm.path;
+      realm.close();
+      const pathExistAfterInitialization = fs.exists(path);
+      expect(pathExistAfterInitialization).to.be.true;
+    });
+
+    it("data is deleted on realm with custom path", async function (this: RealmContext & AppContext) {
+      const user = await this.app.logIn(Realm.Credentials.anonymous());
+      const config = {
+        schema: [TestObjectWithPkSchema],
+        sync: { user, partitionValue: '"Lolo"' },
+      };
+      const realm = new Realm(config);
+      const path = realm.path;
+      realm.close();
+      const pathExistBeforeDelete = fs.exists(path);
+      expect(pathExistBeforeDelete).to.be.true;
+      Realm.deleteFile(config);
+      const pathExistAfterDelete = fs.exists(path);
+      expect(pathExistAfterDelete).to.be.false;
     });
   });
 
