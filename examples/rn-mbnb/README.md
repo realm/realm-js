@@ -67,7 +67,7 @@ This app opens a Realm via `RealmProvider` (see [AppWrapper.tsx](./app/AppWrappe
 1. [Deploy a free Atlas cluster](https://www.mongodb.com/docs/atlas/getting-started/#get-started-with-atlas) and create an Atlas database.
 2. [Load the Sample Airbnb Dataset](https://www.mongodb.com/docs/atlas/sample-data/) into your Atlas database.
     * Several databases and collections exist in the sample dataset, but we will only be using the `sample_airbnb` database and its `listingsAndReviews` collection.
-3. [Create a Search Index](https://www.mongodb.com/docs/atlas/atlas-search/tutorial/create-index/) with an Index Name of `airbnb`.  This will be used for Atlas Search within the application.
+3. [Create a Search Index](https://www.mongodb.com/docs/atlas/atlas-search/tutorial/create-index/) with an Index Name of `mbnb`.  This will be used for Atlas Search within the application.
 
 ### Set up an Atlas App Services App via CLI
 
@@ -95,15 +95,9 @@ From the project root directory, run:
 npm install
 ```
 
-If developing with iOS, also run:
-
-```sh
-npx pod-install
-```
-
 ### Run the App
 
-1. [Copy your Atlas App ID](https://www.mongodb.com/docs/atlas/app-services/reference/find-your-project-or-app-id/#std-label-find-your-app-id) from the App Services UI.
+1. [Copy your Atlas App ID](https://www.mongodb.com/docs/atlas/app-services/reference/find-your-project-or-app-id/#std-label-find-your-app-id) from the App Services UI or from [./backend/meta.json](./backend/meta.json).
 2. Paste the copied ID as the value of the existing variable `appId` in [./sync.config.js](./sync.config.js):
 ```js
 export const SYNC_CONFIG = {
