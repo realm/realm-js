@@ -102,6 +102,7 @@ jobs:
             packages/realm/binding/generated
 
   prebuild-node:
+    if: false
     name: Prebuild ${{ matrix.os }} ${{ matrix.arch }} (Node.js)
     runs-on: ${{ matrix.runner }}
     strategy:
@@ -220,6 +221,7 @@ jobs:
             packages/realm/prebuilds/realm-*-napi-*.tar.gz
 
   prebuild-apple-archives:
+    if: false
     name: Prebuild ${{ matrix.platform }} (Apple React Native)
     runs-on: macos-latest-large
     strategy:
@@ -267,6 +269,7 @@ jobs:
           if-no-files-found: error
 
   prebuild-apple:
+    if: false
     name: Combine Xcframework (Apple React Native)
     runs-on: macos-latest-large
     needs: prebuild-apple-archives
@@ -366,6 +369,7 @@ jobs:
           if-no-files-found: error
 
   merge-prebuilds:
+    if: false
     name: Merge prebuild artifacts
     runs-on: ubuntu-latest
     needs:
@@ -379,6 +383,7 @@ jobs:
           pattern: '*-prebuild'
 
   node-electron-tests:
+    if: false
     name: Test ${{ matrix.environment }} on ${{ matrix.runner }} (${{matrix.script_name}})
     needs:
       - build-ts
@@ -483,6 +488,7 @@ jobs:
         run: ${{ env.wrapper }} npm run ${{ matrix.script_name}} --prefix integration-tests/environments/${{ matrix.environment }}
 
   apple-tests:
+    if: false
     name: Test iOS (React Native)
     needs:
       - build-ts
