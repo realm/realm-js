@@ -94,7 +94,7 @@ export class ListingsAndReview extends Realm.Object<ListingsAndReview> {
   static schema = listingsAndReviewSchema;
 }
 
-export const listingsAndReview_addressSchema: Realm.ObjectSchema = {
+const listingsAndReview_addressSchema: Realm.ObjectSchema = {
   name: "listingsAndReview_address",
   embedded: true,
   properties: {
@@ -120,7 +120,7 @@ export class ListingsAndReview_address extends Realm.Object<ListingsAndReview_ad
   static schema = listingsAndReview_addressSchema;
 }
 
-export const listingsAndReview_address_locationSchema: Realm.ObjectSchema = {
+const listingsAndReview_address_locationSchema: Realm.ObjectSchema = {
   name: "listingsAndReview_address_location",
   embedded: true,
   properties: {
@@ -138,7 +138,7 @@ export class ListingsAndReview_address_location extends Realm.Object<ListingsAnd
   static schema = listingsAndReview_address_locationSchema;
 }
 
-export const listingsAndReview_availabilitySchema: Realm.ObjectSchema = {
+const listingsAndReview_availabilitySchema: Realm.ObjectSchema = {
   name: "listingsAndReview_availability",
   embedded: true,
   properties: {
@@ -158,7 +158,7 @@ export class ListingsAndReview_availability extends Realm.Object<ListingsAndRevi
   static schema = listingsAndReview_availabilitySchema;
 }
 
-export const listingsAndReview_hostSchema: Realm.ObjectSchema = {
+const listingsAndReview_hostSchema: Realm.ObjectSchema = {
   name: "listingsAndReview_host",
   embedded: true,
   properties: {
@@ -202,7 +202,7 @@ export class ListingsAndReview_host extends Realm.Object<ListingsAndReview_host>
   static schema = listingsAndReview_hostSchema;
 }
 
-export const listingsAndReview_imagesSchema: Realm.ObjectSchema = {
+const listingsAndReview_imagesSchema: Realm.ObjectSchema = {
   name: "listingsAndReview_images",
   embedded: true,
   properties: {
@@ -222,7 +222,7 @@ export class ListingsAndReview_images extends Realm.Object<ListingsAndReview_ima
   static schema = listingsAndReview_imagesSchema;
 }
 
-export const listingsAndReview_review_scoresSchema: Realm.ObjectSchema = {
+const listingsAndReview_review_scoresSchema: Realm.ObjectSchema = {
   name: "listingsAndReview_review_scores",
   embedded: true,
   properties: {
@@ -248,7 +248,7 @@ export class ListingsAndReview_review_scores extends Realm.Object<ListingsAndRev
   static schema = listingsAndReview_review_scoresSchema;
 }
 
-export const listingsAndReview_reviewsSchema: Realm.ObjectSchema = {
+const listingsAndReview_reviewsSchema: Realm.ObjectSchema = {
   name: "listingsAndReview_reviews",
   embedded: true,
   properties: {

@@ -1,4 +1,5 @@
 import { createRealmContext } from "@realm/react";
+
 import { localModels } from "./localModels";
 
 const { useRealm, useQuery, useObject, RealmProvider } = createRealmContext({

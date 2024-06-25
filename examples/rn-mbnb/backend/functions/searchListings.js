@@ -7,13 +7,11 @@ exports = async function({ searchPhrase, pageNumber, pageSize }) {
   const collName = "listingsAndReviews";
   const searchIndexName = "mbnb";
 
-
   // Get a collection from the context
   const collection = context.services.get(serviceName).db(dbName).collection(collName);
 
   console.log(searchPhrase)
 
-  let findResult;
   try {
 
     // Calculate the skip value
@@ -37,14 +35,10 @@ exports = async function({ searchPhrase, pageNumber, pageSize }) {
 
 
     // Perform the search with pagination
-    findResult = await collection.aggregate(pipeline)
-      .toArray();
-
+return { result: await collection.aggregate(pipeline).toArray() };
   } catch (err) {
     console.log("Error occurred while executing search:", err.message);
 
     return { error: err.message };
   }
-
-  return { result: findResult };
 };

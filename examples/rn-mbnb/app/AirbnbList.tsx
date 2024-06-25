@@ -1,4 +1,4 @@
-import { useApp, useUser } from "@realm/react";
+import { useUser } from "@realm/react";
 import React, { useCallback, useEffect, useState } from "react";
 import {
   FlatList,
@@ -11,6 +11,7 @@ import {
   Pressable,
   Platform,
 } from "react-native";
+
 import { useLocalQuery, useLocalRealm } from "./localRealm";
 import { SearchCache } from "./localModels";
 import { useSyncedQuery, useSyncedRealm } from "./syncedRealm";
@@ -30,16 +31,16 @@ type SearchFunction = ({searchPhrase, pageNumber, pageSize}: {searchPhrase: stri
 
 export const AirbnbList = () => {
   // The results of the most recent search
-  const [resultIds, setResultIds] = useState([]);
+  const [resultIds, setResultIds] = useState<string[]>([]);
 
-  // Offline mode is toggled in state and will effect how search is performed
+  // Offline mode is toggled in state and will affect how search is performed
   const [offlineMode, setOfflineMode] = useState(false);
 
   // The search term is stored in state
   const [searchTerm, setSearchTerm] = useState("");
 
   // Ids of all search results that are stored in Realm
-  const [cachedIds, setCachedIds] = useState([]);
+  const [cachedIds, setCachedIds] = useState<string[]>([]);
 
   // The method used to get the search results
   const [resultMethod, setResultMethod] = useState<ResultMethod>(
@@ -60,7 +61,7 @@ export const AirbnbList = () => {
   const syncedRealm = useSyncedRealm();
 
   // Get the current user in order to call the search function
-  const user = useUser<{searchListings: SearchFunction}, Record<string, unknown>, DefaultUserProfileData  >();
+  const user = useUser<{searchListings: SearchFunction}, Record<string, unknown>, DefaultUserProfileData>();
 
   // Check the local cache for search results
   const cache = useLocalQuery(
@@ -73,13 +74,12 @@ export const AirbnbList = () => {
   const fullCache = useLocalQuery(SearchCache);
 
   // Get the listings that match the search results ids
-  const listings = useSyncedQuery(
-    ListingsAndReview,
-    (col) => col.filtered("_id in $0", resultIds),
-    [resultIds]
-  );
+  const listings = useSyncedQuery({
+    type: ListingsAndReview,
+    query: (col) => col.filtered("_id in $0", resultIds),
+  }, [resultIds]);
 
-  // Setup our flexible sync subscription.
+  // Set up our flexible sync subscription.
   // This will get all unique ids from all search results in the cache
   // in order to subscribe to the listings that match those ids.
   // WARNING: In production, developers should be mindful how large this gets
@@ -165,11 +165,11 @@ export const AirbnbList = () => {
   // Get the size of the image cache
   const getCacheSize = useCallback(async () => {
     const cacheDir =
-      Platform.OS == "ios"
+      Platform.OS === "ios"
         ? `${RNFS.CachesDirectoryPath}/com.hackemist.SDImageCache/default`
         : `${RNFS.CachesDirectoryPath}/image_manager_disk_cache`;
 
-    if(await RNFS.exists(cacheDir)) {
+    if (await RNFS.exists(cacheDir)) {
       const files = await RNFS.readDir(cacheDir);
       let totalSize = 0;
       for (const file of files) {

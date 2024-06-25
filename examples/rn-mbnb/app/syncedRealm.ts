@@ -1,4 +1,5 @@
 import { createRealmContext } from "@realm/react";
+
 import { syncedModels } from "./syncedModels";
 
 const { useRealm, useQuery, useObject, RealmProvider } = createRealmContext({

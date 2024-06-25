@@ -1,6 +1,6 @@
-import Realm, { BSON } from "realm";
+import Realm from "realm";
 
-export class SearchCache extends Realm.Object<Cache> {
+export class SearchCache extends Realm.Object<SearchCache> {
   searchTerm!: string;
   results!: Realm.List<string>;
 

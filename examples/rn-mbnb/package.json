@@ -9,7 +9,7 @@
     "web": "expo start --web"
   },
   "dependencies": {
-    "@realm/react": "^0.6.2",
+    "@realm/react": "^0.7.0",
     "@types/react": "~18.2.45",
     "expo": "~50.0.8",
     "expo-dev-client": "~3.3.9",

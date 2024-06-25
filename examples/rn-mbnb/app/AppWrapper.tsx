@@ -1,6 +1,7 @@
 import React from "react";
 import { AppProvider, UserProvider } from "@realm/react";
 import { Platform, SafeAreaView, StyleSheet } from "react-native";
+
 import { AnonAuth } from "./AnonAuth";
 import { AirbnbList } from "./AirbnbList";
 import { SyncedRealmProvider } from "./syncedRealm";
@@ -10,7 +11,8 @@ import { OpenRealmBehaviorType } from "realm";
 export const AppWrapper: React.FC<{
   appId: string;
 }> = ({ appId }) => {
-  // If we are logged in, add the sync configuration the the RealmProvider and render the app
+  // If we are logged in, the RealmProviders and the app will be rendered,
+  // using the sync configuration for the `SyncedRealmProvider`.
   return (
     <>
       <SafeAreaView style={styles.screen}>
@@ -21,7 +23,7 @@ export const AppWrapper: React.FC<{
               sync={{
                 flexible: true,
                 onError: (_, error) => {
-                  // Uncomment to make errors visible
+                  // Comment out to hide errors
                   console.error(error);
                 },
                 existingRealmFileBehavior: {
