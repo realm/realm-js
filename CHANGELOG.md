@@ -7,8 +7,7 @@
 * None
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None
+* `path` option in the Realm configuration not being set when using a synced Realm. ([#6754](https://github.com/realm/realm-js/issues/6754), since v12.8.0). Note: if you have been using a custom path configuration with your synced Realm, this fix will lead to a re-download of its data in the custom path.
 
 ### Compatibility
 * React Native >= v0.71.4
