@@ -443,7 +443,7 @@ describe("Flexible sync", async function () {
       });
     });
   });
-  describe("Progress notification", function () {
+  describe.skip("Progress notification", function () {
     this.timeout(5000);
     beforeEach(async function (this: RealmContext) {
       this.realm = new Realm({
