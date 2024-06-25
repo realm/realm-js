@@ -460,7 +460,6 @@ describe("Flexible sync", async function () {
       await this.realm.subscriptions.update((mutableSubs) => {
         mutableSubs.removeAll();
       });
-      Realm.clearTestState();
     });
 
     it("only estimate callback is allowed", async function (this: RealmContext) {
