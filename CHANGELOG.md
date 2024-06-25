@@ -42,6 +42,21 @@ realm.syncSession.addProgressNotification(
 <!-- * Using Realm Core vX.Y.Z -->
 <!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
 
+## 12.11.1 (2024-06-25)
+
+### Fixed
+* `path` option in the Realm configuration not being set when using a synced Realm. ([#6754](https://github.com/realm/realm-js/issues/6754), since v12.8.0). Note: if you have been using a custom path configuration with your synced Realm, this fix will lead to a re-download of its data in the custom path.
+
+### Compatibility
+* React Native >= v0.71.4
+* Realm Studio v15.0.0.
+* File format: generates Realms with format v24 (reads and upgrades file format v10).
+
+### Internal
+<!-- * Either mention core version or upgrade -->
+<!-- * Using Realm Core vX.Y.Z -->
+<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
+
 ## 12.11.0 (2024-06-17)
 
 ### Enhancements

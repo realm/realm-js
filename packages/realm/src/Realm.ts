@@ -385,7 +385,7 @@ export class Realm {
         return Realm.normalizePath(config.path);
       } else {
         const bindingSyncConfig = toBindingSyncConfig(config.sync);
-        return config.sync.user.internal.pathForRealm(bindingSyncConfig, undefined);
+        return config.sync.user.internal.pathForRealm(bindingSyncConfig, config.path);
       }
     } else {
       return Realm.normalizePath(config.path);

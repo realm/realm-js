@@ -126,6 +126,9 @@ coverage/
 # Rollup
 .rollup.cache/
 
+# CocoaPods cache on GitHub
+.cocoapods/
+
 # Generated docs
 /packages/realm/docs/
 /packages/realm-react/docs/

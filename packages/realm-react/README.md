@@ -201,7 +201,7 @@ const AppWrapper = () => {
   return (
     <RealmProvider schema={[Item]}>
       <SomeComponent/>
-    <RealmProvider>
+    </RealmProvider>
   )
 }
 
