@@ -84,7 +84,7 @@
     "@types/chai-as-promised": "^7.1.5",
     "@types/jsrsasign": "^10.5.4",
     "@types/mocha": "^10.0.0",
-    "@types/sinon": "^17.0.3",
+    "@types/sinon": "^9.0.5",
     "assert": "^2.1.0",
     "mocha": "^10.1.0",
     "nyc": "^15.1.0",
@@ -97,7 +97,7 @@
     "chai-as-promised": "^7.1.1",
     "jsrsasign": "^11.0.0",
     "node-fetch": "^3.3.2",
-    "sinon": "^18.0.0"
+    "sinon": "^9.2.4"
   },
   "files": [
     "/src"
