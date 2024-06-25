@@ -7,7 +7,7 @@
 * None
 
 ### Fixed
-* `path` option in the Realm configuration not being set when using a synced Realm.
+* `path` option in the Realm configuration not being set when using a synced Realm. ([#6753](https://github.com/realm/realm-js/pull/6753))
 
 ### Compatibility
 * React Native >= v0.71.4
