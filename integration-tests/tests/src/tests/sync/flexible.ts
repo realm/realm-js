@@ -507,7 +507,7 @@ describe("Flexible sync", async function () {
     describe("with ProgressMode.ReportIndefinitely", () => {
       this.timeout(5000);
       describe(`with ProgressDirection.Upload`, function () {
-        it("should only call the callback once with 1.0 when there is nothing to upload", async function (this: RealmContext) {
+        it("should not call callback when there is nothing to upload", async function (this: RealmContext) {
           const realm = this.realm;
           // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
           const callback = spy((estimate: number) => {});
@@ -520,9 +520,7 @@ describe("Flexible sync", async function () {
 
           realm.objects(HugeSyncObject).subscribe();
 
-          expect(callback.callCount).equals(1);
-
-          expect(callback.withArgs(1.0).calledOnce).to.be.true;
+          expect(callback.notCalled).is.true;
         });
 
         it("should be called multiple times with different values during uploads", async function (this: RealmContext) {
@@ -536,7 +534,8 @@ describe("Flexible sync", async function () {
             callback,
           );
 
-          realm.objects(HugeSyncObject).subscribe();
+          expect(callback.notCalled).is.true;
+          await realm.objects(HugeSyncObject).subscribe();
 
           realm.write(() => {
             realm.create(HugeSyncObject, {
@@ -564,7 +563,9 @@ describe("Flexible sync", async function () {
             callback,
           );
 
-          realm.objects(HugeSyncObject).subscribe();
+          expect(callback.notCalled).is.true;
+          await realm.objects(HugeSyncObject).subscribe();
+          expect(callback.calledWith(1.0)).is.true;
 
           realm.write(() => {
             realm.create(HugeSyncObject, {
@@ -593,7 +594,7 @@ describe("Flexible sync", async function () {
       });
 
       describe(`with ProgressDirection.Download`, function () {
-        it("should only call the callback once with 1.0 when there is nothing to download", async function (this: RealmContext) {
+        it("should not call the callback when there is nothing to download", async function (this: RealmContext) {
           const realm = this.realm;
           // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
           const callback = spy((estimate: number) => {});
@@ -604,11 +605,7 @@ describe("Flexible sync", async function () {
             callback,
           );
 
-          realm.objects(HugeSyncObject).subscribe();
-
-          expect(callback.callCount).equals(1);
-
-          expect(callback.withArgs(1.0).calledOnce).to.be.true;
+          expect(callback.notCalled).is.true;
         });
 
         it("should be called multiple times with different values during downloads", async function (this: RealmContext &
@@ -723,7 +720,7 @@ describe("Flexible sync", async function () {
               callback,
             );
 
-            expect(callback.callCount).equals(0);
+            expect(callback.notCalled).is.true;
           });
 
           it("should be called multiple times with different values during uploads", async function (this: RealmContext) {
@@ -756,7 +753,7 @@ describe("Flexible sync", async function () {
         });
 
         describe(`with ProgressDirection.Download`, function () {
-          it("should call callback with 1.0 when there is nothing to download", async function (this: RealmContext) {
+          it("should not call callback when there is nothing to download", async function (this: RealmContext) {
             const realm = this.realm;
             // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
             const callback = spy((estimate: number) => {});
@@ -769,7 +766,7 @@ describe("Flexible sync", async function () {
               callback,
             );
 
-            expect(callback.callCount).equals(1);
+            expect(callback.notCalled).is.true;
           });
 
           it("should be called multiple times with different values during downloads", async function (this: RealmContext &
