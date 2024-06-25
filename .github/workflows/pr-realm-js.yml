@@ -721,7 +721,7 @@ jobs:
           heap-size: 512M
           api-level: 29
           force-avd-creation: false
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          emulator-options: -no-metrics -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
           arch: x86
           ndk: ${{ env.NDK_VERSION }}
