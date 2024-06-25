@@ -618,7 +618,7 @@ jobs:
       - build-ts
       - generate-jsi
       - prebuild-android
-    runs-on: macos-latest-large
+    runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
       - name: Checkout code
@@ -631,6 +631,12 @@ jobs:
         with:
           node-version: 20
           cache: npm
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
 
       - name: Setup Java
         uses: actions/setup-java@v3
@@ -722,4 +728,3 @@ jobs:
           cmake: 3.22.1
           working-directory: integration-tests/environments/react-native-test-app
           script: npx mocha-remote -- concurrently --kill-others-on-fail npm:metro npm:runner
-          
