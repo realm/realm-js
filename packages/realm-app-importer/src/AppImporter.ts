@@ -43,13 +43,9 @@ type App = {
 };
 export interface AppImporterOptions {
   /**
-   * The server's URL.
+   * The client to use when importing.
    */
-  baseUrl: string;
-  /**
-   * Administrative credentials to use when authenticating against the server.
-   */
-  credentials: Credentials;
+  client: AdminApiClient;
   /**
    * Re-use a single app instead of importing individual apps.
    * This will redeploy a previously known "clean" version of the app (to revert any configurations) and delete secrets off the app,
@@ -64,20 +60,16 @@ export interface AppImporterOptions {
 }
 
 export class AppImporter {
-  private readonly baseUrl: string;
-  private readonly credentials: Credentials;
   private readonly reuseApp: boolean;
   private readonly awaitDeployments: boolean;
   private readonly client: AdminApiClient;
   private initialDeployment: Deployment | null = null;
   private reusedApp: App | null = null;
 
-  constructor({ baseUrl, credentials, reuseApp = false, awaitDeployments = false }: AppImporterOptions) {
-    this.baseUrl = baseUrl;
-    this.credentials = credentials;
+  constructor({ client, reuseApp = false, awaitDeployments = false }: AppImporterOptions) {
     this.reuseApp = reuseApp;
     this.awaitDeployments = awaitDeployments;
-    this.client = new AdminApiClient({ baseUrl });
+    this.client = client;
   }
 
   public async createOrReuseApp(name: string) {
@@ -126,7 +118,7 @@ export class AppImporter {
    * @returns A promise of an object containing the app id.
    */
   public async importApp(config: AppConfig): Promise<ImportedApp> {
-    await this.client.ensureLogIn(this.credentials);
+    await this.client.ensureLogIn();
 
     const app = await this.createOrReuseApp(config.name);
     try {
@@ -141,7 +133,7 @@ export class AppImporter {
       }
 
       debug(`The application ${app.client_app_id} was successfully deployed:`);
-      debug(`${this.baseUrl}/groups/${await this.client.groupId}/apps/${app._id}/dashboard`);
+      debug(`${this.client.config.baseUrl}/groups/${await this.client.groupId}/apps/${app._id}/dashboard`);
 
       return { appName: config.name, appId: app.client_app_id };
     } catch (err) {

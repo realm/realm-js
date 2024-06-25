@@ -32,6 +32,7 @@ import { DogSchema, PersonSchema } from "../../schemas/person-and-dog-with-objec
 import { expectClientResetError } from "../../utils/expect-sync-error";
 import { createPromiseHandle } from "../../utils/promise-handle";
 import { buildAppConfig } from "../../utils/build-app-config";
+import { baasAdminClient } from "../../utils/baas-admin-api";
 
 const FlexiblePersonSchema = { ...PersonSchema, properties: { ...PersonSchema.properties, nonQueryable: "string?" } };
 const FlexibleDogSchema = { ...DogSchema, properties: { ...DogSchema.properties, nonQueryable: "string?" } };
@@ -53,18 +54,16 @@ function getPartitionValue() {
   return new BSON.UUID().toHexString();
 }
 
-async function triggerClientReset(app: App, user: User): Promise<void> {
-  const maxAttempts = 5;
-  let deleted = false;
-  let count = maxAttempts;
-  while (count > 0) {
-    deleted = (await user.functions.triggerClientReset(app.id, user.id)) as boolean;
-    if (deleted) {
-      return;
-    }
-    count--;
+async function triggerClientReset(app: App, syncSession: Realm.App.Sync.Session): Promise<void> {
+  const { fileIdent } = syncSession as unknown as Record<string, unknown>;
+  if (typeof fileIdent !== "bigint") {
+    throw new Error("Expected the internal file ident");
   }
-  throw new Error(`Cannot trigger client reset in ${maxAttempts} attempts`);
+  await baasAdminClient.ensureLogIn();
+  const { _id } = await baasAdminClient.getAppByClientAppId(app.id);
+  syncSession.pause();
+  await baasAdminClient.forceSyncReset(_id, Number(fileIdent));
+  syncSession.resume();
 }
 
 async function waitServerSideClientResetDiscardUnsyncedChangesCallbacks(
@@ -109,8 +108,13 @@ async function waitServerSideClientResetDiscardUnsyncedChangesCallbacks(
     addSubscriptions(realm);
   }
 
-  await realm.syncSession?.uploadAllLocalChanges();
-  await triggerClientReset(app, user);
+  const { syncSession } = realm;
+  if (!syncSession) {
+    throw new Error("Expected a sync session");
+  }
+
+  await syncSession.uploadAllLocalChanges();
+  await triggerClientReset(app, syncSession);
   await resetHandle;
 }
 
@@ -157,8 +161,13 @@ async function waitServerSideClientResetRecoveryCallbacks(
     addSubscriptions(realm);
   }
 
-  await realm.syncSession?.uploadAllLocalChanges();
-  await triggerClientReset(app, user);
+  const { syncSession } = realm;
+  if (!syncSession) {
+    throw new Error("Expected a sync session");
+  }
+
+  await syncSession.uploadAllLocalChanges();
+  await triggerClientReset(app, syncSession);
   await resetHandle;
 }
 
@@ -300,8 +309,8 @@ function getSchema(useFlexibleSync: boolean) {
     this.longTimeout(); // client reset with flexible sync can take quite some time
     importAppBefore(
       useFlexibleSync
-        ? buildAppConfig("with-flx").anonAuth().flexibleSync() /* .triggerClientResetFunction() */
-        : buildAppConfig("with-pbs").anonAuth().partitionBasedSync() /* .triggerClientResetFunction() */,
+        ? buildAppConfig("with-flx").anonAuth().flexibleSync()
+        : buildAppConfig("with-pbs").anonAuth().partitionBasedSync(),
     );
     authenticateUserBefore();
 
@@ -510,7 +519,7 @@ function getSchema(useFlexibleSync: boolean) {
       );
     });
 
-    it.skip(`handles discard local client reset with ${getPartialTestTitle(
+    it(`handles discard local client reset with ${getPartialTestTitle(
       useFlexibleSync,
     )} sync enabled`, async function (this: RealmContext) {
       // (i)   using a client reset in "DiscardUnsyncedChanges" mode, a fresh copy
@@ -536,7 +545,7 @@ function getSchema(useFlexibleSync: boolean) {
       );
     });
 
-    it.skip(`handles recovery client reset with ${getPartialTestTitle(
+    it(`handles recovery client reset with ${getPartialTestTitle(
       useFlexibleSync,
     )} sync enabled`, async function (this: RealmContext) {
       // (i)   using a client reset in "Recovery" mode, a fresh copy
