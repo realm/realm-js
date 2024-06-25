@@ -459,10 +459,11 @@ describe("Flexible sync", async function () {
     });
   });
   describe("Progress notification", () => {
-    beforeEach(() => {
+    afterEach(() => {
       Realm.clearTestState();
     });
     beforeEach(async function (this: RealmContext) {
+      Realm.clearTestState();
       this.realm = await Realm.open({
         schema: [HugeSyncObject],
         sync: {
