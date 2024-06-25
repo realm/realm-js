@@ -61,6 +61,7 @@ export const PersonSchema: Realm.ObjectSchema = {
     name: "string",
     friends: "Person[]",
     nonQueryable: "string?",
+    data: "data?",
   },
 };
 
@@ -70,6 +71,7 @@ export class Person extends Realm.Object<Person> {
   age!: number;
   friends!: Realm.List<Person>;
   dogs!: Realm.Collection<Dog>;
+  data?: Realm.Types.Data;
 
   static schema: Realm.ObjectSchema = PersonSchema;
 }
@@ -99,23 +101,6 @@ type AddSubscriptionResult<T extends Realm.Object<T>> = {
   sub: Realm.App.Sync.Subscription;
   query: Realm.Results<T>;
 };
-
-export const HugeSyncObjectSchema: Realm.ObjectSchema = {
-  name: "HugeSyncObject",
-  primaryKey: "_id",
-  properties: {
-    _id: "objectId",
-    data: "data",
-  },
-};
-
-/** An object that takes binary data. Useful for dumping large sync chunks. */
-export class HugeSyncObject extends Realm.Object<HugeSyncObject> {
-  _id!: Realm.BSON.ObjectId;
-  data!: Realm.Types.Data;
-
-  static schema: Realm.ObjectSchema = HugeSyncObjectSchema;
-}
 
 /**
  * Add a subscription for all objects of type "Person"
@@ -458,27 +443,24 @@ describe("Flexible sync", async function () {
       });
     });
   });
-  describe("Progress notification", () => {
-    afterEach(() => {
-      Realm.clearTestState();
-    });
+  describe("Progress notification", function () {
+    this.timeout(5000);
     beforeEach(async function (this: RealmContext) {
-      Realm.clearTestState();
-      this.realm = await Realm.open({
-        schema: [HugeSyncObject],
+      this.realm = new Realm({
+        schema: [Person, Dog],
         sync: {
           flexible: true,
           user: this.user,
         },
       });
-      await this.realm.syncSession?.uploadAllLocalChanges();
-      await this.realm.syncSession?.downloadAllServerChanges();
     });
 
     afterEach(async function (this: RealmContext) {
+      // TODO: This is necessary as otherwise the tests after it break.
       await this.realm.subscriptions.update((mutableSubs) => {
         mutableSubs.removeAll();
       });
+      Realm.clearTestState();
     });
 
     it("only estimate callback is allowed", async function (this: RealmContext) {
@@ -505,8 +487,7 @@ describe("Flexible sync", async function () {
       expect(callback.notCalled).to.be.true;
     });
 
-    describe("with ProgressMode.ReportIndefinitely", () => {
-      this.timeout(5000);
+    describe("with ProgressMode.ReportIndefinitely", function () {
       describe(`with ProgressDirection.Upload`, function () {
         it("should not call callback when there is nothing to upload", async function (this: RealmContext) {
           const realm = this.realm;
@@ -539,11 +520,13 @@ describe("Flexible sync", async function () {
           // TODO: This callback should not be called at this stage but seems flakey
           // and gets called with 1.0 at times, likely because of a race condition.
           expect(callback.notCalled || callback.calledOnceWith(1.0)).is.true;
-          await realm.objects(HugeSyncObject).subscribe();
+          await realm.objects(Person).subscribe();
 
           realm.write(() => {
-            realm.create(HugeSyncObject, {
+            realm.create(Person, {
               _id: new BSON.ObjectId(),
+              name: "Heavy",
+              age: 36,
               data: new ArrayBuffer(1_000_000),
             });
           });
@@ -574,25 +557,29 @@ describe("Flexible sync", async function () {
           // and gets called with 1.0 at times, likely because of a race condition.
           expect(callback.notCalled || callback.calledOnceWith(1.0)).is.true;
 
-          await realm.objects(HugeSyncObject).subscribe();
-          expect(callback.calledWith(1.0)).is.true;
+          await realm.objects(Person).subscribe();
 
           realm.write(() => {
-            realm.create(HugeSyncObject, {
+            realm.create(Person, {
               _id: new BSON.ObjectId(),
+              name: "Heavy",
+              age: 36,
               data: new ArrayBuffer(1_000_000),
             });
           });
 
           await realm.syncSession?.uploadAllLocalChanges();
-          expect(callback.callCount).to.be.greaterThanOrEqual(2);
+          await realm.syncSession?.downloadAllServerChanges();
           const oldCallCount = callback.callCount;
+          expect(callback.callCount).to.be.greaterThanOrEqual(2);
 
           realm.syncSession?.removeProgressNotification(callback);
 
           realm.write(() => {
-            realm.create(HugeSyncObject, {
+            realm.create(Person, {
               _id: new BSON.ObjectId(),
+              name: "Heavy",
+              age: 36,
               data: new ArrayBuffer(1_000_000),
             });
           });
@@ -629,7 +616,7 @@ describe("Flexible sync", async function () {
           // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
           const callback = spy((estimate: number) => {});
           const realm2 = await Realm.open({
-            schema: [HugeSyncObject],
+            schema: [Person, Dog],
             sync: {
               flexible: true,
               user: await this.app.logIn(Credentials.anonymous(false)),
@@ -645,17 +632,19 @@ describe("Flexible sync", async function () {
             callback,
           );
 
-          realm.objects(HugeSyncObject).subscribe();
+          realm.objects(Person).subscribe();
 
           realm.write(() => {
-            realm.create(HugeSyncObject, {
+            realm.create(Person, {
               _id: new BSON.ObjectId(),
+              name: "Heavy",
+              age: 36,
               data: new ArrayBuffer(1_000_000),
             });
           });
 
           await realm.syncSession?.uploadAllLocalChanges();
-          await realm2.objects(HugeSyncObject).subscribe();
+          await realm2.objects(Person).subscribe();
           await realm2.syncSession?.downloadAllServerChanges();
 
           expect(callback.args.find(([estimate]) => estimate < 1)).to.not.be.undefined;
@@ -668,7 +657,7 @@ describe("Flexible sync", async function () {
           // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
           const callback = spy((estimate: number) => {});
           const realm2 = await Realm.open({
-            schema: [HugeSyncObject],
+            schema: [Person, Dog],
             sync: {
               flexible: true,
               user: await this.app.logIn(Credentials.anonymous(false)),
@@ -684,17 +673,19 @@ describe("Flexible sync", async function () {
             callback,
           );
 
-          realm.objects(HugeSyncObject).subscribe();
+          realm.objects(Person).subscribe();
 
           realm.write(() => {
-            realm.create(HugeSyncObject, {
+            realm.create(Person, {
               _id: new BSON.ObjectId(),
+              name: "Heavy",
+              age: 36,
               data: new ArrayBuffer(1_000_000),
             });
           });
 
+          await realm2.objects(Person).subscribe();
           await realm.syncSession?.uploadAllLocalChanges();
-          await realm2.objects(HugeSyncObject).subscribe();
           await realm2.syncSession?.downloadAllServerChanges();
 
           expect(callback.args.find(([estimate]) => estimate < 1)).to.not.be.undefined;
@@ -704,8 +695,10 @@ describe("Flexible sync", async function () {
           realm2.syncSession?.removeProgressNotification(callback);
 
           realm.write(() => {
-            realm.create(HugeSyncObject, {
+            realm.create(Person, {
               _id: new BSON.ObjectId(),
+              name: "Heavy",
+              age: 36,
               data: new ArrayBuffer(1_000_000),
             });
           });
@@ -749,11 +742,13 @@ describe("Flexible sync", async function () {
               callback,
             );
 
-            realm.objects(HugeSyncObject).subscribe();
+            realm.objects(Person).subscribe();
 
             realm.write(() => {
-              realm.create(HugeSyncObject, {
+              realm.create(Person, {
                 _id: new BSON.ObjectId(),
+                name: "Heavy",
+                age: 36,
                 data: new ArrayBuffer(1_000_000),
               });
             });
@@ -790,7 +785,7 @@ describe("Flexible sync", async function () {
             // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
             const callback = spy((estimate: number) => {});
             const realm2 = await Realm.open({
-              schema: [HugeSyncObject],
+              schema: [Person, Dog],
               sync: {
                 flexible: true,
                 user: await this.app.logIn(Credentials.anonymous(false)),
@@ -800,17 +795,19 @@ describe("Flexible sync", async function () {
               },
             });
 
-            realm.objects(HugeSyncObject).subscribe();
+            realm.objects(Person).subscribe();
 
             realm.write(() => {
-              realm.create(HugeSyncObject, {
+              realm.create(Person, {
                 _id: new BSON.ObjectId(),
+                name: "Heavy",
+                age: 36,
                 data: new ArrayBuffer(1_000_000),
               });
             });
 
             await realm.syncSession?.uploadAllLocalChanges();
-            await realm2.objects(HugeSyncObject).subscribe();
+            await realm2.objects(Person).subscribe();
             await realm2.syncSession?.downloadAllServerChanges();
 
             // At this point there is no other work.
