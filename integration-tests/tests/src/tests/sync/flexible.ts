@@ -477,8 +477,6 @@ describe("Flexible sync", function () {
     });
 
     describe("with ProgressMode.ReportIndefinitely", function () {
-
-
       describe(`with ProgressDirection.Upload`, function () {
         it("should not call callback when there is nothing to upload", async function (this: RealmContext) {
           const realm = this.realm;
@@ -511,7 +509,7 @@ describe("Flexible sync", function () {
           // TODO: This callback should not be called at this stage but seems flakey
           // and gets called with 1.0 at times, likely because of a race condition.
           expect(callback.notCalled || callback.calledOnceWith(1.0)).is.true;
-          await realm.objects(Person).subscribe();
+          const subscription = await realm.objects(Person).subscribe();
 
           realm.write(() => {
             realm.create(Person, {
@@ -523,186 +521,186 @@ describe("Flexible sync", function () {
           });
 
           await realm.syncSession?.uploadAllLocalChanges();
-          await realm.objects(Person).unsubscribe();
 
           // There should be at least one point where the progress is not yet finished.
           expect(callback.args.find(([estimate]) => estimate < 1)).to.not.be.undefined;
 
           expect(callback.withArgs(1.0).called).to.be.true;
+          subscription.unsubscribe();
         });
 
-      //   it("should not run after it has been removed", async function (this: RealmContext) {
-      //     const realm = this.realm;
-      //     // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
-      //     const callback = spy((estimate: number) => {});
+        //   it("should not run after it has been removed", async function (this: RealmContext) {
+        //     const realm = this.realm;
+        //     // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
+        //     const callback = spy((estimate: number) => {});
 
-      //     realm.syncSession?.addProgressNotification(
-      //       Realm.ProgressDirection.Upload,
-      //       Realm.ProgressMode.ReportIndefinitely,
-      //       callback,
-      //     );
+        //     realm.syncSession?.addProgressNotification(
+        //       Realm.ProgressDirection.Upload,
+        //       Realm.ProgressMode.ReportIndefinitely,
+        //       callback,
+        //     );
 
-      //     await this.realm.syncSession?.uploadAllLocalChanges();
-      //     await this.realm.syncSession?.downloadAllServerChanges();
+        //     await this.realm.syncSession?.uploadAllLocalChanges();
+        //     await this.realm.syncSession?.downloadAllServerChanges();
 
-      //     // TODO: This callback should not be called at this stage but seems flakey
-      //     // and gets called with 1.0 at times, likely because of a race condition.
-      //     expect(callback.notCalled || callback.calledOnceWith(1.0)).is.true;
+        //     // TODO: This callback should not be called at this stage but seems flakey
+        //     // and gets called with 1.0 at times, likely because of a race condition.
+        //     expect(callback.notCalled || callback.calledOnceWith(1.0)).is.true;
 
-      //     await realm.objects(Person).subscribe();
+        //     await realm.objects(Person).subscribe();
 
-      //     realm.write(() => {
-      //       realm.create(Person, {
-      //         _id: new BSON.ObjectId(),
-      //         name: "Heavy",
-      //         age: 36,
-      //         data: new ArrayBuffer(1_000_000),
-      //       });
-      //     });
+        //     realm.write(() => {
+        //       realm.create(Person, {
+        //         _id: new BSON.ObjectId(),
+        //         name: "Heavy",
+        //         age: 36,
+        //         data: new ArrayBuffer(1_000_000),
+        //       });
+        //     });
 
-      //     await realm.syncSession?.uploadAllLocalChanges();
-      //     await realm.syncSession?.downloadAllServerChanges();
-      //     const oldCallCount = callback.callCount;
-      //     expect(callback.callCount).to.be.greaterThanOrEqual(2);
+        //     await realm.syncSession?.uploadAllLocalChanges();
+        //     await realm.syncSession?.downloadAllServerChanges();
+        //     const oldCallCount = callback.callCount;
+        //     expect(callback.callCount).to.be.greaterThanOrEqual(2);
 
-      //     realm.syncSession?.removeProgressNotification(callback);
+        //     realm.syncSession?.removeProgressNotification(callback);
 
-      //     realm.write(() => {
-      //       realm.create(Person, {
-      //         _id: new BSON.ObjectId(),
-      //         name: "Heavy",
-      //         age: 36,
-      //         data: new ArrayBuffer(1_000_000),
-      //       });
-      //     });
+        //     realm.write(() => {
+        //       realm.create(Person, {
+        //         _id: new BSON.ObjectId(),
+        //         name: "Heavy",
+        //         age: 36,
+        //         data: new ArrayBuffer(1_000_000),
+        //       });
+        //     });
 
-      //     await realm.syncSession?.uploadAllLocalChanges();
+        //     await realm.syncSession?.uploadAllLocalChanges();
 
-      //     expect(callback.callCount).to.be.equal(oldCallCount);
-      //   });
-      // });
+        //     expect(callback.callCount).to.be.equal(oldCallCount);
+        //   });
+        // });
 
-      // describe(`with ProgressDirection.Download`, function () {
-      //   it("should not call the callback when there is nothing to download", async function (this: RealmContext) {
-      //     const realm = this.realm;
-      //     // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
-      //     const callback = spy((estimate: number) => {});
+        // describe(`with ProgressDirection.Download`, function () {
+        //   it("should not call the callback when there is nothing to download", async function (this: RealmContext) {
+        //     const realm = this.realm;
+        //     // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
+        //     const callback = spy((estimate: number) => {});
 
-      //     realm.syncSession?.addProgressNotification(
-      //       Realm.ProgressDirection.Download,
-      //       ProgressMode.ReportIndefinitely,
-      //       callback,
-      //     );
+        //     realm.syncSession?.addProgressNotification(
+        //       Realm.ProgressDirection.Download,
+        //       ProgressMode.ReportIndefinitely,
+        //       callback,
+        //     );
 
-      //     await this.realm.syncSession?.uploadAllLocalChanges();
-      //     await this.realm.syncSession?.downloadAllServerChanges();
+        //     await this.realm.syncSession?.uploadAllLocalChanges();
+        //     await this.realm.syncSession?.downloadAllServerChanges();
 
-      //     // TODO: This callback should not be called at this stage but seems flakey
-      //     // and gets called with 1.0 at times, likely because of a race condition.
-      //     expect(callback.notCalled || callback.calledOnceWith(1.0)).is.true;
-      //   });
+        //     // TODO: This callback should not be called at this stage but seems flakey
+        //     // and gets called with 1.0 at times, likely because of a race condition.
+        //     expect(callback.notCalled || callback.calledOnceWith(1.0)).is.true;
+        //   });
 
-      //   it("should be called multiple times with different values during downloads", async function (this: RealmContext &
-      //     AppContext) {
-      //     const realm = this.realm;
-      //     // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
-      //     const callback = spy((estimate: number) => {});
-      //     const realm2 = await Realm.open({
-      //       schema: [Person, Dog],
-      //       sync: {
-      //         flexible: true,
-      //         user: await this.app.logIn(Credentials.anonymous(false)),
-      //         newRealmFileBehavior: {
-      //           type: OpenRealmBehaviorType.OpenImmediately,
-      //         },
-      //       },
-      //     });
+        //   it("should be called multiple times with different values during downloads", async function (this: RealmContext &
+        //     AppContext) {
+        //     const realm = this.realm;
+        //     // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
+        //     const callback = spy((estimate: number) => {});
+        //     const realm2 = await Realm.open({
+        //       schema: [Person, Dog],
+        //       sync: {
+        //         flexible: true,
+        //         user: await this.app.logIn(Credentials.anonymous(false)),
+        //         newRealmFileBehavior: {
+        //           type: OpenRealmBehaviorType.OpenImmediately,
+        //         },
+        //       },
+        //     });
 
-      //     realm2.syncSession?.addProgressNotification(
-      //       Realm.ProgressDirection.Download,
-      //       Realm.ProgressMode.ReportIndefinitely,
-      //       callback,
-      //     );
+        //     realm2.syncSession?.addProgressNotification(
+        //       Realm.ProgressDirection.Download,
+        //       Realm.ProgressMode.ReportIndefinitely,
+        //       callback,
+        //     );
 
-      //     realm.objects(Person).subscribe();
+        //     realm.objects(Person).subscribe();
 
-      //     realm.write(() => {
-      //       realm.create(Person, {
-      //         _id: new BSON.ObjectId(),
-      //         name: "Heavy",
-      //         age: 36,
-      //         data: new ArrayBuffer(1_000_000),
-      //       });
-      //     });
+        //     realm.write(() => {
+        //       realm.create(Person, {
+        //         _id: new BSON.ObjectId(),
+        //         name: "Heavy",
+        //         age: 36,
+        //         data: new ArrayBuffer(1_000_000),
+        //       });
+        //     });
 
-      //     await realm.syncSession?.uploadAllLocalChanges();
-      //     await realm2.objects(Person).subscribe();
-      //     await realm2.syncSession?.downloadAllServerChanges();
+        //     await realm.syncSession?.uploadAllLocalChanges();
+        //     await realm2.objects(Person).subscribe();
+        //     await realm2.syncSession?.downloadAllServerChanges();
 
-      //     expect(callback.args.find(([estimate]) => estimate < 1)).to.not.be.undefined;
-      //     expect(callback.withArgs(1.0).callCount).is.greaterThanOrEqual(2);
-      //     realm2.close();
-      //   });
+        //     expect(callback.args.find(([estimate]) => estimate < 1)).to.not.be.undefined;
+        //     expect(callback.withArgs(1.0).callCount).is.greaterThanOrEqual(2);
+        //     realm2.close();
+        //   });
 
-      //   it("should not run after it has been removed", async function (this: RealmContext) {
-      //     const realm = this.realm;
-      //     // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
-      //     const callback = spy((estimate: number) => {});
-      //     const realm2 = await Realm.open({
-      //       schema: [Person, Dog],
-      //       sync: {
-      //         flexible: true,
-      //         user: await this.app.logIn(Credentials.anonymous(false)),
-      //         newRealmFileBehavior: {
-      //           type: OpenRealmBehaviorType.OpenImmediately,
-      //         },
-      //       },
-      //     });
+        //   it("should not run after it has been removed", async function (this: RealmContext) {
+        //     const realm = this.realm;
+        //     // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
+        //     const callback = spy((estimate: number) => {});
+        //     const realm2 = await Realm.open({
+        //       schema: [Person, Dog],
+        //       sync: {
+        //         flexible: true,
+        //         user: await this.app.logIn(Credentials.anonymous(false)),
+        //         newRealmFileBehavior: {
+        //           type: OpenRealmBehaviorType.OpenImmediately,
+        //         },
+        //       },
+        //     });
 
-      //     realm2.syncSession?.addProgressNotification(
-      //       Realm.ProgressDirection.Download,
-      //       Realm.ProgressMode.ReportIndefinitely,
-      //       callback,
-      //     );
+        //     realm2.syncSession?.addProgressNotification(
+        //       Realm.ProgressDirection.Download,
+        //       Realm.ProgressMode.ReportIndefinitely,
+        //       callback,
+        //     );
 
-      //     realm.objects(Person).subscribe();
+        //     realm.objects(Person).subscribe();
 
-      //     realm.write(() => {
-      //       realm.create(Person, {
-      //         _id: new BSON.ObjectId(),
-      //         name: "Heavy",
-      //         age: 36,
-      //         data: new ArrayBuffer(1_000_000),
-      //       });
-      //     });
+        //     realm.write(() => {
+        //       realm.create(Person, {
+        //         _id: new BSON.ObjectId(),
+        //         name: "Heavy",
+        //         age: 36,
+        //         data: new ArrayBuffer(1_000_000),
+        //       });
+        //     });
 
-      //     await realm2.objects(Person).subscribe();
-      //     await realm.syncSession?.uploadAllLocalChanges();
-      //     await realm2.syncSession?.downloadAllServerChanges();
+        //     await realm2.objects(Person).subscribe();
+        //     await realm.syncSession?.uploadAllLocalChanges();
+        //     await realm2.syncSession?.downloadAllServerChanges();
 
-      //     expect(callback.args.find(([estimate]) => estimate < 1)).to.not.be.undefined;
-      //     expect(callback.withArgs(1.0).callCount).is.greaterThanOrEqual(2);
-      //     const oldCallCount = callback.callCount;
+        //     expect(callback.args.find(([estimate]) => estimate < 1)).to.not.be.undefined;
+        //     expect(callback.withArgs(1.0).callCount).is.greaterThanOrEqual(2);
+        //     const oldCallCount = callback.callCount;
 
-      //     realm2.syncSession?.removeProgressNotification(callback);
+        //     realm2.syncSession?.removeProgressNotification(callback);
 
-      //     realm.write(() => {
-      //       realm.create(Person, {
-      //         _id: new BSON.ObjectId(),
-      //         name: "Heavy",
-      //         age: 36,
-      //         data: new ArrayBuffer(1_000_000),
-      //       });
-      //     });
+        //     realm.write(() => {
+        //       realm.create(Person, {
+        //         _id: new BSON.ObjectId(),
+        //         name: "Heavy",
+        //         age: 36,
+        //         data: new ArrayBuffer(1_000_000),
+        //       });
+        //     });
 
-      //     await realm.syncSession?.uploadAllLocalChanges();
-      //     await realm2.syncSession?.downloadAllServerChanges();
+        //     await realm.syncSession?.uploadAllLocalChanges();
+        //     await realm2.syncSession?.downloadAllServerChanges();
 
-      //     expect(callback.callCount).is.equal(oldCallCount);
+        //     expect(callback.callCount).is.equal(oldCallCount);
 
-      //     realm2.close();
-      //   });
-      // });
+        //     realm2.close();
+        //   });
+      });
     });
 
     describe.skip("with ProgressMode.ForCurrentlyOutstandingWork", () => {
