@@ -1,12 +1,12 @@
 import React from "react";
-import { AppProvider, UserProvider } from "@realm/react";
 import { Platform, SafeAreaView, StyleSheet } from "react-native";
+import { OpenRealmBehaviorType } from "realm";
+import { AppProvider, UserProvider } from "@realm/react";
 
 import { AnonAuth } from "./AnonAuth";
 import { AirbnbList } from "./AirbnbList";
 import { SyncedRealmProvider } from "./syncedRealm";
 import { LocalRealmProvider } from "./localRealm";
-import { OpenRealmBehaviorType } from "realm";
 
 export const AppWrapper: React.FC<{
   appId: string;

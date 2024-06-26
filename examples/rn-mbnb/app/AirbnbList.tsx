@@ -1,4 +1,3 @@
-import { useUser } from "@realm/react";
 import React, { useCallback, useEffect, useState } from "react";
 import {
   FlatList,
@@ -11,14 +10,15 @@ import {
   Pressable,
   Platform,
 } from "react-native";
+import FastImage from "react-native-fast-image";
+import RNFS from "react-native-fs";
+import { useUser } from "@realm/react";
+import { DefaultUserProfileData } from "realm";
 
 import { useLocalQuery, useLocalRealm } from "./localRealm";
 import { SearchCache } from "./localModels";
 import { useSyncedQuery, useSyncedRealm } from "./syncedRealm";
 import { ListingsAndReview } from "./syncedModels";
-import FastImage from "react-native-fast-image";
-import RNFS from "react-native-fs";
-import { DefaultUserProfileData } from "realm";
 
 enum ResultMethod {
   None = "Search Not Performed",
