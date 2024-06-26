@@ -178,7 +178,7 @@ async function addSubscriptionAndSync<T extends Realm.Object<T>>(
   return { subs, sub, query };
 }
 
-describe("Flexible sync", async function () {
+describe("Flexible sync", function () {
   this.timeout(60_000); // TODO: Temporarily hardcoded until envs are set up.
   importAppBefore(buildAppConfig("with-flx").anonAuth().flexibleSync());
   authenticateUserBefore();
@@ -443,7 +443,7 @@ describe("Flexible sync", async function () {
       });
     });
   });
-  describe.skip("Progress notification", function () {
+  describe("Progress notification", function () {
     this.timeout(5000);
     beforeEach(async function (this: RealmContext) {
       this.realm = new Realm({
