@@ -447,6 +447,7 @@ describe("Flexible sync", function () {
     this.timeout(5000);
     openRealmBeforeEach({
       schema: [Person, Dog],
+      path: "progress.realm",
       sync: {
         flexible: true,
         //@ts-expect-error Using an internal API
