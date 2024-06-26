@@ -38,7 +38,9 @@ export function serialize<Obj extends SimpleObject>(obj: Obj): SimpleObject {
  * @param obj The object or array of objects in extended-JSON format.
  * @returns The object or array of objects with inflated BSON types.
  */
-export function deserialize(obj: SimpleObject | SimpleObject[]): EJSON.SerializableTypes {
+export function deserialize(
+  obj: SimpleObject | SimpleObject[],
+): unknown /* Return type of 'ReturnType<typeof EJSON.deserialize>' is 'any' */ {
   if (Array.isArray(obj)) {
     return obj.map((doc) => EJSON.deserialize(doc));
   } else {
