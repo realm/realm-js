@@ -496,7 +496,7 @@ describe("Flexible sync", function () {
         await this.realm.subscriptions.update((mutableSubs) => {
           mutableSubs.removeAll();
         });
-        await this.realm.subscriptions.waitForSynchronization();
+        await this.realm.syncSession?.uploadAllLocalChanges();
       });
 
       describe(`with ProgressDirection.Upload`, function () {
@@ -928,6 +928,9 @@ describe("Flexible sync", function () {
   });
 
   describe("with realm opened before", function () {
+    beforeEach(() => {
+      Realm.clearTestState();
+    });
     openRealmBeforeEach({
       schema: [Person, Dog],
       sync: {
