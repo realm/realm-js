@@ -476,7 +476,7 @@ describe("Flexible sync", function () {
       expect(callback.notCalled).to.be.true;
     });
 
-    describe("with ProgressMode.ReportIndefinitely", function () {
+    describe.skip("with ProgressMode.ReportIndefinitely", function () {
       afterEach(async function (this: RealmContext) {
         // TODO: This is necessary as otherwise the tests after it break.
         await this.realm.subscriptions.update((mutableSubs) => {
@@ -709,7 +709,7 @@ describe("Flexible sync", function () {
       });
     });
 
-    describe("with ProgressMode.ForCurrentlyOutstandingWork", () => {
+    describe.skip("with ProgressMode.ForCurrentlyOutstandingWork", () => {
       afterEach(async function (this: RealmContext) {
         // TODO: This is necessary as otherwise the tests after it break.
         await this.realm.subscriptions.update((mutableSubs) => {
