@@ -449,6 +449,8 @@ describe("Flexible sync", function () {
       schema: [Person, Dog],
       sync: {
         flexible: true,
+        //@ts-expect-error Using an internal API
+        _sessionStopPolicy: SessionStopPolicy.Immediately,
       },
     });
 
