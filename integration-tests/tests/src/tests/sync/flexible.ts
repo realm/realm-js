@@ -2178,7 +2178,7 @@ describe("Flexible sync", function () {
           expect(callback.withArgs(1.0)).called;
         });
 
-        it.skip("should not run after it has been removed", async function (this: RealmContext) {
+        it("should not run after it has been removed", async function (this: RealmContext) {
           const realm = this.realm;
           // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
           const callback = spy((estimate: number) => {});
@@ -2231,7 +2231,7 @@ describe("Flexible sync", function () {
         });
       });
 
-      describe.skip(`with ProgressDirection.Download`, function () {
+      describe(`with ProgressDirection.Download`, function () {
         it("should not call the callback when there is nothing to download", async function (this: RealmContext) {
           const realm = this.realm;
           // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
@@ -2273,7 +2273,7 @@ describe("Flexible sync", function () {
             callback,
           );
 
-          realm.objects(Person).subscribe();
+          const subscription = await realm.objects(Person).subscribe();
 
           realm.write(() => {
             realm.create(Person, {
@@ -2290,6 +2290,7 @@ describe("Flexible sync", function () {
 
           expect(callback.args.find(([estimate]) => estimate < 1)).to.not.be.undefined;
           expect(callback.withArgs(1.0).callCount).is.greaterThanOrEqual(2);
+          subscription.unsubscribe();
           realm2.close();
         });
 
@@ -2314,7 +2315,7 @@ describe("Flexible sync", function () {
             callback,
           );
 
-          realm.objects(Person).subscribe();
+          const subscription = await realm.objects(Person).subscribe();
 
           realm.write(() => {
             realm.create(Person, {
@@ -2349,19 +2350,13 @@ describe("Flexible sync", function () {
 
           expect(callback).has.callCount(oldCallCount);
 
+          subscription.unsubscribe();
           realm2.close();
         });
       });
     });
 
-    describe.skip("with ProgressMode.ForCurrentlyOutstandingWork", () => {
-      afterEach(async function (this: RealmContext) {
-        // TODO: This is necessary as otherwise the tests after it break.
-        await this.realm.subscriptions.update((mutableSubs) => {
-          mutableSubs.removeAll();
-        });
-      });
-
+    describe("with ProgressMode.ForCurrentlyOutstandingWork", () => {
       describe(`with ProgressDirection.Upload`, function () {
         it("should not call callback when there is nothing to upload", async function (this: RealmContext) {
           const realm = this.realm;
@@ -2390,7 +2385,7 @@ describe("Flexible sync", function () {
             callback,
           );
 
-          realm.objects(Person).subscribe();
+          const subscription = await realm.objects(Person).subscribe();
 
           realm.write(() => {
             realm.create(Person, {
@@ -2407,6 +2402,8 @@ describe("Flexible sync", function () {
           expect(callback.args.find(([estimate]) => estimate < 1)).to.not.be.undefined;
 
           expect(callback.withArgs(1.0)).called;
+
+          subscription.unsubscribe();
         });
       });
 
@@ -2443,7 +2440,7 @@ describe("Flexible sync", function () {
             },
           });
 
-          realm.objects(Person).subscribe();
+          const subscription = await realm.objects(Person).subscribe();
 
           realm.write(() => {
             realm.create(Person, {
@@ -2471,6 +2468,8 @@ describe("Flexible sync", function () {
 
           expect(callback.withArgs(1.0)).calledOnce;
           realm2.close();
+
+          subscription.unsubscribe();
         });
       });
     });
