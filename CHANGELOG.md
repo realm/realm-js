@@ -1,7 +1,7 @@
 ## vNext (TBD)
 
 ### Deprecations
-* The callback for `realm.syncSession.addProgressNotification` will only take a single argument in the future: `estimate` (which supports both partition based and flexible sync). The old callback functionality is deprecated and will be removed. The estimate is roughly equivalent to an estimated value of `transferred / transferable` in the deprecated partition-based sync callback.  
+* The callback for `realm.syncSession.addProgressNotification` will only take a single argument in the future: `estimate` (which supports both partition based and flexible sync). The old callback functionality is deprecated and will be removed. The estimate is roughly equivalent to an estimated value of `transferred / transferable` in the deprecated partition-based sync callback. ([#6256](https://github.com/realm/realm-js/issues/6256))  
 ```ts
 /** New callback which supports both flexible and partition-based sync */
 realm.syncSession.addProgressNotification(
@@ -18,7 +18,7 @@ realm.syncSession.addProgressNotification(
 ```
 
 ### Enhancements
-* Added progress notifications support for flexible sync using a new callback argument.
+* Added progress notifications support for flexible sync using a new callback argument. ([#6256](https://github.com/realm/realm-js/issues/6256))
 ```ts
 realm.syncSession.addProgressNotification(
   Realm.ProgressDirection.Upload,
