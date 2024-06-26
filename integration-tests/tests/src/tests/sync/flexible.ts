@@ -446,14 +446,19 @@ describe("Flexible sync", function () {
 
   describe("Progress notification", function () {
     this.timeout(5000);
-    openRealmBeforeEach({
-      schema: [Person, Dog],
-      path: "progress.realm",
-      sync: {
-        flexible: true,
-        //@ts-expect-error Using an internal API
-        _sessionStopPolicy: SessionStopPolicy.Immediately,
-      },
+    beforeEach(async function (this: RealmContext) {
+      // @ts-expect-error Using an internal API
+      this.realm = await Realm.open({
+        schema: [Person, Dog],
+        sync: {
+          flexible: true,
+          user: this.app.logIn(Credentials.anonymous(false)),
+          _sessionStopPolicy: SessionStopPolicy.Immediately,
+        },
+      });
+    });
+    afterEach(async function (this: RealmContext) {
+      Realm.clearTestState();
     });
 
     it("only estimate callback is allowed", async function (this: RealmContext) {
