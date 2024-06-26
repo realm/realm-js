@@ -619,7 +619,7 @@ jobs:
       - generate-jsi
       - prebuild-android
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 180
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -707,6 +707,11 @@ jobs:
             ~/.android/avd/*
             ~/.android/adb*
           key: avd-29
+
+      - name: Debugging with ssh
+        uses: lhotari/action-upterm@v1
+        with:
+          limit-access-to-actor: true
 
       - name: Run tests
         env:
