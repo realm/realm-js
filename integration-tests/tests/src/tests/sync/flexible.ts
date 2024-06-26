@@ -445,21 +445,11 @@ describe("Flexible sync", function () {
   });
   describe("Progress notification", function () {
     this.timeout(5000);
-    beforeEach(async function (this: RealmContext) {
-      this.realm = new Realm({
-        schema: [Person, Dog],
-        sync: {
-          flexible: true,
-          user: this.user,
-        },
-      });
-    });
-
-    afterEach(async function (this: RealmContext) {
-      // TODO: This is necessary as otherwise the tests after it break.
-      await this.realm.subscriptions.update((mutableSubs) => {
-        mutableSubs.removeAll();
-      });
+    openRealmBeforeEach({
+      schema: [Person, Dog],
+      sync: {
+        flexible: true,
+      },
     });
 
     it("only estimate callback is allowed", async function (this: RealmContext) {
@@ -487,6 +477,13 @@ describe("Flexible sync", function () {
     });
 
     describe("with ProgressMode.ReportIndefinitely", function () {
+      afterEach(async function (this: RealmContext) {
+        // TODO: This is necessary as otherwise the tests after it break.
+        await this.realm.subscriptions.update((mutableSubs) => {
+          mutableSubs.removeAll();
+        });
+      });
+
       describe(`with ProgressDirection.Upload`, function () {
         it("should not call callback when there is nothing to upload", async function (this: RealmContext) {
           const realm = this.realm;
@@ -710,118 +707,124 @@ describe("Flexible sync", function () {
           realm2.close();
         });
       });
+    });
 
-      describe("with ProgressMode.ForCurrentlyOutstandingWork", () => {
-        this.timeout(5000);
-        describe(`with ProgressDirection.Upload`, function () {
-          it("should not call callback when there is nothing to upload", async function (this: RealmContext) {
-            const realm = this.realm;
-            // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
-            const callback = spy((estimate: number) => {});
+    describe("with ProgressMode.ForCurrentlyOutstandingWork", () => {
+      afterEach(async function (this: RealmContext) {
+        // TODO: This is necessary as otherwise the tests after it break.
+        await this.realm.subscriptions.update((mutableSubs) => {
+          mutableSubs.removeAll();
+        });
+      });
 
-            await realm.syncSession?.uploadAllLocalChanges();
+      describe(`with ProgressDirection.Upload`, function () {
+        it("should not call callback when there is nothing to upload", async function (this: RealmContext) {
+          const realm = this.realm;
+          // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
+          const callback = spy((estimate: number) => {});
 
-            realm.syncSession?.addProgressNotification(
-              Realm.ProgressDirection.Upload,
-              ProgressMode.ForCurrentlyOutstandingWork,
-              callback,
-            );
+          await realm.syncSession?.uploadAllLocalChanges();
 
-            expect(callback.notCalled).is.true;
-          });
+          realm.syncSession?.addProgressNotification(
+            Realm.ProgressDirection.Upload,
+            ProgressMode.ForCurrentlyOutstandingWork,
+            callback,
+          );
 
-          it("should be called multiple times with different values during uploads", async function (this: RealmContext) {
-            const realm = this.realm;
-            // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
-            const callback = spy((estimate: number) => {});
-
-            realm.syncSession?.addProgressNotification(
-              Realm.ProgressDirection.Upload,
-              Realm.ProgressMode.ForCurrentlyOutstandingWork,
-              callback,
-            );
-
-            realm.objects(Person).subscribe();
-
-            realm.write(() => {
-              realm.create(Person, {
-                _id: new BSON.ObjectId(),
-                name: "Heavy",
-                age: 36,
-                data: new ArrayBuffer(1_000_000),
-              });
-            });
-
-            await realm.syncSession?.uploadAllLocalChanges();
-
-            // There should be at least one point where the progress is not yet finished.
-            expect(callback.args.find(([estimate]) => estimate < 1)).to.not.be.undefined;
-
-            expect(callback.withArgs(1.0).called).to.be.true;
-          });
+          expect(callback.notCalled).is.true;
         });
 
-        describe(`with ProgressDirection.Download`, function () {
-          it("should not call callback when there is nothing to download", async function (this: RealmContext) {
-            const realm = this.realm;
-            // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
-            const callback = spy((estimate: number) => {});
+        it("should be called multiple times with different values during uploads", async function (this: RealmContext) {
+          const realm = this.realm;
+          // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
+          const callback = spy((estimate: number) => {});
 
-            await realm.syncSession?.downloadAllServerChanges();
+          realm.syncSession?.addProgressNotification(
+            Realm.ProgressDirection.Upload,
+            Realm.ProgressMode.ForCurrentlyOutstandingWork,
+            callback,
+          );
 
-            realm.syncSession?.addProgressNotification(
-              Realm.ProgressDirection.Download,
-              ProgressMode.ForCurrentlyOutstandingWork,
-              callback,
-            );
+          realm.objects(Person).subscribe();
 
-            expect(callback.notCalled).is.true;
+          realm.write(() => {
+            realm.create(Person, {
+              _id: new BSON.ObjectId(),
+              name: "Heavy",
+              age: 36,
+              data: new ArrayBuffer(1_000_000),
+            });
           });
 
-          it("should be called multiple times with different values during downloads", async function (this: RealmContext &
-            AppContext) {
-            const realm = this.realm;
-            // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
-            const callback = spy((estimate: number) => {});
-            const realm2 = await Realm.open({
-              schema: [Person, Dog],
-              sync: {
-                flexible: true,
-                user: await this.app.logIn(Credentials.anonymous(false)),
-                newRealmFileBehavior: {
-                  type: OpenRealmBehaviorType.OpenImmediately,
-                },
+          await realm.syncSession?.uploadAllLocalChanges();
+
+          // There should be at least one point where the progress is not yet finished.
+          expect(callback.args.find(([estimate]) => estimate < 1)).to.not.be.undefined;
+
+          expect(callback.withArgs(1.0).called).to.be.true;
+        });
+      });
+
+      describe(`with ProgressDirection.Download`, function () {
+        it("should not call callback when there is nothing to download", async function (this: RealmContext) {
+          const realm = this.realm;
+          // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
+          const callback = spy((estimate: number) => {});
+
+          await realm.syncSession?.downloadAllServerChanges();
+
+          realm.syncSession?.addProgressNotification(
+            Realm.ProgressDirection.Download,
+            ProgressMode.ForCurrentlyOutstandingWork,
+            callback,
+          );
+
+          expect(callback.notCalled).is.true;
+        });
+
+        it("should be called multiple times with different values during downloads", async function (this: RealmContext &
+          AppContext) {
+          const realm = this.realm;
+          // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
+          const callback = spy((estimate: number) => {});
+          const realm2 = await Realm.open({
+            schema: [Person, Dog],
+            sync: {
+              flexible: true,
+              user: await this.app.logIn(Credentials.anonymous(false)),
+              newRealmFileBehavior: {
+                type: OpenRealmBehaviorType.OpenImmediately,
               },
-            });
-
-            realm.objects(Person).subscribe();
-
-            realm.write(() => {
-              realm.create(Person, {
-                _id: new BSON.ObjectId(),
-                name: "Heavy",
-                age: 36,
-                data: new ArrayBuffer(1_000_000),
-              });
-            });
-
-            await realm.syncSession?.uploadAllLocalChanges();
-            await realm2.objects(Person).subscribe();
-            await realm2.syncSession?.downloadAllServerChanges();
-
-            // At this point there is no other work.
-            realm2.syncSession?.addProgressNotification(
-              Realm.ProgressDirection.Download,
-              Realm.ProgressMode.ForCurrentlyOutstandingWork,
-              callback,
-            );
-
-            // TODO: Doesn't work
-            // There should be at least one point where the progress is not yet finished.
-            // expect(callback.args.find(([estimate]) => estimate < 1)).to.not.be.undefined;
-            expect(callback.withArgs(1.0).calledOnce).is.true;
-            realm2.close();
+            },
           });
+
+          realm.objects(Person).subscribe();
+
+          realm.write(() => {
+            realm.create(Person, {
+              _id: new BSON.ObjectId(),
+              name: "Heavy",
+              age: 36,
+              data: new ArrayBuffer(1_000_000),
+            });
+          });
+
+          await realm.syncSession?.uploadAllLocalChanges();
+          await realm2.objects(Person).subscribe();
+          await realm2.syncSession?.downloadAllServerChanges();
+
+          // At this point there is no other work.
+          realm2.syncSession?.addProgressNotification(
+            Realm.ProgressDirection.Download,
+            Realm.ProgressMode.ForCurrentlyOutstandingWork,
+            callback,
+          );
+
+          // TODO: Doesn't work
+          // There should be at least one point where the progress is not yet finished.
+          // expect(callback.args.find(([estimate]) => estimate < 1)).to.not.be.undefined;
+          expect(callback.withArgs(1.0).calledOnce).is.true;
+          realm2.close();
         });
       });
     });
