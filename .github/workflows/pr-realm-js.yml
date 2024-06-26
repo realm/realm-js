@@ -708,11 +708,6 @@ jobs:
             ~/.android/adb*
           key: avd-29
 
-      - name: Debugging with ssh
-        uses: lhotari/action-upterm@v1
-        with:
-          limit-access-to-actor: true
-
       - name: Run tests
         env:
           PLATFORM: android
@@ -733,3 +728,9 @@ jobs:
           cmake: 3.22.1
           working-directory: integration-tests/environments/react-native-test-app
           script: npx mocha-remote -- concurrently --kill-others-on-fail npm:metro npm:runner
+
+      - name: Debugging with ssh
+        if: ${{ success() || failure() }}
+        uses: lhotari/action-upterm@v1
+        with:
+          limit-access-to-actor: true
