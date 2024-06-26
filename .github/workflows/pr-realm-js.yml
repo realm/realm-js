@@ -708,7 +708,7 @@ jobs:
         with:
           api-level: 29
           force-avd-creation: false
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          emulator-options: -no-snapshot-save -no-metrics -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
           arch: x86
           ndk: ${{ env.NDK_VERSION }}
