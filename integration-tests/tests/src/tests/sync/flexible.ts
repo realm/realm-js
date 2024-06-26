@@ -453,7 +453,7 @@ describe("Flexible sync", function () {
     });
     beforeEach(async function (this: RealmContext & UserContext) {
       // @ts-expect-error Using an internal API
-      this.realm = await Realm.open({
+      this.realm = new Realm({
         schema: [Person, Dog],
         sync: {
           flexible: true,
