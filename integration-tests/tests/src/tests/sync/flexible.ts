@@ -444,7 +444,7 @@ describe("Flexible sync", function () {
     });
   });
 
-  describe.skip("Progress notification", function () {
+  describe("Progress notification", function () {
     this.timeout(5000);
     openRealmBeforeEach({
       schema: [Person, Dog],
