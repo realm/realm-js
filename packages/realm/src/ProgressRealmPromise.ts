@@ -177,7 +177,7 @@ export class ProgressRealmPromise implements Promise<Realm> {
     this.listeners.add(callback);
     if (callback.length === 1) {
       const estimateCallback = callback as DynamicProgressNotificationCallback;
-      estimateCallback(0.0);
+      estimateCallback(1.0);
     } else {
       const pbsCallback = callback as PartitionBasedSyncProgressNotificationCallback;
       pbsCallback(0.0, 0.0);

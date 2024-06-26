@@ -2115,7 +2115,7 @@ describe("Flexible sync", function () {
         );
       }).to.throw();
 
-      expect(callback.notCalled).to.be.true;
+      expect(callback).not.called;
     });
 
     describe("with ProgressMode.ReportIndefinitely", function () {
@@ -2138,7 +2138,7 @@ describe("Flexible sync", function () {
             callback,
           );
 
-          expect(callback.notCalled).is.true;
+          expect(callback).not.called;
         });
 
         it("should be called multiple times with different values during uploads", async function (this: RealmContext) {
@@ -2174,7 +2174,7 @@ describe("Flexible sync", function () {
           // There should be at least one point where the progress is not yet finished.
           expect(callback.args.find(([estimate]) => estimate < 1)).to.not.be.undefined;
 
-          expect(callback.withArgs(1.0).called).to.be.true;
+          expect(callback.withArgs(1.0)).called;
         });
 
         it("should not run after it has been removed", async function (this: RealmContext) {
@@ -2344,7 +2344,7 @@ describe("Flexible sync", function () {
           await realm.syncSession?.uploadAllLocalChanges();
           await realm2.syncSession?.downloadAllServerChanges();
 
-          expect(callback.callCount).is.equal(oldCallCount);
+          expect(callback).has.callCount(oldCallCount);
 
           realm2.close();
         });
@@ -2373,7 +2373,7 @@ describe("Flexible sync", function () {
             callback,
           );
 
-          expect(callback.notCalled).is.true;
+          expect(callback).not.called;
         });
 
         it("should be called multiple times with different values during uploads", async function (this: RealmContext) {
@@ -2403,7 +2403,7 @@ describe("Flexible sync", function () {
           // There should be at least one point where the progress is not yet finished.
           expect(callback.args.find(([estimate]) => estimate < 1)).to.not.be.undefined;
 
-          expect(callback.withArgs(1.0).called).to.be.true;
+          expect(callback.withArgs(1.0)).called;
         });
       });
 
@@ -2421,7 +2421,7 @@ describe("Flexible sync", function () {
             callback,
           );
 
-          expect(callback.notCalled).is.true;
+          expect(callback).not.called;
         });
 
         it("should be called multiple times with different values during downloads", async function (this: RealmContext &
@@ -2465,7 +2465,8 @@ describe("Flexible sync", function () {
           // TODO: Doesn't work
           // There should be at least one point where the progress is not yet finished.
           // expect(callback.args.find(([estimate]) => estimate < 1)).to.not.be.undefined;
-          expect(callback.withArgs(1.0).calledOnce).is.true;
+
+          expect(callback.withArgs(1.0)).calledOnce;
           realm2.close();
         });
       });

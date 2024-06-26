@@ -50,7 +50,6 @@ const PersonForSyncSchema: Realm.ObjectSchema = {
   },
 };
 
-// TODO: Fix this.
 function waitForConnectionState(session: Realm.App.Sync.Session, state: string) {
   return async () => {
     const callback = (newState: ConnectionState) => {
@@ -295,7 +294,7 @@ describe("SessionTest", () => {
       const progressCallback = spy();
       await Realm.open(config).progress(progressCallback);
 
-      expect(progressCallback.called).is.true;
+      expect(progressCallback).called;
     });
 
     it("removing progress notification does not invoke callback again", async function (this: AppContext) {
