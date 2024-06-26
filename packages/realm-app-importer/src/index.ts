@@ -31,5 +31,7 @@ export type {
   CustomTokenAuthMetadataField,
   EmailPasswordAuthConfig,
 } from "./AppConfigBuilder";
+
+export { AdminApiClient } from "./AdminApiClient";
 export { AppImporter } from "./AppImporter";
 export { AppConfigBuilder } from "./AppConfigBuilder";

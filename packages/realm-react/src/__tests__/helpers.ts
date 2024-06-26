@@ -19,7 +19,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import os from "node:os";
-import { AppConfig, AppImporter, Credentials } from "@realm/app-importer";
+import { AdminApiClient, AppConfig, AppImporter, Credentials } from "@realm/app-importer";
 import { act, waitFor } from "@testing-library/react-native";
 
 const {
@@ -47,25 +47,22 @@ export async function testAuthOperation({
   });
 }
 
-function getCredentials(): Credentials {
-  if (typeof publicKey === "string" && typeof privateKey === "string") {
-    return {
-      kind: "api-key",
-      publicKey,
-      privateKey,
-    };
-  } else {
-    return {
-      kind: "username-password",
-      username,
-      password,
-    };
-  }
-}
-
 const importer = new AppImporter({
-  baseUrl,
-  credentials: getCredentials(),
+  client: new AdminApiClient({
+    baseUrl,
+    credentials:
+      typeof publicKey === "string" && typeof privateKey === "string"
+        ? {
+            kind: "api-key",
+            publicKey,
+            privateKey,
+          }
+        : {
+            kind: "username-password",
+            username,
+            password,
+          },
+  }),
 });
 
 export async function importApp(config: AppConfig): Promise<{ appId: string }> {
