@@ -18,8 +18,10 @@
 
 import {
   Configuration,
+  DynamicProgressNotificationCallback,
   OpenRealmBehaviorType,
   OpenRealmTimeOutBehavior,
+  PartitionBasedSyncProgressNotificationCallback,
   ProgressNotificationCallback,
   PromiseHandle,
   Realm,
@@ -82,6 +84,8 @@ export class ProgressRealmPromise implements Promise<Realm> {
   private handle = new PromiseHandle<Realm>();
   /** @internal */
   private timeoutPromise: TimeoutPromise<Realm> | null = null;
+  /** @internal */
+  private token = 0;
 
   /** @internal */
   constructor(config: Configuration) {
@@ -134,13 +138,16 @@ export class ProgressRealmPromise implements Promise<Realm> {
               this.handle.reject(err);
             }
           });
-        // TODO: Consider storing the token returned here to unregister when the task gets cancelled,
-        // if for some reason, that doesn't happen internally
-        this.task.registerDownloadProgressNotifier(this.emitProgress);
+        if (this.listeners.size > 0) {
+          this.token = this.task.registerDownloadProgressNotifier(this.emitProgress);
+        }
       } else {
         throw new Error(`Unexpected open behavior '${openBehavior}'`);
       }
     } catch (err) {
+      if (this.token !== 0) {
+        this.task?.unregisterDownloadProgressNotifier(this.token);
+      }
       this.handle.reject(err);
     }
   }
@@ -153,6 +160,7 @@ export class ProgressRealmPromise implements Promise<Realm> {
   cancel(): void {
     this.cancelAndResetTask();
     this.timeoutPromise?.cancel();
+    this.task?.unregisterDownloadProgressNotifier(this.token);
     // Clearing all listeners to avoid accidental progress notifications
     this.listeners.clear();
     // Tell anything awaiting the promise
@@ -167,6 +175,13 @@ export class ProgressRealmPromise implements Promise<Realm> {
    */
   progress(callback: ProgressNotificationCallback): this {
     this.listeners.add(callback);
+    if (callback.length === 1) {
+      const estimateCallback = callback as DynamicProgressNotificationCallback;
+      estimateCallback(1.0);
+    } else {
+      const pbsCallback = callback as PartitionBasedSyncProgressNotificationCallback;
+      pbsCallback(0.0, 0.0);
+    }
     return this;
   }
 
@@ -174,11 +189,17 @@ export class ProgressRealmPromise implements Promise<Realm> {
   catch = this.handle.promise.catch.bind(this.handle.promise);
   finally = this.handle.promise.finally.bind(this.handle.promise);
 
-  private emitProgress = (transferredArg: binding.Int64, transferableArg: binding.Int64) => {
+  private emitProgress = (transferredArg: binding.Int64, transferableArg: binding.Int64, progressEstimate: number) => {
     const transferred = binding.Int64.intToNum(transferredArg);
     const transferable = binding.Int64.intToNum(transferableArg);
     for (const listener of this.listeners) {
-      listener(transferred, transferable);
+      if (listener.length === 1) {
+        const estimateListener = listener as DynamicProgressNotificationCallback;
+        estimateListener(progressEstimate);
+      } else {
+        const pbsListener = listener as PartitionBasedSyncProgressNotificationCallback;
+        pbsListener(transferred, transferable);
+      }
     }
   };
 
