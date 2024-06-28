@@ -74,10 +74,9 @@ extern "C" JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_injectMod
                                                                                                 jlong runtime_pointer)
 {
 
-    __android_log_print(ANDROID_LOG_VERBOSE, "Realm", "install");
+    __android_log_print(ANDROID_LOG_VERBOSE, "Realm", "Injecting module into JS global");
     auto runtime = reinterpret_cast<jsi::Runtime*>(runtime_pointer);
     if (runtime) {
-        __android_log_print(ANDROID_LOG_VERBOSE, "Realm", "Building an exports object");
         auto exports = jsi::Object(*runtime);
         __android_log_print(ANDROID_LOG_VERBOSE, "Realm", "Initializing ...");
         realm_jsi_init(*runtime, exports);
