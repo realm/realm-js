@@ -30,38 +30,35 @@ ErrorUtils.setGlobalHandler((err, isFatal) => {
 });
 
 function loadTests(context: CustomContext) {
-  describe("harness", () => {
-    it("works", () => {});
+  /* eslint-env mocha */
+  // Quick sanity check that "realm" is loadable at all
+  require("realm");
+  /* eslint-disable-next-line no-restricted-globals */
+  Object.assign(globalThis, {
+    fs: require("react-native-fs"),
+    path: require("path-browserify"),
+    environment: {
+      // Default to the host machine when running on Android
+      baseUrl: Platform.OS === "android" ? "http://10.0.2.2:9090" : undefined,
+      ...context,
+      // TODO: Incorporate this into the Mocha context instead
+      reactNative: Platform.OS,
+      android: Platform.OS === "android",
+      ios: Platform.OS === "ios",
+    },
   });
-  // /* eslint-env mocha */
-  // // Quick sanity check that "realm" is loadable at all
-  // require("realm");
-  // /* eslint-disable-next-line no-restricted-globals */
-  // Object.assign(globalThis, {
-  //   fs: require("react-native-fs"),
-  //   path: require("path-browserify"),
-  //   environment: {
-  //     // Default to the host machine when running on Android
-  //     baseUrl: Platform.OS === "android" ? "http://10.0.2.2:9090" : undefined,
-  //     ...context,
-  //     // TODO: Incorporate this into the Mocha context instead
-  //     reactNative: Platform.OS,
-  //     android: Platform.OS === "android",
-  //     ios: Platform.OS === "ios",
-  //   },
-  // });
-  // // Make the tests reinitializable, to allow test running on changes to the "realm" package
-  // // Probing the existance of `getModules` as this only exists in debug mode
-  // // if ("getModules" in require) {
-  // //   const modules = require.getModules();
-  // //   for (const [, m] of Object.entries(modules)) {
-  // //     if (m.verboseName.startsWith("../../tests/")) {
-  // //       m.isInitialized = false;
-  // //     }
-  // //   }
-  // // }
-  // // Require in the integration tests
-  // require("@realm/integration-tests");
+  // Make the tests reinitializable, to allow test running on changes to the "realm" package
+  // Probing the existance of `getModules` as this only exists in debug mode
+  // if ("getModules" in require) {
+  //   const modules = require.getModules();
+  //   for (const [, m] of Object.entries(modules)) {
+  //     if (m.verboseName.startsWith("../../tests/")) {
+  //       m.isInitialized = false;
+  //     }
+  //   }
+  // }
+  // Require in the integration tests
+  require("@realm/integration-tests");
 }
 
 export default function App() {
