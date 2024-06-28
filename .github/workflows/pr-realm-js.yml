@@ -738,6 +738,8 @@ jobs:
           script: |
             # Setup port forwarding to Mocha Remote
             adb reverse tcp:8090 tcp:8090
+            # Uninstall the app if already in the snapshot (unlikely but could result in a signature mismatch failure)
+            adb uninstall com.microsoft.reacttestapp || true
             # Build and install the app
             ./gradlew installRelease
             # Launch the app
