@@ -466,6 +466,16 @@ describe("Observable", () => {
       expectObservableMethods(this.object);
     });
 
+    it.skipIf(
+      !environment.testThrowingListeners,
+      "can throw from a listener",
+      async function (this: RealmObjectContext<Person>) {
+        this.object.addListener(() => {
+          throw new Error("boom!");
+        });
+      },
+    );
+
     it("throws on listener reuse", function (this: RealmObjectContext<Person>) {
       this.object.addListener(noop);
       expect(() => {
@@ -868,6 +878,16 @@ describe("Observable", () => {
     it("is observable", function (this: RealmObjectContext<Person>) {
       expectObservableMethods(this.realm.objects("Person"));
     });
+
+    it.skipIf(
+      !environment.testThrowingListeners,
+      "can throw from a listener",
+      async function (this: RealmObjectContext<Person>) {
+        this.realm.objects("Person").addListener(() => {
+          throw new Error("boom!");
+        });
+      },
+    );
 
     it("throws on listener reuse", function (this: RealmObjectContext<Person>) {
       const collection = this.realm.objects("Person");
