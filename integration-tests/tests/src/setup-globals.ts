@@ -39,6 +39,9 @@ import chai from "chai";
 // See https://stackoverflow.com/a/45882252
 chai.config.truncateThreshold = 0;
 
+import sinonChai from "sinon-chai";
+chai.use(sinonChai);
+
 import chaiAsPromised from "chai-as-promised";
 chai.use(chaiAsPromised);
 
