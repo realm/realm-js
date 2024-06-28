@@ -16,11 +16,15 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import alias from "@rollup/plugin-alias";
 import commonjs from "@rollup/plugin-commonjs";
 import typescript from "@rollup/plugin-typescript";
 import nodeResolve from "@rollup/plugin-node-resolve";
 import replace from "@rollup/plugin-replace";
 import dts from "rollup-plugin-dts";
+
+import { createRequire } from "node:module";
+const require = createRequire(import.meta.url);
 
 import pkg from "./package.json" assert { type: "json" };
 
@@ -97,6 +101,15 @@ export default [
       },
     ],
     plugins: [
+      // Providing an alias for the "bson" package to pick the CJS bundle over ESM
+      alias({
+        entries: [
+          {
+            find: "bson",
+            replacement: require.resolve("bson"),
+          },
+        ],
+      }),
       commonjs(),
       typescript({
         tsconfig: "src/dom/tsconfig.json",
