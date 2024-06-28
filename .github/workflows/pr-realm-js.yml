@@ -698,11 +698,32 @@ jobs:
             ~/.android/adb*
           key: avd-29
 
+      - name: Bundle test app
+        working-directory: integration-tests/environments/react-native-test-app
+        run: |
+          mkdir dist
+          npx react-native bundle --entry-file index.js --platform android --dev false --bundle-output dist/main.android.jsbundle --assets-dest dist/res
+
+      - name: Generate a keystore for signing
+        working-directory: integration-tests/environments/react-native-test-app
+        env:
+          STORE_PATH: debug.keystore
+          STORE_PASS: android
+          KEY_ALIAS: debug-key
+          KEY_PASS: android
+        run: |
+          keytool -genkey -v -keyalg RSA -keysize 2048 -validity 10000 -dname cn=Realm -keystore ${{ env.STORE_PATH }} -storepass ${{ env.STORE_PASS }} -alias ${{ env.KEY_ALIAS }} -keypass ${{ env.KEY_PASS }}
+          jq --arg storeFile ${{ env.STORE_PATH }} --arg storePassword ${{ env.STORE_PASS }} --arg keyAlias ${{ env.KEY_ALIAS }} --arg keyPassword ${{ env.KEY_PASS }} '. +{android: {signingConfigs: { release: { $storeFile, $storePassword, $keyAlias, $keyPassword } }}}' app.json > patched-app.json
+          mv patched-app.json app.json
+
       - name: Run tests
         env:
-          PLATFORM: android
+          # Limit architecture to speed up the build
+          ORG_GRADLE_PROJECT_reactNativeArchitectures: x86
+          # Enabling new architecture and bridgeless
+          ORG_GRADLE_PROJECT_newArchEnabled: true
+          ORG_GRADLE_PROJECT_bridgelessEnabled: true
           MOCHA_REMOTE_CONTEXT: ${{ steps.mocha-env.outputs.context }}
-          # TODO: Consider passing ORG_GRADLE_PROJECT_reactNativeArchitectures=x86 to limit increase build speed
         timeout-minutes: 75
         uses: reactivecircus/android-emulator-runner@v2
         with:
@@ -713,6 +734,15 @@ jobs:
           arch: x86
           ndk: ${{ env.NDK_VERSION }}
           cmake: 3.22.1
-          working-directory: integration-tests/environments/react-native-test-app
-          script: npx mocha-remote -- concurrently --kill-others-on-fail npm:metro npm:runner
-          
+          working-directory: integration-tests/environments/react-native-test-app/android
+          script: |
+            # Setup port forwarding to Mocha Remote
+            adb reverse tcp:8090 tcp:8090
+            # Build and install the app
+            ./gradlew installRelease
+            # Launch the app
+            # -W wait for launch to complete, to allow the logcat script to find a pid
+            # -S force stop the target app before starting the activity
+            adb shell am start -W -S -n com.microsoft.reacttestapp/.MainActivity
+            # Start Mocha Remote, wrapping logcat
+            npx mocha-remote -- npm run logcat
