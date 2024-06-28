@@ -139,7 +139,7 @@ async function run(spawnLogcat) {
     if (PLATFORM === "android") {
       // Start the log cat (skipping any initial pid from an old run)
       if (spawnLogcat) {
-        logcat.start("com.realmreactnativetests", true).catch(console.error);
+        logcat.start("com.microsoft.reacttestapp", true).catch(console.error);
       }
       // Ask React Native to build and run the app
       // Using --active-arch-only as per https://reactnative.dev/docs/build-speed#build-only-one-abi-during-development-android-only
