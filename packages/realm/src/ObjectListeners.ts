@@ -57,18 +57,10 @@ export class ObjectListeners<T> {
     add: (callback, keyPaths) => {
       const token = this.notifier.addCallback(
         (changes) => {
-          try {
-            callback(this.object as RealmObject<T> & T, {
-              deleted: changes.isDeleted,
-              changedProperties: changes.changedColumns.map(this.properties.getName),
-            });
-          } catch (err) {
-            // Scheduling a throw on the event loop,
-            // since throwing synchronously here would result in an abort in the calling C++
-            setImmediate(() => {
-              throw err;
-            });
-          }
+          callback(this.object as RealmObject<T> & T, {
+            deleted: changes.isDeleted,
+            changedProperties: changes.changedColumns.map(this.properties.getName),
+          });
         },
         keyPaths ? this.mapKeyPaths(keyPaths) : undefined,
       );

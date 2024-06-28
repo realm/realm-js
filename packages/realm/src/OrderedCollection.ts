@@ -183,20 +183,12 @@ export abstract class OrderedCollection<
     super(accessor, typeHelpers, (callback, keyPaths) => {
       return results.addNotificationCallback(
         (changes) => {
-          try {
-            callback(proxied, {
-              deletions: unwind(changes.deletions),
-              insertions: unwind(changes.insertions),
-              oldModifications: unwind(changes.modifications),
-              newModifications: unwind(changes.modificationsNew),
-            });
-          } catch (err) {
-            // Scheduling a throw on the event loop,
-            // since throwing synchronously here would result in an abort in the calling C++
-            setImmediate(() => {
-              throw err;
-            });
-          }
+          callback(proxied, {
+            deletions: unwind(changes.deletions),
+            insertions: unwind(changes.insertions),
+            oldModifications: unwind(changes.modifications),
+            newModifications: unwind(changes.modificationsNew),
+          });
         },
         keyPaths ? this.mapKeyPaths(keyPaths) : keyPaths,
       );
