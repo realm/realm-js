@@ -15,7 +15,8 @@
     "realm:build-android:debug": "wireit",
     "realm:build-android:release": "wireit",
     "metro": "react-native start --reset-cache",
-    "runner": "node harness/runner.js"
+    "runner": "node harness/runner.js",
+    "logcat": "adb logcat -v color --pid=$(adb shell pidof -s com.microsoft.reacttestapp)"
   },
   "wireit": {
     "test:android": {
