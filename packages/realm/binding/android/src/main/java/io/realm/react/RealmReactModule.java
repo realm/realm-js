@@ -18,6 +18,7 @@ package io.realm.react;
 
 import androidx.annotation.NonNull;
 import android.content.res.AssetManager;
+import android.util.Log;
 
 import com.facebook.react.bridge.JavaScriptContextHolder;
 import com.facebook.react.bridge.ReactApplicationContext;
@@ -34,6 +35,7 @@ import java.util.Objects;
 @ReactModule(name = RealmReactModule.NAME)
 class RealmReactModule extends ReactContextBaseJavaModule {
     public static final String NAME = "Realm";
+    private boolean injected = false;
 
     public RealmReactModule(ReactApplicationContext reactContext) {
         super(reactContext);
@@ -55,7 +57,9 @@ class RealmReactModule extends ReactContextBaseJavaModule {
 
     @Override
     public void invalidate() {
-        invalidateCaches();
+        if (injected) {
+            invalidateCaches();
+        }
     }
 
     @ReactMethod(isBlockingSynchronousMethod = true)
@@ -63,7 +67,9 @@ class RealmReactModule extends ReactContextBaseJavaModule {
         // Calling loadLibrary multiple times will be ignored
         // We do it here instead of statically to allow the app load faster if Realm isn't accessed.
         // Effectively emulating the behaviour of TurboModules.
+        Log.d("Realm", "Loading librealm.so");
         SoLoader.loadLibrary("realm");
+        injected = true;
 
         ReactApplicationContext reactContext = getReactApplicationContext();
 
@@ -86,7 +92,8 @@ class RealmReactModule extends ReactContextBaseJavaModule {
 
         // Get the javascript runtime and inject our native module with it
         JavaScriptContextHolder jsContext = reactContext.getJavaScriptContextHolder();
-        synchronized(Objects.requireNonNull(jsContext)) {
+        synchronized(jsContext) {
+            Log.d("Realm", "Calling into native code to inject module into JS global");
             injectModuleIntoJSGlobal(jsContext.get());
         }
 
