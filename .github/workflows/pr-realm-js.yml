@@ -702,7 +702,7 @@ jobs:
         working-directory: integration-tests/environments/react-native-test-app
         run: |
           mkdir dist
-          npx react-native bundle --entry-file index.js --platform android --dev false --bundle-output dist/main.android.jsbundle --assets-dest dist/res
+          npx react-native bundle --entry-file index.js --platform android --dev false --minify false --bundle-output dist/main.android.jsbundle --assets-dest dist/res
 
       - name: Generate a keystore for signing
         working-directory: integration-tests/environments/react-native-test-app
