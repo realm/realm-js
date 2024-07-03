@@ -469,9 +469,9 @@ describe("Flexible sync", function () {
         expect((compensatingWrites[1].primaryKey as BSON.ObjectId).equals(person2Id)).to.be.true;
         expect((compensatingWrites[2].primaryKey as BSON.ObjectId).equals(dogId)).to.be.true;
 
-        expect(compensatingWrites[0].objectName).to.equal("Person");
-        expect(compensatingWrites[1].objectName).to.equal("Person");
-        expect(compensatingWrites[2].objectName).to.equal("Dog");
+        expect(compensatingWrites[0].objectName).to.equal(Person.schema.name);
+        expect(compensatingWrites[1].objectName).to.equal(Person.schema.name);
+        expect(compensatingWrites[2].objectName).to.equal(Dog.schema.name);
 
         expect(compensatingWrites[0].reason).to.contain("object is outside of the current query view");
         expect(compensatingWrites[1].reason).to.contain("object is outside of the current query view");
@@ -591,7 +591,7 @@ describe("Flexible sync", function () {
 
         it("has an objectType", function (this: RealmContext) {
           const { sub } = addSubscriptionForPerson(this.realm);
-          expect(sub.objectType).to.equal("Person");
+          expect(sub.objectType).to.equal(Person.schema.name);
         });
 
         it("has a default queryString", function (this: RealmContext) {
@@ -1152,13 +1152,13 @@ describe("Flexible sync", function () {
 
             const subsCopy = [...subs];
             expect(subsCopy[0].queryString).to.equal("age < 10");
-            expect(subsCopy[0].objectType).to.equal("Person");
+            expect(subsCopy[0].objectType).to.equal(Person.schema.name);
 
             expect(subsCopy[1].queryString).to.equal("age > 20");
-            expect(subsCopy[1].objectType).to.equal("Person");
+            expect(subsCopy[1].objectType).to.equal(Person.schema.name);
 
             expect(subsCopy[2].queryString).to.equal("age > 30");
-            expect(subsCopy[2].objectType).to.equal("Dog");
+            expect(subsCopy[2].objectType).to.equal(Dog.schema.name);
           });
 
           it("handles multiple updates in multiple batches", async function (this: RealmContext) {
@@ -1178,13 +1178,13 @@ describe("Flexible sync", function () {
 
             const subsCopy = [...subs];
             expect(subsCopy[0].queryString).to.equal("age < 10");
-            expect(subsCopy[0].objectType).to.equal("Person");
+            expect(subsCopy[0].objectType).to.equal(Person.schema.name);
 
             expect(subsCopy[1].queryString).to.equal("age > 20");
-            expect(subsCopy[1].objectType).to.equal("Person");
+            expect(subsCopy[1].objectType).to.equal(Person.schema.name);
 
             expect(subsCopy[2].queryString).to.equal("age > 30");
-            expect(subsCopy[2].objectType).to.equal("Dog");
+            expect(subsCopy[2].objectType).to.equal(Dog.schema.name);
           });
 
           // TODO: Enable test when we can find another way of triggering a `SubscriptionSetState.Error`.
