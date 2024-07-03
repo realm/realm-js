@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { EJSON } from "bson";
+
 import {
   App,
   ClientResetAfterCallback,
@@ -37,6 +38,9 @@ import {
   fromBindingSyncError,
 } from "../internal";
 
+/**
+ * The progress direction to register the progress notifier for.
+ */
 export enum ProgressDirection {
   /**
    * Data going from the server to the client.
@@ -48,33 +52,43 @@ export enum ProgressDirection {
   Upload = "upload",
 }
 
+/**
+ * The progress notification mode to register the progress notifier for.
+ */
 export enum ProgressMode {
+  /**
+   * The registration will stay active until the callback is unregistered.
+   */
   ReportIndefinitely = "reportIndefinitely",
+  /**
+   * The registration will be active until only the currently transferable bytes are synced.
+   */
   ForCurrentlyOutstandingWork = "forCurrentlyOutstandingWork",
 }
 
-/** @deprecated */
+/**
+ * A progress notification callback supporting Partition Based Sync only.
+ * @param transferred - The current number of bytes already transferred.
+ * @param transferable - The total number of transferable bytes (i.e. the number of bytes already transferred plus the number of bytes pending transfer).
+ * @deprecated - Will be removed in a future major version. Please use {@link EstimateProgressNotificationCallback} instead.
+ * @since 1.12.0
+ */
 export type PartitionBasedSyncProgressNotificationCallback =
-  /**
-   * This notification callback only supports Partition Based Sync.
-   * @param transferred - The current number of bytes already transferred
-   * @param transferable - The total number of transferable bytes (i.e. the number of bytes already transferred plus the number of bytes pending transfer)
-   * @deprecated - This notification callback will be removed in next major release. Use {@link DynamicProgressNotificationCallback} instead.
-   * @since 1.12.0
-   */
   (transferred: number, transferable: number) => void;
 
-export type DynamicProgressNotificationCallback =
-  /**
-   * This notification callback supports both Partition Based Sync and Flexible Sync.
-   * @param estimate - An estimate between 0.0 and 1.0 of how much have been transferred.
-   * @since 12.10.0
-   */
+/**
+ * A progress notification callback for Atlas Device Sync.
+ * @param estimate - An estimate between 0.0 and 1.0 of how much have been transferred.
+ */
+export type EstimateProgressNotificationCallback =
   (estimate: number) => void;
 
+/**
+ * A callback that will be called when the synchronization progress gets updated.
+ */
 export type ProgressNotificationCallback =
-  | PartitionBasedSyncProgressNotificationCallback
-  | DynamicProgressNotificationCallback;
+  | EstimateProgressNotificationCallback
+  | PartitionBasedSyncProgressNotificationCallback;
 
 export enum ConnectionState {
   Disconnected = "disconnected",
@@ -110,7 +124,7 @@ function toBindingDirection(direction: ProgressDirection) {
 }
 
 /** @internal */
-export function isEstimateProgressNotificationCallback(callback: ProgressNotificationCallback): callback is DynamicProgressNotificationCallback {
+export function isEstimateProgressNotificationCallback(callback: ProgressNotificationCallback): callback is EstimateProgressNotificationCallback {
   return callback.length === 1;
 }
 
@@ -453,7 +467,7 @@ export class SyncSession {
   }
 
   /**
-   * Reconnects to Altas Device Sync.
+   * Reconnects to Atlas Device Sync.
    *
    * This method is asynchronous so in order to know when the session has started you will need
    * to add a connection notification with {@link addConnectionNotification}.
@@ -466,17 +480,14 @@ export class SyncSession {
   }
 
   /**
-   * Register a progress notification callback on a session object
+   * Register a progress notification callback on a session object.
    * @param direction - The progress direction to register for.
    * @param mode - The progress notification mode to use for the registration.
-   * Can be either:
-   *  - `reportIndefinitely` - the registration will stay active until the callback is unregistered
-   *  - `forCurrentlyOutstandingWork` - the registration will be active until only the currently transferable bytes are synced
-   * @param callback - see {@link DynamicProgressNotificationCallback} and {@link PartitionBasedSyncProgressNotificationCallback}
+   * @param callback - The function to call when the progress gets updated.
    * @throws if signature of `callback` doesn't match requirements for sync mode
    * @since 1.12.0
    */
-  addProgressNotification(direction: ProgressDirection, mode: ProgressMode, callback: ProgressNotificationCallback) {
+  addProgressNotification(direction: ProgressDirection, mode: ProgressMode, callback: ProgressNotificationCallback): void {
     if (this.config.flexible) {
       assert(
         isEstimateProgressNotificationCallback(callback),

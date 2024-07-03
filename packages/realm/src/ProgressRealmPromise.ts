@@ -18,7 +18,6 @@
 
 import {
   Configuration,
-  DynamicProgressNotificationCallback,
   OpenRealmBehaviorType,
   OpenRealmTimeOutBehavior,
   PartitionBasedSyncProgressNotificationCallback,

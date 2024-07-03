@@ -1283,6 +1283,7 @@ export namespace Realm {
   export import DictionaryChangeCallback = internal.DictionaryChangeCallback;
   export import DictionaryChangeSet = internal.DictionaryChangeSet;
   export import ErrorCallback = internal.ErrorCallback;
+  export import EstimateProgressNotificationCallback = internal.EstimateProgressNotificationCallback;
   export import FlexibleSyncConfiguration = internal.FlexibleSyncConfiguration;
   export import GeoBox = internal.GeoBox;
   export import GeoCircle = internal.GeoCircle;
@@ -1377,6 +1378,8 @@ export namespace Realm {
   export import ObjectSchemaProperty = internal.PropertySchema;
   /** @deprecated Will be removed in v13.0.0. Please use {@link internal.RealmObjectConstructor | RealmObjectConstructor} */
   export import ObjectClass = internal.RealmObjectConstructor;
+  /** @deprecated Will be removed in a future major version. Please use {@link internal.PartitionBasedSyncProgressNotificationCallback | PartitionBasedSyncProgressNotificationCallback} */
+  export import PartitionBasedSyncProgressNotificationCallback = internal.PartitionBasedSyncProgressNotificationCallback;
   /** @deprecated Will be removed in v13.0.0. Please use {@link internal.PropertyTypeName | PropertyTypeName} */
   export import PropertyType = internal.PropertyTypeName;
   /** @deprecated Use the another {@link internal.ClientResetMode | ClientResetMode} than {@link internal.ClientResetMode.Manual | ClientResetMode.Manual}. */
