@@ -17,14 +17,15 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
+import { spy } from "sinon";
 import Realm, { ConnectionState, ObjectSchema, BSON, SyncConfiguration } from "realm";
+
 import { authenticateUserBefore, importAppBefore, openRealmBefore } from "../../hooks";
 import { DogSchema } from "../../schemas/person-and-dog-with-object-ids";
 import { getRegisteredEmailPassCredentials } from "../../utils/credentials";
 import { generatePartition } from "../../utils/generators";
 import { sleep } from "../../utils/sleep";
 import { buildAppConfig } from "../../utils/build-app-config";
-import { spy } from "sinon";
 
 const DogForSyncSchema: Realm.ObjectSchema = {
   name: "Dog",

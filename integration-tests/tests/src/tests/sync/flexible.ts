@@ -29,6 +29,7 @@
 // fraction too long.
 
 import { expect } from "chai";
+import { spy } from "sinon";
 import Realm, {
   BSON,
   ClientResetMode,
@@ -50,7 +51,6 @@ import { expectClientResetError } from "../../utils/expect-sync-error";
 import { createSyncConfig } from "../../utils/open-realm";
 import { createPromiseHandle } from "../../utils/promise-handle";
 import { buildAppConfig } from "../../utils/build-app-config";
-import { spy } from "sinon";
 
 export const PersonSchema: Realm.ObjectSchema = {
   name: "Person",
@@ -181,7 +181,7 @@ async function addSubscriptionAndSync<T extends Realm.Object<T>>(
 describe("Flexible sync", function () {
   this.timeout(60_000); // TODO: Temporarily hardcoded until envs are set up.
   importAppBefore(buildAppConfig("with-flx").anonAuth().flexibleSync());
-  authenticateUserBefore();
+  authenticateUserBefore({ reuse: false });
   afterEach(() => {
     Realm.clearTestState();
   });
@@ -2084,21 +2084,14 @@ describe("Flexible sync", function () {
 
   describe("Progress notification", function () {
     this.timeout(5000);
-    before(async function (this: UserContext) {
-      // TODO: Investigate this.
-      // Use a new user for this test suite as not doing so causes some session issues in other tests
-      this.user = await this.app.logIn(Credentials.anonymous(false));
-    });
-    beforeEach(async function (this: RealmContext & UserContext) {
-      // @ts-expect-error Using an internal API
-      this.realm = new Realm({
-        schema: [Person, Dog],
-        sync: {
-          flexible: true,
-          user: this.user,
-          _sessionStopPolicy: SessionStopPolicy.Immediately,
-        },
-      });
+
+    openRealmBeforeEach({
+      schema: [Person, Dog],
+      sync: {
+        flexible: true,
+        //@ts-expect-error Using an internal API
+        _sessionStopPolicy: SessionStopPolicy.Immediately,
+      },
     });
 
     describe("with ProgressMode.ReportIndefinitely", function () {
