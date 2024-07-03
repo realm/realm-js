@@ -189,7 +189,8 @@ export class ProgressRealmPromise implements Promise<Realm> {
   catch = this.handle.promise.catch.bind(this.handle.promise);
   finally = this.handle.promise.finally.bind(this.handle.promise);
 
-  private emitProgress = (transferredArg: binding.Int64, transferableArg: binding.Int64, progressEstimate: number) => {
+  /** @internal */
+  private emitProgress(transferredArg: binding.Int64, transferableArg: binding.Int64, progressEstimate: number) {
     const transferred = binding.Int64.intToNum(transferredArg);
     const transferable = binding.Int64.intToNum(transferableArg);
     for (const listener of this.listeners) {
@@ -199,8 +200,9 @@ export class ProgressRealmPromise implements Promise<Realm> {
         listener(transferred, transferable);
       }
     }
-  };
+  }
 
+   /** @internal */
   private createTimeoutPromise(config: Configuration, { timeOut, timeOutBehavior }: OpenBehavior) {
     if (typeof timeOut === "number") {
       this.timeoutPromise = new TimeoutPromise(
@@ -232,6 +234,7 @@ export class ProgressRealmPromise implements Promise<Realm> {
     }
   }
 
+   /** @internal */
   private cancelAndResetTask() {
     if (this.task) {
       this.task.cancel();
@@ -240,6 +243,7 @@ export class ProgressRealmPromise implements Promise<Realm> {
     }
   }
 
+   /** @internal */
   private rejectAsCanceled() {
     const err = new Error("Async open canceled");
     this.handle.reject(err);
