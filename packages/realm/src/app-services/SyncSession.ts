@@ -116,12 +116,11 @@ export function isEstimateProgressNotificationCallback(callback: ProgressNotific
 
 function toBindingProgressNotificationCallback(callback: ProgressNotificationCallback) {
   if (isEstimateProgressNotificationCallback(callback)) {
-    return (transferredBytes: binding.Int64, transferrableBytes: binding.Int64, progressEstimate: number) =>
+    return (_: binding.Int64, __: binding.Int64, progressEstimate: number) =>
       callback(progressEstimate);
   } else {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     return (transferredBytes: binding.Int64, transferrableBytes: binding.Int64, _: number) =>
-      callback(transferrableBytes, transferrableBytes);
+      callback(transferredBytes, transferrableBytes);
   }
 }
 
