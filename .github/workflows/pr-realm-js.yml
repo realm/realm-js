@@ -613,11 +613,11 @@ jobs:
           PLATFORM: ios
           MOCHA_REMOTE_CONTEXT: ${{ steps.mocha-env.outputs.context }}
         timeout-minutes: 30
-        working-directory: integration-tests/environments/react-native-test-app
+        working-directory: integration-tests/environments/react-native-test-app/ios
         run: |
           SIMULATOR_UDID=`xcrun simctl list devices booted --json | jq -r '.devices[][].udid'`
           # Install the app
-          xcrun simctl install $SIMULATOR_UDID build/realmtests.xcarchive/Products/Applications/ReactTestApp.app
+          xcrun simctl install $SIMULATOR_UDID ./build/realmtests.xcarchive/Products/Applications/ReactTestApp.app
           # Run Mocha Remote wrapping the launch of the app
           npx mocha-remote -- xcrun simctl launch --terminate-running-process --console-pty $SIMULATOR_UDID com.microsoft.ReactTestApp
 
