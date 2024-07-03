@@ -20,7 +20,6 @@ import {
   Configuration,
   OpenRealmBehaviorType,
   OpenRealmTimeOutBehavior,
-  PartitionBasedSyncProgressNotificationCallback,
   ProgressNotificationCallback,
   PromiseHandle,
   Realm,
@@ -141,7 +140,7 @@ export class ProgressRealmPromise implements Promise<Realm> {
               this.handle.reject(err);
             }
           });
-        this.listenerToken = this.task.registerDownloadProgressNotifier(this.emitProgress);
+        this.listenerToken = this.task.registerDownloadProgressNotifier(this.emitProgress.bind(this));
       } else {
         throw new Error(`Unexpected open behavior '${openBehavior}'`);
       }
@@ -164,6 +163,7 @@ export class ProgressRealmPromise implements Promise<Realm> {
     this.timeoutPromise?.cancel();
     if (this.listenerToken !== null) {
       this.task?.unregisterDownloadProgressNotifier(this.listenerToken);
+      this.listenerToken = null;
     }
     // Clearing all listeners to avoid accidental progress notifications
     this.listeners.clear();
