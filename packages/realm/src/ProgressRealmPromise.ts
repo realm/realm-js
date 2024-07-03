@@ -31,6 +31,7 @@ import {
   assert,
   binding,
   flags,
+  isEstimateProgressNotificationCallback,
   validateConfiguration,
 } from "./internal";
 
@@ -173,18 +174,14 @@ export class ProgressRealmPromise implements Promise<Realm> {
 
   /**
    * Register to receive progress notifications while the download is in progress.
-   * @param callback Called multiple times as the client receives data, with two arguments:
-   * 1. `transferred` The current number of bytes already transferred
-   * 2. `transferable` The total number of transferable bytes (i.e. the number of bytes already transferred plus the number of bytes pending transfer)
+   * @param callback Called multiple times as the client receives data.
    */
   progress(callback: ProgressNotificationCallback): this {
     this.listeners.add(callback);
-    if (callback.length === 1) {
-      const estimateCallback = callback as DynamicProgressNotificationCallback;
-      estimateCallback(1.0);
+    if (isEstimateProgressNotificationCallback(callback)) {
+      callback(1.0);
     } else {
-      const pbsCallback = callback as PartitionBasedSyncProgressNotificationCallback;
-      pbsCallback(0.0, 0.0);
+      callback(0.0, 0.0);
     }
     return this;
   }
@@ -197,12 +194,10 @@ export class ProgressRealmPromise implements Promise<Realm> {
     const transferred = binding.Int64.intToNum(transferredArg);
     const transferable = binding.Int64.intToNum(transferableArg);
     for (const listener of this.listeners) {
-      if (listener.length === 1) {
-        const estimateListener = listener as DynamicProgressNotificationCallback;
-        estimateListener(progressEstimate);
+      if (isEstimateProgressNotificationCallback(listener)) {
+        listener(progressEstimate);
       } else {
-        const pbsListener = listener as PartitionBasedSyncProgressNotificationCallback;
-        pbsListener(transferred, transferable);
+        listener(transferred, transferable);
       }
     }
   };

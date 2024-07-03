@@ -109,18 +109,19 @@ function toBindingDirection(direction: ProgressDirection) {
   }
 }
 
-function isEstimateProgressNotification(cb: ProgressNotificationCallback): cb is DynamicProgressNotificationCallback {
-  return cb.length === 1;
+/** @internal */
+export function isEstimateProgressNotificationCallback(callback: ProgressNotificationCallback): callback is DynamicProgressNotificationCallback {
+  return callback.length === 1;
 }
 
-function toBindingProgressNotificationCallback(cb: ProgressNotificationCallback) {
-  if (isEstimateProgressNotification(cb)) {
+function toBindingProgressNotificationCallback(callback: ProgressNotificationCallback) {
+  if (isEstimateProgressNotificationCallback(callback)) {
     return (transferredBytes: binding.Int64, transferrableBytes: binding.Int64, progressEstimate: number) =>
-      cb(progressEstimate);
+      callback(progressEstimate);
   } else {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     return (transferredBytes: binding.Int64, transferrableBytes: binding.Int64, _: number) =>
-      cb(transferrableBytes, transferrableBytes);
+      callback(transferrableBytes, transferrableBytes);
   }
 }
 
@@ -479,7 +480,7 @@ export class SyncSession {
   addProgressNotification(direction: ProgressDirection, mode: ProgressMode, callback: ProgressNotificationCallback) {
     if (this.config.flexible) {
       assert(
-        isEstimateProgressNotification(callback),
+        isEstimateProgressNotificationCallback(callback),
         `For flexible sync the callback can only take one argument - got ${callback.length} arguments`,
       );
     }
