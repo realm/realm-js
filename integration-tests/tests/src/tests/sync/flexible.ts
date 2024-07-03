@@ -2101,30 +2101,6 @@ describe("Flexible sync", function () {
       });
     });
 
-    it("only estimate callback is allowed", async function (this: RealmContext) {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-function
-      const callback = (estimate: number) => {};
-      this.realm.syncSession?.addProgressNotification(
-        Realm.ProgressDirection.Download,
-        Realm.ProgressMode.ForCurrentlyOutstandingWork,
-        callback,
-      );
-    });
-
-    it("old callback style is not allowed", async function (this: RealmContext) {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-function
-      const callback = spy((transferable: number, transferred: number) => {});
-      expect(() => {
-        this.realm.syncSession?.addProgressNotification(
-          Realm.ProgressDirection.Download,
-          Realm.ProgressMode.ForCurrentlyOutstandingWork,
-          callback,
-        );
-      }).to.throw();
-
-      expect(callback).not.called;
-    });
-
     describe("with ProgressMode.ReportIndefinitely", function () {
       describe(`with ProgressDirection.Upload`, function () {
         it("should not call callback when there is nothing to upload", async function (this: RealmContext) {
@@ -2227,6 +2203,17 @@ describe("Flexible sync", function () {
           await realm.syncSession?.uploadAllLocalChanges();
 
           expect(callback.callCount).to.be.equal(oldCallCount);
+        });
+
+        it("throws if callback is not a function", async function (this: RealmContext) {
+          expect(() => {
+            this.realm.syncSession?.addProgressNotification(
+              Realm.ProgressDirection.Upload,
+              Realm.ProgressMode.ReportIndefinitely,
+              // @ts-expect-error Testing incorrect type.
+              1,
+            );
+          }).to.throw("Expected 'callback' to be a function, got a number");
         });
       });
 

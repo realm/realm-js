@@ -484,18 +484,13 @@ export class SyncSession {
    * @param direction - The progress direction to register for.
    * @param mode - The progress notification mode to use for the registration.
    * @param callback - The function to call when the progress gets updated.
-   * @throws if signature of `callback` doesn't match requirements for sync mode
    * @since 1.12.0
    */
   addProgressNotification(direction: ProgressDirection, mode: ProgressMode, callback: ProgressNotificationCallback): void {
-    if (this.config.flexible) {
-      assert(
-        isEstimateProgressNotificationCallback(callback),
-        `For flexible sync the callback can only take one argument - got ${callback.length} arguments`,
-      );
-    }
+    assert.function(callback, "callback");
     this.withInternal((internal) => PROGRESS_LISTENERS.add(callback, this.weakInternal, internal, direction, mode));
   }
+
   /**
    * Unregister a progress notification callback that was previously registered with {@link addProgressNotification}.
    * Calling the function multiple times with the same callback is ignored.
@@ -505,6 +500,7 @@ export class SyncSession {
   removeProgressNotification(callback: ProgressNotificationCallback): void {
     PROGRESS_LISTENERS.remove(callback);
   }
+
   /**
    * Registers a connection notification on the session object. This will be notified about changes to the
    * underlying connection to the Realm Object Server.
