@@ -202,7 +202,7 @@ export class ProgressRealmPromise implements Promise<Realm> {
     }
   }
 
-   /** @internal */
+  /** @internal */
   private createTimeoutPromise(config: Configuration, { timeOut, timeOutBehavior }: OpenBehavior) {
     if (typeof timeOut === "number") {
       this.timeoutPromise = new TimeoutPromise(
@@ -234,7 +234,7 @@ export class ProgressRealmPromise implements Promise<Realm> {
     }
   }
 
-   /** @internal */
+  /** @internal */
   private cancelAndResetTask() {
     if (this.task) {
       this.task.cancel();
@@ -243,7 +243,7 @@ export class ProgressRealmPromise implements Promise<Realm> {
     }
   }
 
-   /** @internal */
+  /** @internal */
   private rejectAsCanceled() {
     const err = new Error("Async open canceled");
     this.handle.reject(err);

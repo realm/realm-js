@@ -73,15 +73,13 @@ export enum ProgressMode {
  * @deprecated - Will be removed in a future major version. Please use {@link EstimateProgressNotificationCallback} instead.
  * @since 1.12.0
  */
-export type PartitionBasedSyncProgressNotificationCallback =
-  (transferred: number, transferable: number) => void;
+export type PartitionBasedSyncProgressNotificationCallback = (transferred: number, transferable: number) => void;
 
 /**
  * A progress notification callback for Atlas Device Sync.
  * @param estimate - An estimate between 0.0 and 1.0 of how much have been transferred.
  */
-export type EstimateProgressNotificationCallback =
-  (estimate: number) => void;
+export type EstimateProgressNotificationCallback = (estimate: number) => void;
 
 /**
  * A callback that will be called when the synchronization progress gets updated.
@@ -124,15 +122,17 @@ function toBindingDirection(direction: ProgressDirection) {
 }
 
 /** @internal */
-export function isEstimateProgressNotificationCallback(callback: ProgressNotificationCallback): callback is EstimateProgressNotificationCallback {
+export function isEstimateProgressNotificationCallback(
+  callback: ProgressNotificationCallback,
+): callback is EstimateProgressNotificationCallback {
   return callback.length === 1;
 }
 
 function toBindingProgressNotificationCallback(callback: ProgressNotificationCallback) {
   if (isEstimateProgressNotificationCallback(callback)) {
-    return (_: binding.Int64, __: binding.Int64, progressEstimate: number) =>
-      callback(progressEstimate);
+    return (_: binding.Int64, __: binding.Int64, progressEstimate: number) => callback(progressEstimate);
   } else {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     return (transferredBytes: binding.Int64, transferrableBytes: binding.Int64, _: number) =>
       callback(transferredBytes, transferrableBytes);
   }
@@ -442,7 +442,7 @@ export class SyncSession {
    * Pause a sync session.
    *
    * This method is asynchronous so in order to know when the session has started you will need
-   * to add a connection notification with {@link addConnectionNotification}.
+   * to add a connection notification with {@link SyncSession.addConnectionNotification | addConnectionNotification}.
    *
    * This method is idempotent so it will be a no-op if the session is already paused or if multiplexing
    * is enabled.
@@ -456,7 +456,7 @@ export class SyncSession {
    * Resumes a sync session that has been paused.
    *
    * This method is asynchronous so in order to know when the session has started you will need
-   * to add a connection notification with {@link addConnectionNotification}.
+   * to add a connection notification with {@link SyncSession.addConnectionNotification | addConnectionNotification}.
    *
    * This method is idempotent so it will be a no-op if the session is already started or if multiplexing
    * is enabled.
@@ -470,7 +470,7 @@ export class SyncSession {
    * Reconnects to Atlas Device Sync.
    *
    * This method is asynchronous so in order to know when the session has started you will need
-   * to add a connection notification with {@link addConnectionNotification}.
+   * to add a connection notification with {@link SyncSession.addConnectionNotification | addConnectionNotification}.
    *
    * This method is idempotent so it will be a no-op if the session is already started.
    * @since 12.2.0
@@ -486,13 +486,17 @@ export class SyncSession {
    * @param callback - The function to call when the progress gets updated.
    * @since 1.12.0
    */
-  addProgressNotification(direction: ProgressDirection, mode: ProgressMode, callback: ProgressNotificationCallback): void {
+  addProgressNotification(
+    direction: ProgressDirection,
+    mode: ProgressMode,
+    callback: ProgressNotificationCallback,
+  ): void {
     assert.function(callback, "callback");
     this.withInternal((internal) => PROGRESS_LISTENERS.add(callback, this.weakInternal, internal, direction, mode));
   }
 
   /**
-   * Unregister a progress notification callback that was previously registered with {@link addProgressNotification}.
+   * Unregister a progress notification callback that was previously registered with {@link SyncSession.addProgressNotification | addProgressNotification}.
    * Calling the function multiple times with the same callback is ignored.
    * @param callback - A previously registered progress callback.
    * @since 1.12.0
