@@ -18,7 +18,7 @@
 
 import { expect } from "chai";
 import { spy } from "sinon";
-import Realm, { ConnectionState, ObjectSchema, BSON, SyncConfiguration } from "realm";
+import Realm, { ConnectionState, ObjectSchema, BSON, SyncConfiguration, ProgressDirection, ProgressMode } from "realm";
 
 import { authenticateUserBefore, importAppBefore, openRealmBefore } from "../../hooks";
 import { DogSchema } from "../../schemas/person-and-dog-with-object-ids";
@@ -112,8 +112,7 @@ function createObjects(user: Realm.User, partition: string): Promise<Realm> {
         resolve(realm);
       }
     };
-    //@ts-expect-error TYPEBUG: enums not exposed in realm namespace
-    session?.addProgressNotification("upload", "forCurrentlyOutstandingWork", callback);
+    session?.addProgressNotification(ProgressDirection.Upload, ProgressMode.ForCurrentlyOutstandingWork, callback);
   });
 }
 
@@ -326,17 +325,23 @@ describe("SessionTest", () => {
             failOnCall = true;
             unregisterFunc();
             //use second callback to wait for sync finished
-            //@ts-expect-error TYPEBUG: enums not exposed in realm namespace
-            realm.syncSession?.addProgressNotification("upload", "reportIndefinitely", (transferred, transferable) => {
-              if (transferred === transferable) {
-                resolve();
-              }
-            });
+            realm.syncSession?.addProgressNotification(
+              ProgressDirection.Upload,
+              ProgressMode.ReportIndefinitely,
+              (transferred, transferable) => {
+                if (transferred === transferable) {
+                  resolve();
+                }
+              },
+            );
             writeDataFunc();
           }
         };
-        //@ts-expect-error TYPEBUG: enums not exposed in realm namespace
-        realm.syncSession?.addProgressNotification("upload", "reportIndefinitely", progressCallback);
+        realm.syncSession?.addProgressNotification(
+          ProgressDirection.Upload,
+          ProgressMode.ReportIndefinitely,
+          progressCallback,
+        );
         writeDataFunc();
       });
       realm.close();
