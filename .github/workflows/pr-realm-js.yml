@@ -602,7 +602,7 @@ jobs:
         working-directory: integration-tests/environments/react-native-test-app
         run: |
           mkdir dist
-          npx react-native bundle --entry-file index.js --platform ios --dev false --bundle-output dist/main.ios.jsbundle --assets-dest dist/res
+          npx react-native bundle --entry-file index.js --platform ios --dev false --minify false --bundle-output dist/main.ios.jsbundle --assets-dest dist/res
 
       - name: Build test app
         working-directory: integration-tests/environments/react-native-test-app/ios
