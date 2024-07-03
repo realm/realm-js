@@ -84,8 +84,11 @@ export class ProgressRealmPromise implements Promise<Realm> {
   private handle = new PromiseHandle<Realm>();
   /** @internal */
   private timeoutPromise: TimeoutPromise<Realm> | null = null;
-  /** @internal */
-  private token = 0;
+  /**
+   * Token used for unregistering the progress notifier.
+   * @internal
+   */
+  private listenerToken: binding.Int64 | null = null;
 
   /** @internal */
   constructor(config: Configuration) {
@@ -138,15 +141,14 @@ export class ProgressRealmPromise implements Promise<Realm> {
               this.handle.reject(err);
             }
           });
-        if (this.listeners.size > 0) {
-          this.token = this.task.registerDownloadProgressNotifier(this.emitProgress);
-        }
+        this.listenerToken = this.task.registerDownloadProgressNotifier(this.emitProgress);
       } else {
         throw new Error(`Unexpected open behavior '${openBehavior}'`);
       }
     } catch (err) {
-      if (this.token !== 0) {
-        this.task?.unregisterDownloadProgressNotifier(this.token);
+      if (this.listenerToken !== null) {
+        this.task?.unregisterDownloadProgressNotifier(this.listenerToken);
+        this.listenerToken = null;
       }
       this.handle.reject(err);
     }
@@ -160,7 +162,9 @@ export class ProgressRealmPromise implements Promise<Realm> {
   cancel(): void {
     this.cancelAndResetTask();
     this.timeoutPromise?.cancel();
-    this.task?.unregisterDownloadProgressNotifier(this.token);
+    if (this.listenerToken !== null) {
+      this.task?.unregisterDownloadProgressNotifier(this.listenerToken);
+    }
     // Clearing all listeners to avoid accidental progress notifications
     this.listeners.clear();
     // Tell anything awaiting the promise
