@@ -7,13 +7,11 @@
 * None
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None
+* Fixed listener that was not being removed during unmounting of `useObject` and `useQuery` if the listener was adding in a write transaction. ([#6552](https://github.com/realm/realm-js/pull/6552)) Thanks [@bimusik](https://github.com/bimusiek)!
 
 ### Compatibility
 * React Native >= v0.71.4
-* Realm Studio v15.0.0.
-* File format: generates Realms with format v24 (reads and upgrades file format v10).
+* See "Compatibility" for a specific Realm version in [Realm's CHANGELOG](https://github.com/realm/realm-js/blob/main/CHANGELOG.md).
 
 ### Internal
 <!-- * Either mention core version or upgrade -->
@@ -79,7 +77,7 @@ function MyApp() {
 * Adding `keyPaths` option to the `useQuery` and `useObject` hooks, to indicate a lower bound on the changes relevant for the hook. This is a lower bound, since if multiple hooks add listeners (each with their own `keyPaths`) the union of these key-paths will determine the changes that are considered relevant for all listeners registered on the collection or object. In other words: A listener might fire and cause a re-render more than the key-paths specify, if other listeners with different key-paths are present. ([#6360](https://github.com/realm/realm-js/pull/6360))
 
 ### Fixed
-* Removed race condition in `useObject` ([#6291](https://github.com/realm/realm-js/issues/6291)) Thanks [@bimusik](https://github.com/bimusiek)!
+* Removed race condition in `useObject`. ([#6291](https://github.com/realm/realm-js/issues/6291)) Thanks [@bimusik](https://github.com/bimusiek)!
 * Fixed flickering of the `RealmProvider`'s `fallback` component and its `children` when offline. ([#6333](https://github.com/realm/realm-js/issues/6333))
 
 ### Compatibility
