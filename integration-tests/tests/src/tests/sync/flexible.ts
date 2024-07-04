@@ -2273,7 +2273,6 @@ describe("Flexible sync", function () {
 
           persons1.unsubscribe();
           persons2.unsubscribe();
-          realm2.close();
         });
 
         it("should not run after it has been removed", async function (this: RealmContext) {
@@ -2335,7 +2334,6 @@ describe("Flexible sync", function () {
 
           persons1.unsubscribe();
           persons2.unsubscribe();
-          realm2.close();
         });
       });
     });
@@ -2452,7 +2450,6 @@ describe("Flexible sync", function () {
 
           persons1.unsubscribe();
           persons2.unsubscribe();
-          realm2.close();
         });
       });
     });
