@@ -21,9 +21,10 @@ import { TypeOptions, binding, getTypeHelpers, toItemType } from "./internal";
 import { createArrayPropertyAccessor } from "./property-accessors/Array";
 import { createObjectPropertyAccessor } from "./property-accessors/Object";
 import { createDictionaryPropertyAccessor } from "./property-accessors/Dictionary";
-import { createDefaultPropertyAccessor } from "./property-accessors/default";
 import { createSetPropertyAccessor } from "./property-accessors/Set";
+import { createIntPropertyAccessor } from "./property-accessors/Int";
 import { createMixedPropertyAccessor } from "./property-accessors/Mixed";
+import { createDefaultPropertyAccessor } from "./property-accessors/default";
 import {
   HelperOptions,
   PropertyAccessor,
@@ -31,7 +32,6 @@ import {
   PropertyHelpers,
   PropertyOptions,
 } from "./property-accessors/types";
-import { createIntPropertyAccessor } from "./property-accessors/Int";
 
 type AccessorFactory = (options: PropertyOptions) => PropertyAccessor;
 
