@@ -177,6 +177,8 @@ export class ProgressRealmPromise implements Promise<Realm> {
    */
   progress(callback: ProgressNotificationCallback): this {
     this.listeners.add(callback);
+    // TODO: Is the manual triggering necessary? It was meant to mimic the
+    //       same behavior experienced prior to having the estimate notifier.
     if (isEstimateProgressNotificationCallback(callback)) {
       callback(1.0);
     } else {

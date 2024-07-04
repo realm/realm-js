@@ -182,6 +182,7 @@ async function addSubscriptionAndSync<T extends Realm.Object<T>>(
 describe("Flexible sync", function () {
   this.timeout(60_000); // TODO: Temporarily hardcoded until envs are set up.
   importAppBefore(buildAppConfig("with-flx").anonAuth().flexibleSync());
+  // TODO: Do we need to avoid reuse? It may be necessary for the Progress Notification tests.
   authenticateUserBefore({ reuse: false });
   afterEach(() => {
     Realm.clearTestState();
