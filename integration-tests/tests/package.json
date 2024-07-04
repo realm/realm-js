@@ -98,7 +98,8 @@
     "jsrsasign": "^11.0.0",
     "node-fetch": "^3.3.2",
     "sinon": "9.2.4",
-    "sinon-chai": "3.7.0"
+    "sinon-chai": "3.7.0",
+    "util": "^0.12.5"
   },
   "files": [
     "/src"
