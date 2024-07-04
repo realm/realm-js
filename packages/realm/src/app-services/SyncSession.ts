@@ -53,12 +53,28 @@ export enum ProgressMode {
   ForCurrentlyOutstandingWork = "forCurrentlyOutstandingWork",
 }
 
-export type ProgressNotificationCallback =
+/** @deprecated */
+export type PartitionBasedSyncProgressNotificationCallback =
   /**
+   * This notification callback only supports Partition Based Sync.
    * @param transferred - The current number of bytes already transferred
    * @param transferable - The total number of transferable bytes (i.e. the number of bytes already transferred plus the number of bytes pending transfer)
+   * @deprecated - This notification callback will be removed in next major release. Use {@link DynamicProgressNotificationCallback} instead.
+   * @since 1.12.0
    */
   (transferred: number, transferable: number) => void;
+
+export type DynamicProgressNotificationCallback =
+  /**
+   * This notification callback supports both Partition Based Sync and Flexible Sync.
+   * @param estimate - An estimate between 0.0 and 1.0 of how much have been transferred.
+   * @since 12.10.0
+   */
+  (estimate: number) => void;
+
+export type ProgressNotificationCallback =
+  | PartitionBasedSyncProgressNotificationCallback
+  | DynamicProgressNotificationCallback;
 
 export enum ConnectionState {
   Disconnected = "disconnected",
@@ -90,6 +106,21 @@ function toBindingDirection(direction: ProgressDirection) {
     return binding.ProgressDirection.Upload;
   } else {
     throw new Error(`Unexpected direction: ${direction}`);
+  }
+}
+
+function isEstimateProgressNotification(cb: ProgressNotificationCallback): cb is DynamicProgressNotificationCallback {
+  return cb.length === 1;
+}
+
+function toBindingProgressNotificationCallback(cb: ProgressNotificationCallback) {
+  if (isEstimateProgressNotification(cb)) {
+    return (transferredBytes: binding.Int64, transferrableBytes: binding.Int64, progressEstimate: number) =>
+      cb(progressEstimate);
+  } else {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    return (transferredBytes: binding.Int64, transferrableBytes: binding.Int64, _: number) =>
+      cb(transferrableBytes, transferrableBytes);
   }
 }
 
@@ -251,7 +282,7 @@ const PROGRESS_LISTENERS = new Listeners<
 >({
   add(callback, weakInternal, internal, direction, mode) {
     const token = internal.registerProgressNotifier(
-      (transferred, transferable) => callback(Number(transferred), Number(transferable)),
+      toBindingProgressNotificationCallback(callback),
       toBindingDirection(direction),
       mode === ProgressMode.ReportIndefinitely,
     );
@@ -441,12 +472,17 @@ export class SyncSession {
    * Can be either:
    *  - `reportIndefinitely` - the registration will stay active until the callback is unregistered
    *  - `forCurrentlyOutstandingWork` - the registration will be active until only the currently transferable bytes are synced
-   * @param callback - Called with the following arguments:
-   * 1. `transferred`: The current number of bytes already transferred
-   * 2. `transferable`: The total number of transferable bytes (the number of bytes already transferred plus the number of bytes pending transfer)
+   * @param callback - see {@link DynamicProgressNotificationCallback} and {@link PartitionBasedSyncProgressNotificationCallback}
+   * @throws if signature of `callback` doesn't match requirements for sync mode
    * @since 1.12.0
    */
   addProgressNotification(direction: ProgressDirection, mode: ProgressMode, callback: ProgressNotificationCallback) {
+    if (this.config.flexible) {
+      assert(
+        isEstimateProgressNotification(callback),
+        `For flexible sync the callback can only take one argument - got ${callback.length} arguments`,
+      );
+    }
     this.withInternal((internal) => PROGRESS_LISTENERS.add(callback, this.weakInternal, internal, direction, mode));
   }
   /**
