@@ -2226,7 +2226,7 @@ describe("Flexible sync", function () {
 
           // TODO: This callback should not be called at this stage but seems flakey
           // and gets called with 1.0 at times, likely because of a race condition.
-          expect(callback).not.called
+          expect(callback).not.called;
         });
 
         it("should be called multiple times with different values during downloads", async function (this: RealmContext &
