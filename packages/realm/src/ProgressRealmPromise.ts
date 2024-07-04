@@ -87,7 +87,7 @@ export class ProgressRealmPromise implements Promise<Realm> {
    * Token used for unregistering the progress notifier.
    * @internal
    */
-  private listenerToken: binding.Int64 | null = null;
+  private notifierToken: binding.Int64 | null = null;
 
   /** @internal */
   constructor(config: Configuration) {
@@ -140,14 +140,14 @@ export class ProgressRealmPromise implements Promise<Realm> {
               this.handle.reject(err);
             }
           });
-        this.listenerToken = this.task.registerDownloadProgressNotifier(this.emitProgress.bind(this));
+        this.notifierToken = this.task.registerDownloadProgressNotifier(this.emitProgress.bind(this));
       } else {
         throw new Error(`Unexpected open behavior '${openBehavior}'`);
       }
     } catch (err) {
-      if (this.listenerToken !== null) {
-        this.task?.unregisterDownloadProgressNotifier(this.listenerToken);
-        this.listenerToken = null;
+      if (this.notifierToken !== null) {
+        this.task?.unregisterDownloadProgressNotifier(this.notifierToken);
+        this.notifierToken = null;
       }
       this.handle.reject(err);
     }
@@ -161,9 +161,9 @@ export class ProgressRealmPromise implements Promise<Realm> {
   cancel(): void {
     this.cancelAndResetTask();
     this.timeoutPromise?.cancel();
-    if (this.listenerToken !== null) {
-      this.task?.unregisterDownloadProgressNotifier(this.listenerToken);
-      this.listenerToken = null;
+    if (this.notifierToken !== null) {
+      this.task?.unregisterDownloadProgressNotifier(this.notifierToken);
+      this.notifierToken = null;
     }
     // Clearing all listeners to avoid accidental progress notifications
     this.listeners.clear();
