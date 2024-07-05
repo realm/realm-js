@@ -566,7 +566,11 @@ jobs:
         run: open -a ${{ env.DEVELOPER_DIR }}/Contents/Developer/Applications/Simulator.app
 
       - name: Boot the simulator
-        run: xcrun simctl boot '${{ env.IOS_DEVICE_NAME }}'
+        run: |
+          xcrun simctl boot '${{ env.IOS_DEVICE_NAME }}'
+          SIMULATOR_UDID=`xcrun simctl list devices booted --json | jq -r '.devices[][] | select(.name == "${{ env.IOS_DEVICE_NAME }}").udid'`
+          echo "Simulator booted with UDID = $SIMULATOR_UDID"
+          echo "SIMULATOR_UDID=$SIMULATOR_UDID" >> $GITHUB_ENV
 
       - name: Start BaaS test server
         id: baas
@@ -615,7 +619,6 @@ jobs:
         timeout-minutes: 30
         working-directory: integration-tests/environments/react-native-test-app/ios
         run: |
-          SIMULATOR_UDID=`xcrun simctl list devices booted --json | jq -r '.devices[][].udid'`
           # Install the app
           xcrun simctl install $SIMULATOR_UDID ./build/realmtests.xcarchive/Products/Applications/ReactTestApp.app
           # Run Mocha Remote wrapping the launch of the app
