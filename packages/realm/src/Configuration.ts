@@ -101,6 +101,12 @@ export type BaseConfiguration = {
    * @since 2.23.0
    */
   fifoFilesFallbackPath?: string;
+  /**
+   * Opening a Realm with relaxed schema means that you can dynamically add, update, and remove properties
+   * at runtime. These additional properties will always have the type Mixed.
+   * @default false
+   */
+  relaxedSchema?: boolean;
   sync?: SyncConfiguration;
   /** @internal */
   openSyncedRealmLocally?: true;
@@ -184,6 +190,7 @@ export function validateConfiguration(config: unknown): asserts config is Config
     path,
     schema,
     schemaVersion,
+    relaxedSchema,
     inMemory,
     readOnly,
     fifoFilesFallbackPath,
@@ -210,6 +217,9 @@ export function validateConfiguration(config: unknown): asserts config is Config
       schemaVersion >= 0 && Number.isInteger(schemaVersion),
       "'schemaVersion' on realm configuration must be 0 or a positive integer.",
     );
+  }
+  if (relaxedSchema !== undefined) {
+    assert.boolean(relaxedSchema, "'relaxedSchema' on realm configuration");
   }
   if (inMemory !== undefined) {
     assert.boolean(inMemory, "'inMemory' on realm configuration");

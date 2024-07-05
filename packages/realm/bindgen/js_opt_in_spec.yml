@@ -44,6 +44,7 @@ records:
       - schema
       - schema_version
       - schema_mode
+      - flexible_schema
       - disable_format_upgrade
       - sync_config
       - force_sync_history
