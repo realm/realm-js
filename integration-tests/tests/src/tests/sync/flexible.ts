@@ -29,15 +29,20 @@
 // fraction too long.
 
 import { expect } from "chai";
+import { spy } from "sinon";
 import Realm, {
   BSON,
   ClientResetMode,
+  CompensatingWriteError,
   ConfigurationWithSync,
+  Credentials,
   ErrorCallback,
   FlexibleSyncConfiguration,
+  OpenRealmBehaviorType,
+  ProgressDirection,
+  ProgressMode,
   SessionStopPolicy,
   SubscriptionSetState,
-  CompensatingWriteError,
   WaitForSync,
 } from "realm";
 
@@ -57,6 +62,7 @@ export const PersonSchema: Realm.ObjectSchema = {
     name: "string",
     friends: "Person[]",
     nonQueryable: "string?",
+    data: "data?",
   },
 };
 
@@ -66,6 +72,7 @@ export class Person extends Realm.Object<Person> {
   age!: number;
   friends!: Realm.List<Person>;
   dogs!: Realm.Collection<Dog>;
+  data?: Realm.Types.Data;
 
   static schema: Realm.ObjectSchema = PersonSchema;
 }
@@ -175,7 +182,8 @@ async function addSubscriptionAndSync<T extends Realm.Object<T>>(
 describe("Flexible sync", function () {
   this.timeout(60_000); // TODO: Temporarily hardcoded until envs are set up.
   importAppBefore(buildAppConfig("with-flx").anonAuth().flexibleSync());
-  authenticateUserBefore();
+  // TODO: Do we need to avoid reuse? It may be necessary for the Progress Notification tests.
+  authenticateUserBefore({ reuse: false });
   afterEach(() => {
     Realm.clearTestState();
   });
@@ -2071,6 +2079,378 @@ describe("Flexible sync", function () {
               expect(error.code).to.equal(211);
             },
           );
+        });
+      });
+    });
+  });
+
+  describe("Progress notification", function () {
+    this.timeout(5000);
+
+    openRealmBeforeEach({
+      schema: [Person, Dog],
+      sync: {
+        flexible: true,
+        // @ts-expect-error Using an internal API
+        _sessionStopPolicy: SessionStopPolicy.Immediately,
+      },
+    });
+
+    describe("with ProgressMode.ReportIndefinitely", function () {
+      describe(`with ProgressDirection.Upload`, function () {
+        it("should not call callback when there is nothing to upload", async function (this: RealmContext) {
+          // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
+          const callback = spy((estimate: number) => {});
+
+          this.realm.syncSession?.addProgressNotification(
+            ProgressDirection.Upload,
+            ProgressMode.ReportIndefinitely,
+            callback,
+          );
+
+          expect(callback).not.called;
+        });
+
+        it("should be called multiple times with different values during uploads", async function (this: RealmContext) {
+          // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
+          const callback = spy((estimate: number) => {});
+
+          this.realm.syncSession?.addProgressNotification(
+            ProgressDirection.Upload,
+            ProgressMode.ReportIndefinitely,
+            callback,
+          );
+
+          await this.realm.syncSession?.uploadAllLocalChanges();
+          await this.realm.syncSession?.downloadAllServerChanges();
+
+          // TODO: This callback should not be called at this stage but seems flakey
+          // and gets called with 1.0 at times, likely because of a race condition.
+          expect(callback).not.called;
+          const persons = await this.realm.objects(Person).subscribe();
+
+          this.realm.write(() => {
+            this.realm.create(Person, {
+              _id: new BSON.ObjectId(),
+              name: "Heavy",
+              age: 36,
+              data: new ArrayBuffer(1_000_000),
+            });
+          });
+
+          await this.realm.syncSession?.uploadAllLocalChanges();
+          persons.unsubscribe();
+
+          // TODO: Flaky?
+          // There should be at least one point where the progress is not yet finished.
+          expect(callback.args.some(([estimate]) => estimate >= 0 && estimate < 1)).to.be.true;
+          expect(callback.lastCall).calledWithExactly(1);
+        });
+
+        it("should not run after it has been removed", async function (this: RealmContext) {
+          // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
+          const callback = spy((estimate: number) => {});
+
+          this.realm.syncSession?.addProgressNotification(
+            ProgressDirection.Upload,
+            ProgressMode.ReportIndefinitely,
+            callback,
+          );
+
+          await this.realm.syncSession?.uploadAllLocalChanges();
+          await this.realm.syncSession?.downloadAllServerChanges();
+
+          // TODO: This callback should not be called at this stage but seems flakey
+          // and gets called with 1.0 at times, likely because of a race condition.
+          expect(callback).not.called;
+
+          await this.realm.objects(Person).subscribe();
+
+          this.realm.write(() => {
+            this.realm.create(Person, {
+              _id: new BSON.ObjectId(),
+              name: "Heavy",
+              age: 36,
+              data: new ArrayBuffer(1_000_000),
+            });
+          });
+
+          await this.realm.syncSession?.uploadAllLocalChanges();
+          await this.realm.syncSession?.downloadAllServerChanges();
+
+          const oldCallCount = callback.callCount;
+          expect(oldCallCount).to.be.greaterThanOrEqual(2);
+          expect(callback.lastCall).calledWithExactly(1);
+
+          this.realm.syncSession?.removeProgressNotification(callback);
+
+          this.realm.write(() => {
+            this.realm.create(Person, {
+              _id: new BSON.ObjectId(),
+              name: "Heavy",
+              age: 36,
+              data: new ArrayBuffer(1_000_000),
+            });
+          });
+
+          await this.realm.syncSession?.uploadAllLocalChanges();
+
+          expect(callback.callCount).to.equal(oldCallCount);
+        });
+
+        it("throws if callback is not a function", async function (this: RealmContext) {
+          expect(() => {
+            this.realm.syncSession?.addProgressNotification(
+              ProgressDirection.Upload,
+              ProgressMode.ReportIndefinitely,
+              // @ts-expect-error Testing incorrect type.
+              1,
+            );
+          }).to.throw("Expected 'callback' to be a function, got a number");
+        });
+      });
+
+      describe(`with ProgressDirection.Download`, function () {
+        it("should not call the callback when there is nothing to download", async function (this: RealmContext) {
+          // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
+          const callback = spy((estimate: number) => {});
+
+          this.realm.syncSession?.addProgressNotification(
+            ProgressDirection.Download,
+            ProgressMode.ReportIndefinitely,
+            callback,
+          );
+
+          await this.realm.syncSession?.uploadAllLocalChanges();
+          await this.realm.syncSession?.downloadAllServerChanges();
+
+          // TODO: This callback should not be called at this stage but seems flakey
+          // and gets called with 1.0 at times, likely because of a race condition.
+          expect(callback).not.called;
+        });
+
+        it("should be called multiple times with different values during downloads", async function (this: RealmContext &
+          AppContext) {
+          const realm1 = this.realm;
+          // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
+          const callback = spy((estimate: number) => {});
+
+          const realm2 = await Realm.open({
+            schema: [Person, Dog],
+            sync: {
+              flexible: true,
+              user: await this.app.logIn(Credentials.anonymous(false)),
+              newRealmFileBehavior: {
+                type: OpenRealmBehaviorType.OpenImmediately,
+              },
+            },
+          });
+
+          realm2.syncSession?.addProgressNotification(
+            ProgressDirection.Download,
+            ProgressMode.ReportIndefinitely,
+            callback,
+          );
+
+          const persons1 = await realm1.objects(Person).subscribe();
+
+          realm1.write(() => {
+            realm1.create(Person, {
+              _id: new BSON.ObjectId(),
+              name: "Heavy",
+              age: 36,
+              data: new ArrayBuffer(1_000_000),
+            });
+          });
+
+          await realm1.syncSession?.uploadAllLocalChanges();
+          const persons2 = await realm2.objects(Person).subscribe();
+          await realm2.syncSession?.downloadAllServerChanges();
+
+          // TODO: Flaky. The callback is sometimes called with values < 1, called twice with `1`.
+          //       QUESTION: Do we actually expect value < 1 each time?
+          // expect(callback.args.some(([estimate]) => estimate >= 0 && estimate < 1)).to.be.true;
+          expect(callback.lastCall).calledWithExactly(1);
+
+          persons1.unsubscribe();
+          persons2.unsubscribe();
+        });
+
+        it("should not run after it has been removed", async function (this: RealmContext) {
+          const realm1 = this.realm;
+          // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
+          const callback = spy((estimate: number) => {});
+
+          const realm2 = await Realm.open({
+            schema: [Person, Dog],
+            sync: {
+              flexible: true,
+              user: await this.app.logIn(Credentials.anonymous(false)),
+              newRealmFileBehavior: {
+                type: OpenRealmBehaviorType.OpenImmediately,
+              },
+            },
+          });
+
+          realm2.syncSession?.addProgressNotification(
+            ProgressDirection.Download,
+            ProgressMode.ReportIndefinitely,
+            callback,
+          );
+
+          const persons1 = await realm1.objects(Person).subscribe();
+
+          realm1.write(() => {
+            realm1.create(Person, {
+              _id: new BSON.ObjectId(),
+              name: "Heavy",
+              age: 36,
+              data: new ArrayBuffer(1_000_000),
+            });
+          });
+
+          const persons2 = await realm2.objects(Person).subscribe();
+          await realm1.syncSession?.uploadAllLocalChanges();
+          await realm2.syncSession?.downloadAllServerChanges();
+
+          expect(callback.args.some(([estimate]) => estimate >= 0 && estimate < 1)).to.be.true;
+          expect(callback.lastCall).calledWithExactly(1);
+          const oldCallCount = callback.callCount;
+
+          realm2.syncSession?.removeProgressNotification(callback);
+
+          realm1.write(() => {
+            realm1.create(Person, {
+              _id: new BSON.ObjectId(),
+              name: "Heavy",
+              age: 36,
+              data: new ArrayBuffer(1_000_000),
+            });
+          });
+
+          await realm1.syncSession?.uploadAllLocalChanges();
+          await realm2.syncSession?.downloadAllServerChanges();
+
+          expect(callback.callCount).to.equal(oldCallCount);
+
+          persons1.unsubscribe();
+          persons2.unsubscribe();
+        });
+      });
+    });
+
+    describe("with ProgressMode.ForCurrentlyOutstandingWork", () => {
+      describe(`with ProgressDirection.Upload`, function () {
+        it("should not call callback when there is nothing to upload", async function (this: RealmContext) {
+          // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
+          const callback = spy((estimate: number) => {});
+
+          await this.realm.syncSession?.uploadAllLocalChanges();
+
+          this.realm.syncSession?.addProgressNotification(
+            ProgressDirection.Upload,
+            ProgressMode.ForCurrentlyOutstandingWork,
+            callback,
+          );
+
+          expect(callback).not.called;
+        });
+
+        it("should be called multiple times with different values during uploads", async function (this: RealmContext) {
+          // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
+          const callback = spy((estimate: number) => {});
+
+          this.realm.syncSession?.addProgressNotification(
+            ProgressDirection.Upload,
+            ProgressMode.ForCurrentlyOutstandingWork,
+            callback,
+          );
+
+          const persons = await this.realm.objects(Person).subscribe();
+
+          this.realm.write(() => {
+            this.realm.create(Person, {
+              _id: new BSON.ObjectId(),
+              name: "Heavy",
+              age: 36,
+              data: new ArrayBuffer(1_000_000),
+            });
+          });
+
+          await this.realm.syncSession?.uploadAllLocalChanges();
+
+          // TODO: The callback seems to only be called one time with `1`.
+          // There should be at least one point where the progress is not yet finished.
+          // expect(callback.args.some(([estimate]) => estimate >= 0 && estimate < 1)).to.be.true;
+          expect(callback.lastCall).calledWithExactly(1);
+
+          persons.unsubscribe();
+        });
+      });
+
+      describe(`with ProgressDirection.Download`, function () {
+        it("should not call callback when there is nothing to download", async function (this: RealmContext) {
+          // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
+          const callback = spy((estimate: number) => {});
+
+          await this.realm.syncSession?.downloadAllServerChanges();
+
+          this.realm.syncSession?.addProgressNotification(
+            ProgressDirection.Download,
+            ProgressMode.ForCurrentlyOutstandingWork,
+            callback,
+          );
+
+          expect(callback).not.called;
+        });
+
+        it("should be called multiple times with different values during downloads", async function (this: RealmContext &
+          AppContext) {
+          const realm1 = this.realm;
+          // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
+          const callback = spy((estimate: number) => {});
+
+          const realm2 = await Realm.open({
+            schema: [Person, Dog],
+            sync: {
+              flexible: true,
+              user: await this.app.logIn(Credentials.anonymous(false)),
+              newRealmFileBehavior: {
+                type: OpenRealmBehaviorType.OpenImmediately,
+              },
+            },
+          });
+
+          realm2.syncSession?.addProgressNotification(
+            ProgressDirection.Download,
+            ProgressMode.ForCurrentlyOutstandingWork,
+            callback,
+          );
+
+          const persons1 = await realm1.objects(Person).subscribe();
+
+          realm1.write(() => {
+            realm1.create(Person, {
+              _id: new BSON.ObjectId(),
+              name: "Heavy",
+              age: 36,
+              data: new ArrayBuffer(1_000_000),
+            });
+          });
+
+          await realm1.syncSession?.uploadAllLocalChanges();
+          const persons2 = await realm2.objects(Person).subscribe();
+          await realm2.syncSession?.downloadAllServerChanges();
+
+          // TODO: Flaky?
+          // There should be at least one point where the progress is not yet finished.
+          expect(callback.args.some(([estimate]) => estimate >= 0 && estimate < 1)).to.be.true;
+          // TODO: The callback never seems to be called with `1`.
+          //       QUESTION: Is that not expected for `ForCurrentlyOutstandingWork`?
+          // expect(callback.lastCall).calledWithExactly(1);
+
+          persons1.unsubscribe();
+          persons2.unsubscribe();
         });
       });
     });

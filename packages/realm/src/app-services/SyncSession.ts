@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { EJSON } from "bson";
+
 import {
   App,
   ClientResetAfterCallback,
@@ -37,6 +38,9 @@ import {
   fromBindingSyncError,
 } from "../internal";
 
+/**
+ * The progress direction to register the progress notifier for.
+ */
 export enum ProgressDirection {
   /**
    * Data going from the server to the client.
@@ -48,17 +52,41 @@ export enum ProgressDirection {
   Upload = "upload",
 }
 
+/**
+ * The progress notification mode to register the progress notifier for.
+ */
 export enum ProgressMode {
+  /**
+   * The registration will stay active until the callback is unregistered.
+   */
   ReportIndefinitely = "reportIndefinitely",
+  /**
+   * The registration will be active until only the currently transferable bytes are synced.
+   */
   ForCurrentlyOutstandingWork = "forCurrentlyOutstandingWork",
 }
 
+/**
+ * A progress notification callback supporting Partition-Based Sync only.
+ * @param transferred - The current number of bytes already transferred.
+ * @param transferable - The total number of transferable bytes (i.e. the number of bytes already transferred plus the number of bytes pending transfer).
+ * @deprecated - Will be removed in a future major version. Please use {@link EstimateProgressNotificationCallback} instead.
+ * @since 1.12.0
+ */
+export type PartitionBasedSyncProgressNotificationCallback = (transferred: number, transferable: number) => void;
+
+/**
+ * A progress notification callback for Atlas Device Sync.
+ * @param estimate - An estimate between 0.0 and 1.0 of how much have been transferred.
+ */
+export type EstimateProgressNotificationCallback = (estimate: number) => void;
+
+/**
+ * A callback that will be called when the synchronization progress gets updated.
+ */
 export type ProgressNotificationCallback =
-  /**
-   * @param transferred - The current number of bytes already transferred
-   * @param transferable - The total number of transferable bytes (i.e. the number of bytes already transferred plus the number of bytes pending transfer)
-   */
-  (transferred: number, transferable: number) => void;
+  | EstimateProgressNotificationCallback
+  | PartitionBasedSyncProgressNotificationCallback;
 
 export enum ConnectionState {
   Disconnected = "disconnected",
@@ -90,6 +118,23 @@ function toBindingDirection(direction: ProgressDirection) {
     return binding.ProgressDirection.Upload;
   } else {
     throw new Error(`Unexpected direction: ${direction}`);
+  }
+}
+
+/** @internal */
+export function isEstimateProgressNotificationCallback(
+  callback: ProgressNotificationCallback,
+): callback is EstimateProgressNotificationCallback {
+  return callback.length === 1;
+}
+
+function toBindingProgressNotificationCallback(callback: ProgressNotificationCallback) {
+  if (isEstimateProgressNotificationCallback(callback)) {
+    return (_: binding.Int64, __: binding.Int64, progressEstimate: number) => callback(progressEstimate);
+  } else {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    return (transferredBytes: binding.Int64, transferrableBytes: binding.Int64, _: number) =>
+      callback(transferredBytes, transferrableBytes);
   }
 }
 
@@ -251,7 +296,7 @@ const PROGRESS_LISTENERS = new Listeners<
 >({
   add(callback, weakInternal, internal, direction, mode) {
     const token = internal.registerProgressNotifier(
-      (transferred, transferable) => callback(Number(transferred), Number(transferable)),
+      toBindingProgressNotificationCallback(callback),
       toBindingDirection(direction),
       mode === ProgressMode.ReportIndefinitely,
     );
@@ -397,7 +442,7 @@ export class SyncSession {
    * Pause a sync session.
    *
    * This method is asynchronous so in order to know when the session has started you will need
-   * to add a connection notification with {@link addConnectionNotification}.
+   * to add a connection notification with {@link SyncSession.addConnectionNotification | addConnectionNotification}.
    *
    * This method is idempotent so it will be a no-op if the session is already paused or if multiplexing
    * is enabled.
@@ -411,7 +456,7 @@ export class SyncSession {
    * Resumes a sync session that has been paused.
    *
    * This method is asynchronous so in order to know when the session has started you will need
-   * to add a connection notification with {@link addConnectionNotification}.
+   * to add a connection notification with {@link SyncSession.addConnectionNotification | addConnectionNotification}.
    *
    * This method is idempotent so it will be a no-op if the session is already started or if multiplexing
    * is enabled.
@@ -422,10 +467,10 @@ export class SyncSession {
   }
 
   /**
-   * Reconnects to Altas Device Sync.
+   * Reconnects to Atlas Device Sync.
    *
    * This method is asynchronous so in order to know when the session has started you will need
-   * to add a connection notification with {@link addConnectionNotification}.
+   * to add a connection notification with {@link SyncSession.addConnectionNotification | addConnectionNotification}.
    *
    * This method is idempotent so it will be a no-op if the session is already started.
    * @since 12.2.0
@@ -435,22 +480,23 @@ export class SyncSession {
   }
 
   /**
-   * Register a progress notification callback on a session object
+   * Register a progress notification callback on a session object.
    * @param direction - The progress direction to register for.
    * @param mode - The progress notification mode to use for the registration.
-   * Can be either:
-   *  - `reportIndefinitely` - the registration will stay active until the callback is unregistered
-   *  - `forCurrentlyOutstandingWork` - the registration will be active until only the currently transferable bytes are synced
-   * @param callback - Called with the following arguments:
-   * 1. `transferred`: The current number of bytes already transferred
-   * 2. `transferable`: The total number of transferable bytes (the number of bytes already transferred plus the number of bytes pending transfer)
+   * @param callback - The function to call when the progress gets updated.
    * @since 1.12.0
    */
-  addProgressNotification(direction: ProgressDirection, mode: ProgressMode, callback: ProgressNotificationCallback) {
+  addProgressNotification(
+    direction: ProgressDirection,
+    mode: ProgressMode,
+    callback: ProgressNotificationCallback,
+  ): void {
+    assert.function(callback, "callback");
     this.withInternal((internal) => PROGRESS_LISTENERS.add(callback, this.weakInternal, internal, direction, mode));
   }
+
   /**
-   * Unregister a progress notification callback that was previously registered with {@link addProgressNotification}.
+   * Unregister a progress notification callback that was previously registered with {@link SyncSession.addProgressNotification | addProgressNotification}.
    * Calling the function multiple times with the same callback is ignored.
    * @param callback - A previously registered progress callback.
    * @since 1.12.0
@@ -458,6 +504,7 @@ export class SyncSession {
   removeProgressNotification(callback: ProgressNotificationCallback): void {
     PROGRESS_LISTENERS.remove(callback);
   }
+
   /**
    * Registers a connection notification on the session object. This will be notified about changes to the
    * underlying connection to the Realm Object Server.

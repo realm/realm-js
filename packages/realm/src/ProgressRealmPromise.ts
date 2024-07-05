@@ -29,6 +29,7 @@ import {
   assert,
   binding,
   flags,
+  isEstimateProgressNotificationCallback,
   validateConfiguration,
 } from "./internal";
 
@@ -82,6 +83,11 @@ export class ProgressRealmPromise implements Promise<Realm> {
   private handle = new PromiseHandle<Realm>();
   /** @internal */
   private timeoutPromise: TimeoutPromise<Realm> | null = null;
+  /**
+   * Token used for unregistering the progress notifier.
+   * @internal
+   */
+  private notifierToken: binding.Int64 | null = null;
 
   /** @internal */
   constructor(config: Configuration) {
@@ -134,13 +140,15 @@ export class ProgressRealmPromise implements Promise<Realm> {
               this.handle.reject(err);
             }
           });
-        // TODO: Consider storing the token returned here to unregister when the task gets cancelled,
-        // if for some reason, that doesn't happen internally
-        this.task.registerDownloadProgressNotifier(this.emitProgress);
+        this.notifierToken = this.task.registerDownloadProgressNotifier(this.emitProgress.bind(this));
       } else {
         throw new Error(`Unexpected open behavior '${openBehavior}'`);
       }
     } catch (err) {
+      if (this.notifierToken !== null) {
+        this.task?.unregisterDownloadProgressNotifier(this.notifierToken);
+        this.notifierToken = null;
+      }
       this.handle.reject(err);
     }
   }
@@ -153,6 +161,10 @@ export class ProgressRealmPromise implements Promise<Realm> {
   cancel(): void {
     this.cancelAndResetTask();
     this.timeoutPromise?.cancel();
+    if (this.notifierToken !== null) {
+      this.task?.unregisterDownloadProgressNotifier(this.notifierToken);
+      this.notifierToken = null;
+    }
     // Clearing all listeners to avoid accidental progress notifications
     this.listeners.clear();
     // Tell anything awaiting the promise
@@ -161,12 +173,17 @@ export class ProgressRealmPromise implements Promise<Realm> {
 
   /**
    * Register to receive progress notifications while the download is in progress.
-   * @param callback Called multiple times as the client receives data, with two arguments:
-   * 1. `transferred` The current number of bytes already transferred
-   * 2. `transferable` The total number of transferable bytes (i.e. the number of bytes already transferred plus the number of bytes pending transfer)
+   * @param callback Called multiple times as the client receives data.
    */
   progress(callback: ProgressNotificationCallback): this {
     this.listeners.add(callback);
+    // TODO: Is the manual triggering necessary? It was meant to mimic the
+    //       same behavior experienced prior to having the estimate notifier.
+    if (isEstimateProgressNotificationCallback(callback)) {
+      callback(1.0);
+    } else {
+      callback(0.0, 0.0);
+    }
     return this;
   }
 
@@ -174,14 +191,20 @@ export class ProgressRealmPromise implements Promise<Realm> {
   catch = this.handle.promise.catch.bind(this.handle.promise);
   finally = this.handle.promise.finally.bind(this.handle.promise);
 
-  private emitProgress = (transferredArg: binding.Int64, transferableArg: binding.Int64) => {
+  /** @internal */
+  private emitProgress(transferredArg: binding.Int64, transferableArg: binding.Int64, progressEstimate: number) {
     const transferred = binding.Int64.intToNum(transferredArg);
     const transferable = binding.Int64.intToNum(transferableArg);
     for (const listener of this.listeners) {
-      listener(transferred, transferable);
+      if (isEstimateProgressNotificationCallback(listener)) {
+        listener(progressEstimate);
+      } else {
+        listener(transferred, transferable);
+      }
     }
-  };
+  }
 
+  /** @internal */
   private createTimeoutPromise(config: Configuration, { timeOut, timeOutBehavior }: OpenBehavior) {
     if (typeof timeOut === "number") {
       this.timeoutPromise = new TimeoutPromise(
@@ -213,6 +236,7 @@ export class ProgressRealmPromise implements Promise<Realm> {
     }
   }
 
+  /** @internal */
   private cancelAndResetTask() {
     if (this.task) {
       this.task.cancel();
@@ -221,6 +245,7 @@ export class ProgressRealmPromise implements Promise<Realm> {
     }
   }
 
+  /** @internal */
   private rejectAsCanceled() {
     const err = new Error("Async open canceled");
     this.handle.reject(err);

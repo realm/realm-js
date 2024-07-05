@@ -1,10 +1,17 @@
 ## vNext (TBD)
 
 ### Deprecations
-* None
+* The callback for `SyncSession.addProgressNotification` taking `transferred` and `transferable` arguments is deprecated and will be removed. See **Enhancements** below for the new callback supporting both Flexible Sync and Partition-Based Sync. ([#6743](https://github.com/realm/realm-js/pull/6743))
 
 ### Enhancements
-* None
+* Added progress notifications support for Flexible Sync using an `estimate` as the new callback argument. The `estimate` is roughly equivalent to an estimated value of `transferred / transferable` in the deprecated Partition-Based Sync callback. ([#6743](https://github.com/realm/realm-js/pull/6743))
+```typescript
+realm.syncSession?.addProgressNotification(
+  ProgressDirection.Upload,
+  ProgressMode.ReportIndefinitely,
+  (estimate) => console.log(`progress: ${estimate}/1.0`)
+);
+```
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)

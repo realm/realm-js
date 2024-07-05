@@ -17,12 +17,14 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
-import Realm, { ConnectionState, ObjectSchema, BSON, SyncConfiguration } from "realm";
+import { spy } from "sinon";
+import Realm, { ConnectionState, ObjectSchema, BSON, SyncConfiguration, ProgressDirection, ProgressMode } from "realm";
+
 import { authenticateUserBefore, importAppBefore, openRealmBefore } from "../../hooks";
 import { DogSchema } from "../../schemas/person-and-dog-with-object-ids";
 import { getRegisteredEmailPassCredentials } from "../../utils/credentials";
 import { generatePartition } from "../../utils/generators";
-import { sleep, throwAfterTimeout } from "../../utils/sleep";
+import { sleep } from "../../utils/sleep";
 import { buildAppConfig } from "../../utils/build-app-config";
 
 const DogForSyncSchema: Realm.ObjectSchema = {
@@ -110,8 +112,7 @@ function createObjects(user: Realm.User, partition: string): Promise<Realm> {
         resolve(realm);
       }
     };
-    //@ts-expect-error TYPEBUG: enums not exposed in realm namespace
-    session?.addProgressNotification("upload", "forCurrentlyOutstandingWork", callback);
+    session?.addProgressNotification(ProgressDirection.Upload, ProgressMode.ForCurrentlyOutstandingWork, callback);
   });
 }
 
@@ -286,16 +287,14 @@ describe("SessionTest", () => {
   describe("progress notification", () => {
     afterEach(() => Realm.clearTestState());
     it("is called", async function (this: AppContext) {
+      this.timeout(5000);
       const partition = generatePartition();
       const { config } = await getSyncConfWithUser(this.app, partition);
-      let progressCalled = false;
-      await Promise.race([
-        Realm.open(config).progress(() => {
-          progressCalled = true;
-        }),
-        throwAfterTimeout(5000),
-      ]);
-      expect(progressCalled).to.be.true;
+
+      const progressCallback = spy();
+      await Realm.open(config).progress(progressCallback);
+
+      expect(progressCallback).called;
     });
 
     it("removing progress notification does not invoke callback again", async function (this: AppContext) {
@@ -326,21 +325,27 @@ describe("SessionTest", () => {
             failOnCall = true;
             unregisterFunc();
             //use second callback to wait for sync finished
-            //@ts-expect-error TYPEBUG: enums not exposed in realm namespace
-            realm.syncSession?.addProgressNotification("upload", "reportIndefinitely", (transferred, transferable) => {
-              if (transferred === transferable) {
-                resolve();
-              }
-            });
+            realm.syncSession?.addProgressNotification(
+              ProgressDirection.Upload,
+              ProgressMode.ReportIndefinitely,
+              (transferred, transferable) => {
+                if (transferred === transferable) {
+                  resolve();
+                }
+              },
+            );
             writeDataFunc();
           }
         };
-        //@ts-expect-error TYPEBUG: enums not exposed in realm namespace
-        realm.syncSession?.addProgressNotification("upload", "reportIndefinitely", progressCallback);
+        realm.syncSession?.addProgressNotification(
+          ProgressDirection.Upload,
+          ProgressMode.ReportIndefinitely,
+          progressCallback,
+        );
         writeDataFunc();
       });
-      await realm.close();
-      user.logOut();
+      realm.close();
+      await user.logOut();
     });
   });
 

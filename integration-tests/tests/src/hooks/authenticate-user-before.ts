@@ -17,11 +17,11 @@
 ////////////////////////////////////////////////////////////////////////////
 import { Credentials } from "realm";
 
-export function authenticateUserBefore(): void {
+export function authenticateUserBefore({ reuse } = { reuse: true }): void {
   before(authenticateUserBefore.name, async function (this: AppContext & Partial<UserContext>) {
     this.longTimeout();
     if (this.app) {
-      this.user = this.app.currentUser || (await this.app.logIn(Credentials.anonymous()));
+      this.user = this.app.currentUser || (await this.app.logIn(Credentials.anonymous(reuse)));
     } else {
       throw new Error("Missing app on context. Did you forget to use the importAppBefore hook?");
     }
