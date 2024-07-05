@@ -67,7 +67,7 @@ export enum ProgressMode {
 }
 
 /**
- * A progress notification callback supporting Partition Based Sync only.
+ * A progress notification callback supporting Partition-Based Sync only.
  * @param transferred - The current number of bytes already transferred.
  * @param transferable - The total number of transferable bytes (i.e. the number of bytes already transferred plus the number of bytes pending transfer).
  * @deprecated - Will be removed in a future major version. Please use {@link EstimateProgressNotificationCallback} instead.

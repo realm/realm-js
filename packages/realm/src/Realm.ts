@@ -1378,11 +1378,11 @@ export namespace Realm {
   export import ObjectSchemaProperty = internal.PropertySchema;
   /** @deprecated Will be removed in v13.0.0. Please use {@link internal.RealmObjectConstructor | RealmObjectConstructor} */
   export import ObjectClass = internal.RealmObjectConstructor;
-  /** @deprecated Will be removed in a future major version. Please use {@link internal.PartitionBasedSyncProgressNotificationCallback | PartitionBasedSyncProgressNotificationCallback} */
+  /** @deprecated Will be removed in a future major version. Please use {@link internal.EstimateProgressNotificationCallback | EstimateProgressNotificationCallback} */
   export import PartitionBasedSyncProgressNotificationCallback = internal.PartitionBasedSyncProgressNotificationCallback;
   /** @deprecated Will be removed in v13.0.0. Please use {@link internal.PropertyTypeName | PropertyTypeName} */
   export import PropertyType = internal.PropertyTypeName;
-  /** @deprecated Use the another {@link internal.ClientResetMode | ClientResetMode} than {@link internal.ClientResetMode.Manual | ClientResetMode.Manual}. */
+  /** @deprecated Use another {@link internal.ClientResetMode | ClientResetMode} than {@link internal.ClientResetMode.Manual | ClientResetMode.Manual}. */
   export import ClientResetError = internal.ClientResetError;
   /** @deprecated See https://www.mongodb.com/docs/atlas/app-services/reference/push-notifications/ */
   export import PushClient = internal.PushClient;
