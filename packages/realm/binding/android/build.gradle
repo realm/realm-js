@@ -59,7 +59,7 @@ android {
                           "-DCMAKE_CXX_VISIBILITY_PRESET=hidden",
                           "-DREACT_NATIVE_ROOT_DIR=${REACT_NATIVE_ROOT_DIR}"
                 targets 'realm-js-android-binding'
-                cppFlags '-std=c++20'
+                cppFlags '-O2 -std=c++20 -frtti -fexceptions -Wall -fstack-protector-all'
                 abiFilters (*reactNativeArchitectures())
             }
         }

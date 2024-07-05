@@ -34,15 +34,15 @@
     "chai": "4.3.6",
     "js-base64": "^3.7.6",
     "jwt-encode": "^1.0.1",
-    "mocha-remote-cli": "^1.12.2",
-    "mocha-remote-server": "^1.12.2",
+    "mocha-remote-cli": "^1.12.3",
+    "mocha-remote-server": "^1.12.3",
     "puppeteer": "^22.4.1",
     "realm-web": "*",
     "webpack": "^5.91.0",
     "webpack-dev-server": "^5.0.4"
   },
   "peerDependencies": {
-    "mocha-remote-client": "^1.12.2"
+    "mocha-remote-client": "^1.12.3"
   },
   "devDependencies": {
     "@types/chai": "^4.3.1",
