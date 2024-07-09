@@ -675,7 +675,15 @@ describe("Observable", () => {
   });
 
   describe("Results", () => {
-    type Person = { name: string; age: number | undefined; friends: Realm.List<Person> };
+    type EmbeddedAddress = { street: string; city: string };
+    type Person = {
+      name: string;
+      age: number | undefined;
+      friends: Realm.List<Person>;
+      bestFriend: Person | null;
+      embeddedAddress: EmbeddedAddress | null;
+    };
+
     // change: with / without key-paths
     openRealmBeforeEach({
       schema: [
@@ -685,6 +693,16 @@ describe("Observable", () => {
             name: "string",
             age: "int?",
             friends: "Person[]",
+            bestFriend: "Person?",
+            address: "EmbeddedAddress?",
+          },
+        },
+        {
+          name: "EmbeddedAddress",
+          embedded: true,
+          properties: {
+            street: "string",
+            city: "string",
           },
         },
       ],
@@ -724,7 +742,7 @@ describe("Observable", () => {
       await expectCollectionNotifications(this.realm.objects("Person"), ["name"], [EMPTY_COLLECTION_CHANGESET]);
     });
 
-    it("calls listener", async function (this: RealmObjectContext<Person>) {
+    it("calls listener when primitive property is updated", async function (this: RealmObjectContext<Person>) {
       const collection = this.realm.objects("Person");
       await expectCollectionNotifications(collection, undefined, [
         EMPTY_COLLECTION_CHANGESET,
@@ -732,6 +750,88 @@ describe("Observable", () => {
           this.realm.write(() => {
             this.object.name = "Bob";
           });
+        },
+        {
+          deletions: [],
+          insertions: [],
+          newModifications: [0],
+          oldModifications: [0],
+        },
+      ]);
+    });
+
+    it("calls listener when non-embedded object is updated", async function (this: RealmObjectContext<Person>) {
+      const collection = this.realm.objects<Person>("Person");
+      const bob = collection[1];
+      expect(bob.name).equals("Bob");
+
+      await expectCollectionNotifications(collection, undefined, [
+        EMPTY_COLLECTION_CHANGESET,
+        () => {
+          this.realm.write(() => {
+            this.object.bestFriend = bob;
+          });
+          expect(this.object.bestFriend?.name).equals("Bob");
+        },
+        {
+          deletions: [],
+          insertions: [],
+          newModifications: [0],
+          oldModifications: [0],
+        },
+        () => {
+          this.realm.write(() => {
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            this.object.bestFriend!.name = "Bobby";
+          });
+          expect(this.object.bestFriend?.name).equals("Bobby");
+        },
+        {
+          deletions: [],
+          insertions: [],
+          newModifications: [0, 1],
+          oldModifications: [0, 1],
+        },
+      ]);
+    });
+
+    // TODO: Add link to issue with collection listener not being fired on updates to embedded object.
+    it.skip("calls listener when embedded object is updated", async function (this: RealmObjectContext<Person>) {
+      const collection = this.realm.objects("Person");
+
+      await expectCollectionNotifications(collection, undefined, [
+        EMPTY_COLLECTION_CHANGESET,
+        () => {
+          this.realm.write(() => {
+            this.object.embeddedAddress = { street: "1633 Broadway", city: "New York" };
+          });
+          expect(this.object.embeddedAddress).deep.equals({ street: "1633 Broadway", city: "New York" });
+        },
+        {
+          deletions: [],
+          insertions: [],
+          newModifications: [0],
+          oldModifications: [0],
+        },
+        () => {
+          this.realm.write(() => {
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            this.object.embeddedAddress!.street = "88 Kearny Street";
+          });
+          expect(this.object.embeddedAddress?.street).equals("88 Kearny Street");
+        },
+        {
+          deletions: [],
+          insertions: [],
+          newModifications: [0],
+          oldModifications: [0],
+        },
+        () => {
+          this.realm.write(() => {
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            this.object.embeddedAddress!.city = "San Francisco";
+          });
+          expect(this.object.embeddedAddress?.city).equals("San Francisco");
         },
         {
           deletions: [],
