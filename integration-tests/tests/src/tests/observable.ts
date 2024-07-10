@@ -694,7 +694,7 @@ describe("Observable", () => {
             age: "int?",
             friends: "Person[]",
             bestFriend: "Person?",
-            address: "EmbeddedAddress?",
+            embeddedAddress: "EmbeddedAddress?",
           },
         },
         {
