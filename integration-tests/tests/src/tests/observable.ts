@@ -429,7 +429,6 @@ describe("Observable", () => {
       embeddedAddress: EmbeddedAddress | null;
     };
 
-    // change: with / without key-paths
     openRealmBeforeEach({
       schema: [
         {
@@ -762,7 +761,6 @@ describe("Observable", () => {
       embeddedAddress: EmbeddedAddress | null;
     };
 
-    // change: with / without key-paths
     openRealmBeforeEach({
       schema: [
         {
