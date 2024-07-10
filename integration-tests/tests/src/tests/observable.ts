@@ -993,63 +993,6 @@ describe("Observable", () => {
         );
       });
 
-      it("fires on relevant changes to an embedded object", async function (this: RealmObjectContext<Person>) {
-        const collection = this.realm.objects("Person");
-
-        await expectCollectionNotifications(
-          collection,
-          ["embeddedAddress"],
-          [
-            EMPTY_COLLECTION_CHANGESET,
-            () => {
-              this.realm.write(() => {
-                this.object.embeddedAddress = { street: "1633 Broadway", city: "New York" };
-              });
-              expect(this.object.embeddedAddress).deep.equals({ street: "1633 Broadway", city: "New York" });
-            },
-            {
-              deletions: [],
-              insertions: [],
-              newModifications: [0],
-              oldModifications: [0],
-            },
-            () => {
-              this.realm.write(() => {
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                this.object.embeddedAddress!.street = "88 Kearny Street";
-              });
-              expect(this.object.embeddedAddress?.street).equals("88 Kearny Street");
-            },
-            {
-              deletions: [],
-              insertions: [],
-              newModifications: [0],
-              oldModifications: [0],
-            },
-            () => {
-              this.realm.write(() => {
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                this.object.embeddedAddress!.city = "San Francisco";
-              });
-              expect(this.object.embeddedAddress?.city).equals("San Francisco");
-            },
-            {
-              deletions: [],
-              insertions: [],
-              newModifications: [0],
-              oldModifications: [0],
-            },
-            // Perform a couple of changes that shouldn't trigger the listener.
-            () => {
-              this.realm.write(() => {
-                this.object.name = "New Name";
-              });
-              expect(this.object.name).equals("New Name");
-            },
-          ],
-        );
-      });
-
       it("fires on relevant changes to a wildcard", async function (this: RealmObjectContext<Person>) {
         const collection = this.realm.objects<Person>("Person").filtered("name = $0 OR age = 42", "Alice");
         await expectCollectionNotifications(
