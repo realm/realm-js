@@ -420,7 +420,16 @@ describe("Observable", () => {
   });
 
   describe("Object", () => {
-    type Person = { name: string; age: number | undefined; friends: Realm.List<Person> };
+    type EmbeddedAddress = { street: string; city: string };
+    type Person = {
+      name: string;
+      age: number | undefined;
+      friends: Realm.List<Person>;
+      bestFriend: Person | null;
+      embeddedAddress: EmbeddedAddress | null;
+    };
+
+    // change: with / without key-paths
     openRealmBeforeEach({
       schema: [
         {
@@ -429,6 +438,16 @@ describe("Observable", () => {
             name: "string",
             age: "int?",
             friends: "Person[]",
+            bestFriend: "Person?",
+            embeddedAddress: "EmbeddedAddress?",
+          },
+        },
+        {
+          name: "EmbeddedAddress",
+          embedded: true,
+          properties: {
+            street: "string",
+            city: "string",
           },
         },
       ],
@@ -467,7 +486,7 @@ describe("Observable", () => {
       await expectObjectNotifications(this.object, ["name"], [EMPTY_OBJECT_CHANGESET]);
     });
 
-    it("calls listener", async function (this: RealmObjectContext<Person>) {
+    it("calls listener when primitive property is updated", async function (this: RealmObjectContext<Person>) {
       await expectObjectNotifications(this.object, undefined, [
         EMPTY_OBJECT_CHANGESET,
         () => {
@@ -476,6 +495,65 @@ describe("Observable", () => {
           });
         },
         { deleted: false, changedProperties: ["name"] },
+      ]);
+    });
+
+    // TODO: Is it intentional Core behavior to not trigger object listener for updates to links?
+    //       If intentional, we should update this test to expect listeners not to be called.
+    it.skip("calls listener when non-embedded object is updated", async function (this: RealmObjectContext<Person>) {
+      const bob = this.realm.objects<Person>("Person")[1];
+      expect(bob.name).equals("Bob");
+
+      await expectObjectNotifications(this.object, undefined, [
+        EMPTY_OBJECT_CHANGESET,
+        () => {
+          this.realm.write(() => {
+            this.object.bestFriend = bob;
+          });
+          expect(this.object.bestFriend?.name).equals("Bob");
+        },
+        { deleted: false, changedProperties: ["bestFriend"] },
+        // Note: The below update will not trigger the listener.
+        () => {
+          this.realm.write(() => {
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            this.object.bestFriend!.name = "Bobby";
+          });
+          expect(this.object.bestFriend?.name).equals("Bobby");
+        },
+        { deleted: false, changedProperties: ["bestFriend"] },
+      ]);
+    });
+
+    // TODO: Is it intentional Core behavior to not trigger object listener for updates to links?
+    //       If intentional, we should update this test to expect listeners not to be called.
+    it.skip("calls listener when embedded object is updated", async function (this: RealmObjectContext<Person>) {
+      await expectObjectNotifications(this.object, undefined, [
+        EMPTY_OBJECT_CHANGESET,
+        () => {
+          this.realm.write(() => {
+            this.object.embeddedAddress = { street: "1633 Broadway", city: "New York" };
+          });
+          expect(this.object.embeddedAddress).deep.equals({ street: "1633 Broadway", city: "New York" });
+        },
+        { deleted: false, changedProperties: ["embeddedAddress"] },
+        // Note: The below update will not trigger the listener.
+        () => {
+          this.realm.write(() => {
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            this.object.embeddedAddress!.street = "88 Kearny Street";
+          });
+          expect(this.object.embeddedAddress?.street).equals("88 Kearny Street");
+        },
+        { deleted: false, changedProperties: ["embeddedAddress"] },
+        () => {
+          this.realm.write(() => {
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            this.object.embeddedAddress!.city = "San Francisco";
+          });
+          expect(this.object.embeddedAddress?.city).equals("San Francisco");
+        },
+        { deleted: false, changedProperties: ["embeddedAddress"] },
       ]);
     });
 
