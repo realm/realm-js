@@ -71,8 +71,8 @@ type DynamicAppProviderWithConfigurationProps = RestrictivePick<
 >;
 
 /**
- * Props for the AppProvider component. These replicate the options which
- * can be used to create a Realm.App instance:
+ * Props for the AppProvider component. You can either pass an existing app through the `appInstance` prop
+ * or props that replicate the configuration that is used to create a Realm.App instance:
  * https://www.mongodb.com/docs/realm-sdks/js/latest/Realm.App.html#~AppConfiguration
  */
 type DynamicAppProviderProps = DynamicAppProviderWithAppProps | DynamicAppProviderWithConfigurationProps;
