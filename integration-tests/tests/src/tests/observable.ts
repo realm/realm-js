@@ -497,14 +497,13 @@ describe("Observable", () => {
       ]);
     });
 
-    // TODO: Is it intentional Core behavior to not trigger object listener for updates to links?
-    //       If intentional, we should update this test to expect listeners not to be called.
-    it.skip("calls listener when non-embedded object is updated", async function (this: RealmObjectContext<Person>) {
+    it("does not call listener when non-embedded object is updated", async function (this: RealmObjectContext<Person>) {
       const bob = this.realm.objects<Person>("Person")[1];
       expect(bob.name).equals("Bob");
 
       await expectObjectNotifications(this.object, undefined, [
         EMPTY_OBJECT_CHANGESET,
+        // Setting the link should trigger the listener.
         () => {
           this.realm.write(() => {
             this.object.bestFriend = bob;
@@ -512,7 +511,7 @@ describe("Observable", () => {
           expect(this.object.bestFriend?.name).equals("Bob");
         },
         { deleted: false, changedProperties: ["bestFriend"] },
-        // Note: The below update will not trigger the listener.
+        // Updating the link should NOT trigger the listener.
         () => {
           this.realm.write(() => {
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -520,15 +519,13 @@ describe("Observable", () => {
           });
           expect(this.object.bestFriend?.name).equals("Bobby");
         },
-        { deleted: false, changedProperties: ["bestFriend"] },
       ]);
     });
 
-    // TODO: Is it intentional Core behavior to not trigger object listener for updates to links?
-    //       If intentional, we should update this test to expect listeners not to be called.
-    it.skip("calls listener when embedded object is updated", async function (this: RealmObjectContext<Person>) {
+    it("does not call listener when embedded object is updated", async function (this: RealmObjectContext<Person>) {
       await expectObjectNotifications(this.object, undefined, [
         EMPTY_OBJECT_CHANGESET,
+        // Setting the link should trigger the listener.
         () => {
           this.realm.write(() => {
             this.object.embeddedAddress = { street: "1633 Broadway", city: "New York" };
@@ -536,7 +533,7 @@ describe("Observable", () => {
           expect(this.object.embeddedAddress).deep.equals({ street: "1633 Broadway", city: "New York" });
         },
         { deleted: false, changedProperties: ["embeddedAddress"] },
-        // Note: The below update will not trigger the listener.
+        // Updating the link should NOT trigger the listener.
         () => {
           this.realm.write(() => {
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -544,7 +541,6 @@ describe("Observable", () => {
           });
           expect(this.object.embeddedAddress?.street).equals("88 Kearny Street");
         },
-        { deleted: false, changedProperties: ["embeddedAddress"] },
         () => {
           this.realm.write(() => {
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -552,7 +548,6 @@ describe("Observable", () => {
           });
           expect(this.object.embeddedAddress?.city).equals("San Francisco");
         },
-        { deleted: false, changedProperties: ["embeddedAddress"] },
       ]);
     });
 
