@@ -21,6 +21,7 @@ import Realm from "realm";
 import isEqual from "lodash.isequal";
 
 import { AuthResult, OperationState } from "./types";
+import { RestrictivePick } from "./helpers";
 
 type AppContextValue = Realm.App | null;
 
@@ -48,12 +49,7 @@ const AuthOperationProvider: React.FC<AuthOperationProps> = ({ children }) => {
   );
 };
 
-/**
- * Props for the AppProvider component. These replicate the options which
- * can be used to create a Realm.App instance:
- * https://www.mongodb.com/docs/realm-sdks/js/latest/Realm.App.html#~AppConfiguration
- */
-type AppProviderProps = Realm.AppConfiguration & {
+type AppProviderWithConfigurationProps = Realm.AppConfiguration & {
   /**
    * A ref to the App instance. This is useful if you need to access the App
    * instance outside of a component that uses the App hooks.
@@ -62,20 +58,84 @@ type AppProviderProps = Realm.AppConfiguration & {
   children: React.ReactNode;
 };
 
+type AppProviderWithAppProps = {
+  appInstance: Realm.App;
+  children: React.ReactNode;
+};
+
+type AppProviderProps = AppProviderWithAppProps & AppProviderWithConfigurationProps;
+type DynamicAppProviderWithAppProps = RestrictivePick<AppProviderProps, keyof AppProviderWithAppProps>;
+type DynamicAppProviderWithConfigurationProps = RestrictivePick<
+  AppProviderProps,
+  keyof AppProviderWithConfigurationProps
+>;
+
+/**
+ * Props for the AppProvider component. These replicate the options which
+ * can be used to create a Realm.App instance:
+ * https://www.mongodb.com/docs/realm-sdks/js/latest/Realm.App.html#~AppConfiguration
+ */
+type DynamicAppProviderProps = DynamicAppProviderWithAppProps | DynamicAppProviderWithConfigurationProps;
+
 /**
  * React component providing a Realm App instance on the context for the
  * sync hooks to use. An `AppProvider` is required for an app to use the hooks.
- * @param appProps - The {@link Realm.AppConfiguration} for app services, passed as props.
+ * @param props - Either the {@link Realm.AppConfiguration} for App Services passed as props **or** the {@link Realm.App} passed through the `appInstance` prop.
+ * @param appRef - Provides a ref to the app instance, which can be used to access the app instance outside of the React component tree. **Not available when using an `appInstance`**.
+ */
+export function AppProvider(props: DynamicAppProviderProps): React.ReactNode;
+/**
+ * React component providing a Realm App instance on the context for the
+ * sync hooks to use. An `AppProvider` is required for an app to use the hooks.
+ * @param appProps - The {@link Realm.AppConfiguration} for App Services, passed as props.
  * @param appRef - A ref to the app instance, which can be used to access the app instance outside of the React component tree.
  */
-export const AppProvider: React.FC<AppProviderProps> = ({ children, appRef, ...appProps }) => {
-  const configuration = useRef<Realm.AppConfiguration>(appProps);
+export function AppProvider(props: DynamicAppProviderWithConfigurationProps): React.ReactNode;
+/**
+ * React component providing a Realm App instance on the context for the
+ * sync hooks to use. An `AppProvider` is required for an app to use the hooks.
+ * @param appInstance - The {@link Realm.App} for the provider.
+ */
+export function AppProvider(props: DynamicAppProviderWithAppProps): React.ReactNode;
+export function AppProvider({
+  children,
+  appInstance,
+  ...appWithConfigurationProps
+}: DynamicAppProviderProps): React.ReactNode {
+  if (appInstance != null) {
+    if (Object.keys(appWithConfigurationProps).length > 0) {
+      throw new Error("Cannot use configuration props when using an existing App.");
+    }
+
+    return <AppProviderWithApp appInstance={appInstance}>{children}</AppProviderWithApp>;
+  }
+  return (
+    <AppProviderWithConfiguration {...(appWithConfigurationProps as AppProviderWithConfigurationProps)}>
+      {children}
+    </AppProviderWithConfiguration>
+  );
+}
+
+function AppProviderWithApp({ appInstance, children }: React.PropsWithChildren<AppProviderWithAppProps>) {
+  return (
+    <AppContext.Provider value={appInstance}>
+      <AuthOperationProvider>{children}</AuthOperationProvider>
+    </AppContext.Provider>
+  );
+}
+
+function AppProviderWithConfiguration({
+  appRef,
+  children,
+  ...configurationProps
+}: React.PropsWithChildren<AppProviderWithConfigurationProps>) {
+  const configuration = useRef<Realm.AppConfiguration>(configurationProps);
 
   const [app, setApp] = useState<Realm.App>(() => new Realm.App(configuration.current));
 
   // Support for a possible change in configuration
-  if (!isEqual(appProps, configuration.current)) {
-    configuration.current = appProps;
+  if (!isEqual(configurationProps, configuration.current)) {
+    configuration.current = configurationProps as Realm.AppConfiguration;
 
     try {
       setApp(new Realm.App(configuration.current));
@@ -95,7 +155,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children, appRef, ...a
       <AuthOperationProvider>{children}</AuthOperationProvider>
     </AppContext.Provider>
   );
-};
+}
 
 /**
  * Hook to access the current {@link Realm.App} from the {@link AppProvider} context.
