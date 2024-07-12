@@ -21,12 +21,14 @@ import {
   BSON,
   CanonicalObjectSchema,
   ClassHelpers,
+  type Collection,
   Constructor,
   DefaultObject,
   Dictionary,
   JSONCacheMap,
   ObjectChangeCallback,
   ObjectListeners,
+  ObjectSchema,
   OmittedRealmTypes,
   OrderedCollection,
   Realm,
@@ -494,6 +496,11 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
    * @param callback - A function to be called when changes occur.
    * @param keyPaths - Indicates a lower bound on the changes relevant for the listener. This is a lower bound, since if multiple listeners are added (each with their own `keyPaths`) the union of these key-paths will determine the changes that are considered relevant for all listeners registered on the object. In other words: A listener might fire more than the key-paths specify, if other listeners with different key-paths are present.
    * @throws A {@link TypeAssertionError} if `callback` is not a function.
+   * @note
+   * Adding the listener is an asynchronous operation, so the callback is invoked the first time to notify the caller when the listener has been added.
+   * Thus, when the callback is invoked the first time it will contain an empty array for {@link Realm.ObjectChangeSet.changedProperties | changes.changedProperties}.
+   *
+   * Unlike {@link Collection.addListener}, changes on properties containing other objects (both standalone and embedded) will not trigger this listener.
    * @example
    * wine.addListener((obj, changes) => {
    *  // obj === wine
@@ -507,8 +514,6 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
    * wine.addListener((obj, changes) => {
    *  console.log("The wine got deleted or its brand might have changed");
    * }, ["brand"])
-   * @note Adding the listener is an asynchronous operation, so the callback is invoked the first time to notify the caller when the listener has been added.
-   * Thus, when the callback is invoked the first time it will contain empty array for `changes.changedProperties`.
    */
   addListener(callback: ObjectChangeCallback<T>, keyPaths?: string | string[]): void {
     assert.function(callback);

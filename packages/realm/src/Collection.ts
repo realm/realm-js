@@ -158,6 +158,9 @@ export abstract class Collection<
    * @note `deletions` and `oldModifications` report the indices in the collection before the change happened,
    * while `insertions` and `newModifications` report the indices into the new version of the collection.
    * @throws A {@link TypeAssertionError} if `callback` is not a function.
+   * @note
+   * Adding the listener is an asynchronous operation, so the callback is invoked the first time to notify the caller when the listener has been added.
+   * Thus, when the callback is invoked the first time it will contain empty arrays for each property in the `changes` object.
    * @example
    * wines.addListener((collection, changes) => {
    *  // collection === wines
@@ -171,8 +174,6 @@ export abstract class Collection<
    * wines.addListener((collection, changes) => {
    *  console.log("A wine's brand might have changed");
    * }, ["brand"]);
-   * @note Adding the listener is an asynchronous operation, so the callback is invoked the first time to notify the caller when the listener has been added.
-   * Thus, when the callback is invoked the first time it will contain empty arrays for each property in the `changes` object.
    */
   addListener(callback: ChangeCallbackType, keyPaths?: string | string[]): void {
     assert.function(callback, "callback");
