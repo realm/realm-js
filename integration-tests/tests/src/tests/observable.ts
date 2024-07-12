@@ -576,7 +576,7 @@ describe("Observable", () => {
     });
 
     describe("key-path filtered", () => {
-      it("calls listener only on relevant changes", async function (this: RealmObjectContext<Person>) {
+      it("calls listener when specified primitive is updated", async function (this: RealmObjectContext<Person>) {
         await expectObjectNotifications(
           this.object,
           ["name"],
@@ -609,7 +609,9 @@ describe("Observable", () => {
             },
           ],
         );
+      });
 
+      it("calls listener when specified list of links is updated", async function (this: RealmObjectContext<Person>) {
         await expectObjectNotifications(
           this.object,
           ["friends"],
@@ -635,7 +637,9 @@ describe("Observable", () => {
             },
           ],
         );
+      });
 
+      it("calls listener when specified primitive on link in list is updated", async function (this: RealmObjectContext<Person>) {
         await expectObjectNotifications(
           this.object,
           ["friends.name"],
@@ -644,6 +648,15 @@ describe("Observable", () => {
             () => {
               this.realm.write(() => {
                 this.object.friends[0].name = "Bobby";
+              });
+            },
+            {
+              deleted: false,
+              changedProperties: ["friends"],
+            },
+            () => {
+              this.realm.write(() => {
+                this.object.friends[1].name = "Charles";
               });
             },
             {
@@ -661,7 +674,9 @@ describe("Observable", () => {
             },
           ],
         );
+      });
 
+      it("calls listener when any non-link top-level property is updated (wildcard)", async function (this: RealmObjectContext<Person>) {
         await expectObjectNotifications(
           this.object,
           ["*"],
@@ -813,7 +828,7 @@ describe("Observable", () => {
       await expectCollectionNotifications(this.realm.objects("Person"), ["name"], [EMPTY_COLLECTION_CHANGESET]);
     });
 
-    it("calls listener when primitive property is updated", async function (this: RealmObjectContext<Person>) {
+    it("calls listener when primitive is updated", async function (this: RealmObjectContext<Person>) {
       const collection = this.realm.objects("Person");
       await expectCollectionNotifications(collection, undefined, [
         EMPTY_COLLECTION_CHANGESET,
@@ -939,7 +954,7 @@ describe("Observable", () => {
     });
 
     describe("key-path filtered", () => {
-      it("fires on relevant changes to a primitive", async function (this: RealmObjectContext<Person>) {
+      it("calls listener when specified primitive is updated", async function (this: RealmObjectContext<Person>) {
         const collection = this.realm.objects<Person>("Person").filtered("name = $0 OR age = 42", "Alice");
         await expectCollectionNotifications(
           collection,
@@ -1002,7 +1017,7 @@ describe("Observable", () => {
         );
       });
 
-      it("fires on relevant changes to a list", async function (this: RealmObjectContext<Person>) {
+      it("calls listener when specified list of links is updated", async function (this: RealmObjectContext<Person>) {
         const collection = this.realm.objects<Person>("Person").filtered("name = $0 OR age = 42", "Alice");
         await expectCollectionNotifications(
           collection,
@@ -1033,7 +1048,7 @@ describe("Observable", () => {
         );
       });
 
-      it("fires on relevant changes to a primitive of a list", async function (this: RealmObjectContext<Person>) {
+      it("calls listener when specified primitive on link in list is updated", async function (this: RealmObjectContext<Person>) {
         const collection = this.realm.objects<Person>("Person").filtered("name = $0 OR age = 42", "Alice");
         await expectCollectionNotifications(
           collection,
@@ -1064,7 +1079,7 @@ describe("Observable", () => {
         );
       });
 
-      it("fires on relevant changes to a wildcard", async function (this: RealmObjectContext<Person>) {
+      it("calls listener when any non-link top-level property is updated (wildcard)", async function (this: RealmObjectContext<Person>) {
         const collection = this.realm.objects<Person>("Person").filtered("name = $0 OR age = 42", "Alice");
         await expectCollectionNotifications(
           collection,
