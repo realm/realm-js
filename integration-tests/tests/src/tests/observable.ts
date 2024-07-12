@@ -676,7 +676,7 @@ describe("Observable", () => {
         );
       });
 
-      it("calls listener when any non-link top-level property is updated (wildcard)", async function (this: RealmObjectContext<Person>) {
+      it("calls listener when one-level wildcard is specified and top-level property is updated", async function (this: RealmObjectContext<Person>) {
         await expectObjectNotifications(
           this.object,
           ["*"],
@@ -711,6 +711,67 @@ describe("Observable", () => {
                 this.object.friends[0].friends.push(daniel);
               });
             },
+          ],
+        );
+      });
+
+      it("calls listener when two-level wildcard is specified and non-embedded object is updated", async function (this: RealmObjectContext<Person>) {
+        const bob = this.realm.objects<Person>("Person")[1];
+        expect(bob.name).equals("Bob");
+
+        await expectObjectNotifications(
+          this.object,
+          ["*.*"],
+          [
+            EMPTY_OBJECT_CHANGESET,
+            () => {
+              this.realm.write(() => {
+                this.object.bestFriend = bob;
+              });
+              expect(this.object.bestFriend?.name).equals("Bob");
+            },
+            { deleted: false, changedProperties: ["bestFriend"] },
+            () => {
+              this.realm.write(() => {
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                this.object.bestFriend!.name = "Bobby";
+              });
+              expect(this.object.bestFriend?.name).equals("Bobby");
+            },
+            { deleted: false, changedProperties: ["bestFriend", "friends"] },
+          ],
+        );
+      });
+
+      it("calls listener when two-level wildcard is specified and embedded object is updated", async function (this: RealmObjectContext<Person>) {
+        await expectObjectNotifications(
+          this.object,
+          ["*.*"],
+          [
+            EMPTY_OBJECT_CHANGESET,
+            () => {
+              this.realm.write(() => {
+                this.object.embeddedAddress = { street: "1633 Broadway", city: "New York" };
+              });
+              expect(this.object.embeddedAddress).deep.equals({ street: "1633 Broadway", city: "New York" });
+            },
+            { deleted: false, changedProperties: ["embeddedAddress"] },
+            () => {
+              this.realm.write(() => {
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                this.object.embeddedAddress!.street = "88 Kearny Street";
+              });
+              expect(this.object.embeddedAddress?.street).equals("88 Kearny Street");
+            },
+            { deleted: false, changedProperties: ["embeddedAddress"] },
+            () => {
+              this.realm.write(() => {
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                this.object.embeddedAddress!.city = "San Francisco";
+              });
+              expect(this.object.embeddedAddress?.city).equals("San Francisco");
+            },
+            { deleted: false, changedProperties: ["embeddedAddress"] },
           ],
         );
       });
@@ -1079,7 +1140,7 @@ describe("Observable", () => {
         );
       });
 
-      it("calls listener when any non-link top-level property is updated (wildcard)", async function (this: RealmObjectContext<Person>) {
+      it("calls listener when one-level wildcard is specified and top-level property is updated", async function (this: RealmObjectContext<Person>) {
         const collection = this.realm.objects<Person>("Person").filtered("name = $0 OR age = 42", "Alice");
         await expectCollectionNotifications(
           collection,
