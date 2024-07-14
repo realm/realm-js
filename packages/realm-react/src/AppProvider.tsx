@@ -104,7 +104,7 @@ export function AppProvider({
 }: DynamicAppProviderProps): React.ReactNode {
   if (appInstance != null) {
     if (Object.keys(appWithConfigurationProps).length > 0) {
-      throw new Error("Cannot use configuration props when using an existing App.");
+      throw new Error("Cannot use configuration props when using an existing App instance.");
     }
 
     return <AppProviderWithApp appInstance={appInstance}>{children}</AppProviderWithApp>;

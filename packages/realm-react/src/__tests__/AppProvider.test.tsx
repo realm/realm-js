@@ -163,4 +163,15 @@ describe("AppProvider", () => {
       expect(newSchemaNameContainer).toHaveTextContent(differentAppInstanceId);
     });
   });
+
+  it("throws an error when both appInstance and configuration props are provided", () => {
+    expect(() =>
+      render(
+        // @ts-expect-error The appInstance and configuration props should be mutually exclusive
+        <AppProvider appInstance={new Realm.App({ id: "asas" })} id="3">
+          ...
+        </AppProvider>,
+      ),
+    ).toThrow("Cannot use configuration props when using an existing App instance.");
+  });
 });
