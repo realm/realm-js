@@ -402,7 +402,7 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
       }
       if (value instanceof RealmObject || value instanceof OrderedCollection || value instanceof Dictionary) {
         // recursively trigger `toJSON` for Realm instances with the same cache.
-        result[key] = value.toJSON(key, cache)
+        result[key] = value.toJSON(key, cache);
       } else {
         // Other cases, including null and undefined.
         result[key] = value;
