@@ -592,6 +592,12 @@ jobs:
           echo "CCACHE_MAXSIZE=`ccache --get-config max_size`" >> $GITHUB_ENV
           echo "CCACHE_COMPILERCHECK=`ccache --get-config compiler_check`" >> $GITHUB_ENV
     
+      - name: Bundle test app
+        working-directory: integration-tests/environments/react-native-test-app
+        run: |
+          mkdir dist
+          npx react-native bundle --entry-file index.js --platform ios --dev false --minify false --bundle-output dist/main.ios.jsbundle --assets-dest dist/res
+
       - name: Run 'pod install'
         env:
           USE_CCACHE: 1
@@ -602,12 +608,6 @@ jobs:
         timeout-minutes: 15
         run: pod install --verbose
     
-      - name: Bundle test app
-        working-directory: integration-tests/environments/react-native-test-app
-        run: |
-          mkdir dist
-          npx react-native bundle --entry-file index.js --platform ios --dev false --minify false --bundle-output dist/main.ios.jsbundle --assets-dest dist/res
-
       - name: Build test app
         working-directory: integration-tests/environments/react-native-test-app/ios
         run: xcodebuild archive -workspace RealmTests.xcworkspace -configuration Release -scheme RealmTests -destination generic/platform="iOS Simulator" -archivePath ./build/realmtests.xcarchive | xcbeautify
