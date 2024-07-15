@@ -19,8 +19,8 @@
 import { DefaultObject, INTERNAL, RealmObject } from "./internal";
 
 /** @internal */
-export class JSONCacheMap extends Map<number, Map<string, DefaultObject>> {
-  add<T>(object: RealmObject<T>, value: DefaultObject) {
+export class JSONCacheMap<T = DefaultObject> extends Map<number, Map<string, T>> {
+  add<U>(object: RealmObject<U>, value: T) {
     const tableKey = object[INTERNAL].table.key;
     let cachedMap = this.get(tableKey);
     if (!cachedMap) {
@@ -29,7 +29,7 @@ export class JSONCacheMap extends Map<number, Map<string, DefaultObject>> {
     }
     cachedMap.set(object._objectKey(), value);
   }
-  find<T>(object: RealmObject<T>) {
+  find<U>(object: RealmObject<U>) {
     return this.get(object[INTERNAL].table.key)?.get(object._objectKey());
   }
 }
