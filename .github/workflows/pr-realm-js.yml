@@ -566,7 +566,11 @@ jobs:
         run: open -a ${{ env.DEVELOPER_DIR }}/Contents/Developer/Applications/Simulator.app
 
       - name: Boot the simulator
-        run: xcrun simctl boot '${{ env.IOS_DEVICE_NAME }}'
+        run: |
+          xcrun simctl boot '${{ env.IOS_DEVICE_NAME }}'
+          SIMULATOR_UDID=`xcrun simctl list devices booted --json | jq -r '.devices[][] | select(.name == "${{ env.IOS_DEVICE_NAME }}").udid'`
+          echo "Simulator booted with UDID = $SIMULATOR_UDID"
+          echo "SIMULATOR_UDID=$SIMULATOR_UDID" >> $GITHUB_ENV
 
       - name: Start BaaS test server
         id: baas
@@ -588,6 +592,12 @@ jobs:
           echo "CCACHE_MAXSIZE=`ccache --get-config max_size`" >> $GITHUB_ENV
           echo "CCACHE_COMPILERCHECK=`ccache --get-config compiler_check`" >> $GITHUB_ENV
     
+      - name: Bundle test app
+        working-directory: integration-tests/environments/react-native-test-app
+        run: |
+          mkdir dist
+          npx react-native bundle --entry-file index.js --platform ios --dev false --minify false --bundle-output dist/main.ios.jsbundle --assets-dest dist/res
+
       - name: Run 'pod install'
         env:
           USE_CCACHE: 1
@@ -598,13 +608,21 @@ jobs:
         timeout-minutes: 15
         run: pod install --verbose
     
+      - name: Build test app
+        working-directory: integration-tests/environments/react-native-test-app/ios
+        run: xcodebuild archive -workspace RealmTests.xcworkspace -configuration Release -scheme RealmTests -destination generic/platform="iOS Simulator" -archivePath ./build/realmtests.xcarchive | xcbeautify
+
       - name: Run tests
         env:
           PLATFORM: ios
           MOCHA_REMOTE_CONTEXT: ${{ steps.mocha-env.outputs.context }}
         timeout-minutes: 30
-        working-directory: integration-tests/environments/react-native-test-app
-        run: npx mocha-remote -- concurrently --kill-others-on-fail npm:metro npm:runner
+        working-directory: integration-tests/environments/react-native-test-app/ios
+        run: |
+          # Install the app
+          xcrun simctl install $SIMULATOR_UDID ./build/realmtests.xcarchive/Products/Applications/ReactTestApp.app
+          # Run Mocha Remote wrapping the launch of the app
+          npx mocha-remote -- xcrun simctl launch --terminate-running-process --console-pty $SIMULATOR_UDID com.microsoft.ReactTestApp
 
   android-tests:
     name: Test Android (React Native)
