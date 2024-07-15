@@ -28,7 +28,7 @@ jest.mock("react-native/Libraries/Animated/NativeAnimatedHelper");
 describe("AppProvider", () => {
   it("returns the configured app with useApp", async () => {
     const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <AppProvider id="someId" app={{ name: "someName", version: "42" }} baseUrl="http://someurl">
+      <AppProvider id="someId" baseUrl="http://someurl">
         {children}
       </AppProvider>
     );
@@ -133,7 +133,7 @@ describe("AppProvider", () => {
         return (
           <>
             <View testID="firstRealmProvider">
-              <AppProvider appInstance={currentApp}>
+              <AppProvider app={currentApp}>
                 <AppComponent />
               </AppProvider>
             </View>
@@ -164,11 +164,22 @@ describe("AppProvider", () => {
     });
   });
 
-  it("throws an error when both appInstance and configuration props are provided", () => {
+  it("throws an error if the app is not a Realm.App", () => {
     expect(() =>
       render(
-        // @ts-expect-error The appInstance and configuration props should be mutually exclusive
-        <AppProvider appInstance={new Realm.App({ id: "asas" })} id="3">
+        // @ts-expect-error The app prop type should be Realm.App
+        <AppProvider app={{ name: "test", version: "3" }}>...</AppProvider>,
+      ),
+    ).toThrow(
+      `The "app" prop is used to use an existing Realm.App instance with an AppProvider. Either remove it or pass a valid Realm.App.`,
+    );
+  });
+
+  it("throws an error when both app and configuration props are provided", () => {
+    expect(() =>
+      render(
+        // @ts-expect-error The app and configuration props should be mutually exclusive
+        <AppProvider app={new Realm.App({ id: "test" })} id="invalid">
           ...
         </AppProvider>,
       ),

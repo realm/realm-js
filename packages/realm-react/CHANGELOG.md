@@ -1,13 +1,24 @@
 ## vNext (TBD)
 
-### Deprecations
-* None
-
 ### Enhancements
-* None
+* Added the ability to pass an existing `Realm.App` instance in `AppProvider` with the `app` prop. ([#6785](https://github.com/realm/realm-js/pull/6785))
+```jsx
+import { AppProvider } from "@realm/react";
+
+const app = new Realm.App(...);
+
+function MyApp() {
+  return (
+    <AppProvider app={app}> 
+      ...
+    </AppProvider>
+  );
+}
+```
 
 ### Fixed
 * Fixed listener that was not being removed during unmounting of `useObject` and `useQuery` if the listener was added in a write transaction. ([#6552](https://github.com/realm/realm-js/pull/6552)) Thanks [@bimusiek](https://github.com/bimusiek)!
+* The `app` prop in `AppProvider` meant for `LocalAppConfiguration` was not being used by Atlas Device Sync and has been removed. `app` is now only used to pass an existing `Realm.App` to the provider. ([#6785](https://github.com/realm/realm-js/pull/6785))
 
 ### Compatibility
 * React Native >= v0.71.4

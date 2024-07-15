@@ -119,6 +119,7 @@ export type AppConfiguration = {
   baseUrl?: string;
 
   /**
+   * @deprecated LocalAppConfiguration is no longer used by Atlas Device Sync. It will be removed from in future SDK releases.
    * This describes the local app, sent to the server when a user authenticates.
    * Specifying this will enable the server to respond differently to specific versions of specific apps.
    * @since v10.0.0
@@ -157,6 +158,7 @@ export type AppConfiguration = {
 };
 
 /**
+ * @deprecated LocalAppConfiguration is no longer used by Atlas Device Sync. It will be removed in future SDK releases and should not be used.
  * This describes the local app, sent to the server when a user authenticates.
  */
 export type LocalAppConfiguration = {
@@ -267,7 +269,7 @@ export class App<
   constructor(configOrId: AppConfiguration | string) {
     const config: AppConfiguration = typeof configOrId === "string" ? { id: configOrId } : configOrId;
     assert.object(config, "config");
-    const { id, baseUrl, timeout, multiplexSessions = true, baseFilePath, metadata, fetch } = config;
+    const { id, baseUrl, timeout, multiplexSessions = true, baseFilePath, metadata, fetch, app } = config;
     assert.string(id, "id");
     if (timeout !== undefined) {
       assert.number(timeout, "timeout");
@@ -284,6 +286,15 @@ export class App<
     }
     if (fetch !== undefined) {
       assert.function(fetch, "fetch");
+    }
+
+    // TODO: Delete this warning once the app field has been removed from the SDK.
+    if (app !== undefined) {
+      internal.defaultLogger({
+        category: "Realm.App",
+        level: "warn",
+        message: `The "app" field in the App.Configuration is no longer used by Atlas Device Sync. It will be removed in future SDK releases and should not be used.`,
+      });
     }
 
     fs.ensureDirectoryForFile(fs.joinPaths(baseFilePath || fs.getDefaultDirectoryPath(), "mongodb-realm"));
