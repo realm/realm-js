@@ -2,6 +2,7 @@
 
 ### Deprecations
 * The callback for `SyncSession.addProgressNotification` taking `transferred` and `transferable` arguments is deprecated and will be removed. See **Enhancements** below for the new callback supporting both Flexible Sync and Partition-Based Sync. ([#6743](https://github.com/realm/realm-js/pull/6743))
+* `AppConfiguration.app` is no longer used by Atlas Device Sync. It will be removed in future SDK releases and should not be used. ([#6785](https://github.com/realm/realm-js/issues/6785))
 
 ### Enhancements
 * Added progress notifications support for Flexible Sync using an `estimate` as the new callback argument. The `estimate` is roughly equivalent to an estimated value of `transferred / transferable` in the deprecated Partition-Based Sync callback. ([#6743](https://github.com/realm/realm-js/pull/6743))

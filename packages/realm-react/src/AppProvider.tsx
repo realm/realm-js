@@ -17,10 +17,11 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import React, { createContext, useContext, useLayoutEffect, useRef, useState } from "react";
-import Realm from "realm";
+import Realm, { App } from "realm";
 import isEqual from "lodash.isequal";
 
 import { AuthResult, OperationState } from "./types";
+import { RestrictivePick } from "./helpers";
 
 type AppContextValue = Realm.App | null;
 
@@ -48,12 +49,8 @@ const AuthOperationProvider: React.FC<AuthOperationProps> = ({ children }) => {
   );
 };
 
-/**
- * Props for the AppProvider component. These replicate the options which
- * can be used to create a Realm.App instance:
- * https://www.mongodb.com/docs/realm-sdks/js/latest/Realm.App.html#~AppConfiguration
- */
-type AppProviderProps = Realm.AppConfiguration & {
+/** Mutually exclusive props for the AppProvider component when using a {@link Realm.AppConfiguration} */
+type AppProviderWithConfigurationProps = Omit<Realm.AppConfiguration, "app"> & {
   /**
    * A ref to the App instance. This is useful if you need to access the App
    * instance outside of a component that uses the App hooks.
@@ -62,23 +59,92 @@ type AppProviderProps = Realm.AppConfiguration & {
   children: React.ReactNode;
 };
 
+/** Props the AppProvider component when using an existing {@link Realm.App} instance */
+type AppProviderWithAppProps = {
+  app: Realm.App;
+  children: React.ReactNode;
+};
+
+/** Combined props for the AppProvider component, used when defining mutually exclusive props */
+type AppProviderProps = AppProviderWithAppProps & AppProviderWithConfigurationProps;
+
+/** Mutually exclusive props for the AppProvider component when using an existing {@link Realm.App} instance */
+type DynamicAppProviderWithAppProps = RestrictivePick<AppProviderProps, keyof AppProviderWithAppProps>;
+
+/** Mutually exclusive props for the AppProvider component when using a {@link Realm.AppConfiguration} */
+type DynamicAppProviderWithConfigurationProps = RestrictivePick<
+  AppProviderProps,
+  keyof AppProviderWithConfigurationProps
+>;
+
+/**
+ * Props for the AppProvider component. You can either pass an existing {@link Realm.App} through the `app` prop
+ * or props that replicate the {@link Realm.AppConfiguration} that is used to create a Realm.App instance.
+ */
+type DynamicAppProviderProps = DynamicAppProviderWithAppProps | DynamicAppProviderWithConfigurationProps;
+
 /**
  * React component providing a Realm App instance on the context for the
  * sync hooks to use. An `AppProvider` is required for an app to use the hooks.
- * @param appProps - The {@link Realm.AppConfiguration} for app services, passed as props.
+ * @param props - Either the {@link Realm.AppConfiguration} for App Services passed as props **or** the {@link Realm.App} passed through the `app` prop.
+ * @param appRef - Provides a ref to the app instance, which can be used to access the app instance outside of the React component tree. **Not available when using the `app` prop**.
+ */
+export function AppProvider(props: DynamicAppProviderProps): React.ReactNode;
+/**
+ * React component providing a Realm App instance on the context for the
+ * sync hooks to use. An `AppProvider` is required for an app to use the hooks.
+ * @param props - The {@link Realm.AppConfiguration} for App Services, passed as props.
  * @param appRef - A ref to the app instance, which can be used to access the app instance outside of the React component tree.
  */
-export const AppProvider: React.FC<AppProviderProps> = ({ children, appRef, ...appProps }) => {
-  const configuration = useRef<Realm.AppConfiguration>(appProps);
+export function AppProvider(props: DynamicAppProviderWithConfigurationProps): React.ReactNode;
+/**
+ * React component providing a Realm App instance on the context for the
+ * sync hooks to use. An `AppProvider` is required for an app to use the hooks.
+ * @param app - The {@link Realm.App} for the provider.
+ */
+export function AppProvider(props: DynamicAppProviderWithAppProps): React.ReactNode;
+export function AppProvider({ children, app, ...config }: DynamicAppProviderProps): React.ReactNode {
+  if (app instanceof App) {
+    if (Object.keys(config).length > 0) {
+      throw new Error("Cannot use configuration props when using an existing App instance.");
+    }
+    return <AppProviderWithApp app={app}>{children}</AppProviderWithApp>;
+  } else if (typeof app !== "undefined") {
+    throw new Error(
+      `The "app" prop is used to pass an existing Realm.App instance into an AppProvider. Either remove it or pass a valid Realm.App.`,
+    );
+  }
 
-  const [app, setApp] = useState<Realm.App>(() => new Realm.App(configuration.current));
+  return (
+    <AppProviderWithConfiguration {...(config as AppProviderWithConfigurationProps)}>
+      {children}
+    </AppProviderWithConfiguration>
+  );
+}
+
+function AppProviderWithApp({ app, children }: React.PropsWithChildren<AppProviderWithAppProps>) {
+  return (
+    <AppContext.Provider value={app}>
+      <AuthOperationProvider>{children}</AuthOperationProvider>
+    </AppContext.Provider>
+  );
+}
+
+function AppProviderWithConfiguration({
+  appRef,
+  children,
+  ...config
+}: React.PropsWithChildren<AppProviderWithConfigurationProps>) {
+  const configRef = useRef<Realm.AppConfiguration>(config);
+
+  const [app, setApp] = useState<Realm.App>(() => new Realm.App(configRef.current));
 
   // Support for a possible change in configuration
-  if (!isEqual(appProps, configuration.current)) {
-    configuration.current = appProps;
+  if (!isEqual(config, configRef.current)) {
+    configRef.current = config as Realm.AppConfiguration;
 
     try {
-      setApp(new Realm.App(configuration.current));
+      setApp(new Realm.App(configRef.current));
     } catch (err) {
       console.error(err);
     }
@@ -95,7 +161,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children, appRef, ...a
       <AuthOperationProvider>{children}</AuthOperationProvider>
     </AppContext.Provider>
   );
-};
+}
 
 /**
  * Hook to access the current {@link Realm.App} from the {@link AppProvider} context.

@@ -78,7 +78,7 @@ export type DynamicRealmProviderWithRealmProps = RestrictivePick<RealmProviderPr
 /**
  * Represents properties of a {@link DynamicRealmProvider} where Realm configuration props are set and Realm instance props are disallowed.
  */
-export type DynamicsRealmProviderWithConfigurationProps = RestrictivePick<
+export type DynamicRealmProviderWithConfigurationProps = RestrictivePick<
   RealmProviderProps,
   keyof RealmProviderConfigurationProps
 >;
@@ -88,7 +88,7 @@ export type DynamicsRealmProviderWithConfigurationProps = RestrictivePick<
  * Supports either {@link RealmProviderRealmProps} or {@link RealmProviderConfigurationProps}.
  */
 export type DynamicRealmProvider = React.FC<
-  DynamicRealmProviderWithRealmProps | DynamicsRealmProviderWithConfigurationProps
+  DynamicRealmProviderWithRealmProps | DynamicRealmProviderWithConfigurationProps
 >;
 
 export function createRealmProviderFromRealm(
