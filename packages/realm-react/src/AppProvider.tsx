@@ -104,20 +104,20 @@ export function AppProvider(props: DynamicAppProviderWithConfigurationProps): Re
  * @param app - The {@link Realm.App} for the provider.
  */
 export function AppProvider(props: DynamicAppProviderWithAppProps): React.ReactNode;
-export function AppProvider({ children, app, ...appWithConfigurationProps }: DynamicAppProviderProps): React.ReactNode {
+export function AppProvider({ children, app, ...config }: DynamicAppProviderProps): React.ReactNode {
   if (app instanceof App) {
-    if (Object.keys(appWithConfigurationProps).length > 0) {
+    if (Object.keys(config).length > 0) {
       throw new Error("Cannot use configuration props when using an existing App instance.");
     }
     return <AppProviderWithApp app={app}>{children}</AppProviderWithApp>;
-  } else if (typeof app === "object") {
+  } else if (typeof app !== "undefined") {
     throw new Error(
-      `The "app" prop is used to use an existing Realm.App instance with an AppProvider. Either remove it or pass a valid Realm.App.`,
+      `The "app" prop is used to pass an existing Realm.App instance into an AppProvider. Either remove it or pass a valid Realm.App.`,
     );
   }
 
   return (
-    <AppProviderWithConfiguration {...(appWithConfigurationProps as AppProviderWithConfigurationProps)}>
+    <AppProviderWithConfiguration {...(config as AppProviderWithConfigurationProps)}>
       {children}
     </AppProviderWithConfiguration>
   );

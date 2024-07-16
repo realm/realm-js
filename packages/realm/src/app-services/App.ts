@@ -290,11 +290,10 @@ export class App<
 
     // TODO: Delete this warning once the app field has been removed from the SDK.
     if (app !== undefined) {
-      internal.defaultLogger({
-        category: "Realm.App",
-        level: "warn",
-        message: `The "app" field in the App.Configuration is no longer used by Atlas Device Sync. It will be removed in future SDK releases and should not be used.`,
-      });
+      // eslint-disable-next-line no-console
+      console.warn(
+        `The "app" field in the App.Configuration is no longer used by Atlas Device Sync. It will be removed in future SDK releases and should not be used.`,
+      );
     }
 
     fs.ensureDirectoryForFile(fs.joinPaths(baseFilePath || fs.getDefaultDirectoryPath(), "mongodb-realm"));

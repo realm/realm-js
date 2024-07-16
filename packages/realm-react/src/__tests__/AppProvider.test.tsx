@@ -171,7 +171,7 @@ describe("AppProvider", () => {
         <AppProvider app={{ name: "test", version: "3" }}>...</AppProvider>,
       ),
     ).toThrow(
-      `The "app" prop is used to use an existing Realm.App instance with an AppProvider. Either remove it or pass a valid Realm.App.`,
+      `The "app" prop is used to pass an existing Realm.App instance into an AppProvider. Either remove it or pass a valid Realm.App.`,
     );
   });
 
