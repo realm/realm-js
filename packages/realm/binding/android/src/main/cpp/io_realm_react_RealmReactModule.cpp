@@ -108,7 +108,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_setDefaul
                         realm::JsPlatformHelpers::default_realm_file_directory().c_str());
 }
 
-extern "C" JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_injectCallInvoker(JNIEnv* env, jobject thiz,
+extern "C" JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_createScheduler(JNIEnv* env, jobject thiz,
                                                                                          jobject call_invoker)
 {
     // React Native uses the fbjni library for handling JNI, which has the concept of "hybrid objects",

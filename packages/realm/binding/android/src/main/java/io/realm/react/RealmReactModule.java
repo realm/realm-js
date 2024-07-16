@@ -77,7 +77,7 @@ class RealmReactModule extends ReactContextBaseJavaModule {
         }
 
         CallInvokerHolder jsCallInvokerHolder = reactContext.getCatalystInstance().getJSCallInvokerHolder();
-        injectCallInvoker(jsCallInvokerHolder);
+        createScheduler(jsCallInvokerHolder);
 
         // Get the javascript runtime and inject our native module with it
         JavaScriptContextHolder jsContext = reactContext.getJavaScriptContextHolder();
@@ -103,11 +103,9 @@ class RealmReactModule extends ReactContextBaseJavaModule {
     private native void injectModuleIntoJSGlobal(long runtimePointer);
 
     /**
-     * Passes the React Native jsCallInvokerHolder over to C++ so we can setup our UI queue flushing.
-     * This is needed as a workaround for https://github.com/facebook/react-native/issues/33006
-     * where we call the invokeAsync method to flush the React Native UI queue whenever we call from C++ to JS.
+     * Passes the React Native jsCallInvokerHolder over to C++ so we can setup a scheduler.
      */
-    private native void injectCallInvoker(CallInvokerHolder callInvoker);
+    private native void createScheduler(CallInvokerHolder callInvoker);
 
     private native void invalidateCaches();
 }
