@@ -16,6 +16,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+      # Java is needed to run the "./gradlew lint" command in the test app
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: 17
       - name: Install root package dependencies
         run: npm ci
       - name: Check types
