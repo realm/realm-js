@@ -103,7 +103,7 @@ export function AppProvider({ children, app, ...appWithConfigurationProps }: Dyn
       throw new Error("Cannot use configuration props when using an existing App instance.");
     }
     return <AppProviderWithApp app={app}>{children}</AppProviderWithApp>;
-  } else if (app != null) {
+  } else if (typeof app === "object") {
     throw new Error(
       `The "app" prop is used to use an existing Realm.App instance with an AppProvider. Either remove it or pass a valid Realm.App.`,
     );
@@ -127,9 +127,9 @@ function AppProviderWithApp({ app, children }: React.PropsWithChildren<AppProvid
 function AppProviderWithConfiguration({
   appRef,
   children,
-  ...configurationProps
+  ...config
 }: React.PropsWithChildren<AppProviderWithConfigurationProps>) {
-  const configuration = useRef<Realm.AppConfiguration>(configurationProps);
+  const configRef = useRef<Realm.AppConfiguration>(config);
 
   const [app, setApp] = useState<Realm.App>(() => new Realm.App(configuration.current));
 

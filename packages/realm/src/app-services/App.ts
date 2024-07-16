@@ -119,7 +119,7 @@ export type AppConfiguration = {
   baseUrl?: string;
 
   /**
-   * @deprecated LocalAppConfiguration is no longer used by Atlas Device Sync. It will be removed from in future SDK releases.
+   * @deprecated No longer used by Atlas Device Sync. It will be removed from in future SDK releases.
    * This describes the local app, sent to the server when a user authenticates.
    * Specifying this will enable the server to respond differently to specific versions of specific apps.
    * @since v10.0.0
@@ -158,7 +158,7 @@ export type AppConfiguration = {
 };
 
 /**
- * @deprecated LocalAppConfiguration is no longer used by Atlas Device Sync. It will be removed in future SDK releases and should not be used.
+ * @deprecated No longer used by Atlas Device Sync. It will be removed in future SDK releases and should not be used.
  * This describes the local app, sent to the server when a user authenticates.
  */
 export type LocalAppConfiguration = {
