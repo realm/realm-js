@@ -139,13 +139,15 @@ extern "C" JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_createSch
     // 4. Cast the mNativePointer back to its C++ type
     auto nativePointer = reinterpret_cast<facebook::react::CallInvokerHolder*>(nativePointerValue);
 
-    // 5. Inject the JS call invoker for the workaround to use
+    // 5. Create the scheduler from the JS call invoker
+    __android_log_print(ANDROID_LOG_VERBOSE, "Realm", "Creating scheduler");
     realm::js::react_scheduler::create_scheduler(nativePointer->getCallInvoker());
 }
 
 extern "C" JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_invalidateCaches(JNIEnv* env, jobject thiz)
 {
-    // Disable the flush ui workaround
+    __android_log_print(ANDROID_LOG_VERBOSE, "Realm", "Resetting scheduler");
+    // Reset the scheduler to prevent invocations using an old runtime
     realm::js::react_scheduler::reset_scheduler();
     __android_log_print(ANDROID_LOG_VERBOSE, "Realm", "Invalidating caches");
 #if DEBUG
