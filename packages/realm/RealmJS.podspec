@@ -42,8 +42,7 @@ Pod::Spec.new do |s|
 
 
   s.source_files           = 'binding/jsi/*.cpp',
-                             'binding/apple/platform.mm',
-                             'binding/apple/RealmReactModule.mm',
+                             'binding/apple/*.mm',
                              # Headers
                              'binding/*.h',
                              'binding/*.hpp',
