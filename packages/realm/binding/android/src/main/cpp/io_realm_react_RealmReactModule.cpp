@@ -111,10 +111,6 @@ extern "C" JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_setDefaul
 extern "C" JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_injectCallInvoker(JNIEnv* env, jobject thiz,
                                                                                          jobject call_invoker)
 {
-    // TODO: Skip when the microtask queue is enabled:
-    // See
-    // https://github.com/facebook/react-native/pull/43396/files#diff-b7fda5d350ac535115fa683faa7317b43aa11f3448f95266ef9ff051c3753a6fR270-R281
-
     // React Native uses the fbjni library for handling JNI, which has the concept of "hybrid objects",
     // which are Java objects containing a pointer to a C++ object. The CallInvokerHolder, which has the
     // invokeAsync method we want access to, is one such hybrid object.
@@ -122,7 +118,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_injectCal
     // object `callInvokerHolderJavaObj` manually, based on reverse engineering the fbjni code.
 
     // 1. Get the Java object referred to by the mHybridData field of the Java holder object
-    auto callInvokerHolderClass = env->GetObjectClass(call_invoker);
+    auto callInvokerHolderClass = env->FindClass("com/facebook/react/turbomodule/core/CallInvokerHolderImpl");
     auto hybridDataField = env->GetFieldID(callInvokerHolderClass, "mHybridData", "Lcom/facebook/jni/HybridData;");
     auto hybridDataObj = env->GetObjectField(call_invoker, hybridDataField);
 
