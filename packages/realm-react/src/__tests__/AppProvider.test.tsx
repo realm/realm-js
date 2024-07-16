@@ -119,7 +119,7 @@ describe("AppProvider", () => {
     it("handle passing an app and changing it", async () => {
       const appInstanceId = "appInstanceId";
       const differentAppInstanceId = "differentAppInstanceId";
-      const appInstance = new Realm.App({
+      const app = new Realm.App({
         id: appInstanceId,
       });
 
@@ -129,7 +129,7 @@ describe("AppProvider", () => {
       };
 
       const App = () => {
-        const [currentApp, setCurrentApp] = useState(appInstance);
+        const [currentApp, setCurrentApp] = useState(app);
         return (
           <>
             <View testID="firstRealmProvider">
