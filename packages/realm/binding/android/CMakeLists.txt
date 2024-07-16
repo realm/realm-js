@@ -13,7 +13,7 @@ endif()
 
 add_library(realm-js-android-binding SHARED
     ../jsi/jsi_init.cpp
-    ../jsi/flush_ui_queue_workaround.cpp
+    ../jsi/react_scheduler.cpp
     src/main/cpp/platform.cpp
     src/main/cpp/jni_utils.cpp
     src/main/cpp/io_realm_react_RealmReactModule.cpp

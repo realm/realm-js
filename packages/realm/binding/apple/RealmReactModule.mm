@@ -31,7 +31,7 @@
 #import <objc/runtime.h>
 
 #import "jsi/jsi_init.h"
-#import "flush_ui_queue_workaround.h"
+#import "jsi/react_scheduler.h"
 
 // the part of the RCTCxxBridge private class we care about
 @interface RCTBridge (Realm_RCTCxxBridge)
@@ -54,7 +54,7 @@ RCT_EXPORT_MODULE(Realm)
 }
 
 - (void)invalidate {
-    realm::js::flush_ui_workaround::reset_js_call_invoker();
+    realm::js::react_scheduler::reset_scheduler();
 #if DEBUG
   // Immediately close any open sync sessions to prevent race condition with new
   // JS thread when hot reloading
@@ -79,7 +79,7 @@ RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD(injectModuleIntoJSGlobal) {
   // See https://github.com/facebook/react-native/pull/43396#issuecomment-2178586017 for context
   // If it was, we could use the enablement of "microtasks" to avoid the overhead of calling the invokeAsync on every call from C++ into JS.
   // if (!facebook::react::ReactNativeFeatureFlags::enableMicrotasks()) {
-  realm::js::flush_ui_workaround::inject_js_call_invoker([bridge jsCallInvoker]);
+  realm::js::react_scheduler::create_scheduler([bridge jsCallInvoker]);
 
   auto exports = jsi::Object(rt);
   realm_jsi_init(rt, exports);

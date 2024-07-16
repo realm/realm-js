@@ -24,7 +24,7 @@
 #include <jsi/jsi.h>
 
 #include "jsi_init.h"
-#include "flush_ui_queue_workaround.h"
+#include "react_scheduler.h"
 #include "platform.hpp"
 #include "jni_utils.hpp"
 
@@ -119,6 +119,9 @@ extern "C" JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_injectCal
 
     // 1. Get the Java object referred to by the mHybridData field of the Java holder object
     auto callInvokerHolderClass = env->FindClass("com/facebook/react/turbomodule/core/CallInvokerHolderImpl");
+    if (!env->IsInstanceOf(call_invoker, callInvokerHolderClass)) {
+        throw std::invalid_argument("Expected call_invoker to be CallInvokerHolderImpl");
+    }
     auto hybridDataField = env->GetFieldID(callInvokerHolderClass, "mHybridData", "Lcom/facebook/jni/HybridData;");
     auto hybridDataObj = env->GetObjectField(call_invoker, hybridDataField);
 
@@ -137,13 +140,13 @@ extern "C" JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_injectCal
     auto nativePointer = reinterpret_cast<facebook::react::CallInvokerHolder*>(nativePointerValue);
 
     // 5. Inject the JS call invoker for the workaround to use
-    realm::js::flush_ui_workaround::inject_js_call_invoker(nativePointer->getCallInvoker());
+    realm::js::react_scheduler::create_scheduler(nativePointer->getCallInvoker());
 }
 
 extern "C" JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_invalidateCaches(JNIEnv* env, jobject thiz)
 {
     // Disable the flush ui workaround
-    realm::js::flush_ui_workaround::reset_js_call_invoker();
+    realm::js::react_scheduler::reset_scheduler();
     __android_log_print(ANDROID_LOG_VERBOSE, "Realm", "Invalidating caches");
 #if DEBUG
     // Immediately close any open sync sessions to prevent race condition with new
