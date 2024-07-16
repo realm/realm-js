@@ -150,6 +150,8 @@ extern "C" JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_invalidat
     realm::js::flush_ui_workaround::reset_js_call_invoker();
     __android_log_print(ANDROID_LOG_VERBOSE, "Realm", "Invalidating caches");
 #if DEBUG
+    // Immediately close any open sync sessions to prevent race condition with new
+    // JS thread when hot reloading
     realm_jsi_close_sync_sessions();
 #endif
     realm_jsi_invalidate_caches();
