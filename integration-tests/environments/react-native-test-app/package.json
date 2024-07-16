@@ -23,6 +23,7 @@
       "command": "mocha-remote --reporter @realm/mocha-reporter -- concurrently --kill-others-on-fail npm:metro npm:runner",
       "dependencies": [
         "../../../packages/realm:build:ts",
+        "../../../packages/realm:bindgen:jsi",
         "../../../packages/mocha-reporter:bundle"
       ],
       "env": {
@@ -37,7 +38,7 @@
         },
         "ORG_GRADLE_PROJECT_bridgelessEnabled": {
           "external": true,
-          "default": "false"
+          "default": "true"
         }
       }
     },
@@ -78,11 +79,11 @@
         },
         "RCT_NEW_ARCH_ENABLED": {
           "external": true,
-          "default": "0"
+          "default": "1"
         },
         "USE_BRIDGELESS": {
           "external": true,
-          "default": "0"
+          "default": "1"
         }
       }
     },
@@ -108,11 +109,11 @@
         },
         "RCT_NEW_ARCH_ENABLED": {
           "external": true,
-          "default": "0"
+          "default": "1"
         },
         "USE_BRIDGELESS": {
           "external": true,
-          "default": "0"
+          "default": "1"
         }
       }
     },
@@ -134,7 +135,7 @@
     "mocha-remote-react-native": "^1.12.3",
     "path-browserify": "^1.0.1",
     "react": "18.2.0",
-    "react-native": "0.74.1",
+    "react-native": "0.74.2",
     "react-native-fetch-api": "^3.0.0",
     "react-native-fs": "^2.20.0",
     "react-native-get-random-values": "^1.11.0",

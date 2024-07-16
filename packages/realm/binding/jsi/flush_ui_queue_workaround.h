@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2016 Realm Inc.
+// Copyright 2024 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,15 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#import <Foundation/Foundation.h>
+#pragma once
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <ReactCommon/CallInvoker.h>
 
-@interface RealmReact : NSObject
-@end
-
-#ifdef __cplusplus
-}
-#endif
+namespace realm::js::flush_ui_workaround {
+void inject_js_call_invoker(std::shared_ptr<facebook::react::CallInvoker> js_invoker);
+void reset_js_call_invoker();
+void flush_ui_queue();
+} // namespace realm::js::flush_ui_workaround

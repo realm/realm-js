@@ -26,19 +26,28 @@ export function generate(context: TemplateContext): void {
   out("// This file is generated: Update the spec instead of editing this file directly");
 
   out(`
-    /*global global*/
-    import { Platform, NativeModules } from "react-native";
-    if (Platform.OS === "android") {
-      // Getting the native module on Android will inject the Realm global
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const RealmNativeModule = NativeModules.Realm;
+    /* global global */
+
+    import { NativeModules } from "react-native";
+    const RealmNativeModule = NativeModules.Realm;
+
+    /**
+     * Injects, reads, deletes and returns the native module via a global property.
+     */
+    function getNativeModule() {
+      RealmNativeModule.injectModuleIntoJSGlobal();
+      // Read the global into the local scope
+      const { __injectedRealmBinding } = global;
+      // Delete the global again
+      delete global.__injectedRealmBinding;
+      if(typeof __injectedRealmBinding === "object") {
+        return __injectedRealmBinding;
+      } else {
+        throw new Error("Could not find the Realm binary. Please consult our troubleshooting guide: https://www.mongodb.com/docs/realm-sdks/js/latest/#md:troubleshooting-missing-binary");
+      }
     }
-    // TODO: Remove the need to store Realm as a global
-    // @see https://github.com/realm/realm-js/issues/2126
-    const nativeModule = global.__RealmFuncs;
-    if(!nativeModule) {
-      throw new Error("Could not find the Realm binary. Please consult our troubleshooting guide: https://www.mongodb.com/docs/realm-sdks/js/latest/#md:troubleshooting-missing-binary");
-    }
+
+    const nativeModule = getNativeModule();
 
     export const WeakRef = global.WeakRef ?? class WeakRef {
         constructor(obj) { this.native = nativeModule.createWeakRef(obj) }
