@@ -78,9 +78,8 @@ type DynamicAppProviderWithConfigurationProps = RestrictivePick<
 >;
 
 /**
- * Props for the AppProvider component. You can either pass an existing app through the `app` prop
- * or props that replicate the configuration that is used to create a Realm.App instance:
- * https://www.mongodb.com/docs/realm-sdks/js/latest/Realm.App.html#~AppConfiguration
+ * Props for the AppProvider component. You can either pass an existing {@link Realm.App} through the `app` prop
+ * or props that replicate the {@link Realm.AppConfiguration} that is used to create a Realm.App instance.
  */
 type DynamicAppProviderProps = DynamicAppProviderWithAppProps | DynamicAppProviderWithConfigurationProps;
 
@@ -94,7 +93,7 @@ export function AppProvider(props: DynamicAppProviderProps): React.ReactNode;
 /**
  * React component providing a Realm App instance on the context for the
  * sync hooks to use. An `AppProvider` is required for an app to use the hooks.
- * @param appProps - The {@link Realm.AppConfiguration} for App Services, passed as props.
+ * @param props - The {@link Realm.AppConfiguration} for App Services, passed as props.
  * @param appRef - A ref to the app instance, which can be used to access the app instance outside of the React component tree.
  */
 export function AppProvider(props: DynamicAppProviderWithConfigurationProps): React.ReactNode;
