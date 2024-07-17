@@ -1,4 +1,4 @@
-## vNext (TBD)
+## 0.9.0 (2024-07-17)
 
 ### Enhancements
 * Added the ability to pass an existing `Realm.App` instance in `AppProvider` with the `app` prop. ([#6785](https://github.com/realm/realm-js/issues/6785))
