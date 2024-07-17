@@ -54,6 +54,7 @@ RCT_EXPORT_MODULE(Realm)
 }
 
 - (void)invalidate {
+    // Reset the scheduler to prevent invocations using an old runtime
     realm::js::react_scheduler::reset_scheduler();
 #if DEBUG
   // Immediately close any open sync sessions to prevent race condition with new
@@ -74,11 +75,7 @@ RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD(injectModuleIntoJSGlobal) {
   RCTBridge* bridge = [RCTBridge currentBridge];
   auto &rt = *static_cast<facebook::jsi::Runtime *>(bridge.runtime);
 
-  // Since https://github.com/facebook/react-native/pull/43396 this should only be needed when bridgeless is not enabled.
-  // but unfortunately, that doesn't seem to be the case.
-  // See https://github.com/facebook/react-native/pull/43396#issuecomment-2178586017 for context
-  // If it was, we could use the enablement of "microtasks" to avoid the overhead of calling the invokeAsync on every call from C++ into JS.
-  // if (!facebook::react::ReactNativeFeatureFlags::enableMicrotasks()) {
+  // Create a scheduler wrapping the call invoker and pass this to realm core
   realm::js::react_scheduler::create_scheduler([bridge jsCallInvoker]);
 
   auto exports = jsi::Object(rt);
