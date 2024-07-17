@@ -299,6 +299,7 @@ classes:
       - get_link_target
       - clear
       - get_primary_key_column
+      - get_column_key
 
   Obj:
     methods:
@@ -306,7 +307,9 @@ classes:
       - get_table
       - get_key
       - get_any
+      - get_any_by_name
       - set_any
+      - set_any_by_name
       - set_collection
       - add_int
       - get_linked_object

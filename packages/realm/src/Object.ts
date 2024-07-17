@@ -42,6 +42,8 @@ import {
   createResultsAccessor,
   flags,
   getTypeName,
+  mixedFromBinding,
+  mixedToBinding,
 } from "./internal";
 
 /**
@@ -108,6 +110,31 @@ const PROXY_HANDLER: ProxyHandler<RealmObject<any>> = {
       }
     }
     return result;
+  },
+};
+
+const PROXY_HANDLER_RELAXED: ProxyHandler<RealmObject<any>> = {
+  get(target, prop) {
+    return target[INTERNAL].getAnyByName(prop as string);
+  },
+
+  set(target, prop, value) {
+    console.log("FISK 20", { target, prop, value });
+    console.log("FISK 21", mixedToBinding(target[REALM].internal, value));
+    target[INTERNAL].setAnyByName(prop as string, mixedToBinding(target[REALM].internal, value));
+    console.log("FISK 22");
+    return true;
+  },
+
+  deleteProperty(target, prop) {
+    return true;
+  },
+
+  getOwnPropertyDescriptor(_) {
+    return {
+      enumerable: true,
+      configurable: true,
+    };
   },
 };
 
@@ -308,7 +335,7 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
    * Create a wrapper for accessing an object from the database
    * @internal
    */
-  public static createWrapper<T = DefaultObject>(internal: binding.Obj, constructor: Constructor): RealmObject<T> & T {
+  public static createWrapper<T = DefaultObject>(internal: binding.Obj, constructor: Constructor, relaxedSchema: boolean): RealmObject<T> & T {
     const result = Object.create(constructor.prototype);
     result[INTERNAL] = internal;
     // Initializing INTERNAL_LISTENERS here rather than letting it just be implicitly undefined since JS engines
@@ -316,7 +343,11 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
     result[INTERNAL_LISTENERS] = null;
 
     // Wrap in a proxy to trap keys, enabling the spread operator, and hiding our internal fields.
-    return new Proxy(result, PROXY_HANDLER);
+    if (relaxedSchema) {
+      return new Proxy(result, PROXY_HANDLER_RELAXED);
+    } else {
+      return new Proxy(result, PROXY_HANDLER);
+    }
   }
 
   /**

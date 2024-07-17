@@ -130,7 +130,7 @@ export class ClassMap {
           properties,
           wrapObject(obj) {
             if (obj.isValid) {
-              return RealmObject.createWrapper(obj, constructor);
+              return RealmObject.createWrapper(obj, constructor, realm.internal.config.flexibleSchema);
             } else {
               return null;
             }
