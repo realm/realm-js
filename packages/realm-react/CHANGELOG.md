@@ -1,4 +1,4 @@
-## vNext (TBD)
+## 0.9.0 (2024-07-17)
 
 ### Enhancements
 * Added the ability to pass an existing `Realm.App` instance in `AppProvider` with the `app` prop. ([#6785](https://github.com/realm/realm-js/issues/6785))
@@ -23,11 +23,6 @@ function MyApp() {
 ### Compatibility
 * React Native >= v0.71.4
 * See "Compatibility" for a specific Realm version in [Realm's CHANGELOG](https://github.com/realm/realm-js/blob/main/CHANGELOG.md).
-
-### Internal
-<!-- * Either mention core version or upgrade -->
-<!-- * Using Realm Core vX.Y.Z -->
-<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
 
 ## 0.8.0 (2024-06-18)
 
