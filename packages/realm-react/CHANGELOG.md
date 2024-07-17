@@ -24,11 +24,6 @@ function MyApp() {
 * React Native >= v0.71.4
 * See "Compatibility" for a specific Realm version in [Realm's CHANGELOG](https://github.com/realm/realm-js/blob/main/CHANGELOG.md).
 
-### Internal
-<!-- * Either mention core version or upgrade -->
-<!-- * Using Realm Core vX.Y.Z -->
-<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
-
 ## 0.8.0 (2024-06-18)
 
 ### Enhancements
