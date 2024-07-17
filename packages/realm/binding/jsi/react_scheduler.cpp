@@ -25,13 +25,11 @@
 
 #include <thread>
 
-namespace realm::js::react_scheduler {
-
 using Scheduler = realm::util::Scheduler;
 
-// std::shared_ptr<facebook::react::CallInvoker> js_call_invoker_{};
-std::shared_ptr<Scheduler> scheduler_{};
+namespace {
 
+std::shared_ptr<Scheduler> scheduler_{};
 
 class ReactScheduler : public realm::util::Scheduler {
 public:
@@ -56,13 +54,14 @@ public:
         return true;
     }
 
-    void invoke(util::UniqueFunction<void()>&& func) override
+    void invoke(realm::util::UniqueFunction<void()>&& func) override
     {
         m_js_call_invoker->invokeAsync(
-            // Using low priority to avoid blocking rendering
-            facebook::react::SchedulerPriority::LowPriority,
+            // Using normal priority to avoid blocking higher priority tasks
+            facebook::react::SchedulerPriority::NormalPriority,
             // Wrapping the func in a shared_ptr to ensure it outlives the invocation
-            [func = std::make_shared<util::UniqueFunction<void()>>(std::move(func))] {
+            // and gets destructed even if the function is never called.
+            [func = std::make_shared<realm::util::UniqueFunction<void()>>(func.release())] {
                 (*func)();
             });
     }
@@ -82,6 +81,11 @@ std::shared_ptr<Scheduler> get_scheduler()
         return Scheduler::make_platform_default();
     }
 }
+
+} // namespace
+
+namespace realm::js::react_scheduler {
+
 
 void create_scheduler(std::shared_ptr<facebook::react::CallInvoker> js_call_invoker)
 {
