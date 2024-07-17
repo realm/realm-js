@@ -57,12 +57,9 @@ public:
     void invoke(realm::util::UniqueFunction<void()>&& func) override
     {
         m_js_call_invoker->invokeAsync(
-            // Using normal priority to avoid blocking higher priority tasks
-            facebook::react::SchedulerPriority::NormalPriority,
-            // Wrapping the func in a shared_ptr to ensure it outlives the invocation
-            // and gets destructed even if the function is never called.
-            [func = std::make_shared<realm::util::UniqueFunction<void()>>(func.release())] {
-                (*func)();
+            // Using normal priority to avoid blocking rendering, user-input and other higher priority tasks
+            facebook::react::SchedulerPriority::NormalPriority, [ptr = func.release()] {
+                (realm::util::UniqueFunction<void()>(ptr))();
             });
     }
 
