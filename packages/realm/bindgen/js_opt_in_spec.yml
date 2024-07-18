@@ -316,6 +316,7 @@ classes:
       - get_backlink_count
       - get_backlink_view
       - create_and_set_linked_object
+      - has_schema_property
 
   Timestamp:
     methods:

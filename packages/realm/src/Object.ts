@@ -42,8 +42,12 @@ import {
   createResultsAccessor,
   flags,
   getTypeName,
-  mixedFromBinding,
   mixedToBinding,
+  getTypeHelpers,
+  getClassHelpers,
+  TypeOptions,
+  MappableTypeHelpers,
+  fromBindingSyncError,
 } from "./internal";
 
 /**
@@ -115,14 +119,32 @@ const PROXY_HANDLER: ProxyHandler<RealmObject<any>> = {
 
 const PROXY_HANDLER_RELAXED: ProxyHandler<RealmObject<any>> = {
   get(target, prop) {
+    // TODO: add type helper here too
     return target[INTERNAL].getAnyByName(prop as string);
   },
 
   set(target, prop, value) {
-    console.log("FISK 20", { target, prop, value });
-    console.log("FISK 21", mixedToBinding(target[REALM].internal, value));
-    target[INTERNAL].setAnyByName(prop as string, mixedToBinding(target[REALM].internal, value));
-    console.log("FISK 22");
+    const obj = target[INTERNAL];
+    const propName = prop as string;
+    
+    if (obj.hasSchemaProperty(propName)) {
+      const colKey = obj.table.getColumnKey(propName);
+      const options: TypeOptions = {
+        realm: target[REALM],
+        name: propName,
+        optional: false,
+        objectSchemaName: obj.table.name,
+        objectType: undefined,
+        getClassHelpers: function (nameOrTableKey: string | binding.TableKey): ClassHelpers {
+          throw new Error("Function not implemented.");
+        }
+      };
+      const typ = obj.table.getColumnType(colKey);
+      const typeHelper = getTypeHelpers(typ as unknown as MappableTypeHelpers, options);
+      obj.setAny(colKey, typeHelper.toBinding(value));
+    } else {
+      obj.setAnyByName(propName, value);
+    }
     return true;
   },
 
