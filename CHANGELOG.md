@@ -24,9 +24,8 @@ realm.syncSession?.addProgressNotification(
 * File format: generates Realms with format v24 (reads and upgrades file format v10).
 
 ### Internal
-<!-- * Either mention core version or upgrade -->
-<!-- * Using Realm Core vX.Y.Z -->
-<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
+* Adding a CallInvoker-based scheduler for Core on React Native and removing the "flush ui queue" workaround. ([#6791](https://github.com/realm/realm-js/pull/6791))
+* Refactors throwing uncaught exceptions from callbacks dispatched onto the event loop from C++ on React Native. ([#6772](https://github.com/realm/realm-js/issues/6772))
 
 ## 12.11.1 (2024-06-25)
 

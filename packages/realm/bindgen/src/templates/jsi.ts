@@ -652,8 +652,6 @@ function convertFromJsi(addon: JsiAddon, type: Type, expr: string): string {
         {
             _thread.assertOnSameThread();
             auto& _env = ${addon.get()}->m_rt;
-            // TODO consider not flushing when calling back into JS from withing a JS->CPP call.
-            FlushMicrotaskQueueGuard guard;
             return ${c(
               type.ret,
               `_cb->call(

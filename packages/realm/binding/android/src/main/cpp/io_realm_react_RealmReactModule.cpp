@@ -24,7 +24,7 @@
 #include <jsi/jsi.h>
 
 #include "jsi_init.h"
-#include "flush_ui_queue_workaround.h"
+#include "react_scheduler.h"
 #include "platform.hpp"
 #include "jni_utils.hpp"
 
@@ -108,8 +108,8 @@ extern "C" JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_setDefaul
                         realm::JsPlatformHelpers::default_realm_file_directory().c_str());
 }
 
-extern "C" JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_injectCallInvoker(JNIEnv* env, jobject thiz,
-                                                                                         jobject call_invoker)
+extern "C" JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_createScheduler(JNIEnv* env, jobject thiz,
+                                                                                       jobject call_invoker)
 {
     // React Native uses the fbjni library for handling JNI, which has the concept of "hybrid objects",
     // which are Java objects containing a pointer to a C++ object. The CallInvokerHolder, which has the
@@ -119,6 +119,9 @@ extern "C" JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_injectCal
 
     // 1. Get the Java object referred to by the mHybridData field of the Java holder object
     auto callInvokerHolderClass = env->FindClass("com/facebook/react/turbomodule/core/CallInvokerHolderImpl");
+    if (!env->IsInstanceOf(call_invoker, callInvokerHolderClass)) {
+        throw std::invalid_argument("Expected call_invoker to be CallInvokerHolderImpl");
+    }
     auto hybridDataField = env->GetFieldID(callInvokerHolderClass, "mHybridData", "Lcom/facebook/jni/HybridData;");
     auto hybridDataObj = env->GetObjectField(call_invoker, hybridDataField);
 
@@ -136,14 +139,16 @@ extern "C" JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_injectCal
     // 4. Cast the mNativePointer back to its C++ type
     auto nativePointer = reinterpret_cast<facebook::react::CallInvokerHolder*>(nativePointerValue);
 
-    // 5. Inject the JS call invoker for the workaround to use
-    realm::js::flush_ui_workaround::inject_js_call_invoker(nativePointer->getCallInvoker());
+    // 5. Create the scheduler from the JS call invoker
+    __android_log_print(ANDROID_LOG_VERBOSE, "Realm", "Creating scheduler");
+    realm::js::react_scheduler::create_scheduler(nativePointer->getCallInvoker());
 }
 
 extern "C" JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_invalidateCaches(JNIEnv* env, jobject thiz)
 {
-    // Disable the flush ui workaround
-    realm::js::flush_ui_workaround::reset_js_call_invoker();
+    __android_log_print(ANDROID_LOG_VERBOSE, "Realm", "Resetting scheduler");
+    // Reset the scheduler to prevent invocations using an old runtime
+    realm::js::react_scheduler::reset_scheduler();
     __android_log_print(ANDROID_LOG_VERBOSE, "Realm", "Invalidating caches");
 #if DEBUG
     // Immediately close any open sync sessions to prevent race condition with new
