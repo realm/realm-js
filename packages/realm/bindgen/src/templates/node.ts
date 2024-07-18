@@ -18,7 +18,7 @@
 import { strict as assert } from "assert";
 
 import { TemplateContext } from "@realm/bindgen/context";
-import { CppVar, CppFunc, CppFuncProps, CppCtor, CppMethod, CppClass, CppDecls } from "@realm/bindgen/cpp";
+import { CppVar, CppFunc, CppFuncProps, CppCtor, CppMethod, CppClass, CppDecls, CppMemInit } from "@realm/bindgen/cpp";
 import {
   BoundSpec,
   Class,
@@ -83,6 +83,7 @@ class NodeAddon extends CppClass {
     this.withCrtpBase("Napi::Addon");
 
     this.members.push(new CppVar("std::deque<std::string>", "m_string_bufs"));
+    this.members.push(new CppVar("std::shared_ptr<NapiScheduler>", "m_scheduler"));
     this.addMethod(
       new CppMethod("wrapString", "const std::string&", [new CppVar("std::string", "str")], {
         attributes: "inline",
@@ -124,6 +125,7 @@ class NodeAddon extends CppClass {
 
     this.addMethod(
       new CppCtor(this.name, [new CppVar("Napi::Env", env), new CppVar("Napi::Object", "exports")], {
+        mem_inits: [new CppMemInit("m_scheduler", `std::make_shared<NapiScheduler>(${env})`)],
         body: `
             DefineAddon(exports, {
                 ${Object.entries(this.exports)
@@ -585,7 +587,9 @@ function convertFromNode(addon: NodeAddon, type: Type, expr: string): string {
       // For now assuming that all void-returning functions are "notifications" and don't need to block until done.
       // Non-void returning functions *must* block so they have something to return.
       const shouldBlock = !type.ret.isVoid();
-      return shouldBlock ? `schedulerWrapBlockingFunction(${lambda})` : `util::EventLoopDispatcher(${lambda})`;
+      return shouldBlock
+        ? `schedulerWrapBlockingFunction(${lambda}, ${env}.GetInstanceData<RealmAddon>()->m_scheduler)`
+        : `util::EventLoopDispatcher(${lambda}, ${env}.GetInstanceData<RealmAddon>()->m_scheduler)`;
 
     case "Enum":
       return `${type.cppName}((${expr}).As<Napi::Number>().DoubleValue())`;
@@ -936,6 +940,7 @@ export function generate({ rawSpec, spec, file: makeFile }: TemplateContext): vo
       #include <napi.h>
       #include <realm_helpers.h>
       #include <realm_js_node_helpers.h>
+      #include <napi_scheduler.h>
 
       namespace realm::js::node {
       namespace {

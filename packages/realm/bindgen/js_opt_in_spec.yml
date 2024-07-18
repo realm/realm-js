@@ -45,6 +45,7 @@ records:
       - schema_version
       - schema_mode
       - disable_format_upgrade
+      - scheduler
       - sync_config
       - force_sync_history
       - migration_function
