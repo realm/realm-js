@@ -83,7 +83,7 @@ class NodeAddon extends CppClass {
     this.withCrtpBase("Napi::Addon");
 
     this.members.push(new CppVar("std::deque<std::string>", "m_string_bufs"));
-    this.members.push(new CppVar("std::shared_ptr<NapiScheduler>", "m_scheduler"));
+    this.members.push(new CppVar("std::shared_ptr<util::Scheduler>", "m_scheduler"));
     this.addMethod(
       new CppMethod("wrapString", "const std::string&", [new CppVar("std::string", "str")], {
         attributes: "inline",
@@ -105,6 +105,8 @@ class NodeAddon extends CppClass {
     this.classes.forEach((t) =>
       this.members.push(new CppVar("Napi::FunctionReference", NodeAddon.memberNameForExtractor(t))),
     );
+
+    // Injectables
     this.addMethod(
       new CppMethod("injectInjectables", "void", [node_callback_info], {
         body: `
@@ -123,6 +125,16 @@ class NodeAddon extends CppClass {
       }),
     );
 
+    // Env specific scheduler
+    this.addMethod(
+      new CppMethod("getPlatformScheduler", "Napi::Value", [node_callback_info], {
+        body: `
+          const auto env = info.Env();
+          return NODE_FROM_SHARED_Scheduler(env, env.GetInstanceData<RealmAddon>()->m_scheduler);
+        `,
+      }),
+    );
+
     this.addMethod(
       new CppCtor(this.name, [new CppVar("Napi::Env", env), new CppVar("Napi::Object", "exports")], {
         mem_inits: [new CppMemInit("m_scheduler", `std::make_shared<NapiScheduler>(${env})`)],
@@ -132,6 +144,7 @@ class NodeAddon extends CppClass {
                   .map(([name, val]) => `InstanceValue("${name}", ${val}, napi_enumerable),`)
                   .join("\n")}
                 InstanceMethod<&${this.name}::injectInjectables>("injectInjectables"),
+                InstanceMethod<&${this.name}::getPlatformScheduler>("getPlatformScheduler"),
             });
             `,
       }),

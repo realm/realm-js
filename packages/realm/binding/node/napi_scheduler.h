@@ -23,6 +23,8 @@
 
 #include <napi.h>
 
+#include <thread>
+
 namespace realm::js::node {
 
 using VoidUniqueFunctionImpl = std::remove_pointer_t<decltype(realm::util::UniqueFunction<void()>().release())>;
@@ -38,6 +40,7 @@ public:
 private:
     Napi::Env m_env;
     Napi::TypedThreadSafeFunction<std::nullptr_t, VoidUniqueFunctionImpl> m_tsf;
+    std::thread::id m_id = std::this_thread::get_id();
 };
 
 } // namespace realm::js::node

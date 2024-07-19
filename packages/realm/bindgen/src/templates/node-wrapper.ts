@@ -36,6 +36,8 @@ export function generate(context: TemplateContext): void {
 
     // We know that node always has real WeakRefs so just use them.
     export const WeakRef = global.WeakRef;
+    // Export a special function to get the env specific scheduler
+    export const getPlatformScheduler = nativeModule.getPlatformScheduler;
   `);
 
   generateNativeBigIntSupport(out);

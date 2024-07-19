@@ -57,7 +57,7 @@ NapiScheduler::NapiScheduler(Napi::Env& env)
 
 bool NapiScheduler::is_on_thread() const noexcept
 {
-    return false;
+    return m_id == std::this_thread::get_id();
 }
 
 bool NapiScheduler::is_same_as(const Scheduler* other) const noexcept
