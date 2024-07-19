@@ -455,6 +455,8 @@ export class Realm {
         syncConfig: config.sync ? toBindingSyncConfig(config.sync) : undefined,
         forceSyncHistory: config.openSyncedRealmLocally,
         automaticallyHandleBacklinksInMigrations: config.migrationOptions?.resolveEmbeddedConstraints ?? false,
+        // Use a platform-specific scheduler if the platform expose one
+        scheduler: binding.getPlatformScheduler ? binding.getPlatformScheduler() : undefined,
       },
     };
   }

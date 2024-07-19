@@ -3,7 +3,7 @@
     "import=tsx",
     "expose_gc",
     "enable-source-maps",
-    "no-warnings"
+    "force-node-api-uncaught-exceptions-policy"
   ],
   "reporter": "@realm/mocha-reporter",
   "require": [

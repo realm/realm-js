@@ -146,28 +146,20 @@ export class Dictionary<T = unknown> extends Collection<
     super(accessor, typeHelpers, (listener, keyPaths) => {
       return this[INTERNAL].addKeyBasedNotificationCallback(
         ({ deletions, insertions, modifications }) => {
-          try {
-            listener(proxied, {
-              deletions: deletions.map((value) => {
-                assert.string(value);
-                return value;
-              }),
-              insertions: insertions.map((value) => {
-                assert.string(value);
-                return value;
-              }),
-              modifications: modifications.map((value) => {
-                assert.string(value);
-                return value;
-              }),
-            });
-          } catch (err) {
-            // Scheduling a throw on the event loop,
-            // since throwing synchronously here would result in an abort in the calling C++
-            setImmediate(() => {
-              throw err;
-            });
-          }
+          listener(proxied, {
+            deletions: deletions.map((value) => {
+              assert.string(value);
+              return value;
+            }),
+            insertions: insertions.map((value) => {
+              assert.string(value);
+              return value;
+            }),
+            modifications: modifications.map((value) => {
+              assert.string(value);
+              return value;
+            }),
+          });
         },
         keyPaths ? realm.internal.createKeyPathArray(internal.objectSchema.name, keyPaths) : keyPaths,
       );

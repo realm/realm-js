@@ -187,6 +187,9 @@ export function generate({ rawSpec, spec: boundSpec, file }: TemplateContext): v
   out("export type AppError = Error & {code: number};");
   out("export type CppErrorCode = Error & {code: number, category: string};");
 
+  out("// Special functions");
+  out("export const getPlatformScheduler: undefined | (() => binding.SharedScheduler);");
+
   out(`
     // WeakRef polyfill for Hermes.
     export class WeakRef<T extends object> {

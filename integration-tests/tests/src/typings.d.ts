@@ -116,6 +116,7 @@ declare const fs: fs;
 declare const path: path;
 declare const environment: Environment;
 declare const gc: undefined | (() => void);
+declare const nextUncaughtException: undefined | (() => Promise<Error>);
 
 // Extend the mocha test function with the skipIf that we patch in from index.ts
 declare namespace Mocha {

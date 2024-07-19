@@ -74,7 +74,7 @@
                 "--import=tsx",
                 "--expose_gc",
                 "--enable-source-maps",
-                "--no-warnings",
+                "--force-node-api-uncaught-exceptions-policy",
                 "${workspaceRoot}/node_modules/mocha/lib/cli/cli.js",
                 "--require",
                 "src/node/inject-dev-environment.ts",
@@ -83,6 +83,28 @@
                 "10000",
                 "--grep",
                 "${input:integrationTestFilter}"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "LLDB: Integration tests (throwing from listeners)",
+            "program": "node",
+            "cwd": "${workspaceRoot}/integration-tests/tests",
+            "args": [
+                "--inspect",
+                "--import=tsx",
+                "--expose_gc",
+                "--enable-source-maps",
+                "--force-node-api-uncaught-exceptions-policy",
+                "${workspaceRoot}/node_modules/mocha/lib/cli/cli.js",
+                "--require",
+                "src/node/inject-dev-environment.ts",
+                "src/node/index.ts",
+                "--timeout",
+                "10000",
+                "--grep",
+                "can throw from a listener"
             ]
         },
         {
@@ -99,7 +121,7 @@
                 "--import=tsx",
                 "--expose_gc",
                 "--enable-source-maps",
-                "--no-warnings"
+                "--force-node-api-uncaught-exceptions-policy"
             ],
             "args": [
                 "--require",

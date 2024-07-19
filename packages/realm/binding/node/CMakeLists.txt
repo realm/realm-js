@@ -108,8 +108,7 @@ else()
     target_compile_options(realm-js PRIVATE -Wall -Wextra)
 endif()
 
-target_include_directories(realm-js PRIVATE "${BINDGEN_DIR}/src")
-target_include_directories(realm-js PRIVATE "${BINDING_DIR}")
+target_include_directories(realm-js PRIVATE "${BINDGEN_DIR}/src" "${BINDING_DIR}" "${BINDING_DIR}/node")
 
 
 file(GLOB_RECURSE SDK_TS_FILES
@@ -137,4 +136,4 @@ bindgen(
     SOURCES ${SDK_TS_FILES}
 )
 
-target_sources(realm-js PRIVATE node_init.cpp ${CMAKE_JS_SRC} ${BINDING_DIR}/node/platform.cpp)
+target_sources(realm-js PRIVATE node_init.cpp ${CMAKE_JS_SRC} ${BINDING_DIR}/node/platform.cpp ${BINDING_DIR}/node/napi_scheduler.cpp)

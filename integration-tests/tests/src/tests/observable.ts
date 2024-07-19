@@ -466,6 +466,20 @@ describe("Observable", () => {
       expectObservableMethods(this.object);
     });
 
+    it.skipIf(
+      typeof nextUncaughtException !== "function",
+      "can throw from a listener",
+      async function (this: RealmObjectContext<Person>) {
+        assert(typeof nextUncaughtException === "function", "Expected ability to await an uncaught exception");
+        const uncaughtException = nextUncaughtException();
+        this.object.addListener(() => {
+          throw new Error("boom!");
+        });
+        const error = await uncaughtException;
+        expect(error.message).equals("boom!");
+      },
+    );
+
     it("throws on listener reuse", function (this: RealmObjectContext<Person>) {
       this.object.addListener(noop);
       expect(() => {
@@ -868,6 +882,20 @@ describe("Observable", () => {
     it("is observable", function (this: RealmObjectContext<Person>) {
       expectObservableMethods(this.realm.objects("Person"));
     });
+
+    it.skipIf(
+      typeof nextUncaughtException !== "function",
+      "can throw from a listener",
+      async function (this: RealmObjectContext<Person>) {
+        assert(typeof nextUncaughtException === "function", "Expected ability to await an uncaught exception");
+        const uncaughtException = nextUncaughtException();
+        this.realm.objects("Person").addListener(() => {
+          throw new Error("boom!");
+        });
+        const error = await uncaughtException;
+        expect(error.message).equals("boom!");
+      },
+    );
 
     it("throws on listener reuse", function (this: RealmObjectContext<Person>) {
       const collection = this.realm.objects("Person");

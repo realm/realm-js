@@ -44,6 +44,29 @@ Object.assign(globalThis, {
     },
   },
   gc: vm.runInNewContext("gc"),
+  async nextUncaughtException(timeoutMs = 5000) {
+    // Remove any other listeners, storing them later so they can be restored
+    const listenersBefore = process.listeners("uncaughtException");
+    process.removeAllListeners("uncaughtException");
+    try {
+      return await new Promise<Error>((resolve, reject) => {
+        const timeoutTimer = setTimeout(() => {
+          process.off("uncaughtException", handleException);
+          const error = new Error(`Timed out waiting for uncaught exception (waited ${timeoutMs} ms)`);
+          reject(error);
+        }, timeoutMs);
+        function handleException(error: Error) {
+          clearTimeout(timeoutTimer);
+          resolve(error);
+        }
+        process.once("uncaughtException", handleException);
+      });
+    } finally {
+      for (const listener of listenersBefore) {
+        process.addListener("uncaughtException", listener);
+      }
+    }
+  },
 });
 
 // Indicate that the tests are running in Node
