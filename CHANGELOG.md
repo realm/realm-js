@@ -28,7 +28,7 @@ realm.syncSession?.addProgressNotification(
 ### Internal
 * Adding a CallInvoker-based scheduler for Core on React Native and removing the "flush ui queue" workaround. ([#6791](https://github.com/realm/realm-js/pull/6791))
 * Refactors throwing uncaught exceptions from callbacks dispatched onto the event loop from C++ on React Native. ([#6772](https://github.com/realm/realm-js/issues/6772))
-* Upgraded Realm Core from v14.10.0 to v14.10.1.
+* Upgraded Realm Core from v14.10.0 to v14.11.0. ([#6744](https://github.com/realm/realm-js/issues/6744)
 
 ## 12.11.1 (2024-06-25)
 
