@@ -1,0 +1,26 @@
+{
+    "extends": "@tsconfig/recommended",
+    "compilerOptions": {
+      "composite": true,
+      "module": "es2022",
+      "moduleResolution": "Bundler",
+      "outDir": "dist",
+      "strictFunctionTypes": false,
+      "useDefineForClassFields": false,
+      "types": [
+        "mocha",
+        "chai",
+        "chai-as-promised"
+      ],
+      "lib": [
+        "dom"
+      ]
+    },
+    "include": [
+      "src/typings.d.ts",
+      "src/browser/**/*.ts"
+    ],
+    "references": [
+      { "path": "./tsconfig.common.json" }
+    ]
+  }
