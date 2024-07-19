@@ -23,7 +23,7 @@ import { act, fireEvent, render, renderHook, waitFor } from "@testing-library/re
 
 import { RealmProvider, createRealmContext } from "..";
 import {
-  RealmFallbackComponent,
+  RealmProviderFallback,
   RealmProviderFromRealm,
   areConfigurationsIdentical,
   mergeRealmConfiguration,
@@ -289,7 +289,7 @@ describe("RealmProvider", () => {
         const slowRealmOpen = mockRealmOpen({ progressValues: expectedProgressValues });
         const renderedProgressValues: (number | null)[] = [];
 
-        const Fallback: RealmFallbackComponent = ({ progress }) => {
+        const Fallback: RealmProviderFallback = ({ progress }) => {
           renderedProgressValues.push(progress);
           return <View testID="fallbackContainer">{progress}</View>;
         };

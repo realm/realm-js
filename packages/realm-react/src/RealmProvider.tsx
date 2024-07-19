@@ -27,7 +27,7 @@ type PartialRealmConfiguration = Omit<Partial<Realm.Configuration>, "sync"> & {
   sync?: Partial<Realm.SyncConfiguration>;
 };
 
-export type RealmFallbackComponent = React.ComponentType<{
+export type RealmProviderFallback = React.ComponentType<{
   progress: number | null;
 }>;
 
@@ -46,7 +46,7 @@ type RealmProviderConfigurationProps = {
   /**
    * The fallback component to render if the Realm is not open.
    */
-  fallback?: RealmFallbackComponent | React.ComponentType | React.ReactElement | null | undefined;
+  fallback?: RealmProviderFallback | React.ComponentType | React.ReactElement | null | undefined;
   children: React.ReactNode;
 } & PartialRealmConfiguration;
 
