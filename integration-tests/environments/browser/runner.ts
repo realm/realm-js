@@ -6,11 +6,9 @@ const browser = await puppeteer.launch({ devtools: DEV_TOOLS });
 const page = await browser.newPage();
 
 page.on('console', msg => {
-    const type = msg.type() as string;
-    if (type === "error" || type === "warn" || type === "debug") {
+    const type = msg.type();
+    if (type === "log" || type === "warn" || type === "error" || type === "debug") {
         console[type]('[browser]', msg.text());
-    } else {
-        console.log('[browser]', msg.text());
     }
 });
 

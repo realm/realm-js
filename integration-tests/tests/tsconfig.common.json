@@ -28,6 +28,7 @@
 		"src/**/*.ts"
 	],
 	"exclude": [
-		"src/node/"
+		"src/node/",
+		"src/browser/"
 	]
 }

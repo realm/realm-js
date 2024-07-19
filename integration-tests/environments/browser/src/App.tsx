@@ -1,12 +1,11 @@
 import './App.css'
 
 async function loadTests() {
-  describe("harness", () => {
-    it("loads", () => {
-      console.log("yay!");
-    });
+  Object.assign(globalThis, {
+    environment: { ...context, browser: true },
   });
-  // await import("@realm/integration-tests");
+  
+  await import("@realm/integration-tests/browser");
 } 
 
 import React, { useEffect, useState, createContext, useContext } from "react";
