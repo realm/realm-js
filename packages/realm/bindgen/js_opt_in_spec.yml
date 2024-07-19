@@ -44,6 +44,7 @@ records:
       - schema
       - schema_version
       - schema_mode
+      - flexible_schema
       - disable_format_upgrade
       - sync_config
       - force_sync_history
@@ -298,6 +299,7 @@ classes:
       - get_link_target
       - clear
       - get_primary_key_column
+      - get_column_key
 
   Obj:
     methods:
@@ -305,13 +307,16 @@ classes:
       - get_table
       - get_key
       - get_any
+      - get_any_by_name
       - set_any
+      - set_any_by_name
       - set_collection
       - add_int
       - get_linked_object
       - get_backlink_count
       - get_backlink_view
       - create_and_set_linked_object
+      - has_schema_property
 
   Timestamp:
     methods:

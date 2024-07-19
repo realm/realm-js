@@ -42,6 +42,12 @@ import {
   createResultsAccessor,
   flags,
   getTypeName,
+  mixedToBinding,
+  getTypeHelpers,
+  getClassHelpers,
+  TypeOptions,
+  MappableTypeHelpers,
+  fromBindingSyncError,
 } from "./internal";
 
 /**
@@ -108,6 +114,49 @@ const PROXY_HANDLER: ProxyHandler<RealmObject<any>> = {
       }
     }
     return result;
+  },
+};
+
+const PROXY_HANDLER_RELAXED: ProxyHandler<RealmObject<any>> = {
+  get(target, prop) {
+    // TODO: add type helper here too
+    return target[INTERNAL].getAnyByName(prop as string);
+  },
+
+  set(target, prop, value) {
+    const obj = target[INTERNAL];
+    const propName = prop as string;
+    
+    if (obj.hasSchemaProperty(propName)) {
+      const colKey = obj.table.getColumnKey(propName);
+      const options: TypeOptions = {
+        realm: target[REALM],
+        name: propName,
+        optional: false,
+        objectSchemaName: obj.table.name,
+        objectType: undefined,
+        getClassHelpers: function (nameOrTableKey: string | binding.TableKey): ClassHelpers {
+          throw new Error("Function not implemented.");
+        }
+      };
+      const typ = obj.table.getColumnType(colKey);
+      const typeHelper = getTypeHelpers(typ as unknown as MappableTypeHelpers, options);
+      obj.setAny(colKey, typeHelper.toBinding(value));
+    } else {
+      obj.setAnyByName(propName, value);
+    }
+    return true;
+  },
+
+  deleteProperty(target, prop) {
+    return true;
+  },
+
+  getOwnPropertyDescriptor(_) {
+    return {
+      enumerable: true,
+      configurable: true,
+    };
   },
 };
 
@@ -308,7 +357,7 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
    * Create a wrapper for accessing an object from the database
    * @internal
    */
-  public static createWrapper<T = DefaultObject>(internal: binding.Obj, constructor: Constructor): RealmObject<T> & T {
+  public static createWrapper<T = DefaultObject>(internal: binding.Obj, constructor: Constructor, relaxedSchema: boolean): RealmObject<T> & T {
     const result = Object.create(constructor.prototype);
     result[INTERNAL] = internal;
     // Initializing INTERNAL_LISTENERS here rather than letting it just be implicitly undefined since JS engines
@@ -316,7 +365,11 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
     result[INTERNAL_LISTENERS] = null;
 
     // Wrap in a proxy to trap keys, enabling the spread operator, and hiding our internal fields.
-    return new Proxy(result, PROXY_HANDLER);
+    if (relaxedSchema) {
+      return new Proxy(result, PROXY_HANDLER_RELAXED);
+    } else {
+      return new Proxy(result, PROXY_HANDLER);
+    }
   }
 
   /**

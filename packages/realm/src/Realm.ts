@@ -430,7 +430,7 @@ export class Realm {
     const normalizedSchema = config.schema && normalizeRealmSchema(config.schema);
     const schemaExtras = Realm.extractRealmSchemaExtras(normalizedSchema || []);
     const path = Realm.determinePath(config);
-    const { fifoFilesFallbackPath, shouldCompact, inMemory } = config;
+    const { fifoFilesFallbackPath, shouldCompact, inMemory, relaxedSchema } = config;
     const bindingSchema = normalizedSchema && toBindingSchema(normalizedSchema);
     return {
       schemaExtras,
@@ -444,6 +444,7 @@ export class Realm {
         schemaVersion: config.schema
           ? binding.Int64.numToInt(typeof config.schemaVersion === "number" ? config.schemaVersion : 0)
           : undefined,
+        flexibleSchema: relaxedSchema === true,
         migrationFunction: config.onMigration ? Realm.wrapMigration(schemaExtras, config.onMigration) : undefined,
         shouldCompactOnLaunchFunction: shouldCompact
           ? (totalBytes, usedBytes) => {
