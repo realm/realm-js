@@ -402,7 +402,7 @@ describe("Results", () => {
       static schema: Realm.ObjectSchema = {
         name: "PersonObject",
         properties: {
-          name: "string",
+          name: { type: "string", mapTo: "NAME" },
           age: "double",
           married: { type: "bool", default: false },
           children: { type: "list", objectType: "PersonObject" },
@@ -531,6 +531,44 @@ describe("Results", () => {
         //@ts-expect-error Expected to be an invalid sorted argument.
         objects.sorted(["valueCol", "primaryCol"], true);
       }).throws("Expected second 'argument' to be undefined, got a boolean");
+
+      realm.close();
+    });
+
+    it("sorted mapped a property", () => {
+      const realm = new Realm({ schema: [PersonObject] });
+      realm.write(function () {
+        realm.create("PersonObject", { name: "Ari", age: 10 });
+        realm.create("PersonObject", { name: "Tim", age: 11 });
+        realm.create("PersonObject", { name: "Bjarne", age: 12 });
+        realm.create("PersonObject", { name: "Alex", age: 12, married: true });
+      });
+
+      for (const propname of ["name", "NAME"]) {
+        const persons = realm.objects("PersonObject").sorted(propname);
+        expect(persons.length).equals(4);
+        expect(persons[0].name).equals("Alex");
+        expect(persons[0].age).equals(12);
+      }
+
+      realm.close();
+    });
+
+    it("sorted mapped a property in RQL", () => {
+      const realm = new Realm({ schema: [PersonObject] });
+      realm.write(function () {
+        realm.create("PersonObject", { name: "Ari", age: 10 });
+        realm.create("PersonObject", { name: "Tim", age: 11 });
+        realm.create("PersonObject", { name: "Bjarne", age: 12 });
+        realm.create("PersonObject", { name: "Alex", age: 12, married: true });
+      });
+
+      for (const propname of ["name", "NAME"]) {
+        const persons = realm.objects("PersonObject").filtered(`age > 0 SORT(${propname} ASC)`);
+        expect(persons.length).equals(4);
+        expect(persons[0].name).equals("Alex");
+        expect(persons[0].age).equals(12);
+      }
 
       realm.close();
     });
