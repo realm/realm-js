@@ -107,12 +107,6 @@ type KnownEnvironment = {
    * React native specific variable injected by the runner, to signal if the tests are ran by the legacy chrome debugger (i.e. in a browser).
    * @deprecated Since we no longer support the legacy chrome debugger. */
   chromeDebugging?: true;
-
-  /**
-   * Test throwing from listeners.
-   * These tests are skipped by default, because we don't want these to fail and we don't have a good way to instrument Mocha to expect these uncaught exceptions.
-   */
-  testThrowingListeners?: true;
 };
 
 type Environment = KnownEnvironment & Record<string, unknown>;
@@ -122,6 +116,7 @@ declare const fs: fs;
 declare const path: path;
 declare const environment: Environment;
 declare const gc: undefined | (() => void);
+declare const nextUncaughtException: undefined | (() => Promise<Error>);
 
 // Extend the mocha test function with the skipIf that we patch in from index.ts
 declare namespace Mocha {

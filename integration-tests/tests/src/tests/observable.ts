@@ -467,12 +467,16 @@ describe("Observable", () => {
     });
 
     it.skipIf(
-      !environment.testThrowingListeners,
+      typeof nextUncaughtException !== "function",
       "can throw from a listener",
       async function (this: RealmObjectContext<Person>) {
+        assert(typeof nextUncaughtException === "function", "Expected ability to await an uncaught exception");
+        const uncaughtException = nextUncaughtException();
         this.object.addListener(() => {
           throw new Error("boom!");
         });
+        const error = await uncaughtException;
+        expect(error.message).equals("boom!");
       },
     );
 
@@ -880,12 +884,16 @@ describe("Observable", () => {
     });
 
     it.skipIf(
-      !environment.testThrowingListeners,
+      typeof nextUncaughtException !== "function",
       "can throw from a listener",
       async function (this: RealmObjectContext<Person>) {
+        assert(typeof nextUncaughtException === "function", "Expected ability to await an uncaught exception");
+        const uncaughtException = nextUncaughtException();
         this.realm.objects("Person").addListener(() => {
           throw new Error("boom!");
         });
+        const error = await uncaughtException;
+        expect(error.message).equals("boom!");
       },
     );
 
