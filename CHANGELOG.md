@@ -27,6 +27,7 @@ realm.syncSession?.addProgressNotification(
 * `Realm.App.Sync.SyncSession#uploadAllLocalChanges()` was inconsistent in how it handled commits which did not produce any changesets to upload. Previously it would sometimes complete immediately if all commits waiting to be uploaded were empty, and at other times it would wait for a server roundtrip. It will now always complete immediately. ([realm/realm-core#7796](https://github.com/realm/realm-core/pull/7796))
 * `Realm#writeCopyTo()` on an encrypted Realm without explicitly specifying a new encryption key would only work if the old key happened to be a valid nul-terminated string. ([realm/realm-core#7842](https://github.com/realm/realm-core/issues/7842), since v12.10.0).
 * You could get unexpected merge results when assigning to a nested collection. ([realm/realm-core#7809](https://github.com/realm/realm-core/issues/7809), since v12.7.0-rc.0)
+* When `mapTo` is used to have an alias for a property name, `Realm.Results#sorted()` doesn't recognize the alias leading to errors like `Cannot sort on key path 'NAME': property 'PersonObject.NAME' does not exist`. ([#6779](https://github.com/realm/realm-js/issues/6779), since v11.2.0)
 
 ### Compatibility
 * React Native >= v0.71.4
