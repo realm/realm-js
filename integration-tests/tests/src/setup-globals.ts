@@ -54,6 +54,10 @@ chai.use(chaiRealmObjects);
 const DEFAULT_LONG_TIMEOUT = 30 * 1000; // 30s
 
 describe("Test Harness", function (this: Mocha.Suite) {
+  // Inject the root suite title from the global
+  if (typeof title === "string" && this.parent?.root) {
+    this.parent.title = title;
+  }
   /**
    * @see [typings.d.ts](./typings.d.ts) for documentation.
    */

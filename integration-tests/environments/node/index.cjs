@@ -18,25 +18,14 @@
 
 const os = require("node:os");
 const { Client } = require("mocha-remote-client");
-const fs = require("fs-extra");
-const path = require("path");
-const v8 = require("v8");
-const vm = require("vm");
-
-v8.setFlagsFromString("--expose_gc");
 
 const client = new Client({
   title: `Node.js v${process.versions.node} on ${os.platform()} (via CommonJS)`,
   tests(context) {
-    // Exposing the Realm constructor as a global
-    global.fs = fs;
-    global.path = path;
-    global.environment = { ...context, node: true };
-    global.gc = vm.runInNewContext("gc");
-
-    // Add the integration test suite
-    require("@realm/integration-tests");
-    // Load the Node.js specific part of the integration tests
+    Object.assign(global, {
+      environment: { ...context, node: true },
+    });
+    // Load the Node.js specific part of the integration tests (sets up globals)
     require("@realm/integration-tests/node");
   },
 });
