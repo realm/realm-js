@@ -22,9 +22,15 @@ import { Button, Text, View } from "react-native";
 import { act, fireEvent, render, renderHook, waitFor } from "@testing-library/react-native";
 
 import { RealmProvider, createRealmContext } from "..";
-import { RealmProviderFromRealm, areConfigurationsIdentical, mergeRealmConfiguration } from "../RealmProvider";
+import {
+  RealmFallbackComponent,
+  RealmProviderFromRealm,
+  areConfigurationsIdentical,
+  mergeRealmConfiguration,
+} from "../RealmProvider";
 import { randomRealmPath } from "./helpers";
 import { RealmContext } from "../RealmContext";
+import { mockRealmOpen } from "./mocks";
 
 const dogSchema: Realm.ObjectSchema = {
   name: "dog",
@@ -231,11 +237,16 @@ describe("RealmProvider", () => {
 
     // TODO: Now that local realm is immediately set, the fallback never renders.
     // We need to test synced realm in order to produce the fallback
-    describe.skip("initially renders a fallback, until realm exists", () => {
+    describe("initially renders a fallback, until realm exists", () => {
+      afterEach(() => {
+        jest.clearAllMocks();
+      });
+
       it("as a component", async () => {
+        const slowRealmOpen = mockRealmOpen();
         const App = () => {
           return (
-            <RealmProvider fallback={() => <View testID="fallbackContainer" />}>
+            <RealmProvider sync={{}} fallback={() => <View testID="fallbackContainer" />}>
               <View testID="testContainer" />
             </RealmProvider>
           );
@@ -245,17 +256,19 @@ describe("RealmProvider", () => {
         expect(queryByTestId("fallbackContainer")).not.toBeNull();
         expect(queryByTestId("testContainer")).toBeNull();
 
-        await waitFor(() => queryByTestId("testContainer"));
+        await act(async () => await slowRealmOpen);
 
         expect(queryByTestId("fallbackContainer")).toBeNull();
         expect(queryByTestId("testContainer")).not.toBeNull();
       });
 
       it("as an element", async () => {
+        const slowRealmOpen = mockRealmOpen();
+
         const Fallback = <View testID="fallbackContainer" />;
         const App = () => {
           return (
-            <RealmProvider fallback={Fallback}>
+            <RealmProvider sync={{}} fallback={Fallback}>
               <View testID="testContainer" />
             </RealmProvider>
           );
@@ -265,10 +278,40 @@ describe("RealmProvider", () => {
         expect(queryByTestId("fallbackContainer")).not.toBeNull();
         expect(queryByTestId("testContainer")).toBeNull();
 
-        await waitFor(() => queryByTestId("testContainer"));
+        await act(async () => await slowRealmOpen);
 
         expect(queryByTestId("fallbackContainer")).toBeNull();
         expect(queryByTestId("testContainer")).not.toBeNull();
+      });
+
+      it("should receive progress information", async () => {
+        const expectedProgressValues = [0, 0.25, 0.5, 0.75, 1];
+        const slowRealmOpen = mockRealmOpen({ progressValues: expectedProgressValues });
+        const renderedProgressValues: (number | null)[] = [];
+
+        const Fallback: RealmFallbackComponent = ({ progress }) => {
+          renderedProgressValues.push(progress);
+          return <View testID="fallbackContainer">{progress}</View>;
+        };
+        const App = () => {
+          return (
+            <RealmProvider sync={{}} fallback={Fallback}>
+              <View testID="testContainer" />
+            </RealmProvider>
+          );
+        };
+        const { queryByTestId } = render(<App />);
+
+        expect(queryByTestId("fallbackContainer")).not.toBeNull();
+        expect(queryByTestId("testContainer")).toBeNull();
+        expect(renderedProgressValues).toStrictEqual([null, expectedProgressValues[0]]);
+
+        await act(async () => await slowRealmOpen);
+
+        expect(queryByTestId("fallbackContainer")).toBeNull();
+        expect(queryByTestId("testContainer")).not.toBeNull();
+
+        expect(renderedProgressValues).toStrictEqual([null, ...expectedProgressValues]);
       });
     });
   });
