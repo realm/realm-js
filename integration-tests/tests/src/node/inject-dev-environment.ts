@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2019 Realm Inc.
+// Copyright 2024 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,24 +16,29 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import os from "node:os";
-import { Client } from "mocha-remote-client";
+/* eslint-disable no-restricted-globals */
 
-const client = new Client({
-  title: `Node.js v${process.versions.node} on ${os.platform()}`,
-  async tests(context) {
-    Object.assign(global, {
-      environment: { ...context, node: true },
-    });
-    await import("@realm/integration-tests/node");
-  },
+Object.assign(globalThis, {
+  title: "Node.js development-mode",
+  environment: { node: true },
 });
 
-client.on("error", (err) => {
-  console.error("Failure from Mocha Remote Client:", err);
-  process.exitCode = 1;
-});
+function parseValue(value: string | undefined) {
+  if (typeof value === "undefined" || value === "true") {
+    return true;
+  } else if (value === "false") {
+    return false;
+  } else {
+    return value;
+  }
+}
 
-global.client = client;
-
-// TODO: Setup a watch to re-run when the tests change
+const { CONTEXT } = process.env;
+if (CONTEXT) {
+  for (const pair of CONTEXT.split(",")) {
+    const [key, value] = pair.split("=");
+    if (key) {
+      environment[key] = parseValue(value);
+    }
+  }
+}
