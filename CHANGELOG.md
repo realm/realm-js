@@ -28,6 +28,9 @@ realm.syncSession?.addProgressNotification(
 * `Realm#writeCopyTo()` on an encrypted Realm without explicitly specifying a new encryption key would only work if the old key happened to be a valid nul-terminated string. ([realm/realm-core#7842](https://github.com/realm/realm-core/issues/7842), since v12.10.0).
 * You could get unexpected merge results when assigning to a nested collection. ([realm/realm-core#7809](https://github.com/realm/realm-core/issues/7809), since v12.7.0-rc.0)
 * When `mapTo` is used to have an alias for a property name, `Realm.Results#sorted()` doesn't recognize the alias leading to errors like `Cannot sort on key path 'NAME': property 'PersonObject.NAME' does not exist`. ([#6779](https://github.com/realm/realm-js/issues/6779), since v11.2.0)
+* A `mixed` property with a collection could sometimes end up with a combination of values assigned by different clients. ([realm/realm-core#7809](https://github.com/realm/realm-core/issues/7809), since v12.9.0)
+* Fixed removing backlinks from the wrong objects if the link came from a nested list, nested dictionary, top-level dictionary, or list of mixed, and the source table had more than 256 objects. This could manifest as `array_backlink.cpp:112: Assertion failed: int64_t(value >> 1) == key.value` when removing an object. ([realm/realm-core#7594](https://github.com/realm/realm-core/issues/7594), since v10.6.0)
+* Fixed a bug when removing an object from a nested collection could lead to an assert with the message `array.cpp:319: Array::move() Assertion failed: begin <= end [2, 1]`. ([realm/realm-core#7839](https://github.com/realm/realm-core/issues/7839), since v12.9.0)
 
 ### Compatibility
 * React Native >= v0.71.4
