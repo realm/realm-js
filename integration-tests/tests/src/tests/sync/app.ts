@@ -160,7 +160,13 @@ describe("App", () => {
       const encryptionKey = new ArrayBuffer(64);
       // as metadata is cached within the same process, we need to use another app id
       // see also https://github.com/realm/realm-core/issues/7876
-      const config: AppConfiguration = { id: "cryptosmurf", metadata: { mode: MetadataMode.Encryption, encryptionKey } };
+      const config: AppConfiguration = {
+        id: "cryptosmurf",
+        metadata: {
+          mode: MetadataMode.Encryption,
+          encryptionKey,
+        },
+      };
       const app = new Realm.App(config);
       expect(app).instanceOf(Realm.App);
     });
