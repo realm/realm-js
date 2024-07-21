@@ -75,7 +75,9 @@ interface IDogForSyncSchema {
   realm_id: string | undefined;
 }
 
-const missingAppConfig = { id: "smurf", baseUrl };
+function missingAppConfig() : Realm.AppConfiguration {
+  return { id: new BSON.UUID().toString(), baseUrl }
+}
 
 describe("App", () => {
   describe("instantiation", function () {
@@ -85,15 +87,16 @@ describe("App", () => {
 
     it("from config", () => {
       //even if "id" is not an existing app we can still instantiate a new Realm.
-      const app = new Realm.App(missingAppConfig);
+      const app = new Realm.App(missingAppConfig());
       expect(app).instanceOf(Realm.App);
     });
 
     it("from string", () => {
       //even if "id" is not an existing app we can still instantiate a new Realm.
-      const app = new Realm.App(missingAppConfig.id);
+      const id = missingAppConfig().id;
+      const app = new Realm.App(id);
       expect(app).instanceOf(Realm.App);
-      expect(app.id).equals(missingAppConfig.id);
+      expect(app.id).equals(id);
     });
 
     it("throws on undefined app", function () {
@@ -115,21 +118,23 @@ describe("App", () => {
     });
 
     it("logging in throws on invalid baseURL", async function () {
-      const invalidUrlConf = { id: missingAppConfig.id, baseUrl: "http://localhost:9999" };
+      const id = missingAppConfig().id;
+      const invalidUrlConf = { id, baseUrl: "http://localhost:9999" };
       const app = new Realm.App(invalidUrlConf);
 
       const credentials = Realm.Credentials.anonymous();
       await expect(app.logIn(credentials)).to.be.rejectedWith(
         select({
           reactNative: "Network request failed",
-          default: "request to http://localhost:9999/api/client/v2.0/app/smurf/location failed",
+          default: `request to http://localhost:9999/api/client/v2.0/app/${id}/location failed`,
         }),
       );
     });
 
     it("get returns cached app", () => {
-      const app = Realm.App.get(missingAppConfig.id);
-      const cachedApp = Realm.App.get(missingAppConfig.id);
+      const appConfig = missingAppConfig();
+      const app = Realm.App.get(appConfig.id);
+      const cachedApp = Realm.App.get(appConfig.id);
 
       expect(app).instanceOf(Realm.App);
       expect(app).equals(cachedApp);
@@ -137,7 +142,7 @@ describe("App", () => {
   });
 
   describe("how to handle metadata", () => {
-    afterEach(async () => {
+    afterEach(() => {
       Realm.clearTestState();
     });
 
@@ -188,9 +193,10 @@ describe("App", () => {
 
     it("logging in throws on non existing app", async function () {
       // This test is moved here to ensure the server is available before connecting with a non-exisiting app id
-      const app = new Realm.App(missingAppConfig);
+      const appConfig = missingAppConfig();
+      const app = new Realm.App(appConfig);
       const credentials = Realm.Credentials.anonymous();
-      await expect(app.logIn(credentials)).to.be.rejectedWith("cannot find app using Client App ID 'smurf'");
+      await expect(app.logIn(credentials)).to.be.rejectedWith(`cannot find app using Client App ID '${appConfig.id}'`);
     });
 
     it("logins successfully ", async function (this: Mocha.Context & AppContext & RealmContext) {
