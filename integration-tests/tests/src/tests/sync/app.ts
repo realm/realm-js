@@ -75,8 +75,8 @@ interface IDogForSyncSchema {
   realm_id: string | undefined;
 }
 
-function missingAppConfig() : Realm.AppConfiguration {
-  return { id: new BSON.UUID().toString(), baseUrl }
+function missingAppConfig(): Realm.AppConfiguration {
+  return { id: new BSON.UUID().toString(), baseUrl };
 }
 
 describe("App", () => {
