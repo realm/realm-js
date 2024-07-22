@@ -16,5 +16,30 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-/** @internal */
-export { binding, injectNativeModule } from "../binding/wrapper.generated";
+import { config, version } from "realm/package.json";
+
+import { inject } from "../device-info";
+
+const userAgent = window.navigator.userAgent;
+
+inject({
+  create() {
+    return {
+      sdk: "JS",
+      sdkVersion: version,
+
+      platform: userAgent,
+      platformVersion: userAgent,
+
+      deviceName: "unknown",
+      deviceVersion: "unknown",
+
+      cpuArch: "unknown",
+
+      frameworkName: "WebAssembly",
+      frameworkVersion: "unknown",
+
+      bundleId: config?.anonymizedBundleId || "unknown",
+    };
+  },
+});

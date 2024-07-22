@@ -4,10 +4,16 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "vite": "vite --port 5173",
+    "vite": "vite --port 5173 --force",
     "runner": "tsx runner.ts",
-    "test": "mocha-remote -- concurrently npm:vite npm:runner",
+    "test": "wireit",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
+  },
+  "wireit": {
+    "test": {
+      "command": "mocha-remote -- concurrently npm:vite npm:runner",
+      "dependencies": ["../../../packages/realm:build:ts"]
+    }
   },
   "dependencies": {
     "mocha-remote-client": "^1.12.2",

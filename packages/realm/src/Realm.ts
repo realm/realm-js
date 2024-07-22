@@ -22,7 +22,7 @@ import { TypeAssertionError } from "./errors";
 import { extendDebug } from "./debug";
 import { flags } from "./flags";
 import { injectIndirect } from "./indirect";
-import { fs, garbageCollection } from "./platform";
+import { fs, garbageCollection, ready } from "./platform";
 import type { Unmanaged } from "./Unmanaged";
 import { type AnyRealmObject, RealmObject } from "./Object";
 import { type AnyResults, Results } from "./Results";
@@ -104,6 +104,11 @@ type InternalConfig = {
  * The Realm database.
  */
 export class Realm {
+  /**
+   * Await this promise before further interactions with the SDK when on a platform which loads the binding asynchronously.
+   */
+  public static ready = ready;
+
   public static defaultPath = Realm.normalizePath("default.realm");
 
   private static internals = new Set<binding.WeakRef<binding.Realm>>();
@@ -1384,6 +1389,8 @@ export namespace Realm {
   export import PushClient = ns.PushClient;
 }
 
-// Set default logger and log level.
-Realm.setLogger(defaultLogger);
-Realm.setLogLevel(defaultLoggerLevel);
+// Set default logger and log level when the binding to be ready
+ready.then(() => {
+  Realm.setLogger(defaultLogger);
+  Realm.setLogLevel(defaultLoggerLevel);
+});

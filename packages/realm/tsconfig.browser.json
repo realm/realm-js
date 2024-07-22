@@ -1,11 +1,11 @@
 {
     "extends": "@tsconfig/recommended",
     "compilerOptions": {
+      "resolveJsonModule": true,
       "composite": true,
       "outDir": "dist/platform/browser",
       "rootDir": "src/platform/browser",
       "sourceMap": true,
-      "resolveJsonModule": true,
       "noEmit": false,
       "allowImportingTsExtensions": false,
       "types": ["@realm/fetch"],

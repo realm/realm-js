@@ -16,7 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { NativeBigInt, type binding, injectNativeModule } from "../binding";
+import { type binding, injectNativeModule } from "../binding";
+import { NativeBigInt } from "../../binding/NativeBigInt";
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const nativeModule = require("#realm.node");

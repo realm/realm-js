@@ -7,13 +7,17 @@
       "outDir": "dist",
       "strictFunctionTypes": false,
       "useDefineForClassFields": false,
+      "customConditions": [
+        "browser"
+      ],
       "types": [
         "mocha",
         "chai",
         "chai-as-promised"
       ],
       "lib": [
-        "dom"
+        "dom",
+        "es2022"
       ]
     },
     "include": [
