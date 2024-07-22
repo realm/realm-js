@@ -85,6 +85,7 @@
     "prebuild-apple:simulator": "wireit",
     "prebuild-android": "wireit",
     "prebuild-node": "wireit",
+    "prebuild-wasm": "wireit",
     "build:ts": "wireit",
     "build:node": "wireit",
     "bindgen:jsi": "wireit",
@@ -135,6 +136,25 @@
       ],
       "output": [
         "prebuilds/android"
+      ]
+    },
+    "prebuild-node": {
+      "command": "cross-env-shell prebuild --runtime napi --arch $PREBUILD_ARCH -- --directory binding/node",
+      "env": {
+        "PREBUILD_ARCH": {
+          "external": true,
+          "default": "undefined"
+        }
+      }
+    },
+    "prebuild-wasm": {
+      "command": "tsx ./src/scripts/build/cli.ts build-wasm",
+      "files": [
+        "bindgen/vendor/realm-core/src",
+        "src/scripts"
+      ],
+      "output": [
+        "prebuilds/wasm"
       ]
     },
     "build:ts": {
@@ -206,15 +226,6 @@
           "cascade": false
         }
       ]
-    },
-    "prebuild-node": {
-      "command": "cross-env-shell prebuild --runtime napi --arch $PREBUILD_ARCH -- --directory binding/node",
-      "env": {
-        "PREBUILD_ARCH": {
-          "external": true,
-          "default": "undefined"
-        }
-      }
     },
     "check-types": {
       "command": "tsc --project tsconfig.public-types-check.json",

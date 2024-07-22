@@ -111,6 +111,7 @@ coverage/
 /packages/realm/binding/build/
 /packages/realm/binding/android/build/
 /packages/realm/binding/node/build/
+/packages/realm/binding/wasm/build/
 /packages/realm/prebuilds/
 /packages/realm/binding/android/src/main/java/io/realm/react/Version.java
 /packages/realm/binding/android/src/main/jniLibs/
