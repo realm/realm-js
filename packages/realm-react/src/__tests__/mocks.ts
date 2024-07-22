@@ -18,6 +18,7 @@
 
 import { act } from "@testing-library/react-native";
 import { EstimateProgressNotificationCallback, ProgressRealmPromise, Realm } from "realm";
+import { SyncSession } from "realm/dist/public-types/internal";
 
 /**
  * Mocks {@link Realm.ProgressRealmPromise} with a custom
@@ -48,6 +49,28 @@ export class MockedProgressRealmPromise extends Promise<Realm> implements Progre
   };
 }
 
+export function emitMockedProgressNotifications(
+  callback: EstimateProgressNotificationCallback,
+  timeFrame: number,
+  progressValues: number[] = [0, 0.25, 0.5, 0.75, 1],
+): NodeJS.Timeout {
+  let progressIndex = 0;
+  let progressInterval: NodeJS.Timeout | undefined = undefined;
+  const sendProgress = () => {
+    // Uses act as this causes a component state update.
+    act(() => callback(progressValues[progressIndex]));
+    progressIndex++;
+
+    if (progressIndex >= progressValues.length) {
+      // Send the next progress update in equidistant time
+      clearInterval(progressInterval);
+    }
+  };
+  progressInterval = setInterval(sendProgress, timeFrame / progressValues.length);
+  sendProgress();
+  return progressInterval;
+}
+
 /**
  * Mocks the Realm.open operation with a delayed, predictable Realm creation.
  * If `options.progressValues` is specified, passes it through an equal interval to
@@ -63,7 +86,6 @@ export function mockRealmOpen(
   } = {},
 ): MockedProgressRealmPromise {
   const { progressValues, delay = 100 } = options;
-  let progressIndex = 0;
 
   const progressRealmPromise = new MockedProgressRealmPromise(
     (resolve) => {
@@ -71,19 +93,7 @@ export function mockRealmOpen(
     },
     {
       progress: (callback) => {
-        if (progressValues instanceof Array) {
-          const sendProgress = () => {
-            // Uses act as this causes a component state update.
-            act(() => callback(progressValues[progressIndex]));
-            progressIndex++;
-
-            if (progressIndex <= progressValues.length) {
-              // Send the next progress update in equidistant time
-              setTimeout(sendProgress, delay / progressValues.length);
-            }
-          };
-          sendProgress();
-        }
+        emitMockedProgressNotifications(callback, delay, progressValues);
       },
     },
   );
@@ -91,4 +101,13 @@ export function mockRealmOpen(
   const delayedRealmOpen = jest.spyOn(Realm, "open");
   delayedRealmOpen.mockImplementation(() => progressRealmPromise);
   return progressRealmPromise;
+}
+
+export function createMockedSyncedRealm({ syncSession }: { syncSession: Partial<SyncSession> }) {
+  const mockedSyncedRealm = new Realm();
+
+  //@ts-expect-error  The mock currently supports supplying a subset of methods
+  jest.replaceProperty(mockedSyncedRealm, "syncSession", syncSession);
+
+  return mockedSyncedRealm;
 }
