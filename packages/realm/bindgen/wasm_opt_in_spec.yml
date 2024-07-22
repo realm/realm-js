@@ -1,5 +1,3 @@
-# yaml-language-server: $schema=vendor/realm-core/bindgen/generated/opt-in-spec.schema.json
-
 # --------------------
 # Description of file:
 # --------------------
@@ -9,10 +7,10 @@
 # * `classes` and their `methods`
 #   * Methods, static methods, constructors, and properties in the general `spec.yml`
 #     should all be listed in this opt-in list as `methods`.
-# * `records` and their `fields``
+# * `records` and their `fields`
 #
-# If all methods in a class, or all fields of a property, are opted out of,
-# the entire class/property should be removed.
+# If all methods in a class, or all fields of a record, are opted out of,
+# the entire class/record should be removed.
 
 records:
   Property:
@@ -24,6 +22,7 @@ records:
       - link_origin_property_name
       - is_primary
       - is_indexed
+      - is_fulltext_indexed
       - column_key
 
   ObjectSchema:
@@ -51,6 +50,7 @@ records:
       - migration_function
       - initialization_function
       - should_compact_on_launch_function
+      - automatically_handle_backlinks_in_migrations
 
   UserIdentity:
     fields:
@@ -76,6 +76,16 @@ records:
       - ssl_trust_certificate_path
       - ssl_verify_callback
       - cancel_waits_on_nonfatal_error
+      - proxy_config
+      - client_resync_mode
+      - notify_before_client_reset
+      - notify_after_client_reset
+
+  SyncProxyConfig:
+    fields:
+      - address
+      - port
+      - type
 
   SyncSubscription:
     fields:
@@ -110,15 +120,31 @@ records:
       - before_notify
       - schema_did_change
 
+  ResumptionDelayInfo:
+    fields:
+      - max_resumption_delay_interval
+      - resumption_delay_interval
+      - resumption_delay_backoff_multiplier
+      - delay_jitter_divisor
+
+  SyncClientTimeouts:
+    fields:
+      - connect_timeout
+      - connection_linger_time
+      - ping_keepalive_period
+      - pong_keepalive_timeout
+      - fast_reconnect_limit
+      - reconnect_backoff_info
+
   SyncClientConfig:
     fields:
-      - base_file_path
-      - metadata_mode
       - user_agent_binding_info
+      - multiplex_sessions
+      - timeouts
 
   SyncError:
    fields:
-     - system_error
+     - status
      - is_fatal
      - simple_message
      - logURL
@@ -146,26 +172,55 @@ records:
       - platform_version
       - sdk_version
       - sdk
-      # - cpu_arch
       - device_name
       - device_version
       - framework_name
       - framework_version
+      - bundle_id
 
   AppConfig:
     fields:
       - app_id
+      - transport
       - base_url
-      - local_app_name
-      - local_app_version
+      - base_file_path
       - default_request_timeout_ms
       - device_info
+      - sync_client_config
+      - metadata_mode
+      - custom_encryption_key
+        # - security_access_group
 
   CompensatingWriteErrorInfo:
    fields:
      - object_name
      - reason
      - primary_key
+
+  GeoBox:
+    fields:
+     - lo
+     - hi
+
+  GeoPolygon:
+    fields:
+     - points
+
+  GeoCircle:
+    fields:
+     - center
+     - radius_radians
+
+  GeoPoint:
+    fields:
+     - latitude
+     - longitude
+     - altitude
+
+  SaltedFileIdent:
+    fields:
+      - ident
+      - salt
 
 classes:
   ######################
@@ -176,6 +231,7 @@ classes:
   JsPlatformHelpers:
     methods:
       - default_realm_file_directory
+      - set_default_realm_file_directory
       - ensure_directory_exists_for_file
       - copy_bundled_realm_files
       - remove_realm_files_from_directory
@@ -202,7 +258,6 @@ classes:
       - get_or_create_object_with_primary_key
       # - make_network_transport
       - delete_data_for_object
-      - is_empty_realm
       - base64_decode
       - make_logger_factory
       - make_logger
@@ -213,11 +268,18 @@ classes:
       - get_results_description
       # - feed_buffer
       - make_ssl_verify_callback
+      - needs_file_format_upgrade
+      - sync_user_as_app_user
+      - app_user_as_sync_user
+
+  LogCategoryRef:
+    methods:
+      - set_default_level_threshold
+      - get_category
 
   Logger:
     methods:
       - set_default_logger
-      - set_default_level_threshold
 
   ConstTableRef:
     methods:
@@ -235,6 +297,7 @@ classes:
       - remove_object
       - get_link_target
       - clear
+      - get_primary_key_column
 
   Obj:
     methods:
@@ -243,11 +306,13 @@ classes:
       - get_key
       - get_any
       - set_any
+      - set_collection
+      - add_int
       - get_linked_object
       - get_backlink_count
       - get_backlink_view
       - create_and_set_linked_object
-  
+
   Timestamp:
     methods:
       - make
@@ -277,6 +342,8 @@ classes:
       - index_of_obj
       - get_obj
       - get_any
+      - get_list
+      - get_dictionary
       - sort_by_names
       - snapshot
       - max
@@ -297,6 +364,7 @@ classes:
       - is_in_transaction
       - is_in_migration
       - is_closed
+      - is_empty
       - sync_session
       - get_latest_subscription_set
       - begin_transaction
@@ -306,6 +374,7 @@ classes:
       - compact
       - convert
       - verify_open
+      - create_key_path_array
       - close
       # JS-specific
       - DOLLAR_addr
@@ -327,26 +396,35 @@ classes:
   Collection:
     methods:
       - get_object_schema
+      - get_type
       - size
       - is_valid
       - get_any
       - as_results
+      - snapshot
 
   List:
     methods:
       - make
+      - get_obj
+      - get_list
+      - get_dictionary
       - move
       - remove
       - remove_all
       - swap
       - delete_all
       - insert_any
+      - insert_collection
       - insert_embedded
       - set_any
+      - set_embedded
+      - set_collection
 
   Set:
     methods:
       - make
+      - get_obj
       - insert_any
       - remove_any
       - remove_all
@@ -357,10 +435,13 @@ classes:
       - make
       - get_keys
       - get_values
+      - get_list
+      - get_dictionary
       - contains
       - add_key_based_notification_callback
       - insert_any
       - insert_embedded
+      - insert_collection
       - try_get_any
       - remove_all
       - try_erase
@@ -383,25 +464,33 @@ classes:
       - custom
       - username_password
       - function
-      - user_api_key
+      - api_key
 
   SyncUser:
     methods:
-      - all_sessions
       - is_logged_in
-      - identity
-      - provider_type
-      - access_token
-      - refresh_token
+
+  User:
+    methods:
+      - has_device_id
       - device_id
       - user_profile
       - identities
       - custom_data
-      - sync_manager
-      - state
-      - session_for_on_disk_path
       - subscribe
       - unsubscribe
+      - path_for_realm
+      - app
+      - user_id
+      - app_id
+      - legacy_identities
+      - access_token
+      - refresh_token
+      - state
+      - access_token_refresh_required
+      - request_refresh_location
+      - request_access_token
+      - track_realm
 
   UserProfile:
     methods:
@@ -413,12 +502,13 @@ classes:
       - current_user
       - all_users
       - sync_manager
-      - get_uncached_app
+      - get_app
       - clear_cached_apps
       - log_in_with_credentials
       - log_out_user
       - refresh_custom_data
       - link_user
+      - switch_user
       - remove_user
       - delete_user
       - usernamePasswordProviderClient
@@ -428,6 +518,9 @@ classes:
       - unsubscribe
       - call_function
       - make_streaming_request
+      - update_base_url
+      - get_base_url
+      - immediately_run_file_actions
 
   # WatchStream:
   #   methods:
@@ -463,19 +556,20 @@ classes:
   SyncManager:
     methods:
       - has_existing_sessions
-      - immediately_run_file_actions
       - set_session_multiplexing
       - set_log_level
       - set_logger_factory
       - set_user_agent
       - reconnect
-      - path_for_realm
+      - get_existing_active_session
+      - get_all_sessions_for
 
   AsyncOpenTask:
     methods:
       - start
       - cancel
       - register_download_progress_notifier
+      - unregister_download_progress_notifier
       # JS-specific
       - DOLLAR_resetSharedPtr
 
@@ -483,7 +577,6 @@ classes:
     methods:
       - state
       - connection_state
-      - user
       - config
       - full_realm_url
       - wait_for_upload_completion
@@ -494,6 +587,9 @@ classes:
       - unregister_connection_change_callback
       - revive_if_needed
       - force_close
+      - handle_reconnect
+      - user
+      - get_file_ident
       # JS-specific
       - DOLLAR_resetSharedPtr
 
@@ -517,3 +613,9 @@ classes:
       - erase_by_name
       - erase_by_query
       - commit
+
+  Geospatial:
+    methods:
+    - make_from_circle
+    - make_from_box
+    - make_from_polygon

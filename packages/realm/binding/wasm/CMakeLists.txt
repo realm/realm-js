@@ -40,7 +40,7 @@ file(GLOB_RECURSE SDK_TS_FILES
 list(FILTER SDK_TS_FILES EXCLUDE REGEX "templates/[^/]*\.ts$")
 
 set(JS_SPEC_FILE ${SDK_DIR}/bindgen/js_spec.yml)
-set(JS_OPT_IN_FILE ${SDK_DIR}/bindgen/browser_opt_in_spec.yml)
+set(JS_OPT_IN_FILE ${SDK_DIR}/bindgen/wasm_opt_in_spec.yml)
 set(WASM_OUTPUT_DIR ${SDK_DIR}/prebuilds/wasm)
 
 bindgen(
