@@ -38,20 +38,30 @@ app.on("ready", () => {
   if (processType === "main") {
     require("./mocha.js");
   } else if (processType === "renderer") {
-    const preload = path.resolve(__dirname, "renderer.js");
     mainWindow = new BrowserWindow({
       show: false,
       webPreferences: {
         nodeIntegration: true,
         contextIsolation: false,
-        enableRemoteModule: true,
-        preload,
+        preload: path.resolve(__dirname, "preload.js"),
       },
     });
 
     remote.enable(mainWindow.webContents);
 
-    mainWindow.loadFile(path.join(__dirname, "index.html"));
+    mainWindow.loadFile(path.join(__dirname, "not-preloaded.html"));
+  } else if (processType === "renderer-preload") {
+    mainWindow = new BrowserWindow({
+      show: false,
+      webPreferences: {
+        sandbox: false,
+        preload: path.resolve(__dirname, "preload-and-mocha.js"),
+      },
+    });
+
+    remote.enable(mainWindow.webContents);
+
+    mainWindow.loadFile(path.join(__dirname, "preloaded.html"));
   } else {
     console.error("Expected a process runtime argument");
     process.exit(1);

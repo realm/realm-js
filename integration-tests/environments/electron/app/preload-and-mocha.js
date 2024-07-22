@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2019 Realm Inc.
+// Copyright 2024 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,12 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-// Disables security warnings which spams the console
-process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = true;
-
-const remote = require("@electron/remote");
-
-// Use the main process console when logging
-global.console = remote.getGlobal("console");
-// If we're supposed to run in the renderer, start the mocha remote client
-require("./mocha.js");
+require("./preload");
+global.preloaded = true;
+require("./mocha");

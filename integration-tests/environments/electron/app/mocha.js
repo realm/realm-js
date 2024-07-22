@@ -20,12 +20,12 @@ const { Client } = require("mocha-remote-client");
 const { platform } = require("os");
 
 const processType = process.type === "browser" ? "main" : process.type;
+const preloadSuffix = global.preloaded ? " (preloaded)" : "";
 
 console.log("Required Mocha client");
 
 const client = new Client({
-  id: processType,
-  title: `Electron v${process.versions.electron} ${processType} process on ${platform()}`,
+  title: `Electron v${process.versions.electron} ${processType}${preloadSuffix} process on ${platform()}`,
   tests(context) {
     console.log("Loading tests!");
     // Set the Realm global for the tests to use

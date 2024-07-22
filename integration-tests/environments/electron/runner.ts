@@ -27,7 +27,11 @@ const require = module.createRequire(import.meta.url);
 // Adjust this as the expected execution time increases
 const TIMEOUT_MS = 1000 * 30; // 30 seconds
 
-type ProcessType = "main" | "renderer";
+const PROCESS_TYPES = ["main", "renderer", "renderer-preload"] as const;
+type ProcessType = typeof PROCESS_TYPES[number];
+function isProcessType(key: string): key is ProcessType {
+  return PROCESS_TYPES.includes(key as ProcessType);
+}
 
 const appPaths: Partial<Record<NodeJS.Platform, string>> = {
   darwin: "dist/mac/realm-electron-tests.app/Contents/MacOS/realm-electron-tests",
@@ -75,7 +79,7 @@ function runElectron(processType: ProcessType) {
 
 async function run() {
   const processType = process.argv[2];
-  if (processType !== "main" && processType !== "renderer") {
+  if (!isProcessType(processType)) {
     throw Error("You need to call this with a runtime argument specifying the process type");
   }
 

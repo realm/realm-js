@@ -419,6 +419,10 @@ jobs:
             script_name: test:ci:renderer
             environment: electron
             prebuild: node-darwin-arm64-prebuild
+          - runner: macos-latest
+            script_name: test:ci:renderer-preload
+            environment: electron
+            prebuild: node-darwin-arm64-prebuild
     timeout-minutes: 60
     steps:
       - name: Checkout code
