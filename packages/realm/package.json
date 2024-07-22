@@ -42,7 +42,10 @@
       "types": "./dist/public-types/index.d.ts",
       "node": "./dist/platform/node/index.js",
       "react-native": "./index.react-native.js",
-      "browser": "./dist/platform/browser/index.js"
+      "browser": {
+        "types": "./dist/platform/browser/index.d.ts",
+        "default": "./dist/platform/browser/index.js"
+      }
     },
     "./experimental/base-url": {
       "types": "./dist/public-types/experimental/base-url.d.ts",

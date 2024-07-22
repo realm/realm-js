@@ -1,16 +1,19 @@
 import './App.css'
 
+import React, { useEffect, useState, createContext, useContext } from "react";
+import { Client as MochaRemoteClient, CustomContext } from "mocha-remote-client";
+
 async function loadTests() {
   Object.assign(globalThis, {
     environment: { ...context, browser: true },
   });
-  
-  await import("@realm/integration-tests/browser");
+  try {
+    await import("@realm/integration-tests/browser");
+  } catch (err) {
+    console.error(err);
+    throw err;
+  }
 } 
-
-import React, { useEffect, useState, createContext, useContext } from "react";
-
-import { Client as MochaRemoteClient, CustomContext } from "mocha-remote-client";
 
 export type { CustomContext };
 

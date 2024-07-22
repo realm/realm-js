@@ -17,13 +17,9 @@
 ////////////////////////////////////////////////////////////////////////////
 
 // import "./binding";
-// import "./fs";
-// import "./device-info";
+import "./fs";
+import "./device-info";
 // import "./sync-proxy-config";
-// import "./custom-inspect";
-// import "./garbage-collection";
-
-console.log("Hello from Realm!");
 
 import { Realm } from "../../Realm";
 export = Realm;
