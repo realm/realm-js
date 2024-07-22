@@ -209,6 +209,27 @@
         "src/binding/wrapper.generated.ts"
       ]
     },
+    "bindgen:generate:wasm-wrapper": {
+      "command": "realm-bindgen --template bindgen/src/templates/wasm-wrapper.ts --spec bindgen/vendor/realm-core/bindgen/spec.yml --spec bindgen/js_spec.yml --opt-in bindgen/wasm_opt_in_spec.yml --output binding/generated",
+      "dependencies": [
+        "bindgen:generate:spec-schema"
+      ],
+      "files": [
+        "bindgen/vendor/realm-core/bindgen/spec.yml",
+        "bindgen/vendor/realm-core/bindgen/src",
+        "bindgen/js_spec.yml",
+        "bindgen/wasm_opt_in_spec.yml",
+        "bindgen/src",
+        "!bindgen/src/templates",
+        "bindgen/src/templates/base-wrapper.ts",
+        "bindgen/src/templates/wasm-wrapper.ts"
+      ],
+      "output": [
+        "binding/generated/native.wasm.mjs",
+        "binding/generated/native.wasm.d.mts",
+        "binding/generated/native.wasm.d.cts"
+      ]
+    },
     "bindgen:generate:spec-schema": {
       "command": "typescript-json-schema bindgen/vendor/realm-core/bindgen/tsconfig.json RelaxedSpec --include bindgen/vendor/realm-core/bindgen/src/spec/relaxed-model.ts --out bindgen/vendor/realm-core/bindgen/generated/spec.schema.json --required --noExtraProps",
       "files": [

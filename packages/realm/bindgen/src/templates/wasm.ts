@@ -169,6 +169,9 @@ function convertPrimToEmscripten(addon: BrowserAddon, type: string, expr: string
     case "uint64_t":
       return `emscripten::val(${expr})`;
 
+    case "std::chrono::milliseconds":
+      return `emscripten::val(std::chrono::milliseconds(${expr}).count())`;
+
     case "StringData":
     case "std::string_view":
     case "std::string":
@@ -259,6 +262,9 @@ function convertPrimFromEmscripten(addon: BrowserAddon, type: string, expr: stri
     case "uint64_t":
       return `${expr}.as<uint64_t>()`;
 
+    case "std::chrono::milliseconds":
+      return `std::chrono::milliseconds(${expr}.as<uint64_t>())`;
+
     case "std::string":
       return `${addon.get()}->wrapString((${expr}).as<std::string>())`;
 
@@ -341,7 +347,7 @@ function convertToEmscripten(addon: BrowserAddon, type: Type, expr: string): str
         case "Nullable": {
           return `[&] (auto&& val) { return !val ? emscripten::val::null() : ${c(inner, "FWD(val)")}; }(${expr})`;
         }
-        case "util::Optional":
+        case "std::optional":
           return `[&] (auto&& opt) { return !opt ? emscripten::val::undefined() : ${c(inner, "*FWD(opt)")}; }(${expr})`;
         case "std::vector":
           return `[&] (auto&& vec) {
@@ -454,7 +460,7 @@ function convertFromEmscripten(addon: BrowserAddon, type: Type, expr: string): s
             inner,
             "val",
           )}; }(${expr})`;
-        case "util::Optional":
+        case "std::optional":
           return `[&] (emscripten::val val) {
               return val.isUndefined() ? ${type.toCpp()}() : ${c(inner, "val")};
           }(${expr})`;
@@ -498,6 +504,7 @@ function convertFromEmscripten(addon: BrowserAddon, type: Type, expr: string): s
                 return out;
             }(${expr})`;
         case "AsyncCallback":
+        case "util::UniqueFunction":
         case "std::function":
           return `${type.toCpp()}(${c(inner, expr)})`;
       }
@@ -876,7 +883,7 @@ class BrowserCppDecls extends CppDecls {
   outputDefsTo(out: (...parts: string[]) => void) {
     super.outputDefsTo(out);
     out(`
-    void browser_init()
+    void wasm_init()
     {
       if (!RealmAddon::self) {
           RealmAddon::self = std::make_unique<RealmAddon>();    
@@ -900,7 +907,7 @@ class BrowserCppDecls extends CppDecls {
     // });
 
     out(`\nfunction("_internal_iterator", &_internal_iterator);`);
-    out(`\nfunction("browserInit", &browser_init);`);
+    out(`\nfunction("wasmInit", &wasm_init);`);
     out(`\nfunction("injectInjectables", &injectExternalTypes);`);
 
     out("\n}");
@@ -908,7 +915,7 @@ class BrowserCppDecls extends CppDecls {
 }
 
 export function generate({ rawSpec, spec, file: makeFile }: TemplateContext): void {
-  const out = makeFile("browser_init.cpp", clangFormat);
+  const out = makeFile("wasm_init.cpp", clangFormat);
 
   // HEADER
   out(`// This file is generated: Update the spec instead of editing this file directly`);
@@ -920,9 +927,9 @@ export function generate({ rawSpec, spec, file: makeFile }: TemplateContext): vo
   out(`
       #include <emscripten/bind.h>
       #include <realm_helpers.h>
-      #include <realm_js_browser_helpers.h>
+      #include <realm_js_wasm_helpers.h>
 
-      namespace realm::js::browser {
+      namespace realm::js::wasm {
       namespace {
     `);
 
@@ -930,6 +937,6 @@ export function generate({ rawSpec, spec, file: makeFile }: TemplateContext): vo
 
   out(`
         } // namespace
-        } // namespace realm::js::browser
+        } // namespace realm::js::wasm
     `);
 }

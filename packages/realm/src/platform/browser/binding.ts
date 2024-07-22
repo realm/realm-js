@@ -16,19 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-if (typeof navigator.userAgent !== "string") {
-  throw new Error("This file is only supposed to be imported from a browser environment!");
-}
+import { injectAndPatch } from "../binding";
+const bindingPromise = import("../../../binding/generated/native.wasm.cjs");
 
-import { ready } from "realm";
-await ready;
-
-// Import all the regular tests first
-import "./setup-globals";
-
-import "../setup-globals";
-// import "../utils/chai-plugin.test";
-import "../utils/listener-stub.test";
-// import "../utils/promise-handle.test";
-// import "../utils/sequence.test";
-// import "../mocha-internals.test";
+bindingPromise.then(injectAndPatch);
