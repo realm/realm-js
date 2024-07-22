@@ -19,14 +19,27 @@
 #include <stdexcept>
 #include <stdarg.h>
 #include <stdio.h>
+#include <string>
 
 #include "../platform.hpp"
 
+static std::string s_default_realm_directory;
+
 namespace realm {
+
+void JsPlatformHelpers::set_default_realm_file_directory(std::string dir)
+{
+    s_default_realm_directory = dir;
+}
 
 std::string JsPlatformHelpers::default_realm_file_directory()
 {
-    return std::string("");
+    if (!s_default_realm_directory.empty()) {
+        return s_default_realm_directory;
+    }
+    else {
+        return std::string("");
+    }
 }
 
 void JsPlatformHelpers::ensure_directory_exists_for_file(const std::string&)

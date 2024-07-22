@@ -12,7 +12,10 @@
   "wireit": {
     "test": {
       "command": "mocha-remote -- concurrently npm:vite npm:runner",
-      "dependencies": ["../../../packages/realm:build:ts"]
+      "dependencies": [
+        "../../../packages/realm:build:ts",
+        "../../../packages/realm:prebuild-wasm"
+      ]
     }
   },
   "dependencies": {

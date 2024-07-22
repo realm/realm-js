@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-// import "./binding";
+import "./binding";
 import "./fs";
 import "./device-info";
 // import "./sync-proxy-config";
