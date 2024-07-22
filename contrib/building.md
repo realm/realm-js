@@ -320,6 +320,28 @@ npm install path/to/realm-js/packages/realm
 > [!TIP]
 > To run any of the `"scripts"` commands from one of the `package.json` files directly from the root, use the `"name"` value from the target `package.json` as such: `npm run <command name> --workspace <package.json name>`.
 
+### Building for WASM (Browsers)
+
+Follow the steps to install the Emscripten SDK (emsdk) on https://emscripten.org/docs/getting_started/downloads.html.
+
+1. Clone the repository and enter the directory
+   ```
+   git clone https://github.com/emscripten-core/emsdk.git
+   cd emsdk
+   ```
+2. Pull, install and activate the latest version
+   ```
+   git pull
+   ./emsdk install latest
+   ./emsdk activate latest
+   ```
+3. Follow the instructions to setup environment variables for your shell (ex add this to your `~/.zshenv`)
+   ```bash
+   # Emscripten SDK
+   export EMSDK_QUIET=1
+   source "$HOME/<insert EMSDK sub-directory>/emsdk_env.sh"
+   ```
+
 ### Cleaning up build files
 
 If you need to clean up build files and other untracked files (except for `node_modules` directories), run the following command from the root directory:
