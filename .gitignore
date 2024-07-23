@@ -105,6 +105,7 @@ coverage/
 /packages/realm/generated/
 /packages/realm/binding/generated
 /packages/realm/binding/jsi/jsi_init.cpp
+/packages/realm/src/**/*.generated.ts
 
 # Build artifacts
 /packages/realm/dist/
