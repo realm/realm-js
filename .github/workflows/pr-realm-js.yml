@@ -114,9 +114,11 @@ jobs:
           - os: linux
             runner: ubuntu-latest
             arch: arm
+            libc: [gnu, musl]
           - os: linux
             runner: ubuntu-latest
             arch: arm64
+            libc: [gnu, musl]
           - os: windows
             runner: windows-latest
             arch: x64
@@ -209,11 +211,12 @@ jobs:
         run: npm run prebuild-node --workspace realm
         env:
           PREBUILD_ARCH: ${{ matrix.arch }}
+          REALM_LINUX_LIBC: ${{ matrix.libc }}
 
       - name: Upload prebuild artifact
         uses: actions/upload-artifact@v4
         with:
-          name: node-${{ matrix.os }}-${{ matrix.arch }}-prebuild
+          name: node-${{ matrix.os }}${{ matrix.libc == 'musl' && fromJSON('["musl"]') || fromJSON('[""]') }}-${{ matrix.arch }}-prebuild
           # Including README.md to pin paths to the root of the repository
           path: |
             README.md
