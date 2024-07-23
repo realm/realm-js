@@ -4,6 +4,24 @@
 * None
 
 ### Enhancements
+* Added `useProgress` hook which provides a convenient way to access Realm's progress information. It works in a similar way as `realm.addProgressNotification`. **Note: this feature is only intended for flexible sync with the new estimate-based progress notifications.** ([#6797](https://github.com/realm/realm-js/issues/6797))
+```tsx
+import { RealmProvider, ProgressDirection, ProgressMode } from "@realm/react";
+
+const ProgressText = () => {
+	const progress = useProgress({ direction: ProgressDirection.Download, mode: ProgressMode.ReportIndefinitely });
+
+	return <Text>Loading: {progress}/1.0 Downloaded</Text>;
+}
+
+const MyApp() = () => {
+  return (
+    <RealmProvider sync={...}> 
+      <ProgressText />
+    </RealmProvider>
+  );
+}
+```
 * Added the ability to get `progress` information in `fallback` component of `RealmProvider` when opening a synced Realm. ([#6785](https://github.com/realm/realm-js/issues/6785))
 ```tsx
 import { RealmProvider, RealmProviderFallback } from "@realm/react";
