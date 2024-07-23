@@ -173,13 +173,9 @@ export function createRealmProviderFromConfig(
       const initRealm = async () => {
         const openRealmPromise = Realm.open(configuration.current);
         if (configuration.current.sync?.flexible) {
-          try {
-            openRealmPromise.progress((estimate: number) => {
-              setProgress(estimate);
-            });
-          } catch (error) {
-            console.warn("Progress information with @realm/react work only with realm version >=12.12.0.");
-          }
+          openRealmPromise.progress((estimate: number) => {
+            setProgress(estimate);
+          });
         }
         const openRealm = await openRealmPromise;
         setRealm(openRealm);
