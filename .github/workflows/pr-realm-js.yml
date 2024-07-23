@@ -114,11 +114,19 @@ jobs:
           - os: linux
             runner: ubuntu-latest
             arch: arm
-            libc: [gnu, musl]
+            libc: gnu
+          - os: linux
+            runner: ubuntu-latest
+            arch: arm
+            libc: musl
           - os: linux
             runner: ubuntu-latest
             arch: arm64
-            libc: [gnu, musl]
+            libc: gnu
+          - os: linux
+            runner: ubuntu-latest
+            arch: arm64
+            libc: musl
           - os: windows
             runner: windows-latest
             arch: x64
