@@ -289,7 +289,7 @@
           "default": "undefined"
         }, 
         "REALM_LINUX_LIBC": {
-          "external": "true",
+          "external": true,
           "default": "undefined"
         }
       }
