@@ -27,6 +27,7 @@
 * `AppConfiguration.app` is no longer used by Atlas Device Sync. It will be removed in future SDK releases and should not be used. ([#6785](https://github.com/realm/realm-js/issues/6785))
 
 ### Enhancements
+* Added support for "bridgeless" React Native on iOS and Android, a part of the "new architecture". ([#6737](https://github.com/realm/realm-js/pull/6737))
 * Added progress notifications support for Flexible Sync using an `estimate` as the new callback argument. The `estimate` is roughly equivalent to an estimated value of `transferred / transferable` in the deprecated Partition-Based Sync callback. ([#6743](https://github.com/realm/realm-js/pull/6743))
 ```typescript
 realm.syncSession?.addProgressNotification(
