@@ -102,7 +102,7 @@ jobs:
             packages/realm/binding/generated
 
   prebuild-node:
-    name: Prebuild ${{ matrix.os }} ${{ matrix.arch }}${{ matrix.libc == 'musl' && 'musl' }} (Node.js)
+    name: Prebuild ${{ matrix.os }} ${{ matrix.arch }}${{ matrix.libc == 'musl' && '-musl' || '' }} (Node.js)
     runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
