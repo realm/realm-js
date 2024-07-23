@@ -285,4 +285,35 @@ export function generate({ spec: boundSpec, rawSpec, file }: TemplateContext): v
   out.lines("// Classes", ...spec.classes.map(generateClassDeclaration.bind(undefined, spec)));
 
   out("}"); // Closing bracket for the namespace
+
+  out(
+    `
+    /**
+     * Is true when the native module has been injected.
+     * Useful to perform asserts on platforms which inject the native module synchronously.
+     */
+    export let isReady = false;
+
+    // TODO: Replace with Promise.withResolvers() once it's supported on all supported platforms.
+    let resolveReadyPromise: () => void = () => { throw new Error('Expected a synchronous Promise constructor'); }
+    /**
+     * Resolves when the native module has been injected.
+     * Useful to perform asserts on platforms which inject the native module asynchronously.
+     */
+    export const ready = new Promise<void>((resolve) => { resolveReadyPromise = resolve });
+    `,
+  );
+
+  out.lines(
+    `
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    export function injectNativeModule(nativeModule: any) {
+      // TODO: Handle injection of WeakRef and Int64
+    `,
+
+    `
+      isReady = true;
+      resolveReadyPromise();
+    }`,
+  );
 }
