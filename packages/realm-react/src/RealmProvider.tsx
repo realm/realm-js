@@ -27,7 +27,7 @@ type PartialRealmConfiguration = Omit<Partial<Realm.Configuration>, "sync"> & {
   sync?: Partial<Realm.SyncConfiguration>;
 };
 
-export type RealmProviderFallback = React.ComponentType<{
+export type RealmFallbackComponent = React.ComponentType<{
   progress: number | null;
 }>;
 
@@ -46,7 +46,7 @@ type RealmProviderConfigurationProps = {
   /**
    * The fallback component to render if the Realm is not open.
    */
-  fallback?: RealmProviderFallback | React.ComponentType | React.ReactElement | null | undefined;
+  fallback?: RealmFallbackComponent | React.ComponentType | React.ReactElement | null | undefined;
   children: React.ReactNode;
 } & PartialRealmConfiguration;
 
@@ -171,13 +171,9 @@ export function createRealmProviderFromConfig(
       // need to open a new Realm.
       const shouldInitRealm = realmRef === null;
       const initRealm = async () => {
-        const openRealmPromise = Realm.open(configuration.current);
-        if (configuration.current.sync?.flexible) {
-          openRealmPromise.progress((estimate: number) => {
-            setProgress(estimate);
-          });
-        }
-        const openRealm = await openRealmPromise;
+        const openRealm = await Realm.open(configuration.current).progress((estimate: number) => {
+          setProgress(estimate);
+        });
         setRealm(openRealm);
       };
       if (shouldInitRealm) {
