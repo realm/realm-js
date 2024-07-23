@@ -1,4 +1,4 @@
-## vNext (TBD)
+## 12.12.0 (2024-07-23)
 
 ### Deprecations
 * The callback for `SyncSession.addProgressNotification` taking `transferred` and `transferable` arguments is deprecated and will be removed. See **Enhancements** below for the new callback supporting both Flexible Sync and Partition-Based Sync. ([#6743](https://github.com/realm/realm-js/pull/6743))
