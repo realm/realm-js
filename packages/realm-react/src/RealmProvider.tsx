@@ -178,7 +178,7 @@ export function createRealmProviderFromConfig(
               setProgress(estimate);
             });
           } catch (error) {
-            console.warn("Progress information with @realm/react work with realm version >=12.12.0.");
+            console.warn("Progress information with @realm/react work only with realm version >=12.12.0.");
           }
         }
         const openRealm = await openRealmPromise;
