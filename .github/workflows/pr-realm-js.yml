@@ -224,7 +224,7 @@ jobs:
       - name: Upload prebuild artifact
         uses: actions/upload-artifact@v4
         with:
-          name: node-${{ matrix.os }}${{ matrix.libc == 'musl' && fromJSON('["musl"]') || fromJSON('[""]') }}-${{ matrix.arch }}-prebuild
+          name: node-${{ matrix.os }}${{ matrix.libc == 'musl' && 'musl' || '' }}-${{ matrix.arch }}-prebuild
           # Including README.md to pin paths to the root of the repository
           path: |
             README.md
