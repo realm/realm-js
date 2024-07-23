@@ -44,6 +44,7 @@ const MyApp() = () => {
 * None
 
 ### Compatibility
+* Realm JavaScript >= v12.12.0
 * React Native >= v0.71.4
 * Realm Studio v15.0.0.
 * File format: generates Realms with format v24 (reads and upgrades file format v10).
