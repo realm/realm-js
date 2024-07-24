@@ -16,7 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { injectAndPatch } from "../binding";
-import * as binding from "../../../binding/generated/native.node.cjs";
+import { NativeBigInt, injectNativeModule } from "../binding";
 
-injectAndPatch(binding);
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const nativeModule = require("#realm.node");
+injectNativeModule(nativeModule, { Int64: NativeBigInt });
