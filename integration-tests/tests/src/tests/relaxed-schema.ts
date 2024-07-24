@@ -16,13 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 import { expect } from "chai";
-import Realm from "realm";
-
 import { PersonSchema } from "../schemas/person-and-dogs";
 import { openRealmBeforeEach } from "../hooks";
 
-
-describe("Relaxed schema", () => {
+describe("35", () => {
   openRealmBeforeEach({ relaxedSchema: true, schema: [PersonSchema] });
 
   it("can open a Realm with a relaxed schema", function (this: Mocha.Context & RealmContext) {
@@ -40,7 +37,8 @@ describe("Relaxed schema", () => {
     expect(this.realm.objects(PersonSchema.name).length).equals(1);
   });
 
-  it("can modify a property of an object in a Realm with a relaxed schema", function (this: Mocha.Context & RealmContext) {
+  it("can modify a property of an object in a Realm with a relaxed schema", function (this: Mocha.Context &
+    RealmContext) {
     this.realm.write(() => {
       this.realm.create(PersonSchema.name, {
         name: "Joe",
@@ -49,12 +47,14 @@ describe("Relaxed schema", () => {
     });
 
     this.realm.write(() => {
-      const joe = this.realm.objectForPrimaryKey(PersonSchema.name, "Joe");
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const joe = this.realm.objectForPrimaryKey(PersonSchema.name, "Joe")!;
       expect(joe).not.null;
       joe.age = 25;
     });
 
-    const olderJoe = this.realm.objectForPrimaryKey(PersonSchema.name, "Joe");
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const olderJoe = this.realm.objectForPrimaryKey(PersonSchema.name, "Joe")!;
     expect(olderJoe.age).equals(25n); // TODO: why BigInt and not Number?
   });
 
@@ -67,13 +67,23 @@ describe("Relaxed schema", () => {
     });
 
     this.realm.write(() => {
-      const joe = this.realm.objectForPrimaryKey(PersonSchema.name, "Joe");
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const joe = this.realm.objectForPrimaryKey(PersonSchema.name, "Joe")!;
       expect(joe).not.null;
       joe.realName = "Johannes";
     });
-    const joe = this.realm.objectForPrimaryKey(PersonSchema.name, "Joe");
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    let joe = this.realm.objectForPrimaryKey(PersonSchema.name, "Joe")!;
     expect(joe).not.null;
     expect(joe.name).equals("Joe");
     expect(joe.realName).equals("Johannes");
+
+    this.realm.write(() => {
+      joe.realName = "Not Johannes";
+    });
+
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    joe = this.realm.objectForPrimaryKey(PersonSchema.name, "Joe")!;
+    expect(joe.realName).equals("Not Johannes");
   });
 });
