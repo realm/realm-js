@@ -1,9 +1,9 @@
 import { TemplateContext } from "@realm/bindgen/context";
 
-import { doJsPasses } from "../js-passes";
-import { eslintFormatter } from "../formatters";
 import { BoundSpec, Class, Enum, Method, NamedType, Property, Struct, Type } from "@realm/bindgen/bound-model";
 import assert from "node:assert";
+import { eslintFormatter } from "../formatters";
+import { doJsPasses } from "../js-passes";
 
 function generateEnumDeclaration(e: Enum) {
   return `export const enum ${e.jsName} { ${e.enumerators.map(({ jsName, value }) => `${jsName} = ${value}`)} };`;
@@ -215,7 +215,10 @@ export function generate({ spec: boundSpec, rawSpec, file }: TemplateContext): v
   out("// This file is generated: Update the spec instead of editing this file directly");
 
   out.lines(
-    'import { ObjectId, UUID, Decimal128 } from "bson";',
+    'import { Long, ObjectId, UUID, Decimal128, EJSON } from "bson";',
+    'import { _promisify, _throwOnAccess } from "./utils";',
+    'import * as utils from "./utils";',
+    'import { applyPatch } from "./patch";',
     "// eslint-disable-next-line @typescript-eslint/no-namespace",
     "export namespace binding {",
   );
@@ -224,26 +227,14 @@ export function generate({ spec: boundSpec, rawSpec, file }: TemplateContext): v
 
   // TODO: Attempt to move this into a proper .ts file
   out.lines(
-    `
-    // Wrapped types
-    export class Float {
-      constructor(public value: number) {}
-      valueOf() { return this.value; }
-    }
-    export class Status {
-      public isOk: boolean;
-      public code?: number;
-      public reason?: string;
-      constructor(isOk: boolean) { this.isOk = isOk; }
-    }
-    export const ListSentinel = Symbol.for("Realm.List");
-    export const DictionarySentinel = Symbol.for("Realm.Dictionary");
-    `,
-
     "// Utilities",
     "export type AppError = Error & {code: number};",
     "export type CppErrorCode = Error & {code: number, category: string};",
     "export type EJson = null | string | number | boolean | EJson[] | {[name: string]: EJson}",
+    "export import Float = utils.Float;",
+    "export import Status = utils.Status;",
+    "export import ListSentinel = utils.ListSentinel;",
+    "export import DictionarySentinel = utils.DictionarySentinel;",
 
     `
     // WeakRef polyfill for Hermes.
@@ -288,6 +279,14 @@ export function generate({ spec: boundSpec, rawSpec, file }: TemplateContext): v
 
   out(
     `
+    Object.defineProperties(binding, {
+      ${spec.classes.map((cls) => `${cls.jsName}: { get: _throwOnAccess.bind(undefined, "cls.jsName") }`)}
+    });
+    `,
+  );
+
+  out(
+    `
     /**
      * Is true when the native module has been injected.
      * Useful to perform asserts on platforms which inject the native module synchronously.
@@ -304,16 +303,105 @@ export function generate({ spec: boundSpec, rawSpec, file }: TemplateContext): v
     `,
   );
 
-  out.lines(
+  out(
     `
+    type Extras = {
+      Int64: typeof binding.Int64;
+    };
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    export function injectNativeModule(nativeModule: any) {
-      // TODO: Handle injection of WeakRef and Int64
+    export function injectNativeModule(nativeModule: any, extras: Extras) {
+      Object.assign(binding, extras);
     `,
-
-    `
-      isReady = true;
-      resolveReadyPromise();
-    }`,
   );
+
+  // TODO: Handle injection of WeakRef and Int64
+  // TODO: Handle injectables
+
+  const injectables = [
+    "Long",
+    "ArrayBuffer",
+    "Float: utils.Float",
+    "Status: utils.Status",
+    "ObjectId",
+    "UUID",
+    "Decimal128",
+    "EJSON_parse: EJSON.parse",
+    "EJSON_stringify: EJSON.stringify",
+    "Symbol_for: Symbol.for",
+    ...spec.classes.map((cls) => cls.jsName),
+  ];
+
+  for (const cls of spec.classes) {
+    const symbolName = `_${cls.rootBase().jsName}_Symbol`;
+    const bodyLines: string[] = [];
+
+    if (!cls.base) {
+      // Only root classes get symbols and constructors
+      out(`const ${symbolName} = Symbol("Realm.${cls.jsName}.external_pointer");`);
+      bodyLines.push(`${cls.subclasses.length === 0 ? "private" : "protected"} declare [${symbolName}]: unknown;`);
+      bodyLines.push(
+        `${cls.subclasses.length === 0 ? "private" : "protected"} constructor(ptr: unknown) { this[${symbolName}] = ptr};`,
+      );
+    }
+
+    bodyLines.push(`
+      static _extract(self: unknown) {
+        if (!(self instanceof ${cls.jsName}))
+          throw new TypeError("Expected a ${cls.jsName}");
+        const out = self[${symbolName}];
+        if (!out)
+          throw new TypeError("Received an improperly constructed ${cls.jsName}");
+        return out;
+      };  
+    `);
+
+    const availableMethods = cls.methods.filter((method) => method.isOptedInTo);
+
+    for (const method of availableMethods) {
+      // Eagerly bind the name once from the native module to prevent object property lookups on every call
+      const nativeFreeFunctionName = `_native_${method.id}`;
+      out(`const ${nativeFreeFunctionName} = nativeModule.${method.id};`);
+      // TODO consider pre-extracting class-typed arguments while still in JIT VM.
+      const asyncSig = method.sig.asyncTransform();
+      const params = (asyncSig ?? method.sig).args.map((arg) => arg.name);
+      const args = [method.isStatic ? [] : `this[${symbolName}]`, ...params, asyncSig ? "_cb" : []].flat();
+      let call = `${nativeFreeFunctionName}(${args})`;
+      if (asyncSig) {
+        // JS can't distinguish between a `const EJson*` that is nullptr (which can't happen), and
+        // one that points to the string "null" because both become null by the time they reach JS.
+        // In order to allow the latter (which does happen! E.g. the promise from `response.text()`
+        // can resolve to `"null"`) we need a special case here.
+        // TODO see if there is a better approach.
+        assert(asyncSig.ret.isTemplate("AsyncResult"));
+        const ret = asyncSig.ret.args[0];
+        const nullAllowed = !!(ret.is("Pointer") && ret.type.kind == "Const" && ret.type.type.isPrimitive("EJson"));
+        call = `_promisify(${nullAllowed}, _cb => ${call})`;
+      }
+      bodyLines.push(
+        method.isStatic ? "static" : "",
+        method instanceof Property ? "get" : "",
+        `${method.jsName}(${params.map((name) => name + ": unknown")}) { return ${call}; }`,
+      );
+    }
+
+    if (cls.iterable) {
+      const native = `_native_${cls.iteratorMethodId()}`;
+      out(`const ${native} = nativeModule.${cls.iteratorMethodId()};`);
+      bodyLines.push(`[Symbol.iterator]() { return ${native}(this[${symbolName}]); }`);
+    }
+
+    out.lines(`class ${cls.jsName} ${cls.base ? `extends ${cls.base.jsName}` : ""} {`, ...bodyLines, `}`);
+  }
+
+  out(`
+    Object.defineProperties(binding, {
+      ${spec.classes.map((cls) => `${cls.jsName}: { value: ${cls.jsName} }`)}
+    });
+    // Freezing the binding ensures injection can happen only once
+    Object.freeze(binding);
+  `);
+
+  out(`nativeModule.injectInjectables({ ${injectables} });`);
+
+  out("applyPatch(binding); isReady = true; resolveReadyPromise(); }");
 }

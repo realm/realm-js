@@ -16,7 +16,22 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { injectAndPatch } from "../binding";
-import * as binding from "../../../binding/generated/native.react-native.cjs";
+declare const global: Record<string, unknown>;
 
-injectAndPatch(binding);
+import { NativeModules } from "react-native";
+import { NativeBigInt, PolyfilledBigInt, injectNativeModule } from "../binding";
+
+const RealmNativeModule = NativeModules.Realm;
+
+RealmNativeModule.injectModuleIntoJSGlobal();
+// Read the global into the local scope
+const { __injectedRealmBinding } = global;
+// Delete the global again
+delete global.__injectedRealmBinding;
+if (typeof __injectedRealmBinding === "object") {
+  injectNativeModule(__injectedRealmBinding, { Int64: global.HermesInternal ? NativeBigInt : PolyfilledBigInt });
+} else {
+  throw new Error(
+    "Could not find the Realm binary. Please consult our troubleshooting guide: https://www.mongodb.com/docs/realm-sdks/js/latest/#md:troubleshooting-missing-binary",
+  );
+}

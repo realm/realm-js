@@ -18,10 +18,7 @@
     "types": [
       "bson",
       "debug",
-      "@realm/fetch",
-      "./binding/generated/native.d.ts",
-      "./binding/dist/core.d.ts",
-      "./binding/index.d.ts"
+      "@realm/fetch"
     ]
   },
   "include": [
@@ -32,8 +29,5 @@
     "src/scripts",
     "src/platform/node",
     "src/platform/react-native"
-  ],
-  "references": [
-    { "path": "./tsconfig.binding.json" }
   ]
 }

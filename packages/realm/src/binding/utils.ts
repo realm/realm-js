@@ -16,8 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { assert } from "../assert";
-
 // Copied from lib/utils.js of the v11 SDK
 // It might be slightly faster to make dedicated wrapper for 1 and 2 argument forms, but unlikely to be worth it.
 
@@ -35,14 +33,9 @@ export function _promisify<Args extends unknown[]>(nullAllowed: boolean, func: (
         // The last argument is always an error
         const error = args[args.length - 1];
         if (error) {
-          assert.instanceOf(error, Error, "error");
           reject(error);
         } else if (args.length == 2) {
           const result = args[0];
-          assert(
-            nullAllowed || (result !== null && result !== undefined),
-            "Unexpected null or undefined successful result",
-          );
           resolve(result);
         } else {
           resolve(undefined);
@@ -53,3 +46,32 @@ export function _promisify<Args extends unknown[]>(nullAllowed: boolean, func: (
     });
   });
 }
+
+/**
+ * Throws an error when a property is accessed before the native module has been injected.
+ * @internal
+ */
+export function _throwOnAccess(propertyName: string) {
+  throw new Error(`Accessed property '${propertyName} before the native module was injected into the Realm binding'`);
+}
+
+// Wrapped types
+
+export class Float {
+  constructor(public value: number) {}
+  valueOf() {
+    return this.value;
+  }
+}
+
+export class Status {
+  public isOk: boolean;
+  public code?: number;
+  public reason?: string;
+  constructor(isOk: boolean) {
+    this.isOk = isOk;
+  }
+}
+
+export const ListSentinel = Symbol.for("Realm.List");
+export const DictionarySentinel = Symbol.for("Realm.Dictionary");
