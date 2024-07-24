@@ -149,6 +149,15 @@ const PROXY_HANDLER_RELAXED: ProxyHandler<RealmObject<any>> = {
   },
 
   deleteProperty(target, prop) {
+    const obj = target[INTERNAL];
+    const propName = prop as string;
+
+    if (obj.hasSchemaProperty(propName)) {
+      // TODO: Discuss
+      throw new Error("Unsupported");
+    } else {
+      obj.eraseAdditionalProp(propName);
+    }
     return true;
   },
 
