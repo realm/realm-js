@@ -39,6 +39,7 @@ import type { Realm } from "./Realm";
 import { Results, createResultsAccessor } from "./Results";
 import type { TypeHelpers } from "./TypeHelpers";
 import { flags } from "./flags";
+import { OBJECT_INTERNAL } from "./symbols";
 
 /**
  * The update mode to use when creating an object that already exists,
@@ -80,7 +81,6 @@ export type AnyRealmObject = RealmObject<any>;
 export const KEY_ARRAY = Symbol("Object#keys");
 export const KEY_SET = Symbol("Object#keySet");
 export const REALM = Symbol("Object#realm");
-export const INTERNAL = Symbol("Object#internal");
 const INTERNAL_LISTENERS = Symbol("Object#listeners");
 export const INTERNAL_HELPERS = Symbol("Object.helpers");
 const DEFAULT_PROPERTY_DESCRIPTOR: PropertyDescriptor = { configurable: true, enumerable: true, writable: true };
@@ -96,7 +96,7 @@ const PROXY_HANDLER: ProxyHandler<RealmObject<any>> = {
     }
     const result = Reflect.getOwnPropertyDescriptor(target, prop);
     if (result && typeof prop === "symbol") {
-      if (prop === INTERNAL) {
+      if (prop === OBJECT_INTERNAL) {
         result.enumerable = false;
         result.writable = false;
       } else if (prop === INTERNAL_LISTENERS) {
@@ -306,7 +306,7 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
    */
   public static createWrapper<T = DefaultObject>(internal: binding.Obj, constructor: Constructor): RealmObject<T> & T {
     const result = Object.create(constructor.prototype);
-    result[INTERNAL] = internal;
+    result[OBJECT_INTERNAL] = internal;
     // Initializing INTERNAL_LISTENERS here rather than letting it just be implicitly undefined since JS engines
     // prefer adding all fields to objects upfront. Adding optional fields later can sometimes trigger deoptimizations.
     result[INTERNAL_LISTENERS] = null;
@@ -335,7 +335,7 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
    * The object's representation in the binding.
    * @internal
    */
-  public declare readonly [INTERNAL]: binding.Obj;
+  public declare readonly [OBJECT_INTERNAL]: binding.Obj;
 
   /**
    * Lazily created wrapper for the object notifier.
@@ -412,7 +412,7 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
    * @returns `true` if the object can be safely accessed, `false` if not.
    */
   isValid(): boolean {
-    return this[INTERNAL] && this[INTERNAL].isValid;
+    return this[OBJECT_INTERNAL] && this[OBJECT_INTERNAL].isValid;
   }
 
   /**
@@ -458,7 +458,7 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
 
     // Create the Result for the backlink view.
     const tableRef = binding.Helpers.getTable(realm.internal, targetObjectSchema.tableKey);
-    const tableView = this[INTERNAL].getBacklinkView(tableRef, targetProperty.columnKey);
+    const tableView = this[OBJECT_INTERNAL].getBacklinkView(tableRef, targetProperty.columnKey);
     const results = binding.Results.fromTableView(realm.internal, tableView);
 
     return new Results<T>(realm, results, accessor, typeHelpers);
@@ -469,7 +469,7 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
    * @returns The number of links to this object.
    */
   linkingObjectsCount(): number {
-    return this[INTERNAL].getBacklinkCount();
+    return this[OBJECT_INTERNAL].getBacklinkCount();
   }
 
   /**
@@ -484,7 +484,7 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
    * A string uniquely identifying the object across all objects of the same type.
    */
   _objectKey(): string {
-    return this[INTERNAL].key.toString();
+    return this[OBJECT_INTERNAL].key.toString();
   }
 
   /**
@@ -550,7 +550,7 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
     const typeName = getTypeName(type, objectType);
     if (typeName === "mixed") {
       // This requires actually getting the object and inferring its type
-      const value = this[INTERNAL].getAny(columnKey);
+      const value = this[OBJECT_INTERNAL].getAny(columnKey);
       if (value === null) {
         return "null";
       } else if (binding.Int64.isInt(value)) {

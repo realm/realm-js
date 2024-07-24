@@ -26,13 +26,14 @@ import { JSONCacheMap } from "./JSONCacheMap";
 import { type ListAccessor, isJsOrRealmList } from "./List";
 import { Results, type ResultsAccessor, createResultsAccessor } from "./Results";
 import type { SetAccessor } from "./Set";
-import { INTERNAL as OBJ_INTERNAL, RealmObject } from "./Object";
+import { RealmObject } from "./Object";
 import { type TypeHelpers, toItemType } from "./TypeHelpers";
 import { getTypeName } from "./schema";
 import { unwind } from "./ranges";
 import type { Realm } from "./Realm";
 import { mixedToBinding } from "./type-helpers/Mixed";
 import { isJsOrRealmDictionary } from "./Dictionary";
+import { OBJECT_INTERNAL } from "./symbols";
 
 const DEFAULT_COLUMN_KEY = binding.Int64.numToInt(0) as unknown as binding.ColKey;
 
@@ -395,7 +396,7 @@ export abstract class OrderedCollection<
 
     if (this.type === "object") {
       assert.instanceOf(searchElement, RealmObject);
-      return this.results.indexOfObj(searchElement[OBJ_INTERNAL]);
+      return this.results.indexOfObj(searchElement[OBJECT_INTERNAL]);
     } else if (isJsOrRealmList(searchElement) || isJsOrRealmDictionary(searchElement)) {
       // Collections are always treated as not equal since their
       // references will always be different for each access.

@@ -23,7 +23,7 @@ import { extendDebug } from "./debug";
 import { flags } from "./flags";
 import { fs, garbageCollection } from "./platform";
 import type { Unmanaged } from "./Unmanaged";
-import { type AnyRealmObject, INTERNAL, RealmObject } from "./Object";
+import { type AnyRealmObject, RealmObject } from "./Object";
 import { type AnyResults, Results, createResultsAccessor } from "./Results";
 import {
   type CanonicalObjectSchema,
@@ -63,6 +63,7 @@ import { SubscriptionSet } from "./app-services/SubscriptionSet";
 import { SyncSession } from "./app-services/SyncSession";
 import type { TypeHelpers } from "./TypeHelpers";
 import { toArrayBuffer } from "./type-helpers/array-buffer";
+import { OBJECT_INTERNAL } from "./symbols";
 
 const debug = extendDebug("Realm");
 
@@ -768,7 +769,7 @@ export class Realm {
       mode = UpdateMode.Never;
     }
     // Implements https://github.com/realm/realm-js/blob/v11/src/js_realm.hpp#L1260-L1321
-    if (values instanceof RealmObject && !values[INTERNAL]) {
+    if (values instanceof RealmObject && !values[OBJECT_INTERNAL]) {
       throw new Error("Cannot create an object from a detached RealmObject instance");
     }
     if (!Object.values(UpdateMode).includes(mode)) {
@@ -802,7 +803,7 @@ export class Realm {
     if (subject instanceof RealmObject) {
       assert.isSameRealm(subject[REALM].internal, this.internal, "Can't delete an object from another Realm");
       const { objectSchema } = this.classes.getHelpers(subject);
-      const obj = subject[INTERNAL];
+      const obj = subject[OBJECT_INTERNAL];
       assert.isValid(
         obj,
         "Object is invalid. Either it has been previously deleted or the Realm it belongs to has been closed.",
@@ -820,7 +821,7 @@ export class Realm {
         assert.isSameRealm(object[REALM].internal, this.internal, "Can't delete an object from another Realm");
         const { objectSchema } = this.classes.getHelpers(object);
         const table = binding.Helpers.getTable(this.internal, objectSchema.tableKey);
-        table.removeObject(object[INTERNAL].key);
+        table.removeObject(object[OBJECT_INTERNAL].key);
       }
     } else {
       throw new Error("Can only delete objects, lists and results.");
@@ -958,7 +959,7 @@ export class Realm {
       },
       toBinding(value) {
         assert.instanceOf(value, RealmObject);
-        return value[INTERNAL];
+        return value[OBJECT_INTERNAL];
       },
     };
     const accessor = createResultsAccessor<T>({ realm: this, typeHelpers, itemType: binding.PropertyType.Object });

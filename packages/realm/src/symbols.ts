@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2022 Realm Inc.
+// Copyright 2024 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,22 +16,4 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import type { RealmObject } from "./Object";
-import type { DefaultObject } from "./schema";
-import { OBJECT_INTERNAL } from "./symbols";
-
-/** @internal */
-export class JSONCacheMap extends Map<number, Map<string, DefaultObject>> {
-  add<T>(object: RealmObject<T>, value: DefaultObject) {
-    const tableKey = object[OBJECT_INTERNAL].table.key;
-    let cachedMap = this.get(tableKey);
-    if (!cachedMap) {
-      cachedMap = new Map();
-      this.set(tableKey, cachedMap);
-    }
-    cachedMap.set(object._objectKey(), value);
-  }
-  find<T>(object: RealmObject<T>) {
-    return this.get(object[OBJECT_INTERNAL].table.key)?.get(object._objectKey());
-  }
-}
+export const OBJECT_INTERNAL = Symbol("Object#internal");

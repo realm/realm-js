@@ -22,7 +22,7 @@ import { Collection } from "../Collection";
 import { Counter } from "../Counter";
 import { Dictionary, createDictionaryAccessor } from "../Dictionary";
 import { List, createListAccessor } from "../List";
-import { INTERNAL, REALM, RealmObject } from "../Object";
+import { REALM, RealmObject } from "../Object";
 import { RealmSet } from "../Set";
 import {
   boxToBindingGeospatial,
@@ -33,6 +33,7 @@ import {
   polygonToBindingGeospatial,
 } from "../GeoSpatial";
 import { getTypeHelpers } from "../TypeHelpers";
+import { OBJECT_INTERNAL } from "../symbols";
 import { TYPED_ARRAY_CONSTRUCTORS } from "./array-buffer";
 import type { TypeHelpers, TypeOptions } from "./types";
 
@@ -68,7 +69,7 @@ export function mixedToBinding(
     }
     const otherRealm = value[REALM].internal;
     assert.isSameRealm(realm, otherRealm, "Realm object is from another Realm");
-    return value[INTERNAL];
+    return value[OBJECT_INTERNAL];
   } else if (value instanceof RealmSet || value instanceof Set) {
     throw new Error(`Using a ${value.constructor.name} as ${displayedType} is not supported.`);
   } else if (value instanceof Counter) {

@@ -18,7 +18,8 @@
 
 import { binding } from "../../binding";
 import { assert } from "../assert";
-import { INTERNAL, REALM, RealmObject, UpdateMode } from "../Object";
+import { REALM, RealmObject, UpdateMode } from "../Object";
+import { OBJECT_INTERNAL } from "../symbols";
 import { nullPassthrough } from "./null-passthrough";
 import type { TypeHelpers, TypeOptions } from "./types";
 
@@ -40,7 +41,7 @@ export function createObjectTypeHelpers({
         value.constructor.name === objectType &&
         value[REALM].internal.$addr === realm.internal.$addr
       ) {
-        return value[INTERNAL];
+        return value[OBJECT_INTERNAL];
       } else {
         // TODO: Consider exposing a way for calling code to disable object creation
         assert.object(value, name);
@@ -51,7 +52,7 @@ export function createObjectTypeHelpers({
           helpers,
           createObj: options?.createObj,
         });
-        return createdObject[INTERNAL];
+        return createdObject[OBJECT_INTERNAL];
       }
     }, optional),
     fromBinding: nullPassthrough((value) => {
