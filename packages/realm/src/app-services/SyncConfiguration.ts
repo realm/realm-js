@@ -16,22 +16,17 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { EJSON, ObjectId, UUID } from "bson";
-
+import { binding } from "../../binding";
+import { assert } from "../assert";
+import { BSON } from "../bson";
+import { ClientResetError, SyncError, TypeAssertionError } from "../errors";
+import type { Realm } from "../Realm";
+import { syncProxyConfig } from "../platform";
+import { type AnyUser, User } from "./User";
+import type { MutableSubscriptionSet } from "./MutableSubscriptionSet";
+import type { SubscriptionSet } from "./SubscriptionSet";
 import {
-  AnyUser,
-  BSON,
-  ClientResetError,
-  MutableSubscriptionSet,
-  Realm,
-  SubscriptionSet,
-  SyncError,
-  SyncSession,
-  TypeAssertionError,
-  User,
-  assert,
-  binding,
-  syncProxyConfig,
+  type SyncSession,
   toBindingClientResetMode,
   toBindingErrorHandler,
   toBindingErrorHandlerWithOnManual,
@@ -39,7 +34,7 @@ import {
   toBindingNotifyAfterClientResetWithFallback,
   toBindingNotifyBeforeClientReset,
   toBindingStopPolicy,
-} from "../internal";
+} from "./SyncSession";
 
 export type PartitionValue = string | number | BSON.ObjectId | BSON.UUID | null;
 
@@ -342,7 +337,7 @@ export function toBindingSyncConfig(config: SyncConfiguration): binding.SyncConf
 
   return {
     user: syncUser,
-    partitionValue: flexible ? undefined : EJSON.stringify(partitionValue),
+    partitionValue: flexible ? undefined : BSON.EJSON.stringify(partitionValue),
     flxSyncRequested: !!flexible,
     stopPolicy: _sessionStopPolicy
       ? toBindingStopPolicy(_sessionStopPolicy)
@@ -633,7 +628,7 @@ function validatePartitionValue(value: unknown): asserts value is PartitionValue
     );
   } else {
     assert(
-      typeof value === "string" || value instanceof ObjectId || value instanceof UUID || value === null,
+      typeof value === "string" || value instanceof BSON.ObjectId || value instanceof BSON.UUID || value === null,
       `Expected 'partitionValue' on realm sync configuration to be an integer, string, ObjectId, UUID, or null, got ${TypeAssertionError.deriveType(
         value,
       )}.`,

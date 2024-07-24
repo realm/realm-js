@@ -16,8 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { RealmSet, assert, binding, createSetAccessor, getTypeHelpers, toItemType } from "../internal";
+import { binding } from "../../binding";
+import { assert } from "../assert";
+import { RealmSet, createSetAccessor } from "../Set";
 import { PropertyAccessor, PropertyOptions } from "./types";
+import { getTypeHelpers, toItemType } from "../TypeHelpers";
 
 /** @internal */
 export function createSetPropertyAccessor({

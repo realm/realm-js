@@ -16,17 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import {
-  List,
-  Results,
-  TypeAssertionError,
-  assert,
-  binding,
-  createListAccessor,
-  createResultsAccessor,
-  getTypeHelpers,
-  toItemType,
-} from "../internal";
+import { binding } from "../../binding";
+import { assert } from "../assert";
+import { TypeAssertionError } from "../errors";
+import { List, createListAccessor } from "../List";
+import { Results, createResultsAccessor } from "../Results";
+import { getTypeHelpers, toItemType } from "../TypeHelpers";
 import type { PropertyAccessor, PropertyOptions } from "./types";
 
 /** @internal */

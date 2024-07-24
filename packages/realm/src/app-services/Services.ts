@@ -16,12 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import * as internal from "../internal";
+import * as MongoDBNS from "./MongoDB";
+import * as MongoDBCollectionNS from "./MongoDBCollection";
+import * as PushClientNS from "./PushClient";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace Services {
-  export import MongoDB = internal.MongoDB;
-  export import MongoDBDatabase = internal.MongoDBDatabase;
+  export import MongoDB = MongoDBNS.MongoDB;
+  export import MongoDBDatabase = MongoDBCollectionNS.MongoDBDatabase;
   /** @deprecated Please read {@link https://www.mongodb.com/docs/atlas/app-services/reference/push-notifications/} */
-  export type Push = internal.PushClient;
+  export type Push = PushClientNS.PushClient;
 }

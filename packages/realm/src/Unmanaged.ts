@@ -16,16 +16,13 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import type { AnyRealmObject, Collection, Counter, Dictionary, List, Realm, RealmSet } from "./internal";
-
-/* eslint-disable-next-line @typescript-eslint/no-explicit-any -- We define these once to avoid using "any" through the code */
-export type AnyCollection = Collection<any, any, any, any, any>;
-/* eslint-disable-next-line @typescript-eslint/no-explicit-any -- We define these once to avoid using "any" through the code */
-export type AnyDictionary = Dictionary<any>;
-/* eslint-disable-next-line @typescript-eslint/no-explicit-any -- We define these once to avoid using "any" through the code */
-export type AnyList = List<any>;
-/* eslint-disable-next-line @typescript-eslint/no-explicit-any -- We define these once to avoid using "any" through the code */
-export type AnySet = RealmSet<any>;
+import type { AnyRealmObject } from "./Object";
+import type { AnyCollection, Collection } from "./Collection";
+import type { Counter } from "./Counter";
+import type { AnyDictionary, Dictionary } from "./Dictionary";
+import type { AnyList, List } from "./List";
+import type { Realm } from "./Realm";
+import type { AnySet, RealmSet } from "./Set";
 
 type ExtractPropertyNamesOfType<T, PropType> = {
   [K in keyof T]: T[K] extends PropType ? K : never;

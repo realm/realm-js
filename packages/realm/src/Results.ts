@@ -16,24 +16,18 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import {
-  COLLECTION_ACCESSOR as ACCESSOR,
-  Dictionary,
-  IllegalConstructorError,
-  List,
-  OrderedCollection,
-  Realm,
-  SubscriptionOptions,
-  TimeoutPromise,
-  TypeHelpers,
-  Unmanaged,
-  WaitForSync,
-  assert,
-  binding,
-  createDefaultGetter,
-  createDictionaryAccessor,
-  createListAccessor,
-} from "./internal";
+import { binding } from "../binding";
+import { assert } from "./assert";
+import { IllegalConstructorError } from "./errors";
+import { COLLECTION_ACCESSOR as ACCESSOR } from "./Collection";
+import { Dictionary, createDictionaryAccessor } from "./Dictionary";
+import { List, createListAccessor } from "./List";
+import { OrderedCollection, createDefaultGetter } from "./OrderedCollection";
+import type { Realm } from "./Realm";
+import { type SubscriptionOptions, WaitForSync } from "./app-services/MutableSubscriptionSet";
+import { TimeoutPromise } from "./TimeoutPromise";
+import type { TypeHelpers } from "./TypeHelpers";
+import type { Unmanaged } from "./Unmanaged";
 
 /**
  * Instances of this class are typically **live** collections returned by

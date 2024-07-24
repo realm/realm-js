@@ -16,7 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { ClientResetMode, Configuration, PrimaryKey, assert, binding } from "./internal";
+import { binding } from "../binding";
+import { assert } from "./assert";
+import type { PrimaryKey } from "./schema";
+import type { Configuration } from "./Configuration";
+import type { ClientResetMode } from "./app-services/SyncConfiguration";
 
 export class AssertionError extends Error {
   /** @internal */

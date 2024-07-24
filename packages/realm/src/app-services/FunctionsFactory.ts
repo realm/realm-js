@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { User } from "../internal";
+import type { User } from "./User";
 
 /**
  * A function which executes on the Atlas App Services server.

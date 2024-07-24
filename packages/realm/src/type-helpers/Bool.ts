@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { assert } from "../internal";
+import { assert } from "../assert";
 import { defaultFromBinding } from "./default";
 import { nullPassthrough } from "./null-passthrough";
 import type { TypeHelpers, TypeOptions } from "./types";

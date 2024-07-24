@@ -16,19 +16,18 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import {
+import { assert } from "../assert";
+import { ObjectSchemaParseError, PropertySchemaParseError } from "../errors";
+import type {
   CanonicalObjectSchema,
   CanonicalPropertySchema,
-  Configuration,
   DefaultObject,
   ObjectSchema,
-  ObjectSchemaParseError,
   PropertySchema,
-  PropertySchemaParseError,
-  RealmObject,
   RealmObjectConstructor,
-  assert,
-} from "../internal";
+} from "../schema";
+import type { Configuration } from "../Configuration";
+import { RealmObject } from "../Object";
 
 // Need to use `CanonicalObjectSchema` rather than `ObjectSchema` due to some
 // integration tests using `openRealmHook()`. That function sets `this.realm`

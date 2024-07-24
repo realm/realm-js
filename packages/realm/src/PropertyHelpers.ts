@@ -16,7 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { TypeOptions, binding, getTypeHelpers, toItemType } from "./internal";
+import { binding } from "../binding";
+import { type TypeOptions, getTypeHelpers, toItemType } from "./TypeHelpers";
 
 import { createArrayPropertyAccessor } from "./property-accessors/Array";
 import { createObjectPropertyAccessor } from "./property-accessors/Object";

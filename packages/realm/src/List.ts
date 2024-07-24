@@ -16,23 +16,15 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import {
-  COLLECTION_ACCESSOR as ACCESSOR,
-  AssertionError,
-  Dictionary,
-  IllegalConstructorError,
-  ObjectSchema,
-  OrderedCollection,
-  Realm,
-  TypeHelpers,
-  assert,
-  binding,
-  createDefaultGetter,
-  createDictionaryAccessor,
-  insertIntoDictionaryOfMixed,
-  isJsOrRealmDictionary,
-  toItemType,
-} from "./internal";
+import { assert } from "./assert";
+import { binding } from "../binding";
+import { COLLECTION_ACCESSOR as ACCESSOR } from "./Collection";
+import { Dictionary, createDictionaryAccessor, insertIntoDictionaryOfMixed, isJsOrRealmDictionary } from "./Dictionary";
+import { AssertionError, IllegalConstructorError } from "./errors";
+import { OrderedCollection, createDefaultGetter } from "./OrderedCollection";
+import type { ObjectSchema } from "./schema";
+import type { Realm } from "./Realm";
+import { type TypeHelpers, toItemType } from "./TypeHelpers";
 
 type PartiallyWriteableArray<T> = Pick<Array<T>, "pop" | "push" | "shift" | "unshift" | "splice">;
 
@@ -446,3 +438,6 @@ export function insertIntoListOfMixed(
 export function isJsOrRealmList(value: unknown): value is List | unknown[] {
   return Array.isArray(value) || value instanceof List;
 }
+
+/* eslint-disable-next-line @typescript-eslint/no-explicit-any -- We define these once to avoid using "any" through the code */
+export type AnyList = List<any>;

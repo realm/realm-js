@@ -16,7 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { IllegalConstructorError, Realm, UpdateMode, assert, binding } from "./internal";
+import { binding } from "../binding";
+import { assert } from "./assert";
+import { IllegalConstructorError } from "./errors";
+import { Realm } from "./Realm";
+import type { UpdateMode } from "./Object";
 
 const REALM = Symbol("Counter#realm");
 const OBJ = Symbol("Counter#obj");

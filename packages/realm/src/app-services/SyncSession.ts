@@ -18,25 +18,24 @@
 
 import { EJSON } from "bson";
 
+import { binding } from "../../binding";
+import { assert } from "../assert";
+import { ClientResetError, fromBindingSyncError } from "../errors";
+import { Listeners } from "../Listeners";
+import { Realm } from "../Realm";
+import { TimeoutPromise } from "../TimeoutPromise";
+import type { App } from "./App";
 import {
-  App,
-  ClientResetAfterCallback,
-  ClientResetBeforeCallback,
-  ClientResetError,
-  ClientResetFallbackCallback,
+  type ClientResetAfterCallback,
+  type ClientResetBeforeCallback,
+  type ClientResetFallbackCallback,
   ClientResetMode,
-  ErrorCallback,
-  Listeners,
-  PartitionValue,
-  Realm,
+  type ErrorCallback,
+  type PartitionValue,
   SessionStopPolicy,
-  SyncConfiguration,
-  TimeoutPromise,
-  User,
-  assert,
-  binding,
-  fromBindingSyncError,
-} from "../internal";
+  type SyncConfiguration,
+} from "./SyncConfiguration";
+import { User } from "./User";
 
 /**
  * The progress direction to register the progress notifier for.

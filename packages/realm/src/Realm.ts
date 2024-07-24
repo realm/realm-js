@@ -16,63 +16,53 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import { binding } from "../binding";
+import { assert } from "./assert";
+import { TypeAssertionError } from "./errors";
+import { extendDebug } from "./debug";
+import { flags } from "./flags";
+import { fs, garbageCollection } from "./platform";
+import type { Unmanaged } from "./Unmanaged";
+import { type AnyRealmObject, INTERNAL, RealmObject } from "./Object";
+import { type AnyResults, Results, createResultsAccessor } from "./Results";
 import {
-  AnyList,
-  AnyRealmObject,
-  AnyResults,
-  CanonicalObjectSchema,
-  ClassHelpers,
-  ClassMap,
-  Configuration,
-  Constructor,
-  DefaultObject,
-  INTERNAL,
-  InitialSubscriptions,
-  LOG_CATEGORIES,
-  List,
-  LogCategory,
-  LogLevel,
-  LoggerCallback,
-  LoggerCallback1,
-  LoggerCallback2,
-  MigrationCallback,
-  ObjectSchema,
-  PresentationPropertyTypeName,
-  ProgressRealmPromise,
-  REALM,
-  RealmEvent,
-  RealmListenerCallback,
-  RealmListeners,
-  RealmObject,
-  RealmObjectConstructor,
-  Results,
-  SubscriptionSet,
-  SyncSession,
-  TypeAssertionError,
-  TypeHelpers,
-  Unmanaged,
-  UpdateMode,
-  assert,
-  binding,
-  createResultsAccessor,
-  defaultLogger,
-  defaultLoggerLevel,
-  extendDebug,
-  flags,
+  type CanonicalObjectSchema,
+  type Constructor,
+  type DefaultObject,
+  type ObjectSchema,
+  type PresentationPropertyTypeName,
+  type RealmObjectConstructor,
   fromBindingRealmSchema,
-  fs,
-  garbageCollection,
   normalizeObjectSchema,
   normalizeRealmSchema,
-  toArrayBuffer,
-  toBindingLogger,
-  toBindingLoggerLevel,
   toBindingSchema,
-  toBindingSyncConfig,
-  validateConfiguration,
   validateObjectSchema,
   validateRealmSchema,
-} from "./internal";
+} from "./schema";
+import type { ClassHelpers } from "./ClassHelpers";
+import { ClassMap } from "./ClassMap";
+import { type Configuration, type MigrationCallback, validateConfiguration } from "./Configuration";
+import { type InitialSubscriptions, toBindingSyncConfig } from "./app-services/SyncConfiguration";
+import {
+  LOG_CATEGORIES,
+  type LogCategory,
+  type LogLevel,
+  type LoggerCallback,
+  type LoggerCallback1,
+  type LoggerCallback2,
+  defaultLogger,
+  defaultLoggerLevel,
+  toBindingLogger,
+  toBindingLoggerLevel,
+} from "./Logger";
+import { type AnyList, List } from "./List";
+import { ProgressRealmPromise } from "./ProgressRealmPromise";
+import { REALM, UpdateMode } from "./Object";
+import { RealmEvent, type RealmListenerCallback, RealmListeners } from "./RealmListeners";
+import { SubscriptionSet } from "./app-services/SubscriptionSet";
+import { SyncSession } from "./app-services/SyncSession";
+import type { TypeHelpers } from "./TypeHelpers";
+import { toArrayBuffer } from "./type-helpers/array-buffer";
 
 const debug = extendDebug("Realm");
 
@@ -1214,178 +1204,178 @@ function isEmbedded(objectSchema: binding.ObjectSchema): boolean {
 // This declaration needs to happen in the same file which declares "Realm"
 // @see https://www.typescriptlang.org/docs/handbook/declaration-merging.html#merging-namespaces-with-classes-functions-and-enums
 
-import * as internal from "./internal";
+import * as ns from "./namespace";
 // Needed to avoid complaints about a self-reference
 import RealmItself = Realm;
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace Realm {
   export import Realm = RealmItself;
-  export import flags = internal.flags;
+  export import flags = ns.flags;
 
-  export import Object = internal.RealmObject;
-  export import App = internal.App;
-  export import Auth = internal.Auth;
-  export import BSON = internal.BSON;
-  export import Types = internal.Types;
-  export import Services = internal.Services;
+  export import Object = ns.RealmObject;
+  export import App = ns.App;
+  export import Auth = ns.Auth;
+  export import BSON = ns.BSON;
+  export import Types = ns.Types;
+  export import Services = ns.Services;
 
-  export import index = internal.index;
-  export import mapTo = internal.mapTo;
-  export import kmToRadians = internal.kmToRadians;
-  export import miToRadians = internal.miToRadians;
+  export import index = ns.index;
+  export import mapTo = ns.mapTo;
+  export import kmToRadians = ns.kmToRadians;
+  export import miToRadians = ns.miToRadians;
 
-  export import AnyCollection = internal.AnyCollection;
-  export import AnyDictionary = internal.AnyDictionary;
-  export import AnyList = internal.AnyList;
-  export import AnyRealmObject = internal.AnyRealmObject;
-  export import AnyResults = internal.AnyResults;
-  export import AnySet = internal.AnySet;
-  export import AnyUser = internal.AnyUser;
-  export import ApiKey = internal.ApiKey;
-  export import AppChangeCallback = internal.AppChangeCallback;
-  export import AssertionError = internal.AssertionError;
-  export import AppConfiguration = internal.AppConfiguration;
-  export import AppServicesFunction = internal.AppServicesFunction;
-  export import BaseConfiguration = internal.BaseConfiguration;
-  export import BaseObjectSchema = internal.BaseObjectSchema;
-  export import BaseSyncConfiguration = internal.BaseSyncConfiguration;
-  export import CanonicalGeoPoint = internal.CanonicalGeoPoint;
-  export import CanonicalGeoPolygon = internal.CanonicalGeoPolygon;
-  export import CanonicalObjectSchema = internal.CanonicalObjectSchema;
-  export import CanonicalPropertiesTypes = internal.CanonicalPropertiesTypes;
-  export import CanonicalPropertySchema = internal.CanonicalPropertySchema;
-  export import ClientResetAfterCallback = internal.ClientResetAfterCallback;
-  export import ClientResetBeforeCallback = internal.ClientResetBeforeCallback;
-  export import ClientResetConfig = internal.ClientResetConfig;
-  export import ClientResetDiscardUnsyncedChangesConfiguration = internal.ClientResetDiscardUnsyncedChangesConfiguration;
-  export import ClientResetFallbackCallback = internal.ClientResetFallbackCallback;
-  export import ClientResetManualConfiguration = internal.ClientResetManualConfiguration;
-  export import ClientResetMode = internal.ClientResetMode;
-  export import ClientResetRecoverOrDiscardUnsyncedChangesConfiguration = internal.ClientResetRecoverOrDiscardUnsyncedChangesConfiguration;
-  export import ClientResetRecoverUnsyncedChangesConfiguration = internal.ClientResetRecoverUnsyncedChangesConfiguration;
-  export import Collection = internal.Collection;
-  export import CollectionChangeCallback = internal.CollectionChangeCallback;
-  export import CollectionChangeSet = internal.CollectionChangeSet;
-  export import CollectionPropertyTypeName = internal.CollectionPropertyTypeName;
-  export import CompensatingWriteError = internal.CompensatingWriteError;
-  export import CompensatingWriteInfo = internal.CompensatingWriteInfo;
-  export import Configuration = internal.Configuration;
-  export import ConfigurationWithoutSync = internal.ConfigurationWithoutSync;
-  export import ConfigurationWithSync = internal.ConfigurationWithSync;
-  export import ConnectionNotificationCallback = internal.ConnectionNotificationCallback;
-  export import ConnectionState = internal.ConnectionState;
-  export import Counter = internal.Counter;
-  export import Credentials = internal.Credentials;
-  export import DefaultFunctionsFactory = internal.DefaultFunctionsFactory;
-  export import DefaultUserProfileData = internal.DefaultUserProfileData;
-  export import Dictionary = internal.Dictionary;
-  export import DictionaryChangeCallback = internal.DictionaryChangeCallback;
-  export import DictionaryChangeSet = internal.DictionaryChangeSet;
-  export import ErrorCallback = internal.ErrorCallback;
-  export import EstimateProgressNotificationCallback = internal.EstimateProgressNotificationCallback;
-  export import FlexibleSyncConfiguration = internal.FlexibleSyncConfiguration;
-  export import GeoBox = internal.GeoBox;
-  export import GeoCircle = internal.GeoCircle;
-  export import GeoPoint = internal.GeoPoint;
-  export import GeoPolygon = internal.GeoPolygon;
-  export import GeoPosition = internal.GeoPosition;
-  export import IndexDecorator = internal.IndexDecorator;
-  export import IndexedType = internal.IndexedType;
-  export import InitialSubscriptions = internal.InitialSubscriptions;
-  export import List = internal.List;
-  export import LocalAppConfiguration = internal.LocalAppConfiguration;
-  export import LogCategory = internal.LogCategory;
-  export import LogEntry = internal.LogEntry;
-  export import Logger = internal.Logger;
-  export import LoggerCallback = internal.LoggerCallback;
-  export import LoggerCallback1 = internal.LoggerCallback1;
-  export import LoggerCallback2 = internal.LoggerCallback2;
-  export import MapToDecorator = internal.MapToDecorator;
-  export import Metadata = internal.Metadata;
-  export import MetadataMode = internal.MetadataMode;
-  export import MigrationCallback = internal.MigrationCallback;
-  export import MigrationOptions = internal.MigrationOptions;
-  export import Mixed = internal.Types.Mixed;
-  export import MongoDB = internal.MongoDB;
-  export import MongoDBService = internal.MongoDBService;
-  export import NumericLogLevel = internal.NumericLogLevel;
-  export import ObjectChangeCallback = internal.ObjectChangeCallback;
-  export import ObjectChangeSet = internal.ObjectChangeSet;
-  export import ObjectSchema = internal.ObjectSchema;
-  export import ObjectType = internal.ObjectType;
-  export import OpenRealmBehaviorConfiguration = internal.OpenRealmBehaviorConfiguration;
-  export import OpenRealmBehaviorType = internal.OpenRealmBehaviorType;
-  export import OpenRealmTimeOutBehavior = internal.OpenRealmTimeOutBehavior;
-  export import OrderedCollection = internal.OrderedCollection;
-  export import PartitionSyncConfiguration = internal.PartitionSyncConfiguration;
-  export import PresentationPropertyTypeName = internal.PresentationPropertyTypeName;
-  export import PrimaryKey = internal.PrimaryKey;
-  export import PrimitivePropertyTypeName = internal.PrimitivePropertyTypeName;
-  export import ProgressDirection = internal.ProgressDirection;
-  export import ProgressMode = internal.ProgressMode;
-  export import ProgressNotificationCallback = internal.ProgressNotificationCallback;
-  export import ProgressRealmPromise = internal.ProgressRealmPromise;
-  export import PropertiesTypes = internal.PropertiesTypes;
-  export import PropertySchema = internal.PropertySchema;
-  export import PropertySchemaCommon = internal.PropertySchemaCommon;
-  export import PropertySchemaParseError = internal.PropertySchemaParseError;
-  export import PropertySchemaShorthand = internal.PropertySchemaShorthand;
-  export import PropertySchemaStrict = internal.PropertySchemaStrict;
-  export import PropertyTypeName = internal.PropertyTypeName;
-  export import ProviderType = internal.ProviderType;
-  export import ProxyType = internal.ProxyType;
-  export import RealmEvent = internal.RealmEvent;
-  export import RealmEventName = internal.RealmEventName;
-  export import RealmListenerCallback = internal.RealmListenerCallback;
-  export import RealmObjectConstructor = internal.RealmObjectConstructor;
-  export import RelationshipPropertyTypeName = internal.RelationshipPropertyTypeName;
-  export import Results = internal.Results;
-  export import SchemaParseError = internal.SchemaParseError;
-  export import SecretApiKey = internal.SecretApiKey;
-  export import SessionState = internal.SessionState;
-  export import SessionStopPolicy = internal.SessionStopPolicy;
-  export import Set = internal.RealmSet;
-  export import ShorthandPrimitivePropertyTypeName = internal.ShorthandPrimitivePropertyTypeName;
-  export import SortDescriptor = internal.SortDescriptor;
-  export import SSLConfiguration = internal.SSLConfiguration;
-  export import SSLVerifyCallback = internal.SSLVerifyCallback;
-  export import SSLVerifyObject = internal.SSLVerifyObject;
-  export import SubscriptionSetState = internal.SubscriptionSetState;
-  export import SyncConfiguration = internal.SyncConfiguration;
-  export import SyncError = internal.SyncError;
-  export import SyncProxyConfig = internal.SyncProxyConfig;
-  export import TypeAssertionError = internal.TypeAssertionError;
-  export import Unmanaged = internal.Unmanaged;
-  export import UpdateMode = internal.UpdateMode;
-  export import User = internal.User;
-  export import UserChangeCallback = internal.UserChangeCallback;
-  export import UserIdentity = internal.UserIdentity;
-  export import UserState = internal.UserState;
-  export import UserTypeName = internal.UserTypeName;
-  export import WaitForSync = internal.WaitForSync;
-  export import WatchOptionsFilter = internal.WatchOptionsFilter;
-  export import WatchOptionsIds = internal.WatchOptionsIds;
+  export import AnyCollection = ns.AnyCollection;
+  export import AnyDictionary = ns.AnyDictionary;
+  export import AnyList = ns.AnyList;
+  export import AnyRealmObject = ns.AnyRealmObject;
+  export import AnyResults = ns.AnyResults;
+  export import AnySet = ns.AnySet;
+  export import AnyUser = ns.AnyUser;
+  export import ApiKey = ns.ApiKey;
+  export import AppChangeCallback = ns.AppChangeCallback;
+  export import AssertionError = ns.AssertionError;
+  export import AppConfiguration = ns.AppConfiguration;
+  export import AppServicesFunction = ns.AppServicesFunction;
+  export import BaseConfiguration = ns.BaseConfiguration;
+  export import BaseObjectSchema = ns.BaseObjectSchema;
+  export import BaseSyncConfiguration = ns.BaseSyncConfiguration;
+  export import CanonicalGeoPoint = ns.CanonicalGeoPoint;
+  export import CanonicalGeoPolygon = ns.CanonicalGeoPolygon;
+  export import CanonicalObjectSchema = ns.CanonicalObjectSchema;
+  export import CanonicalPropertiesTypes = ns.CanonicalPropertiesTypes;
+  export import CanonicalPropertySchema = ns.CanonicalPropertySchema;
+  export import ClientResetAfterCallback = ns.ClientResetAfterCallback;
+  export import ClientResetBeforeCallback = ns.ClientResetBeforeCallback;
+  export import ClientResetConfig = ns.ClientResetConfig;
+  export import ClientResetDiscardUnsyncedChangesConfiguration = ns.ClientResetDiscardUnsyncedChangesConfiguration;
+  export import ClientResetFallbackCallback = ns.ClientResetFallbackCallback;
+  export import ClientResetManualConfiguration = ns.ClientResetManualConfiguration;
+  export import ClientResetMode = ns.ClientResetMode;
+  export import ClientResetRecoverOrDiscardUnsyncedChangesConfiguration = ns.ClientResetRecoverOrDiscardUnsyncedChangesConfiguration;
+  export import ClientResetRecoverUnsyncedChangesConfiguration = ns.ClientResetRecoverUnsyncedChangesConfiguration;
+  export import Collection = ns.Collection;
+  export import CollectionChangeCallback = ns.CollectionChangeCallback;
+  export import CollectionChangeSet = ns.CollectionChangeSet;
+  export import CollectionPropertyTypeName = ns.CollectionPropertyTypeName;
+  export import CompensatingWriteError = ns.CompensatingWriteError;
+  export import CompensatingWriteInfo = ns.CompensatingWriteInfo;
+  export import Configuration = ns.Configuration;
+  export import ConfigurationWithoutSync = ns.ConfigurationWithoutSync;
+  export import ConfigurationWithSync = ns.ConfigurationWithSync;
+  export import ConnectionNotificationCallback = ns.ConnectionNotificationCallback;
+  export import ConnectionState = ns.ConnectionState;
+  export import Counter = ns.Counter;
+  export import Credentials = ns.Credentials;
+  export import DefaultFunctionsFactory = ns.DefaultFunctionsFactory;
+  export import DefaultUserProfileData = ns.DefaultUserProfileData;
+  export import Dictionary = ns.Dictionary;
+  export import DictionaryChangeCallback = ns.DictionaryChangeCallback;
+  export import DictionaryChangeSet = ns.DictionaryChangeSet;
+  export import ErrorCallback = ns.ErrorCallback;
+  export import EstimateProgressNotificationCallback = ns.EstimateProgressNotificationCallback;
+  export import FlexibleSyncConfiguration = ns.FlexibleSyncConfiguration;
+  export import GeoBox = ns.GeoBox;
+  export import GeoCircle = ns.GeoCircle;
+  export import GeoPoint = ns.GeoPoint;
+  export import GeoPolygon = ns.GeoPolygon;
+  export import GeoPosition = ns.GeoPosition;
+  export import IndexDecorator = ns.IndexDecorator;
+  export import IndexedType = ns.IndexedType;
+  export import InitialSubscriptions = ns.InitialSubscriptions;
+  export import List = ns.List;
+  export import LocalAppConfiguration = ns.LocalAppConfiguration;
+  export import LogCategory = ns.LogCategory;
+  export import LogEntry = ns.LogEntry;
+  export import Logger = ns.Logger;
+  export import LoggerCallback = ns.LoggerCallback;
+  export import LoggerCallback1 = ns.LoggerCallback1;
+  export import LoggerCallback2 = ns.LoggerCallback2;
+  export import MapToDecorator = ns.MapToDecorator;
+  export import Metadata = ns.Metadata;
+  export import MetadataMode = ns.MetadataMode;
+  export import MigrationCallback = ns.MigrationCallback;
+  export import MigrationOptions = ns.MigrationOptions;
+  export import Mixed = ns.Types.Mixed;
+  export import MongoDB = ns.MongoDB;
+  export import MongoDBService = ns.MongoDBService;
+  export import NumericLogLevel = ns.NumericLogLevel;
+  export import ObjectChangeCallback = ns.ObjectChangeCallback;
+  export import ObjectChangeSet = ns.ObjectChangeSet;
+  export import ObjectSchema = ns.ObjectSchema;
+  export import ObjectType = ns.ObjectType;
+  export import OpenRealmBehaviorConfiguration = ns.OpenRealmBehaviorConfiguration;
+  export import OpenRealmBehaviorType = ns.OpenRealmBehaviorType;
+  export import OpenRealmTimeOutBehavior = ns.OpenRealmTimeOutBehavior;
+  export import OrderedCollection = ns.OrderedCollection;
+  export import PartitionSyncConfiguration = ns.PartitionSyncConfiguration;
+  export import PresentationPropertyTypeName = ns.PresentationPropertyTypeName;
+  export import PrimaryKey = ns.PrimaryKey;
+  export import PrimitivePropertyTypeName = ns.PrimitivePropertyTypeName;
+  export import ProgressDirection = ns.ProgressDirection;
+  export import ProgressMode = ns.ProgressMode;
+  export import ProgressNotificationCallback = ns.ProgressNotificationCallback;
+  export import ProgressRealmPromise = ns.ProgressRealmPromise;
+  export import PropertiesTypes = ns.PropertiesTypes;
+  export import PropertySchema = ns.PropertySchema;
+  export import PropertySchemaCommon = ns.PropertySchemaCommon;
+  export import PropertySchemaParseError = ns.PropertySchemaParseError;
+  export import PropertySchemaShorthand = ns.PropertySchemaShorthand;
+  export import PropertySchemaStrict = ns.PropertySchemaStrict;
+  export import PropertyTypeName = ns.PropertyTypeName;
+  export import ProviderType = ns.ProviderType;
+  export import ProxyType = ns.ProxyType;
+  export import RealmEvent = ns.RealmEvent;
+  export import RealmEventName = ns.RealmEventName;
+  export import RealmListenerCallback = ns.RealmListenerCallback;
+  export import RealmObjectConstructor = ns.RealmObjectConstructor;
+  export import RelationshipPropertyTypeName = ns.RelationshipPropertyTypeName;
+  export import Results = ns.Results;
+  export import SchemaParseError = ns.SchemaParseError;
+  export import SecretApiKey = ns.SecretApiKey;
+  export import SessionState = ns.SessionState;
+  export import SessionStopPolicy = ns.SessionStopPolicy;
+  export import Set = ns.RealmSet;
+  export import ShorthandPrimitivePropertyTypeName = ns.ShorthandPrimitivePropertyTypeName;
+  export import SortDescriptor = ns.SortDescriptor;
+  export import SSLConfiguration = ns.SSLConfiguration;
+  export import SSLVerifyCallback = ns.SSLVerifyCallback;
+  export import SSLVerifyObject = ns.SSLVerifyObject;
+  export import SubscriptionSetState = ns.SubscriptionSetState;
+  export import SyncConfiguration = ns.SyncConfiguration;
+  export import SyncError = ns.SyncError;
+  export import SyncProxyConfig = ns.SyncProxyConfig;
+  export import TypeAssertionError = ns.TypeAssertionError;
+  export import Unmanaged = ns.Unmanaged;
+  export import UpdateMode = ns.UpdateMode;
+  export import User = ns.User;
+  export import UserChangeCallback = ns.UserChangeCallback;
+  export import UserIdentity = ns.UserIdentity;
+  export import UserState = ns.UserState;
+  export import UserTypeName = ns.UserTypeName;
+  export import WaitForSync = ns.WaitForSync;
+  export import WatchOptionsFilter = ns.WatchOptionsFilter;
+  export import WatchOptionsIds = ns.WatchOptionsIds;
 
   // Deprecated exports below
-  /** @deprecated Will be removed in v13.0.0. Please use {@link internal.AppServicesFunction | AppServicesFunction} */
-  export import RealmFunction = internal.AppServicesFunction;
-  /** @deprecated Will be removed in v13.0.0. Please use {@link internal.CanonicalPropertySchema | CanonicalPropertySchema} */
-  export import CanonicalObjectSchemaProperty = internal.CanonicalPropertySchema;
-  /** @deprecated Will be removed in v13.0.0. Please use {@link internal.ClientResetRecoverUnsyncedChangesConfiguration | ClientResetRecoverUnsyncedChangesConfiguration} */
-  export import ClientResetRecoveryConfiguration = internal.ClientResetRecoverUnsyncedChangesConfiguration;
-  /** @deprecated Will be removed in v13.0.0. Please use {@link internal.PropertySchema | PropertySchema} */
-  export import ObjectSchemaProperty = internal.PropertySchema;
-  /** @deprecated Will be removed in v13.0.0. Please use {@link internal.RealmObjectConstructor | RealmObjectConstructor} */
-  export import ObjectClass = internal.RealmObjectConstructor;
-  /** @deprecated Will be removed in a future major version. Please use {@link internal.EstimateProgressNotificationCallback | EstimateProgressNotificationCallback} */
-  export import PartitionBasedSyncProgressNotificationCallback = internal.PartitionBasedSyncProgressNotificationCallback;
-  /** @deprecated Will be removed in v13.0.0. Please use {@link internal.PropertyTypeName | PropertyTypeName} */
-  export import PropertyType = internal.PropertyTypeName;
-  /** @deprecated Use another {@link internal.ClientResetMode | ClientResetMode} than {@link internal.ClientResetMode.Manual | ClientResetMode.Manual}. */
-  export import ClientResetError = internal.ClientResetError;
+  /** @deprecated Will be removed in v13.0.0. Please use {@link ns.AppServicesFunction | AppServicesFunction} */
+  export import RealmFunction = ns.AppServicesFunction;
+  /** @deprecated Will be removed in v13.0.0. Please use {@link ns.CanonicalPropertySchema | CanonicalPropertySchema} */
+  export import CanonicalObjectSchemaProperty = ns.CanonicalPropertySchema;
+  /** @deprecated Will be removed in v13.0.0. Please use {@link ns.ClientResetRecoverUnsyncedChangesConfiguration | ClientResetRecoverUnsyncedChangesConfiguration} */
+  export import ClientResetRecoveryConfiguration = ns.ClientResetRecoverUnsyncedChangesConfiguration;
+  /** @deprecated Will be removed in v13.0.0. Please use {@link ns.PropertySchema | PropertySchema} */
+  export import ObjectSchemaProperty = ns.PropertySchema;
+  /** @deprecated Will be removed in v13.0.0. Please use {@link ns.RealmObjectConstructor | RealmObjectConstructor} */
+  export import ObjectClass = ns.RealmObjectConstructor;
+  /** @deprecated Will be removed in a future major version. Please use {@link ns.EstimateProgressNotificationCallback | EstimateProgressNotificationCallback} */
+  export import PartitionBasedSyncProgressNotificationCallback = ns.PartitionBasedSyncProgressNotificationCallback;
+  /** @deprecated Will be removed in v13.0.0. Please use {@link ns.PropertyTypeName | PropertyTypeName} */
+  export import PropertyType = ns.PropertyTypeName;
+  /** @deprecated Use another {@link ns.ClientResetMode | ClientResetMode} than {@link ns.ClientResetMode.Manual | ClientResetMode.Manual}. */
+  export import ClientResetError = ns.ClientResetError;
   /** @deprecated See https://www.mongodb.com/docs/atlas/app-services/reference/push-notifications/ */
-  export import PushClient = internal.PushClient;
+  export import PushClient = ns.PushClient;
 }
 
 // Set default logger and log level.

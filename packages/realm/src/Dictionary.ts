@@ -16,27 +16,19 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import {
-  COLLECTION_ACCESSOR as ACCESSOR,
-  AssertionError,
-  Collection,
-  DefaultObject,
-  IllegalConstructorError,
-  JSONCacheMap,
-  List,
-  Realm,
-  RealmObject,
-  Results,
-  COLLECTION_TYPE_HELPERS as TYPE_HELPERS,
-  TypeHelpers,
-  assert,
-  binding,
-  createListAccessor,
-  createResultsAccessor,
-  insertIntoListOfMixed,
-  isJsOrRealmList,
-  toItemType,
-} from "./internal";
+import { assert } from "./assert";
+import { binding } from "../binding";
+import { createListAccessor, insertIntoListOfMixed, isJsOrRealmList } from "./List";
+import { Results, createResultsAccessor } from "./Results";
+import { COLLECTION_ACCESSOR as ACCESSOR, Collection, COLLECTION_TYPE_HELPERS as TYPE_HELPERS } from "./Collection";
+import { AssertionError, IllegalConstructorError } from "./errors";
+import type { DefaultObject } from "./schema";
+import { JSONCacheMap } from "./JSONCacheMap";
+import { List } from "./List";
+import type { Realm } from "./Realm";
+import { toItemType } from "./TypeHelpers";
+import type { TypeHelpers } from "./TypeHelpers";
+import { RealmObject } from "./Object";
 
 /* eslint-disable jsdoc/multiline-blocks -- We need this to have @ts-expect-error located correctly in the .d.ts bundle */
 
@@ -453,3 +445,6 @@ export function isPOJO(value: unknown): value is Record<string, unknown> {
     (value.constructor === Object || !Object.getPrototypeOf(value))
   );
 }
+
+/* eslint-disable-next-line @typescript-eslint/no-explicit-any -- We define these once to avoid using "any" through the code */
+export type AnyDictionary = Dictionary<any>;

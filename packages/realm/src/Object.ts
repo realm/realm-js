@@ -16,33 +16,29 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import { binding } from "../binding";
+import { assert } from "./assert";
+import { AssertionError, TypeAssertionError } from "./errors";
+import { BSON } from "./bson";
 import {
-  AssertionError,
-  BSON,
-  CanonicalObjectSchema,
-  ClassHelpers,
-  type Collection,
-  Constructor,
-  DefaultObject,
-  Dictionary,
-  JSONCacheMap,
-  ObjectChangeCallback,
-  ObjectListeners,
-  ObjectSchema,
-  OmittedRealmTypes,
-  OrderedCollection,
-  Realm,
-  RealmObjectConstructor,
-  Results,
-  TypeAssertionError,
-  TypeHelpers,
-  Unmanaged,
-  assert,
-  binding,
-  createResultsAccessor,
-  flags,
+  type CanonicalObjectSchema,
+  type Constructor,
+  type DefaultObject,
+  type ObjectSchema,
+  type RealmObjectConstructor,
   getTypeName,
-} from "./internal";
+} from "./schema";
+import type { ClassHelpers } from "./ClassHelpers";
+import type { Collection } from "./Collection";
+import { Dictionary } from "./Dictionary";
+import { JSONCacheMap } from "./JSONCacheMap";
+import { type ObjectChangeCallback, ObjectListeners } from "./ObjectListeners";
+import type { OmittedRealmTypes, Unmanaged } from "./Unmanaged";
+import { OrderedCollection } from "./OrderedCollection";
+import type { Realm } from "./Realm";
+import { Results, createResultsAccessor } from "./Results";
+import type { TypeHelpers } from "./TypeHelpers";
+import { flags } from "./flags";
 
 /**
  * The update mode to use when creating an object that already exists,

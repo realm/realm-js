@@ -16,7 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { INTERNAL, Listeners, PropertyMap, RealmObject, binding, getClassHelpers } from "./internal";
+import { binding } from "../binding";
+import { INTERNAL, type RealmObject } from "./Object";
+import { Listeners } from "./Listeners";
+import type { PropertyMap } from "./PropertyMap";
+import { getClassHelpers } from "./ClassHelpers";
 
 export type ObjectChangeSet<T> = {
   /**

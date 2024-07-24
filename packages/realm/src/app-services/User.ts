@@ -16,28 +16,20 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import {
-  AnyApp,
-  ApiKeyAuth,
-  App,
-  Credentials,
-  DefaultFunctionsFactory,
-  DefaultObject,
-  DefaultUserProfileData,
-  Document,
-  Listeners,
-  MongoDBCollection,
-  MongoDBService,
-  ProviderType,
-  PushClient,
-  assert,
-  asyncIteratorFromResponse,
-  binding,
-  cleanArguments,
-  createFactory,
-  isProviderType,
-  network,
-} from "../internal";
+import { binding } from "../../binding";
+import { assert } from "../assert";
+import { network } from "../platform";
+import type { DefaultObject } from "../schema";
+import { Listeners } from "../Listeners";
+import { asyncIteratorFromResponse } from "../async-iterator-from-response";
+import { cleanArguments } from "./utils";
+import { type AnyApp, App } from "./App";
+import { ApiKeyAuth } from "./ApiKeyAuth";
+import { type Credentials, ProviderType, isProviderType } from "./Credentials";
+import { type DefaultFunctionsFactory, createFactory } from "./FunctionsFactory";
+import type { DefaultUserProfileData } from "./UserProfile";
+import { type Document, MongoDBCollection, type MongoDBService } from "./MongoDBCollection";
+import { PushClient } from "./PushClient";
 
 export type UserChangeCallback = () => void;
 

@@ -16,7 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { BSON, Realm, RealmObject } from "../internal";
+import type { BSON } from "../bson";
+import type { Realm } from "../Realm";
+import type { RealmObject } from "../Object";
 
 export type DefaultObject = Record<string, unknown>;
 /* eslint-disable-next-line @typescript-eslint/no-explicit-any -- Using `any` instead of `unknown` here to make it easier to pass */

@@ -16,7 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { AssertionError, BSON, DefaultObject, PrimaryKey, Realm, TypeAssertionError, binding } from "./internal";
+import { binding } from "../binding";
+import { AssertionError, TypeAssertionError } from "./errors";
+import { BSON } from "./bson";
+import type { DefaultObject, PrimaryKey } from "./schema";
+import type { Realm } from "./Realm";
 
 /**
  * Expects the condition to be truthy

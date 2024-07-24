@@ -16,15 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import {
-  CanonicalObjectSchema,
-  DefaultObject,
-  INTERNAL_HELPERS,
-  PropertyMap,
-  RealmObject,
-  RealmObjectConstructor,
-  binding,
-} from "./internal";
+import type { binding } from "../binding";
+import type { CanonicalObjectSchema, DefaultObject, RealmObjectConstructor } from "./schema";
+import type { PropertyMap } from "./PropertyMap";
+import { INTERNAL_HELPERS, type RealmObject } from "./Object";
 
 type ObjectWrapper = (obj: binding.Obj) => (RealmObject & DefaultObject) | null;
 

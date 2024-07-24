@@ -16,7 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { BSON, assert, binding } from "../internal";
+import { binding } from "../../binding";
+import { BSON } from "../bson";
+import { assert } from "../assert";
 
 /**
  * The representation of an API-key stored in the service.

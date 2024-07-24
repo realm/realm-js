@@ -16,7 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { INTERNAL, REALM, RealmObject, UpdateMode, assert, binding } from "../internal";
+import { binding } from "../../binding";
+import { assert } from "../assert";
+import { INTERNAL, REALM, RealmObject, UpdateMode } from "../Object";
 import { nullPassthrough } from "./null-passthrough";
 import { TypeHelpers, TypeOptions } from "./types";
 

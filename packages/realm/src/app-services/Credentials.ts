@@ -16,7 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { App, assert, binding } from "../internal";
+import type { App } from "./App";
+import { binding } from "../../binding";
+import { assert } from "../assert";
 
 /**
  * Types of an authentication provider.

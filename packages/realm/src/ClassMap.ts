@@ -16,22 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import {
-  CanonicalObjectSchema,
-  Constructor,
-  INTERNAL,
-  KEY_ARRAY,
-  KEY_SET,
-  PropertyMap,
-  REALM,
-  Realm,
-  RealmObject,
-  RealmObjectConstructor,
-  assert,
-  binding,
-  getClassHelpers,
-  setClassHelpers,
-} from "./internal";
+import type { CanonicalObjectSchema, Constructor, RealmObjectConstructor } from "./schema";
+import type { binding } from "../binding";
+import { PropertyMap } from "./PropertyMap";
+import { INTERNAL, KEY_ARRAY, KEY_SET, REALM, RealmObject } from "./Object";
+import { assert } from "./assert";
+import { getClassHelpers, setClassHelpers } from "./ClassHelpers";
 
 /** @internal */
 export class ClassMap {

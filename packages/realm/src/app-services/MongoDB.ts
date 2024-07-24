@@ -16,38 +16,38 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import * as internal from "../internal";
+import * as ns from "./MongoDBCollection";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace MongoDB {
-  export import AggregatePipelineStage = internal.AggregatePipelineStage;
-  export import BaseChangeEvent = internal.BaseChangeEvent;
-  export import ChangeEvent = internal.ChangeEvent;
-  export import ChangeEventId = internal.ChangeEventId;
-  export import CountOptions = internal.CountOptions;
-  export import DeleteEvent = internal.DeleteEvent;
-  export import DeleteResult = internal.DeleteResult;
-  export import Document = internal.Document;
-  export import DocumentKey = internal.DocumentKey;
-  export import DocumentNamespace = internal.DocumentNamespace;
-  export import DropDatabaseEvent = internal.DropDatabaseEvent;
-  export import DropEvent = internal.DropEvent;
-  export import Filter = internal.Filter;
-  export import FindOneAndModifyOptions = internal.FindOneAndModifyOptions;
-  export import FindOneOptions = internal.FindOneOptions;
-  export import FindOptions = internal.FindOptions;
-  export import InsertEvent = internal.InsertEvent;
-  export import InsertManyResult = internal.InsertManyResult;
-  export import InsertOneResult = internal.InsertOneResult;
-  export import InvalidateEvent = internal.InvalidateEvent;
-  export import MongoDBCollection = internal.MongoDBCollection;
-  export import NewDocument = internal.NewDocument;
-  export import OperationType = internal.OperationType;
-  export import RenameEvent = internal.RenameEvent;
-  export import ReplaceEvent = internal.ReplaceEvent;
-  export import Update = internal.Update;
-  export import UpdateDescription = internal.UpdateDescription;
-  export import UpdateEvent = internal.UpdateEvent;
-  export import UpdateOptions = internal.UpdateOptions;
-  export import UpdateResult = internal.UpdateResult;
+  export import AggregatePipelineStage = ns.AggregatePipelineStage;
+  export import BaseChangeEvent = ns.BaseChangeEvent;
+  export import ChangeEvent = ns.ChangeEvent;
+  export import ChangeEventId = ns.ChangeEventId;
+  export import CountOptions = ns.CountOptions;
+  export import DeleteEvent = ns.DeleteEvent;
+  export import DeleteResult = ns.DeleteResult;
+  export import Document = ns.Document;
+  export import DocumentKey = ns.DocumentKey;
+  export import DocumentNamespace = ns.DocumentNamespace;
+  export import DropDatabaseEvent = ns.DropDatabaseEvent;
+  export import DropEvent = ns.DropEvent;
+  export import Filter = ns.Filter;
+  export import FindOneAndModifyOptions = ns.FindOneAndModifyOptions;
+  export import FindOneOptions = ns.FindOneOptions;
+  export import FindOptions = ns.FindOptions;
+  export import InsertEvent = ns.InsertEvent;
+  export import InsertManyResult = ns.InsertManyResult;
+  export import InsertOneResult = ns.InsertOneResult;
+  export import InvalidateEvent = ns.InvalidateEvent;
+  export import MongoDBCollection = ns.MongoDBCollection;
+  export import NewDocument = ns.NewDocument;
+  export import OperationType = ns.OperationType;
+  export import RenameEvent = ns.RenameEvent;
+  export import ReplaceEvent = ns.ReplaceEvent;
+  export import Update = ns.Update;
+  export import UpdateDescription = ns.UpdateDescription;
+  export import UpdateEvent = ns.UpdateEvent;
+  export import UpdateOptions = ns.UpdateOptions;
+  export import UpdateResult = ns.UpdateResult;
 }

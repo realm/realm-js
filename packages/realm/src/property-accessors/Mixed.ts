@@ -16,18 +16,15 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import { binding } from "../../binding";
+import { assert } from "../assert";
 import {
   Dictionary,
-  List,
-  assert,
-  binding,
   createDictionaryAccessor,
-  createListAccessor,
   insertIntoDictionaryOfMixed,
-  insertIntoListOfMixed,
   isJsOrRealmDictionary,
-  isJsOrRealmList,
-} from "../internal";
+} from "../Dictionary";
+import { List, createListAccessor, insertIntoListOfMixed, isJsOrRealmList } from "../List";
 import { createDefaultPropertyAccessor } from "./default";
 import type { PropertyAccessor, PropertyOptions } from "./types";
 

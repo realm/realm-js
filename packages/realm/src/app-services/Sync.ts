@@ -16,26 +16,21 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import { binding } from "../../binding";
+import { assert } from "../assert";
+import { type LogLevel, type Logger, fromBindingLoggerLevelToNumericLogLevel, toBindingLoggerLevel } from "../Logger";
+import type { Realm } from "../Realm";
+import { SyncSession } from "./SyncSession";
+import type { App } from "./App";
+import type { User } from "./User";
 import {
-  App,
-  LogLevel,
-  Logger,
-  OpenRealmBehaviorConfiguration,
+  type OpenRealmBehaviorConfiguration,
   OpenRealmBehaviorType,
   OpenRealmTimeOutBehavior,
-  PartitionValue,
-  Realm,
-  SyncSession,
-  User,
-  assert,
-  binding,
-  fromBindingLoggerLevelToNumericLogLevel,
-  toBindingLoggerLevel,
+  type PartitionValue,
   toBindingSyncConfig,
   validateSyncConfiguration,
-} from "../internal";
-
-import * as internal from "../internal";
+} from "./SyncConfiguration";
 
 export class Sync {
   /** @deprecated Will be removed in v13.0.0. Please use {@link Realm.setLogLevel}. */
@@ -181,19 +176,28 @@ export class Sync {
   };
 }
 
+// import * as internal from "../internal";
+import * as SyncSessionNS from "./SyncSession";
+import * as SyncConfigurationNS from "./SyncConfiguration";
+import * as BaseSubscriptionSetNS from "./BaseSubscriptionSet";
+import * as SubscriptionSetNS from "./SubscriptionSet";
+import * as SubscriptionNS from "./Subscription";
+import * as MutableSubscriptionSetNS from "./MutableSubscriptionSet";
+import * as LogLevelNS from "../Logger";
+
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace Sync {
-  export import ConnectionState = internal.ConnectionState;
-  export import BaseSubscriptionSet = internal.BaseSubscriptionSet;
-  export import LogLevel = internal.LogLevel;
-  export import NumericLogLevel = internal.NumericLogLevel;
-  export import MutableSubscriptionSet = internal.MutableSubscriptionSet;
-  export import PartitionValue = internal.PartitionValue;
-  export import SubscriptionOptions = internal.SubscriptionOptions;
-  export import SubscriptionSet = internal.SubscriptionSet;
-  export import SubscriptionSetState = internal.SubscriptionSetState;
-  /** @deprecated Please use {@link internal.SubscriptionSetState | SubscriptionSetState} */
-  export import SubscriptionsState = internal.SubscriptionSetState;
-  export import Subscription = internal.Subscription;
-  export import Session = internal.SyncSession;
+  export import ConnectionState = SyncSessionNS.ConnectionState;
+  export import BaseSubscriptionSet = BaseSubscriptionSetNS.BaseSubscriptionSet;
+  export import LogLevel = LogLevelNS.LogLevel;
+  export import NumericLogLevel = LogLevelNS.NumericLogLevel;
+  export import MutableSubscriptionSet = MutableSubscriptionSetNS.MutableSubscriptionSet;
+  export import PartitionValue = SyncConfigurationNS.PartitionValue;
+  export import SubscriptionOptions = MutableSubscriptionSetNS.SubscriptionOptions;
+  export import SubscriptionSet = SubscriptionSetNS.SubscriptionSet;
+  export import SubscriptionSetState = BaseSubscriptionSetNS.SubscriptionSetState;
+  /** @deprecated Please use {@link BaseSubscriptionSetNS.SubscriptionSetState | SubscriptionSetState} */
+  export import SubscriptionsState = BaseSubscriptionSetNS.SubscriptionSetState;
+  export import Subscription = SubscriptionNS.Subscription;
+  export import Session = SyncSessionNS.SyncSession;
 }

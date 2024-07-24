@@ -16,16 +16,16 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import type {
-  Dictionary,
-  DictionaryAccessor,
-  List,
-  OrderedCollectionAccessor,
-  RealmSet,
-  Results,
-  TypeHelpers,
-} from "./internal";
-import { CallbackAdder, IllegalConstructorError, Listeners, TypeAssertionError, assert, binding } from "./internal";
+import type { binding } from "../binding";
+import type { Dictionary, DictionaryAccessor } from "./Dictionary";
+import type { List } from "./List";
+import type { OrderedCollectionAccessor } from "./OrderedCollection";
+import type { RealmSet } from "./Set";
+import type { Results } from "./Results";
+import type { TypeHelpers } from "./TypeHelpers";
+import { type CallbackAdder, Listeners } from "./Listeners";
+import { IllegalConstructorError } from "./errors";
+import { assert } from "./assert";
 
 /**
  * Collection accessor identifier.
@@ -198,3 +198,6 @@ export abstract class Collection<
     this.listeners.removeAll();
   }
 }
+
+/* eslint-disable-next-line @typescript-eslint/no-explicit-any -- We define these once to avoid using "any" through the code */
+export type AnyCollection = Collection<any, any, any, any, any>;

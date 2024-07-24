@@ -16,10 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import { assert } from "../assert";
+import { BSON } from "../BSON";
 import { defaultFromBinding } from "./default";
 import { nullPassthrough } from "./null-passthrough";
 import { TypeHelpers, TypeOptions } from "./types";
-import { BSON, assert } from "../internal";
 
 /** @internal */
 export function createObjectIdTypeHelpers({ optional }: TypeOptions): TypeHelpers {

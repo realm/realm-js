@@ -16,7 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { CanonicalObjectSchema, assert, binding, createPropertyHelpers } from "./internal";
+import { binding } from "../binding";
+import { assert } from "./assert";
+import { CanonicalObjectSchema } from "./schema";
+import { createPropertyHelpers } from "./PropertyHelpers";
 import { HelperOptions, PropertyHelpers } from "./property-accessors/types";
 
 class UninitializedPropertyMapError extends Error {

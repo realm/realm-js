@@ -16,22 +16,17 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import {
-  Configuration,
-  OpenRealmBehaviorType,
-  OpenRealmTimeOutBehavior,
-  ProgressNotificationCallback,
-  PromiseHandle,
-  Realm,
-  SubscriptionSetState,
-  TimeoutError,
-  TimeoutPromise,
-  assert,
-  binding,
-  flags,
-  isEstimateProgressNotificationCallback,
-  validateConfiguration,
-} from "./internal";
+import { binding } from "../binding";
+import { assert } from "./assert";
+import { TimeoutError } from "./errors";
+import { flags } from "./flags";
+import { type Configuration, validateConfiguration } from "./Configuration";
+import { OpenRealmBehaviorType, OpenRealmTimeOutBehavior } from "./app-services/SyncConfiguration";
+import { SubscriptionSetState } from "./app-services/BaseSubscriptionSet";
+import { type ProgressNotificationCallback, isEstimateProgressNotificationCallback } from "./app-services/SyncSession";
+import { PromiseHandle } from "./PromiseHandle";
+import { TimeoutPromise } from "./TimeoutPromise";
+import { Realm } from "./Realm";
 
 type OpenBehavior = {
   openBehavior: OpenRealmBehaviorType;

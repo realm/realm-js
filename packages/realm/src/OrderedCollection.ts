@@ -16,32 +16,23 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import {
-  ClassHelpers,
-  Collection,
-  DefaultObject,
-  IllegalConstructorError,
-  JSONCacheMap,
-  ListAccessor,
-  INTERNAL as OBJ_INTERNAL,
-  Realm,
-  RealmObject,
-  Results,
-  ResultsAccessor,
-  SetAccessor,
-  COLLECTION_TYPE_HELPERS as TYPE_HELPERS,
-  TypeAssertionError,
-  TypeHelpers,
-  assert,
-  binding,
-  createResultsAccessor,
-  getTypeName,
-  isJsOrRealmDictionary,
-  isJsOrRealmList,
-  mixedToBinding,
-  toItemType,
-  unwind,
-} from "./internal";
+import { binding } from "../binding";
+import { assert } from "./assert";
+import type { ClassHelpers } from "./ClassHelpers";
+import { Collection, COLLECTION_TYPE_HELPERS as TYPE_HELPERS } from "./Collection";
+import type { DefaultObject } from "./schema";
+import { IllegalConstructorError, TypeAssertionError } from "./errors";
+import { JSONCacheMap } from "./JSONCacheMap";
+import { type ListAccessor, isJsOrRealmList } from "./List";
+import { Results, type ResultsAccessor, createResultsAccessor } from "./Results";
+import type { SetAccessor } from "./Set";
+import { INTERNAL as OBJ_INTERNAL, RealmObject } from "./Object";
+import { type TypeHelpers, toItemType } from "./TypeHelpers";
+import { getTypeName } from "./schema";
+import { unwind } from "./ranges";
+import type { Realm } from "./Realm";
+import { mixedToBinding } from "./type-helpers/Mixed";
+import { isJsOrRealmDictionary } from "./Dictionary";
 
 const DEFAULT_COLUMN_KEY = binding.Int64.numToInt(0) as unknown as binding.ColKey;
 

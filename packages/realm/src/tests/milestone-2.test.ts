@@ -20,7 +20,11 @@ import { assert, expect } from "chai";
 import path from "path";
 import fs from "fs";
 
-import { CanonicalObjectSchema, Realm, Object as RealmObject, Results } from "../index";
+import { Realm } from "../Realm";
+import { RealmObject } from "../Object";
+import { Results } from "../Results";
+import { CanonicalObjectSchema } from "../schema";
+
 import { REALMS_DIR, RealmContext, closeRealm, generateRandomInteger, generateTempRealmPath } from "./utils";
 
 type Person = { name: string; age?: number };

@@ -16,15 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import {
-  Dictionary,
-  TypeAssertionError,
-  assert,
-  binding,
-  createDictionaryAccessor,
-  getTypeHelpers,
-  toItemType,
-} from "../internal";
+import { binding } from "../../binding";
+import { assert } from "../assert";
+import { TypeAssertionError } from "../errors";
+import { Dictionary, createDictionaryAccessor } from "../Dictionary";
+import { getTypeHelpers, toItemType } from "../TypeHelpers";
 import type { PropertyAccessor, PropertyOptions } from "./types";
 
 /** @internal */

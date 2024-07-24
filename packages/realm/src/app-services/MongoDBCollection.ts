@@ -18,7 +18,10 @@
 
 import { Long, Timestamp } from "bson";
 
-import { DefaultFunctionsFactory, User, binding, createFactory, toArrayBuffer } from "../internal";
+import { binding } from "../../binding";
+import { toArrayBuffer } from "../type-helpers/array-buffer";
+import type { User } from "./User";
+import { type DefaultFunctionsFactory, createFactory } from "./FunctionsFactory";
 
 /**
  * A remote MongoDB service enabling access to an Atlas cluster.

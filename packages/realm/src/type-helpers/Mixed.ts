@@ -16,27 +16,23 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import { binding } from "../../binding";
+import { assert } from "../assert";
+import { Collection } from "../Collection";
+import { Counter } from "../Counter";
+import { Dictionary, createDictionaryAccessor } from "../Dictionary";
+import { List, createListAccessor } from "../List";
+import { INTERNAL, REALM, RealmObject } from "../Object";
+import { RealmSet } from "../Set";
 import {
-  Collection,
-  Counter,
-  Dictionary,
-  INTERNAL,
-  List,
-  REALM,
-  RealmObject,
-  RealmSet,
-  assert,
-  binding,
   boxToBindingGeospatial,
   circleToBindingGeospatial,
-  createDictionaryAccessor,
-  createListAccessor,
-  getTypeHelpers,
   isGeoBox,
   isGeoCircle,
   isGeoPolygon,
   polygonToBindingGeospatial,
-} from "../internal";
+} from "../GeoSpatial";
+import { getTypeHelpers } from "../TypeHelpers";
 import { TYPED_ARRAY_CONSTRUCTORS } from "./array-buffer";
 import { TypeHelpers, TypeOptions } from "./types";
 

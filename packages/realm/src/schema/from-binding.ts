@@ -16,7 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { assert, binding } from "../internal";
+import { binding } from "../../binding";
+import { assert } from "../assert";
 
 type BindingObjectSchema = binding.ObjectSchema;
 type BindingProperty = binding.Property;

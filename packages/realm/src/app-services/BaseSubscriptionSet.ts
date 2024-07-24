@@ -16,17 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import {
-  AnyResults,
-  MutableSubscriptionSet,
-  Realm,
-  RealmObject,
-  Results,
-  Subscription,
-  SubscriptionSet,
-  assert,
-  binding,
-} from "../internal";
+import { binding } from "../../binding";
+import { assert } from "../assert";
+import { type AnyResults, Results } from "../Results";
+import type { Realm } from "../Realm";
+import type { RealmObject } from "../Object";
+import type { MutableSubscriptionSet } from "./MutableSubscriptionSet";
+import { Subscription } from "./Subscription";
+import type { SubscriptionSet } from "./SubscriptionSet";
 
 /**
  * Enum representing the state of a {@link SubscriptionSet}.

@@ -16,17 +16,15 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import type {
-  AnyRealmObject,
-  AppConfiguration,
-  ObjectSchema,
-  Realm,
-  RealmObjectConstructor,
-  SyncConfiguration,
-  User,
-} from "./internal";
-
-import { TypeAssertionError, assert, validateRealmSchema, validateSyncConfiguration } from "./internal";
+import type { AnyRealmObject } from "./Object";
+import type { AppConfiguration } from "./app-services/App";
+import type { User } from "./app-services/User";
+import type { ObjectSchema, RealmObjectConstructor } from "./schema";
+import type { Realm } from "./Realm";
+import { TypeAssertionError } from "./errors";
+import { assert } from "./assert";
+import { validateRealmSchema } from "./schema";
+import { type SyncConfiguration, validateSyncConfiguration } from "./app-services/SyncConfiguration";
 
 /**
  * A function which can be called to migrate a Realm from one version of the schema to another.

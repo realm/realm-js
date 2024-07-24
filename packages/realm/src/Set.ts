@@ -16,17 +16,13 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import {
-  COLLECTION_ACCESSOR as ACCESSOR,
-  IllegalConstructorError,
-  OrderedCollection,
-  Realm,
-  COLLECTION_TYPE_HELPERS as TYPE_HELPERS,
-  TypeHelpers,
-  assert,
-  binding,
-  createDefaultGetter,
-} from "./internal";
+import { binding } from "../binding";
+import { assert } from "./assert";
+import { IllegalConstructorError } from "./errors";
+import { COLLECTION_ACCESSOR as ACCESSOR, COLLECTION_TYPE_HELPERS as TYPE_HELPERS } from "./Collection";
+import { OrderedCollection, createDefaultGetter } from "./OrderedCollection";
+import type { Realm } from "./Realm";
+import type { TypeHelpers } from "./TypeHelpers";
 
 /**
  * Instances of this class will be returned when accessing object properties whose type is `"Set"`
@@ -230,3 +226,6 @@ function transformError(err: unknown) {
   }
   return err;
 }
+
+/* eslint-disable-next-line @typescript-eslint/no-explicit-any -- We define these once to avoid using "any" through the code */
+export type AnySet = RealmSet<any>;

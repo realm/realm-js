@@ -16,15 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import {
-  BaseSubscriptionSet,
-  FlexibleSyncConfiguration,
-  MutableSubscriptionSet,
-  Realm,
-  SubscriptionSetState,
-  assert,
-  binding,
-} from "../internal";
+import { binding } from "../../binding";
+import { assert } from "../assert";
+import type { Realm } from "../Realm";
+import { BaseSubscriptionSet, SubscriptionSetState } from "./BaseSubscriptionSet";
+import { MutableSubscriptionSet } from "./MutableSubscriptionSet";
+import type { FlexibleSyncConfiguration } from "./SyncConfiguration";
 
 /**
  * Represents the set of all active flexible sync subscriptions for a Realm instance.

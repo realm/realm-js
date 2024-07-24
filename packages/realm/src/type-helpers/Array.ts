@@ -16,7 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { List, assert, binding } from "../internal";
+import { binding } from "../../binding";
+import { assert } from "../assert";
+import { List } from "../List";
 import { TypeHelpers, TypeOptions } from "./types";
 
 /** @internal */

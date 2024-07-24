@@ -16,7 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { assert, binding } from "../internal";
+import { binding } from "../../binding";
+import { assert } from "../assert";
 import { defaultToBinding } from "./default";
 import { TypeHelpers, TypeOptions } from "./types";
 

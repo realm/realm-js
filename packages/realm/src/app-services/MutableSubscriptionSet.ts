@@ -16,16 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import {
-  AnyResults,
-  BaseSubscriptionSet,
-  Realm,
-  Results,
-  Subscription,
-  SubscriptionSet,
-  assert,
-  binding,
-} from "../internal";
+import { binding } from "../../binding";
+import { assert } from "../assert";
+import type { Realm } from "../Realm";
+import type { AnyResults } from "../Results";
+import { Results } from "../Results";
+import { BaseSubscriptionSet } from "./BaseSubscriptionSet";
+import { Subscription } from "./Subscription";
+import type { SubscriptionSet } from "./SubscriptionSet";
 
 /**
  * Behavior when waiting for subscribed objects to be synchronized/downloaded.
