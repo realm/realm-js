@@ -357,7 +357,11 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
    * Create a wrapper for accessing an object from the database
    * @internal
    */
-  public static createWrapper<T = DefaultObject>(internal: binding.Obj, constructor: Constructor, relaxedSchema: boolean): RealmObject<T> & T {
+  public static createWrapper<T = DefaultObject>(
+    internal: binding.Obj,
+    constructor: Constructor,
+    relaxedSchema: boolean,
+  ): RealmObject<T> & T {
     const result = Object.create(constructor.prototype);
     result[INTERNAL] = internal;
     // Initializing INTERNAL_LISTENERS here rather than letting it just be implicitly undefined since JS engines
