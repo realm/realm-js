@@ -81,7 +81,6 @@ describe("35", () => {
     this.realm.write(() => {
       joe.realName = "Not Johannes";
     });
-
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     joe = this.realm.objectForPrimaryKey(PersonSchema.name, "Joe")!;
     expect(joe.realName).equals("Not Johannes");
