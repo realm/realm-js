@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { binding } from "../binding";
-import { assert } from "./assert";
 import type { PrimaryKey } from "./schema";
 import type { Configuration } from "./Configuration";
 import type { ClientResetMode } from "./app-services/SyncConfiguration";
@@ -231,8 +230,7 @@ export class CompensatingWriteError extends SyncError {
   constructor(error: binding.SyncError) {
     super(error);
     for (const { objectName, primaryKey, reason } of error.compensatingWritesInfo) {
-      assert.primaryKey(primaryKey);
-      this.writes.push({ objectName, reason, primaryKey });
+      this.writes.push({ objectName, reason, primaryKey: primaryKey as PrimaryKey });
     }
   }
 }
