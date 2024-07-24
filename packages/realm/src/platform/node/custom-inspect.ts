@@ -16,7 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { InspectOptionsStylized, inspect } from "node:util";
+import type { InspectOptionsStylized } from "node:util";
+import { inspect } from "node:util";
 
 import { Collection } from "../../Collection";
 import { Dictionary } from "../../Dictionary";

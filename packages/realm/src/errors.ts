@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { binding } from "../binding";
+import type { binding } from "../binding";
 import type { PrimaryKey } from "./schema";
 import type { Configuration } from "./Configuration";
 import type { ClientResetMode } from "./app-services/SyncConfiguration";

@@ -19,7 +19,8 @@
 import { binding } from "../../binding";
 import { assert } from "../assert";
 import { BSON } from "../bson";
-import { ClientResetError, SyncError, TypeAssertionError } from "../errors";
+import type { ClientResetError, SyncError } from "../errors";
+import { TypeAssertionError } from "../errors";
 import type { Realm } from "../Realm";
 import { syncProxyConfig } from "../platform";
 import { type AnyUser, User } from "./User";

@@ -19,7 +19,7 @@
 import { expect } from "chai";
 import { inspect } from "util";
 
-import { CanonicalPropertySchema, PropertySchema, PropertySchemaShorthand } from "../schema";
+import type { CanonicalPropertySchema, PropertySchema, PropertySchemaShorthand } from "../schema";
 import { extractGeneric, normalizePropertySchema } from "../schema/normalize";
 import { PropertySchemaParseError } from "../errors";
 

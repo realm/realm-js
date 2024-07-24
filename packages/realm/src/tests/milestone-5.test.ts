@@ -23,8 +23,9 @@ import { Decimal128, ObjectId, UUID } from "bson";
 import { Realm } from "../Realm";
 import { RealmObject } from "../Object";
 import { List } from "../List";
-import { PropertySchema, PropertyTypeName } from "../schema";
-import { RealmContext, closeRealm, generateTempRealmPath } from "./utils";
+import type { PropertySchema, PropertyTypeName } from "../schema";
+import type { RealmContext } from "./utils";
+import { closeRealm, generateTempRealmPath } from "./utils";
 
 type ValueFunction<T = unknown> = (realm: Realm) => T;
 type TestFunction<T = unknown> = (result: unknown, input: T) => boolean;

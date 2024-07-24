@@ -18,8 +18,8 @@
 
 import { defaultFromBinding } from "./default";
 import { nullPassthrough } from "./null-passthrough";
-import { TypeHelpers, TypeOptions } from "./types";
 import { toArrayBuffer } from "./array-buffer";
+import type { TypeHelpers, TypeOptions } from "./types";
 
 /** @internal */
 export function createDataTypeHelpers({ optional }: TypeOptions): TypeHelpers {

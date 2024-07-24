@@ -19,7 +19,7 @@
 import { binding } from "../../binding";
 import { assert } from "../assert";
 import { defaultToBinding } from "./default";
-import { TypeHelpers, TypeOptions } from "./types";
+import type { TypeHelpers, TypeOptions } from "./types";
 
 /** @internal */
 export function createLinkingObjectsTypeHelpers({ objectType, getClassHelpers }: TypeOptions): TypeHelpers {

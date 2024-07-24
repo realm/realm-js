@@ -19,7 +19,7 @@
 import { binding } from "../../binding";
 import { assert } from "../assert";
 import { nullPassthrough } from "./null-passthrough";
-import { TypeHelpers, TypeOptions } from "./types";
+import type { TypeHelpers, TypeOptions } from "./types";
 
 /** @internal */
 export function createFloatTypeHelpers({ optional }: TypeOptions): TypeHelpers {

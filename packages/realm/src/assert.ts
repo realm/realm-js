@@ -16,10 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { binding } from "../binding";
+import type { binding } from "../binding";
 import { AssertionError, TypeAssertionError } from "./errors";
-import { BSON } from "./bson";
-import type { DefaultObject, PrimaryKey } from "./schema";
+import type { DefaultObject } from "./schema";
 import type { Realm } from "./Realm";
 
 /**

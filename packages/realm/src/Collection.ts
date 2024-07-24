@@ -24,7 +24,7 @@ import type { RealmSet } from "./Set";
 import type { Results } from "./Results";
 import type { TypeHelpers } from "./TypeHelpers";
 import { type CallbackAdder, Listeners } from "./Listeners";
-import { IllegalConstructorError } from "./errors";
+import { IllegalConstructorError, type TypeAssertionError } from "./errors";
 import { assert } from "./assert";
 
 /**

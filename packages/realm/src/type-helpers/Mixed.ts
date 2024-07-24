@@ -34,7 +34,7 @@ import {
 } from "../GeoSpatial";
 import { getTypeHelpers } from "../TypeHelpers";
 import { TYPED_ARRAY_CONSTRUCTORS } from "./array-buffer";
-import { TypeHelpers, TypeOptions } from "./types";
+import type { TypeHelpers, TypeOptions } from "./types";
 
 // TODO: Consider testing for expected object instance types and throw something similar to the legacy SDK:
 // "Only Realm instances are supported." (which should probably have been "RealmObject")

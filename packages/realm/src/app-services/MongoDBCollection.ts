@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Long, Timestamp } from "bson";
+import type { Long, Timestamp } from "bson";
 
 import { binding } from "../../binding";
 import { toArrayBuffer } from "../type-helpers/array-buffer";

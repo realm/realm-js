@@ -26,7 +26,7 @@ import { createSetPropertyAccessor } from "./property-accessors/Set";
 import { createIntPropertyAccessor } from "./property-accessors/Int";
 import { createMixedPropertyAccessor } from "./property-accessors/Mixed";
 import { createDefaultPropertyAccessor } from "./property-accessors/default";
-import {
+import type {
   HelperOptions,
   PropertyAccessor,
   PropertyContext,

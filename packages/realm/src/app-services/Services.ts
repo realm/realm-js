@@ -18,7 +18,7 @@
 
 import * as MongoDBNS from "./MongoDB";
 import * as MongoDBCollectionNS from "./MongoDBCollection";
-import * as PushClientNS from "./PushClient";
+import type * as PushClientNS from "./PushClient";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace Services {

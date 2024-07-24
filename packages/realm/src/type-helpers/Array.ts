@@ -19,7 +19,7 @@
 import { binding } from "../../binding";
 import { assert } from "../assert";
 import { List } from "../List";
-import { TypeHelpers, TypeOptions } from "./types";
+import type { TypeHelpers, TypeOptions } from "./types";
 
 /** @internal */
 export function createArrayTypeHelpers({ realm, getClassHelpers, name, objectSchemaName }: TypeOptions): TypeHelpers {
