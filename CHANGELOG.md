@@ -1,10 +1,4 @@
-## vNext (TBD)
-
-### Deprecations
-* None
-
-### Enhancements
-* None
+## 12.12.1 (2024-07-25)
 
 ### Fixed
 * Fixed compiler error when building binding for React Native iOS: "'React-featureflags/react/featureflags/ReactNativeFeatureFlags.h' file not found" ([#6808](https://github.com/realm/realm-js/issues/6808), since v12.12.0)
