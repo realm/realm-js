@@ -21,7 +21,6 @@
 #import <React/RCTBridge+Private.h>
 #import <React/RCTInvalidating.h>
 #import <ReactCommon/CallInvoker.h>
-#import <React-featureflags/react/featureflags/ReactNativeFeatureFlags.h>
 #import <jsi/jsi.h>
 
 #import <arpa/inet.h>
