@@ -16,10 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import * as ns from "./namespace";
 import { Realm as RealmConstructor } from "./Realm";
 import { safeGlobalThis } from "./safeGlobalThis";
 import { flags } from "./flags";
+import * as ns from "./namespace";
 
 let warnedAboutGlobalRealmUse = false;
 Object.defineProperty(safeGlobalThis, "Realm", {

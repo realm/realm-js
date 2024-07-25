@@ -2,6 +2,7 @@
   "compilerOptions": {
     "target": "ES2021",
     "module": "ES2020",
+    "moduleResolution": "Bundler",
     "lib": [
       "es2021",
     ],
@@ -10,7 +11,6 @@
       "react"
     ],
     "esModuleInterop": true,
-    "moduleResolution": "node",
     "jsx": "react",
     "sourceMap": true,
     "outDir": "./dist",
