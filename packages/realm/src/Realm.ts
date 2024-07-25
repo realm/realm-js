@@ -21,10 +21,11 @@ import { assert } from "./assert";
 import { TypeAssertionError } from "./errors";
 import { extendDebug } from "./debug";
 import { flags } from "./flags";
+import { injectIndirect } from "./indirect";
 import { fs, garbageCollection } from "./platform";
 import type { Unmanaged } from "./Unmanaged";
 import { type AnyRealmObject, RealmObject } from "./Object";
-import { type AnyResults, Results, createResultsAccessor } from "./Results";
+import { type AnyResults, Results } from "./Results";
 import {
   type CanonicalObjectSchema,
   type Constructor,
@@ -57,13 +58,14 @@ import {
 } from "./Logger";
 import { type AnyList, List } from "./List";
 import { ProgressRealmPromise } from "./ProgressRealmPromise";
-import { REALM, UpdateMode } from "./Object";
+import { UpdateMode } from "./Object";
 import { RealmEvent, type RealmListenerCallback, RealmListeners } from "./RealmListeners";
 import { SubscriptionSet } from "./app-services/SubscriptionSet";
 import { SyncSession } from "./app-services/SyncSession";
 import type { TypeHelpers } from "./TypeHelpers";
 import { toArrayBuffer } from "./type-helpers/array-buffer";
-import { OBJECT_INTERNAL } from "./symbols";
+import { OBJECT_INTERNAL, OBJECT_REALM } from "./symbols";
+import { createResultsAccessor } from "./collection-accessors/Results";
 
 const debug = extendDebug("Realm");
 
@@ -801,7 +803,7 @@ export class Realm {
     assert.inTransaction(this, "Can only delete objects within a transaction.");
     assert.object(subject, "subject");
     if (subject instanceof RealmObject) {
-      assert.isSameRealm(subject[REALM].internal, this.internal, "Can't delete an object from another Realm");
+      assert.isSameRealm(subject[OBJECT_REALM].internal, this.internal, "Can't delete an object from another Realm");
       const { objectSchema } = this.classes.getHelpers(subject);
       const obj = subject[OBJECT_INTERNAL];
       assert.isValid(
@@ -818,7 +820,7 @@ export class Realm {
       //@ts-expect-error the above check is good enough
       for (const object of subject) {
         assert.instanceOf(object, RealmObject);
-        assert.isSameRealm(object[REALM].internal, this.internal, "Can't delete an object from another Realm");
+        assert.isSameRealm(object[OBJECT_REALM].internal, this.internal, "Can't delete an object from another Realm");
         const { objectSchema } = this.classes.getHelpers(object);
         const table = binding.Helpers.getTable(this.internal, objectSchema.tableKey);
         table.removeObject(object[OBJECT_INTERNAL].key);
@@ -1185,6 +1187,8 @@ export class Realm {
   }
 }
 
+injectIndirect("Realm", Realm);
+
 /**
  * @param objectSchema - The schema of the object.
  * @returns `true` if the object is marked for asymmetric sync, otherwise `false`.
@@ -1206,6 +1210,7 @@ function isEmbedded(objectSchema: binding.ObjectSchema): boolean {
 // @see https://www.typescriptlang.org/docs/handbook/declaration-merging.html#merging-namespaces-with-classes-functions-and-enums
 
 import * as ns from "./namespace";
+
 // Needed to avoid complaints about a self-reference
 import RealmItself = Realm;
 

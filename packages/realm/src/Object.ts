@@ -19,6 +19,7 @@
 import { binding } from "../binding";
 import { assert } from "./assert";
 import { AssertionError, TypeAssertionError } from "./errors";
+import { indirect, injectIndirect } from "./indirect";
 import { BSON } from "./bson";
 import {
   type CanonicalObjectSchema,
@@ -30,16 +31,15 @@ import {
 } from "./schema";
 import type { ClassHelpers } from "./ClassHelpers";
 import type { Collection } from "./Collection";
-import { Dictionary } from "./Dictionary";
 import { JSONCacheMap } from "./JSONCacheMap";
 import { type ObjectChangeCallback, ObjectListeners } from "./ObjectListeners";
 import type { OmittedRealmTypes, Unmanaged } from "./Unmanaged";
-import { OrderedCollection } from "./OrderedCollection";
 import type { Realm } from "./Realm";
-import { Results, createResultsAccessor } from "./Results";
+import type { Results } from "./Results";
 import type { TypeHelpers } from "./TypeHelpers";
 import { flags } from "./flags";
-import { OBJECT_INTERNAL } from "./symbols";
+import { OBJECT_HELPERS, OBJECT_INTERNAL, OBJECT_REALM } from "./symbols";
+import { createResultsAccessor } from "./collection-accessors/Results";
 
 /**
  * The update mode to use when creating an object that already exists,
@@ -80,9 +80,7 @@ export type AnyRealmObject = RealmObject<any>;
 
 export const KEY_ARRAY = Symbol("Object#keys");
 export const KEY_SET = Symbol("Object#keySet");
-export const REALM = Symbol("Object#realm");
 const INTERNAL_LISTENERS = Symbol("Object#listeners");
-export const INTERNAL_HELPERS = Symbol("Object.helpers");
 const DEFAULT_PROPERTY_DESCRIPTOR: PropertyDescriptor = { configurable: true, enumerable: true, writable: true };
 
 /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
@@ -155,7 +153,7 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
    * This property is stored on the per class prototype when transforming the schema.
    * @internal
    */
-  public static [INTERNAL_HELPERS]: ClassHelpers;
+  public static [OBJECT_HELPERS]: ClassHelpers;
 
   public static allowValuesArrays = false;
 
@@ -329,7 +327,7 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
    * Note: this is on the injected prototype from ClassMap.defineProperties().
    * @internal
    */
-  public declare readonly [REALM]: Realm;
+  public declare readonly [OBJECT_REALM]: Realm;
 
   /**
    * The object's representation in the binding.
@@ -396,7 +394,11 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
       if (typeof value == "function") {
         continue;
       }
-      if (value instanceof RealmObject || value instanceof OrderedCollection || value instanceof Dictionary) {
+      if (
+        value instanceof indirect.Object ||
+        value instanceof indirect.OrderedCollection ||
+        value instanceof indirect.Dictionary
+      ) {
         // recursively trigger `toJSON` for Realm instances with the same cache.
         result[key] = value.toJSON(key, cache);
       } else {
@@ -420,7 +422,7 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
    * @returns The {@link CanonicalObjectSchema} that describes this object.
    */
   objectSchema(): CanonicalObjectSchema<T> {
-    return this[REALM].getClassHelpers(this).canonicalObjectSchema as CanonicalObjectSchema<T>;
+    return this[OBJECT_REALM].getClassHelpers(this).canonicalObjectSchema as CanonicalObjectSchema<T>;
   }
 
   /**
@@ -433,7 +435,7 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
   linkingObjects<T = DefaultObject>(objectType: string, propertyName: string): Results<RealmObject<T> & T>;
   linkingObjects<T extends AnyRealmObject>(objectType: Constructor<T>, propertyName: string): Results<T>;
   linkingObjects<T extends AnyRealmObject>(objectType: string | Constructor<T>, propertyName: string): Results<T> {
-    const realm = this[REALM];
+    const realm = this[OBJECT_REALM];
     const targetClassHelpers = realm.getClassHelpers(objectType);
     const { objectSchema: targetObjectSchema, properties, wrapObject } = targetClassHelpers;
     const targetProperty = properties.get(propertyName);
@@ -461,7 +463,7 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
     const tableView = this[OBJECT_INTERNAL].getBacklinkView(tableRef, targetProperty.columnKey);
     const results = binding.Results.fromTableView(realm.internal, tableView);
 
-    return new Results<T>(realm, results, accessor, typeHelpers);
+    return new indirect.Results<T>(realm, results, accessor, typeHelpers);
   }
 
   /**
@@ -514,7 +516,7 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
   addListener(callback: ObjectChangeCallback<T>, keyPaths?: string | string[]): void {
     assert.function(callback);
     if (!this[INTERNAL_LISTENERS]) {
-      this[INTERNAL_LISTENERS] = new ObjectListeners<T>(this[REALM].internal, this);
+      this[INTERNAL_LISTENERS] = new ObjectListeners<T>(this[OBJECT_REALM].internal, this);
     }
     this[INTERNAL_LISTENERS].addListener(callback, typeof keyPaths === "string" ? [keyPaths] : keyPaths);
   }
@@ -545,7 +547,7 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
    * @returns Underlying type of the property value.
    */
   getPropertyType(propertyName: string): string {
-    const { properties } = this[REALM].getClassHelpers(this);
+    const { properties } = this[OBJECT_REALM].getClassHelpers(this);
     const { type, objectType, columnKey } = properties.get(propertyName);
     const typeName = getTypeName(type, objectType);
     if (typeName === "mixed") {
@@ -560,10 +562,10 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
       } else if (value instanceof binding.Timestamp) {
         return "date";
       } else if (value instanceof binding.Obj) {
-        const { objectSchema } = this[REALM].getClassHelpers(value.table.key);
+        const { objectSchema } = this[OBJECT_REALM].getClassHelpers(value.table.key);
         return `<${objectSchema.name}>`;
       } else if (value instanceof binding.ObjLink) {
-        const { objectSchema } = this[REALM].getClassHelpers(value.tableKey);
+        const { objectSchema } = this[OBJECT_REALM].getClassHelpers(value.tableKey);
         return `<${objectSchema.name}>`;
       } else if (value instanceof ArrayBuffer) {
         return "data";
@@ -597,3 +599,5 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
 // We like to refer to this as "Realm.Object"
 // TODO: Determine if we want to revisit this if we're going away from a namespaced API
 Object.defineProperty(RealmObject, "name", { value: "Realm.Object" });
+
+injectIndirect("Object", RealmObject);

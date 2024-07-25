@@ -18,13 +18,14 @@
 
 import { binding } from "../../binding";
 import { assert } from "../assert";
+import { Dictionary } from "../Dictionary";
 import {
-  Dictionary,
   createDictionaryAccessor,
   insertIntoDictionaryOfMixed,
   isJsOrRealmDictionary,
-} from "../Dictionary";
-import { List, createListAccessor, insertIntoListOfMixed, isJsOrRealmList } from "../List";
+} from "../collection-accessors/Dictionary";
+import { List } from "../List";
+import { createListAccessor, insertIntoListOfMixed, isJsOrRealmList } from "../collection-accessors/List";
 import { createDefaultPropertyAccessor } from "./default";
 import type { PropertyAccessor, PropertyOptions } from "./types";
 

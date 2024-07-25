@@ -19,7 +19,8 @@
 import type { binding } from "../binding";
 import type { CanonicalObjectSchema, DefaultObject, RealmObjectConstructor } from "./schema";
 import type { PropertyMap } from "./PropertyMap";
-import { INTERNAL_HELPERS, type RealmObject } from "./Object";
+import type { RealmObject } from "./Object";
+import { OBJECT_HELPERS } from "./symbols";
 
 type ObjectWrapper = (obj: binding.Obj) => (RealmObject & DefaultObject) | null;
 
@@ -35,7 +36,7 @@ export type ClassHelpers = {
 /** @internal */
 export function setClassHelpers(constructor: RealmObjectConstructor, value: ClassHelpers): void {
   // Store the properties map on the object class
-  Object.defineProperty(constructor, INTERNAL_HELPERS, {
+  Object.defineProperty(constructor, OBJECT_HELPERS, {
     enumerable: false,
     writable: false,
     configurable: false,
@@ -51,7 +52,7 @@ export function setClassHelpers(constructor: RealmObjectConstructor, value: Clas
  * @internal
  */
 export function getClassHelpers(arg: typeof RealmObject): ClassHelpers {
-  const helpers = arg[INTERNAL_HELPERS];
+  const helpers = arg[OBJECT_HELPERS];
   if (helpers) {
     return helpers as ClassHelpers;
   } else {

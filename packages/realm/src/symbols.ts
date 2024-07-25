@@ -17,3 +17,5 @@
 ////////////////////////////////////////////////////////////////////////////
 
 export const OBJECT_INTERNAL = Symbol("Object#internal");
+export const OBJECT_REALM = Symbol("Object#realm");
+export const OBJECT_HELPERS = Symbol("Object#helpers");

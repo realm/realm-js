@@ -18,12 +18,14 @@
 
 import { binding } from "../../binding";
 import { assert } from "../assert";
+import { indirect, injectIndirect } from "../indirect";
 import { network } from "../platform";
 import type { DefaultObject } from "../schema";
 import { Listeners } from "../Listeners";
 import { asyncIteratorFromResponse } from "../async-iterator-from-response";
 import { cleanArguments } from "./utils";
-import { type AnyApp, App } from "./App";
+import type { App } from "./App";
+import type { AnyApp } from "./App";
 import { ApiKeyAuth } from "./ApiKeyAuth";
 import type { ProviderType } from "./Credentials";
 import { type Credentials, isProviderType } from "./Credentials";
@@ -106,10 +108,13 @@ export class User<
   >(internal: binding.User, app?: AnyApp) {
     // Update the static user reference to the current app
     if (app) {
-      App.setAppByUser(internal, app);
+      indirect.App.setAppByUser(internal, app);
     }
     // TODO: Use a WeakRef to memoize the SDK object
-    return new User<FunctionsFactoryType, CustomDataType, UserProfileDataType>(internal, App.getAppByUser(internal));
+    return new User<FunctionsFactoryType, CustomDataType, UserProfileDataType>(
+      internal,
+      indirect.App.getAppByUser(internal),
+    );
   }
 
   /** @internal */
@@ -407,3 +412,5 @@ export class User<
     this.listeners.removeAll();
   }
 }
+
+injectIndirect("User", User);

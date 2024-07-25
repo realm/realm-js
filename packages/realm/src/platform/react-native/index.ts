@@ -31,4 +31,4 @@ binding.App.clearCachedApps();
 
 export = Realm;
 
-import "./deprecated-global";
+import "../../deprecated-global";

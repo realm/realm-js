@@ -18,6 +18,7 @@
 
 import { assert } from "../assert";
 import { ObjectSchemaParseError, PropertySchemaParseError } from "../errors";
+import { indirect } from "../indirect";
 import type {
   CanonicalObjectSchema,
   CanonicalPropertySchema,
@@ -27,7 +28,6 @@ import type {
   RealmObjectConstructor,
 } from "../schema";
 import type { Configuration } from "../Configuration";
-import { RealmObject } from "../Object";
 
 // Need to use `CanonicalObjectSchema` rather than `ObjectSchema` due to some
 // integration tests using `openRealmHook()`. That function sets `this.realm`
@@ -80,7 +80,7 @@ export function validateObjectSchema(
     if (typeof objectSchema === "function") {
       const clazz = objectSchema as unknown as DefaultObject;
       // We assert this later, but want a custom error message
-      if (!(objectSchema.prototype instanceof RealmObject)) {
+      if (!(objectSchema.prototype instanceof indirect.Object)) {
         const schemaName = clazz.schema && (clazz.schema as DefaultObject).name;
         if (typeof schemaName === "string" && schemaName !== objectSchema.name) {
           throw new TypeError(

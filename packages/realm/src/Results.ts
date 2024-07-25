@@ -19,15 +19,15 @@
 import { binding } from "../binding";
 import { assert } from "./assert";
 import { IllegalConstructorError } from "./errors";
+import { injectIndirect } from "./indirect";
 import { COLLECTION_ACCESSOR as ACCESSOR } from "./Collection";
-import { Dictionary, createDictionaryAccessor } from "./Dictionary";
-import { List, createListAccessor } from "./List";
-import { OrderedCollection, createDefaultGetter } from "./OrderedCollection";
+import { OrderedCollection } from "./OrderedCollection";
 import type { Realm } from "./Realm";
 import { type SubscriptionOptions, WaitForSync } from "./app-services/MutableSubscriptionSet";
 import { TimeoutPromise } from "./TimeoutPromise";
 import type { TypeHelpers } from "./TypeHelpers";
 import type { Unmanaged } from "./Unmanaged";
+import type { ResultsAccessor } from "./collection-accessors/Results";
 
 /**
  * Instances of this class are typically **live** collections returned by
@@ -190,58 +190,7 @@ export class Results<T = unknown> extends OrderedCollection<
   }
 }
 
-/**
- * Accessor for getting items from the binding collection.
- * @internal
- */
-export type ResultsAccessor<T = unknown> = {
-  get: (results: binding.Results, index: number) => T;
-};
-
-type ResultsAccessorFactoryOptions<T> = {
-  realm: Realm;
-  typeHelpers: TypeHelpers<T>;
-  itemType: binding.PropertyType;
-};
-
-/** @internal */
-export function createResultsAccessor<T>(options: ResultsAccessorFactoryOptions<T>): ResultsAccessor<T> {
-  return options.itemType === binding.PropertyType.Mixed
-    ? createResultsAccessorForMixed(options)
-    : createResultsAccessorForKnownType(options);
-}
-
-function createResultsAccessorForMixed<T>({
-  realm,
-  typeHelpers,
-}: Omit<ResultsAccessorFactoryOptions<T>, "itemType">): ResultsAccessor<T> {
-  return {
-    get(results, index) {
-      const value = results.getAny(index);
-      switch (value) {
-        case binding.ListSentinel: {
-          const accessor = createListAccessor<T>({ realm, typeHelpers, itemType: binding.PropertyType.Mixed });
-          return new List<T>(realm, results.getList(index), accessor, typeHelpers) as T;
-        }
-        case binding.DictionarySentinel: {
-          const accessor = createDictionaryAccessor<T>({ realm, typeHelpers, itemType: binding.PropertyType.Mixed });
-          return new Dictionary<T>(realm, results.getDictionary(index), accessor, typeHelpers) as T;
-        }
-        default:
-          return typeHelpers.fromBinding(value);
-      }
-    },
-  };
-}
-
-function createResultsAccessorForKnownType<T>({
-  typeHelpers,
-  itemType,
-}: Omit<ResultsAccessorFactoryOptions<T>, "realm">): ResultsAccessor<T> {
-  return {
-    get: createDefaultGetter({ fromBinding: typeHelpers.fromBinding, itemType }),
-  };
-}
-
 /* eslint-disable-next-line @typescript-eslint/no-explicit-any -- Useful for APIs taking any `Results` */
 export type AnyResults = Results<any>;
+
+injectIndirect("Results", Results);

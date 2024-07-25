@@ -18,8 +18,9 @@
 
 import { binding } from "../../binding";
 import { assert } from "../assert";
-import { type AnyResults, Results } from "../Results";
-import type { Realm } from "../Realm";
+import { indirect } from "../indirect";
+import type { Results } from "../Results";
+import { type AnyResults } from "../Results";
 import type { RealmObject } from "../Object";
 import type { MutableSubscriptionSet } from "./MutableSubscriptionSet";
 import { Subscription } from "./Subscription";
@@ -215,7 +216,7 @@ export abstract class BaseSubscriptionSet {
    * @returns The subscription with the specified query, or `null` if the subscription is not found.
    */
   findByQuery<Subscription>(query: Results<Subscription & RealmObject<Subscription>>): Subscription | null {
-    assert.instanceOf(query, Results, "query");
+    assert.instanceOf(query, indirect.Results, "query");
 
     const subscription = this.internal.findByQuery(query.internal.query);
     return subscription ? (new Subscription(subscription) as Subscription) : null; // TODO: Remove the type assertion into Subscription

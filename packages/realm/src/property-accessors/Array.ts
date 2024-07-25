@@ -18,9 +18,11 @@
 
 import { binding } from "../../binding";
 import { assert } from "../assert";
+import { createListAccessor } from "../collection-accessors/List";
+import { createResultsAccessor } from "../collection-accessors/Results";
 import { TypeAssertionError } from "../errors";
-import { List, createListAccessor } from "../List";
-import { Results, createResultsAccessor } from "../Results";
+import { List } from "../List";
+import { Results } from "../Results";
 import { getTypeHelpers, toItemType } from "../TypeHelpers";
 import type { PropertyAccessor, PropertyOptions } from "./types";
 

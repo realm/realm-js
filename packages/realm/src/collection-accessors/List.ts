@@ -18,17 +18,14 @@
 
 import { binding } from "../../binding";
 import { assert } from "../assert";
-import { Results } from "../Results";
-import {
-  Dictionary,
-  createDictionaryAccessor,
-  insertIntoDictionaryOfMixed,
-  isJsOrRealmDictionary,
-} from "../Dictionary";
-import { createDefaultGetter } from "../OrderedCollection";
+import { indirect } from "../indirect";
+import { createDictionaryAccessor, insertIntoDictionaryOfMixed, isJsOrRealmDictionary } from "./Dictionary";
+import { createDefaultGetter } from "./OrderedCollection";
 import type { TypeHelpers } from "../TypeHelpers";
-import { List } from "../List";
+import type { Realm } from "../Realm";
+import type { List } from "../List";
 
+/** @internal */
 export type ListAccessor<T = unknown> = {
   get: (list: binding.List, index: number) => T;
   set: (list: binding.List, index: number, value: T) => void;
@@ -60,11 +57,11 @@ function createListAccessorForMixed<T>({
       switch (value) {
         case binding.ListSentinel: {
           const accessor = createListAccessor<T>({ realm, typeHelpers, itemType: binding.PropertyType.Mixed });
-          return new List<T>(realm, list.getList(index), accessor, typeHelpers) as T;
+          return new indirect.List<T>(realm, list.getList(index), accessor, typeHelpers) as T;
         }
         case binding.DictionarySentinel: {
           const accessor = createDictionaryAccessor<T>({ realm, typeHelpers, itemType: binding.PropertyType.Mixed });
-          return new Dictionary<T>(realm, list.getDictionary(index), accessor, typeHelpers) as T;
+          return new indirect.Dictionary<T>(realm, list.getDictionary(index), accessor, typeHelpers) as T;
         }
         default:
           return typeHelpers.fromBinding(value);
@@ -151,12 +148,5 @@ export function insertIntoListOfMixed(
 
 /** @internal */
 export function isJsOrRealmList(value: unknown): value is List | unknown[] {
-  return Array.isArray(value) || value instanceof List;
+  return Array.isArray(value) || value instanceof indirect.List;
 }
-
-/* eslint-disable-next-line @typescript-eslint/no-explicit-any -- We define these once to avoid using "any" through the code */
-export type AnyList = List<any>;
-
-// Injections needed to break circular dependencies
-Results.List = List;
-Results.createListAccessor = createListAccessor;

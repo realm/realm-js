@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { assert } from "../assert";
-import { BSON } from "../BSON";
+import { BSON } from "../bson";
 import { defaultFromBinding } from "./default";
 import { nullPassthrough } from "./null-passthrough";
 import type { TypeHelpers, TypeOptions } from "./types";

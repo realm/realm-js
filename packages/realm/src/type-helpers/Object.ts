@@ -18,8 +18,8 @@
 
 import { binding } from "../../binding";
 import { assert } from "../assert";
-import { REALM, RealmObject, UpdateMode } from "../Object";
-import { OBJECT_INTERNAL } from "../symbols";
+import { RealmObject, UpdateMode } from "../Object";
+import { OBJECT_INTERNAL, OBJECT_REALM } from "../symbols";
 import { nullPassthrough } from "./null-passthrough";
 import type { TypeHelpers, TypeOptions } from "./types";
 
@@ -39,7 +39,7 @@ export function createObjectTypeHelpers({
       if (
         value instanceof RealmObject &&
         value.constructor.name === objectType &&
-        value[REALM].internal.$addr === realm.internal.$addr
+        value[OBJECT_REALM].internal.$addr === realm.internal.$addr
       ) {
         return value[OBJECT_INTERNAL];
       } else {

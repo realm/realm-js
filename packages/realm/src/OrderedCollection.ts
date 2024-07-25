@@ -18,26 +18,30 @@
 
 import { binding } from "../binding";
 import { assert } from "./assert";
+import { IllegalConstructorError, TypeAssertionError } from "./errors";
+import { indirect, injectIndirect } from "./indirect";
 import type { ClassHelpers } from "./ClassHelpers";
 import { Collection, COLLECTION_TYPE_HELPERS as TYPE_HELPERS } from "./Collection";
 import type { DefaultObject } from "./schema";
-import { IllegalConstructorError, TypeAssertionError } from "./errors";
 import { JSONCacheMap } from "./JSONCacheMap";
-import { type ListAccessor, isJsOrRealmList } from "./List";
-import { Results, type ResultsAccessor, createResultsAccessor } from "./Results";
-import type { SetAccessor } from "./Set";
+import type { Results } from "./Results";
 import { RealmObject } from "./Object";
 import { type TypeHelpers, toItemType } from "./TypeHelpers";
 import { getTypeName } from "./schema";
 import { unwind } from "./ranges";
 import type { Realm } from "./Realm";
 import { mixedToBinding } from "./type-helpers/Mixed";
-import { isJsOrRealmDictionary } from "./Dictionary";
 import { OBJECT_INTERNAL } from "./symbols";
+import type { ListAccessor } from "./collection-accessors/List";
+import { type ResultsAccessor, createResultsAccessor } from "./collection-accessors/Results";
+import type { SetAccessor } from "./collection-accessors/Set";
+
+const INDEX_NOT_FOUND = -1;
 
 const DEFAULT_COLUMN_KEY = binding.Int64.numToInt(0) as unknown as binding.ColKey;
 
-type OrderedCollectionInternal = binding.List | binding.Results | binding.Set;
+/** @internal */
+export type OrderedCollectionInternal = binding.List | binding.Results | binding.Set;
 type PropertyType = string;
 
 /**
@@ -108,7 +112,7 @@ const PROXY_HANDLER: ProxyHandler<OrderedCollection> = {
         } catch (err) {
           // Let the custom errors from Results take precedence over out of bounds errors. This will
           // let users know that they cannot modify Results, rather than erroring on incorrect index.
-          if (index < 0 && !(target instanceof Results)) {
+          if (index < 0 && !(target instanceof indirect.Results)) {
             throw new Error(`Cannot set item at negative index ${index}.`);
           }
           throw err;
@@ -397,13 +401,13 @@ export abstract class OrderedCollection<
     if (this.type === "object") {
       assert.instanceOf(searchElement, RealmObject);
       return this.results.indexOfObj(searchElement[OBJECT_INTERNAL]);
-    } else if (isJsOrRealmList(searchElement) || isJsOrRealmDictionary(searchElement)) {
-      // Collections are always treated as not equal since their
-      // references will always be different for each access.
-      const NOT_FOUND = -1;
-      return NOT_FOUND;
     } else {
-      return this.results.indexOf(this[TYPE_HELPERS].toBinding(searchElement));
+      try {
+        return this.results.indexOf(this[TYPE_HELPERS].toBinding(searchElement));
+      } catch {
+        // Inability to convert to the binding representation means we won't be able to find it.
+        return INDEX_NOT_FOUND;
+      }
     }
   }
   /**
@@ -824,7 +828,7 @@ export abstract class OrderedCollection<
     const itemType = toItemType(results.type);
     const typeHelpers = this[TYPE_HELPERS];
     const accessor = createResultsAccessor({ realm, typeHelpers, itemType });
-    return new Results(realm, results, accessor, typeHelpers);
+    return new indirect.Results(realm, results, accessor, typeHelpers);
   }
 
   /** @internal */
@@ -914,7 +918,7 @@ export abstract class OrderedCollection<
       const itemType = toItemType(results.type);
       const typeHelpers = this[TYPE_HELPERS];
       const accessor = createResultsAccessor({ realm, typeHelpers, itemType });
-      return new Results(realm, results, accessor, typeHelpers);
+      return new indirect.Results(realm, results, accessor, typeHelpers);
     } else if (typeof arg0 === "string") {
       return this.sorted([[arg0, arg1 === true]]);
     } else if (typeof arg0 === "boolean") {
@@ -944,7 +948,7 @@ export abstract class OrderedCollection<
     const itemType = toItemType(snapshot.type);
     const typeHelpers = this[TYPE_HELPERS];
     const accessor = createResultsAccessor({ realm, typeHelpers, itemType });
-    return new Results(realm, snapshot, accessor, typeHelpers);
+    return new indirect.Results(realm, snapshot, accessor, typeHelpers);
   }
 
   /** @internal */
@@ -965,34 +969,4 @@ export abstract class OrderedCollection<
   }
 }
 
-type Getter<CollectionType, T> = (collection: CollectionType, index: number) => T;
-
-type GetterFactoryOptions<T> = {
-  fromBinding: TypeHelpers<T>["fromBinding"];
-  itemType: binding.PropertyType;
-};
-
-/** @internal */
-export function createDefaultGetter<CollectionType extends OrderedCollectionInternal, T>({
-  fromBinding,
-  itemType,
-}: GetterFactoryOptions<T>): Getter<CollectionType, T> {
-  const isObjectItem = itemType === binding.PropertyType.Object || itemType === binding.PropertyType.LinkingObjects;
-  return isObjectItem ? (...args) => getObject(fromBinding, ...args) : (...args) => getKnownType(fromBinding, ...args);
-}
-
-function getObject<T>(
-  fromBinding: TypeHelpers<T>["fromBinding"],
-  collection: OrderedCollectionInternal,
-  index: number,
-): T {
-  return fromBinding(collection.getObj(index));
-}
-
-function getKnownType<T>(
-  fromBinding: TypeHelpers<T>["fromBinding"],
-  collection: OrderedCollectionInternal,
-  index: number,
-): T {
-  return fromBinding(collection.getAny(index));
-}
+injectIndirect("OrderedCollection", OrderedCollection);

@@ -18,6 +18,7 @@
 
 import { assert } from "./assert";
 import { binding } from "../binding";
+import { injectIndirect } from "./indirect";
 import { COLLECTION_ACCESSOR as ACCESSOR } from "./Collection";
 import { AssertionError, IllegalConstructorError } from "./errors";
 import { OrderedCollection } from "./OrderedCollection";
@@ -309,3 +310,8 @@ export class List<T = unknown>
     this.internal.swap(index1, index2);
   }
 }
+
+/* eslint-disable-next-line @typescript-eslint/no-explicit-any -- We define these once to avoid using "any" through the code */
+export type AnyList = List<any>;
+
+injectIndirect("List", List);

@@ -20,6 +20,7 @@ import type { AnyFetch } from "@realm/fetch";
 
 import { binding } from "../../binding";
 import { assert } from "../assert";
+import { injectIndirect } from "../indirect";
 import type { BaseConfiguration } from "../Configuration";
 import type { DefaultObject } from "../schema";
 import { Listeners } from "../Listeners";
@@ -407,7 +408,10 @@ export class App<
   }
 }
 
-import * as ns from "../namespace";
+injectIndirect("App", App);
+
+import type * as CredentialsNS from "./Credentials";
+import { Sync as SyncNS } from "./Sync";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace App {
@@ -415,6 +419,6 @@ export namespace App {
    * All credentials available for authentication.
    * @see https://www.mongodb.com/docs/atlas/app-services/authentication/
    */
-  export type Credentials = ns.Credentials;
-  export import Sync = ns.Sync;
+  export type Credentials = CredentialsNS.Credentials;
+  export import Sync = SyncNS;
 }

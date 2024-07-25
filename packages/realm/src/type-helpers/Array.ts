@@ -18,7 +18,7 @@
 
 import { binding } from "../../binding";
 import { assert } from "../assert";
-import { List } from "../List";
+import { indirect } from "../indirect";
 import type { TypeHelpers, TypeOptions } from "./types";
 
 /** @internal */
@@ -32,7 +32,7 @@ export function createArrayTypeHelpers({ realm, getClassHelpers, name, objectSch
       const propertyHelpers = classHelpers.properties.get(name);
       const { listAccessor } = propertyHelpers;
       assert.object(listAccessor);
-      return new List(realm, value, listAccessor, propertyHelpers);
+      return new indirect.List(realm, value, listAccessor, propertyHelpers);
     },
     toBinding() {
       throw new Error("Not supported");

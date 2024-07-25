@@ -19,10 +19,10 @@
 import type { CanonicalObjectSchema, Constructor, RealmObjectConstructor } from "./schema";
 import type { binding } from "../binding";
 import { PropertyMap } from "./PropertyMap";
-import { KEY_ARRAY, KEY_SET, REALM, RealmObject } from "./Object";
+import { KEY_ARRAY, KEY_SET, RealmObject } from "./Object";
 import { assert } from "./assert";
 import { getClassHelpers, setClassHelpers } from "./ClassHelpers";
-import { OBJECT_INTERNAL } from "./symbols";
+import { OBJECT_INTERNAL, OBJECT_REALM } from "./symbols";
 
 /** @internal */
 export class ClassMap {
@@ -80,7 +80,7 @@ export class ClassMap {
       });
     }
 
-    Object.defineProperty(constructor.prototype, REALM, {
+    Object.defineProperty(constructor.prototype, OBJECT_REALM, {
       enumerable: false,
       configurable: false,
       writable: false,

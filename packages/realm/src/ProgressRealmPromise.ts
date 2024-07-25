@@ -20,13 +20,14 @@ import { binding } from "../binding";
 import { assert } from "./assert";
 import { TimeoutError } from "./errors";
 import { flags } from "./flags";
+import { indirect } from "./indirect";
 import { type Configuration, validateConfiguration } from "./Configuration";
 import { OpenRealmBehaviorType, OpenRealmTimeOutBehavior } from "./app-services/SyncConfiguration";
 import { SubscriptionSetState } from "./app-services/BaseSubscriptionSet";
 import { type ProgressNotificationCallback, isEstimateProgressNotificationCallback } from "./app-services/SyncSession";
 import { PromiseHandle } from "./PromiseHandle";
 import { TimeoutPromise } from "./TimeoutPromise";
-import { Realm } from "./Realm";
+import type { Realm } from "./Realm";
 
 type OpenBehavior = {
   openBehavior: OpenRealmBehaviorType;
@@ -94,13 +95,13 @@ export class ProgressRealmPromise implements Promise<Realm> {
       // Calling `Realm.exists()` before `binding.Realm.getSynchronizedRealm()` is necessary to capture
       // the correct value when this constructor was called since `binding.Realm.getSynchronizedRealm()`
       // will open the realm. This is needed when calling the Realm constructor.
-      const realmExists = Realm.exists(config);
+      const realmExists = indirect.Realm.exists(config);
       const { openBehavior, timeOut, timeOutBehavior } = determineBehavior(config, realmExists);
       if (openBehavior === OpenRealmBehaviorType.OpenImmediately) {
-        const realm = new Realm(config);
+        const realm = new indirect.Realm(config);
         this.handle.resolve(realm);
       } else if (openBehavior === OpenRealmBehaviorType.DownloadBeforeOpen) {
-        const { bindingConfig } = Realm.transformConfig(config);
+        const { bindingConfig } = indirect.Realm.transformConfig(config);
 
         // Construct an async open task
         this.task = binding.Realm.getSynchronizedRealm(bindingConfig);
@@ -113,7 +114,7 @@ export class ProgressRealmPromise implements Promise<Realm> {
         this.task
           .start()
           .then(async (tsr) => {
-            const realm = new Realm(config, {
+            const realm = new indirect.Realm(config, {
               internal: binding.Helpers.consumeThreadSafeReferenceToSharedRealm(tsr),
               // Do not call `Realm.exists()` here in case the realm has been opened by this point in time.
               realmExists,
@@ -217,7 +218,7 @@ export class ProgressRealmPromise implements Promise<Realm> {
         this.timeoutPromise.catch((err) => {
           if (err instanceof TimeoutError) {
             this.cancelAndResetTask();
-            const realm = new Realm(config);
+            const realm = new indirect.Realm(config);
             this.handle.resolve(realm);
           } else {
             this.handle.reject(err);
