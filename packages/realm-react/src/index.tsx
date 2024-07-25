@@ -130,3 +130,5 @@ export { useUser, UserProvider } from "./UserProvider";
 export * from "./useAuth";
 export * from "./useEmailPasswordAuth";
 export * from "./types";
+export { createUseObject } from "./useObject";
+export { createUseQuery } from "./useQuery";
