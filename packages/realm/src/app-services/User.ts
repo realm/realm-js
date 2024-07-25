@@ -157,7 +157,7 @@ export class User<
    * The provider type used when authenticating the user. If multiple identities exist,
    * the provider type for the first identity found is return.
    * @returns The provider type as an enumerated string.
-   * @deprecated Use {@link identities} instead.
+   * @deprecated Use {@link User.identities} instead.
    */
   get providerType(): ProviderType {
     const [identity] = this.internal.identities;
@@ -260,7 +260,7 @@ export class User<
 
   /**
    * Use this to call functions defined by the Atlas App Services application, as this user.
-   * @returns A {@link UserFunctionsFactoryType} that can be used to call the app's functions.
+   * @returns A {@link User.UserFunctionsFactoryType} that can be used to call the app's functions.
    */
   get functions(): UserFunctionsFactoryType {
     return createFactory(this as User, undefined);

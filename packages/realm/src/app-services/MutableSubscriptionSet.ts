@@ -20,7 +20,7 @@ import { binding } from "../../binding";
 import { assert } from "../assert";
 import { indirect } from "../indirect";
 import type { Realm } from "../Realm";
-import type { AnyResults } from "../Results";
+import type { AnyResults, Results } from "../Results";
 import { BaseSubscriptionSet } from "./BaseSubscriptionSet";
 import { Subscription } from "./Subscription";
 import type { SubscriptionSet } from "./SubscriptionSet";
