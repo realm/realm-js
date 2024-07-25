@@ -2,11 +2,12 @@
 	"extends": "../../tsconfig.json",
 	"compilerOptions": {
 		"target": "es2018",
-		"moduleResolution": "node",
+		"module": "Node16",
+		"moduleResolution": "Node16",
 		"noEmit": true,
 		"forceConsistentCasingInFileNames": true,
 		"types": [
-			"node",
+			"node"
 		],
 		"lib": [
 			"es2019"
