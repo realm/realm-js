@@ -34,7 +34,10 @@ import { createDecimalTypeHelpers } from "./type-helpers/Decimal";
 import { createUuidTypeHelpers } from "./type-helpers/Uuid";
 import { createArrayTypeHelpers } from "./type-helpers/Array";
 
+/** @internal */
 import type { TypeHelpers, TypeOptions } from "./type-helpers/types";
+
+/** @internal */
 export type { TypeHelpers, TypeOptions };
 
 function createUnsupportedTypeHelpers(): TypeHelpers {

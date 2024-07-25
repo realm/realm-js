@@ -18,13 +18,12 @@
 
 import { assert } from "./assert";
 import { binding } from "../binding";
-import { createListAccessor, insertIntoListOfMixed, isJsOrRealmList } from "./List";
+import { List, createListAccessor, insertIntoListOfMixed, isJsOrRealmList } from "./List";
 import { Results, createResultsAccessor } from "./Results";
 import { COLLECTION_ACCESSOR as ACCESSOR, Collection, COLLECTION_TYPE_HELPERS as TYPE_HELPERS } from "./Collection";
 import { AssertionError, IllegalConstructorError } from "./errors";
 import type { DefaultObject } from "./schema";
 import { JSONCacheMap } from "./JSONCacheMap";
-import { List } from "./List";
 import type { Realm } from "./Realm";
 import { toItemType } from "./TypeHelpers";
 import type { TypeHelpers } from "./TypeHelpers";
