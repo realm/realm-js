@@ -20,4 +20,4 @@ import { NativeBigInt, injectNativeModule } from "../binding";
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const nativeModule = require("#realm.node");
-injectNativeModule(nativeModule, { Int64: NativeBigInt });
+injectNativeModule(nativeModule, { Int64: NativeBigInt, WeakRef });
