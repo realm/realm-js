@@ -31,6 +31,8 @@ export type QueryHookOptions<T> = {
   keyPaths?: string | string[];
 };
 
+export type QuaryHookPartialOptions<T> = Omit<QueryHookOptions<T>, "query">;
+
 export type QueryHookClassBasedOptions<T> = {
   type: RealmClassType<T>;
   query?: QueryCallback<T>;
@@ -42,6 +44,14 @@ export type UseQueryHook = {
   <T extends AnyRealmObject>(options: QueryHookClassBasedOptions<T>, deps?: DependencyList): Realm.Results<T>;
   <T>(type: string): Realm.Results<T & Realm.Object<T>>;
   <T extends AnyRealmObject>(type: RealmClassType<T>): Realm.Results<T>;
+  <T extends AnyRealmObject>(
+    query: QueryCallback<T>,
+    deps: DependencyList,
+    options: QuaryHookPartialOptions<T>,
+  ): Realm.Results<T>;
+  <T>(query: QueryCallback<T>, deps: DependencyList, options: QuaryHookPartialOptions<T>): Realm.Results<
+    T & Realm.Object<T>
+  >;
 
   /** @deprecated To help the `react-hooks/exhaustive-deps` eslint rule detect missing dependencies, we've suggest passing a option object as the first argument */
   <T>(type: string, query?: QueryCallback<T>, deps?: DependencyList): Realm.Results<T & Realm.Object<T>>;
@@ -132,19 +142,47 @@ export function createUseQuery(useRealm: () => Realm): UseQueryHook {
   }
 
   return function useQueryOverload<T extends AnyRealmObject>(
-    typeOrOptions: QueryHookOptions<T> | QueryHookClassBasedOptions<T> | string | RealmClassType<T>,
+    typeOrOptionsOrQuery:
+      | QueryHookOptions<T>
+      | QueryHookClassBasedOptions<T>
+      | string
+      | RealmClassType<T>
+      | QueryCallback<T>,
     queryOrDeps: DependencyList | QueryCallback<T> = identity,
-    deps: DependencyList = [],
+    depsOrPartialOptions: DependencyList | QuaryHookPartialOptions<T> = [],
   ): Realm.Results<T> {
-    if (typeof typeOrOptions === "string" && typeof queryOrDeps === "function") {
+    if (
+      typeof typeOrOptionsOrQuery === "string" &&
+      typeof queryOrDeps === "function" &&
+      Array.isArray(depsOrPartialOptions)
+    ) {
       /* eslint-disable-next-line react-hooks/rules-of-hooks -- We're calling `useQuery` once in any of the brances */
-      return useQuery({ type: typeOrOptions, query: queryOrDeps }, deps);
-    } else if (isClassModelConstructor(typeOrOptions) && typeof queryOrDeps === "function") {
+      return useQuery({ type: typeOrOptionsOrQuery, query: queryOrDeps }, depsOrPartialOptions);
+    } else if (
+      isClassModelConstructor(typeOrOptionsOrQuery) &&
+      typeof queryOrDeps === "function" &&
+      Array.isArray(depsOrPartialOptions)
+    ) {
       /* eslint-disable-next-line react-hooks/rules-of-hooks -- We're calling `useQuery` once in any of the brances */
-      return useQuery({ type: typeOrOptions as RealmClassType<T>, query: queryOrDeps }, deps);
-    } else if (typeof typeOrOptions === "object" && typeOrOptions !== null) {
+      return useQuery({ type: typeOrOptionsOrQuery as RealmClassType<T>, query: queryOrDeps }, depsOrPartialOptions);
+    } else if (
+      typeof typeOrOptionsOrQuery === "object" &&
+      typeOrOptionsOrQuery !== null &&
+      Array.isArray(depsOrPartialOptions)
+    ) {
       /* eslint-disable-next-line react-hooks/rules-of-hooks -- We're calling `useQuery` once in any of the brances */
-      return useQuery(typeOrOptions, Array.isArray(queryOrDeps) ? queryOrDeps : deps);
+      return useQuery(typeOrOptionsOrQuery, Array.isArray(queryOrDeps) ? queryOrDeps : depsOrPartialOptions);
+    } else if (
+      typeof typeOrOptionsOrQuery === "function" &&
+      Array.isArray(queryOrDeps) &&
+      typeof depsOrPartialOptions === "object" &&
+      depsOrPartialOptions !== null
+    ) {
+      /* eslint-disable-next-line react-hooks/rules-of-hooks -- We're calling `useQuery` once in any of the brances */
+      return useQuery(
+        { ...(depsOrPartialOptions as QuaryHookPartialOptions<T>), query: typeOrOptionsOrQuery as QueryCallback<T> },
+        queryOrDeps,
+      );
     } else {
       throw new Error("Unexpected arguments passed to useQuery");
     }
