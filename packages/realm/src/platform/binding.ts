@@ -17,14 +17,8 @@
 ////////////////////////////////////////////////////////////////////////////
 
 /** @internal */
-import { binding, inject } from "../../binding";
-import { applyPatch } from "./binding-patch";
-
+export { binding, injectNativeModule } from "../binding/wrapper.generated";
 /** @internal */
-export { binding };
-
+export { NativeBigInt } from "../binding/NativeBigInt";
 /** @internal */
-export function injectAndPatch(value: typeof binding) {
-  applyPatch(value);
-  inject(value);
-}
+export { PolyfilledBigInt } from "../binding/PolyfilledBigInt";

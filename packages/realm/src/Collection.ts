@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import type { binding } from "../binding";
+import type { binding } from "./binding";
 import { injectIndirect } from "./indirect";
 import type { Dictionary } from "./Dictionary";
 import type { List } from "./List";

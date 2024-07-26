@@ -16,21 +16,25 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { binding } from "../binding";
-import { assert } from "../assert";
-import { nullPassthrough } from "./null-passthrough";
-import type { TypeHelpers, TypeOptions } from "./types";
+import type { binding } from "./wrapper.generated";
 
-/** @internal */
-export function createFloatTypeHelpers({ optional }: TypeOptions): TypeHelpers {
-  return {
-    toBinding: nullPassthrough((value) => {
-      assert.number(value);
-      return new binding.Float(value);
-    }, optional),
-    fromBinding: nullPassthrough((value) => {
-      assert.instanceOf(value, binding.Float);
-      return value.value;
-    }, optional),
-  };
-}
+export const NativeBigInt: typeof binding.Int64 = Object.freeze({
+  add(a: binding.Int64, b: binding.Int64) {
+    return a + b;
+  },
+  equals(a: binding.Int64, b: binding.Int64) {
+    return a == b;
+  }, // using == rather than === to support number and string RHS!
+  isInt(a: unknown): a is binding.Int64 {
+    return typeof a === "bigint";
+  },
+  numToInt(a: number) {
+    return BigInt(a) as unknown as binding.Int64;
+  },
+  strToInt(a: string) {
+    return BigInt(a) as unknown as binding.Int64;
+  },
+  intToNum(a: binding.Int64) {
+    return Number(a);
+  },
+});

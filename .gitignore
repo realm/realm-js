@@ -103,12 +103,11 @@ coverage/
 # Generated artifacts
 /packages/realm/bindgen/vendor/bindgen-lib/generated/
 /packages/realm/generated/
-/packages/realm/binding/generated
 /packages/realm/binding/jsi/jsi_init.cpp
+/packages/realm/src/**/*.generated.ts
 
 # Build artifacts
 /packages/realm/dist/
-/packages/realm/binding/dist/
 /packages/realm/binding/build/
 /packages/realm/binding/android/build/
 /packages/realm/binding/node/build/

@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { assert } from "./assert";
-import { binding } from "../binding";
+import { binding } from "./binding";
 import { indirect, injectIndirect } from "./indirect";
 import { COLLECTION_ACCESSOR as ACCESSOR, Collection, COLLECTION_TYPE_HELPERS as TYPE_HELPERS } from "./Collection";
 import { AssertionError, IllegalConstructorError } from "./errors";

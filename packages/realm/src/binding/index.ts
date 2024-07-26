@@ -16,21 +16,4 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { binding } from "../binding";
-import { assert } from "../assert";
-import { nullPassthrough } from "./null-passthrough";
-import type { TypeHelpers, TypeOptions } from "./types";
-
-/** @internal */
-export function createFloatTypeHelpers({ optional }: TypeOptions): TypeHelpers {
-  return {
-    toBinding: nullPassthrough((value) => {
-      assert.number(value);
-      return new binding.Float(value);
-    }, optional),
-    fromBinding: nullPassthrough((value) => {
-      assert.instanceOf(value, binding.Float);
-      return value.value;
-    }, optional),
-  };
-}
+export { binding } from "./wrapper.generated";

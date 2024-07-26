@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import type { binding } from "../../binding";
+import type { binding } from "../binding";
 import type { ClassHelpers } from "../ClassHelpers";
 import type { ListAccessor } from "../collection-accessors/List";
 import type { Realm } from "../Realm";

@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import type { binding } from "../../binding";
+import type { binding } from "../binding";
 import { BSON } from "../bson";
 import { assert } from "../assert";
 

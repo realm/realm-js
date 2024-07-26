@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import type { binding } from "../../binding";
+import type { binding } from "../binding";
 import type { SubscriptionSet } from "./SubscriptionSet";
 import type { BSON } from "../bson";
 

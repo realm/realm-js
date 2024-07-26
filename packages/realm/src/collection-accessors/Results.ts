@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { binding } from "../../binding";
+import { binding } from "../binding";
 import { indirect } from "../indirect";
 import { createDictionaryAccessor } from "./Dictionary";
 import { createListAccessor } from "./List";

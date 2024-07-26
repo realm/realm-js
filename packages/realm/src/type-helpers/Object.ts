@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { binding } from "../../binding";
+import { binding } from "../binding";
 import { assert } from "../assert";
 import { RealmObject, UpdateMode } from "../Object";
 import { OBJECT_INTERNAL, OBJECT_REALM } from "../symbols";

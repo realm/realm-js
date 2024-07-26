@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { binding } from "../../binding";
+import { binding } from "../binding";
 import { assert } from "../assert";
 import type { TypeHelpers } from "../TypeHelpers";
 import type { Realm } from "../Realm";

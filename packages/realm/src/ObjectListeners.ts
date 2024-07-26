@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { binding } from "../binding";
+import { binding } from "./binding";
 import type { RealmObject } from "./Object";
 import { Listeners } from "./Listeners";
 import type { PropertyMap } from "./PropertyMap";

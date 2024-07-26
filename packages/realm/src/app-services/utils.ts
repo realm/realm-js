@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import type { binding } from "../../binding";
+import type { binding } from "../binding";
 
 /**
  * Remove entries for undefined property values.
