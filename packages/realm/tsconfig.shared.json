@@ -28,6 +28,7 @@
     "src/tests",
     "src/scripts",
     "src/platform/node",
-    "src/platform/react-native"
+    "src/platform/react-native",
+    "src/platform/browser"
   ]
 }

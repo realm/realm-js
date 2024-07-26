@@ -2,6 +2,7 @@
   "files": [],
   "references": [
     { "path": "./tsconfig.common.json" },
-    { "path": "./tsconfig.node.json" }
+    { "path": "./tsconfig.node.json" },
+    { "path": "./tsconfig.browser.json" }
   ]
 }

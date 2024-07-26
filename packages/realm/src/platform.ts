@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 /** @internal */
-export { binding } from "./platform/binding";
+export { binding, ready } from "./platform/binding";
 /** @internal */
 export { deviceInfo } from "./platform/device-info";
 /** @internal */

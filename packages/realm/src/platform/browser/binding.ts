@@ -16,5 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-/** @internal */
-export { binding, injectNativeModule } from "../binding/wrapper.generated";
+import { injectAndPatch } from "../binding";
+const bindingPromise = import("../../../binding/generated/native.wasm.cjs");
+
+bindingPromise.then(injectAndPatch);

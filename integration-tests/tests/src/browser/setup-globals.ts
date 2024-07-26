@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2024 Realm Inc.
+// Copyright 2020 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,5 +16,20 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-/** @internal */
-export { binding, injectNativeModule } from "../binding/wrapper.generated";
+/* eslint-disable no-restricted-globals */
+
+Object.assign(globalThis, {
+  fs: {
+    exists(path: string) {
+      throw new Error("Not implemented");
+    },
+  },
+  path: {
+    dirname(path: string) {
+      throw new Error("Not implemented");
+    },
+    resolve(...paths: string[]) {
+      throw new Error("Not implemented");
+    },
+  },
+});

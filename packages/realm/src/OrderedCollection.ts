@@ -38,8 +38,6 @@ import type { SetAccessor } from "./collection-accessors/Set";
 
 const INDEX_NOT_FOUND = -1;
 
-const DEFAULT_COLUMN_KEY = binding.Int64.numToInt(0) as unknown as binding.ColKey;
-
 /** @internal */
 export type OrderedCollectionInternal = binding.List | binding.Results | binding.Set;
 type PropertyType = string;
@@ -959,7 +957,7 @@ export abstract class OrderedCollection<
     } else if (name) {
       throw new Error(`Cannot get property named '${name}' on a list of primitives`);
     } else {
-      return DEFAULT_COLUMN_KEY;
+      return binding.Int64.numToInt(0) as unknown as binding.ColKey;
     }
   }
 
