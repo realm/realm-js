@@ -102,7 +102,7 @@ describe("useQuery", () => {
     expect(result.current.length).toBe(3);
   });
 
-  describe("passing an type as 3rd argument", () => {
+  describe("passing function as 1st argument, deps as 2nd and options as 3rd", () => {
     it("can filter objects via a 'query' property", () => {
       const { result, renders } = profileHook(() =>
         useQuery<IDog>((dogs) => dogs.filtered("age > 10"), [], { type: "dog" }),
