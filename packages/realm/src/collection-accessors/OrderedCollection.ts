@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { binding } from "../../binding";
+import { binding } from "../binding";
 import type { OrderedCollectionInternal } from "../OrderedCollection";
 import type { TypeHelpers } from "../TypeHelpers";
 

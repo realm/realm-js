@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { binding } from "../binding";
+import { binding } from "./binding";
 import { assert } from "./assert";
 import { AssertionError, TypeAssertionError } from "./errors";
 import { indirect, injectIndirect } from "./indirect";

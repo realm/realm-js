@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { binding } from "../binding";
+import { binding } from "./binding";
 import { assert } from "./assert";
 import { TimeoutError } from "./errors";
 import { flags } from "./flags";

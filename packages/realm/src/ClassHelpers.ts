@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import type { binding } from "../binding";
+import type { binding } from "./binding";
 import type { CanonicalObjectSchema, DefaultObject, RealmObjectConstructor } from "./schema";
 import type { PropertyMap } from "./PropertyMap";
 import type { RealmObject } from "./Object";

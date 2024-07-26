@@ -18,7 +18,7 @@
 
 import type { Long, Timestamp } from "bson";
 
-import { binding } from "../../binding";
+import { binding } from "../binding";
 import { toArrayBuffer } from "../type-helpers/array-buffer";
 import type { User } from "./User";
 import { type DefaultFunctionsFactory, createFactory } from "./FunctionsFactory";

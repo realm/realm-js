@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { assert } from "../assert";
-import { binding } from "../../binding";
+import { binding } from "../binding";
 import type { CanonicalObjectSchema, CanonicalPropertySchema, PropertyTypeName } from "../schema";
 
 type BindingObjectSchema = binding.ObjectSchema_Relaxed;

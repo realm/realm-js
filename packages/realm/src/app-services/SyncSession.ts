@@ -18,7 +18,7 @@
 
 import { EJSON } from "bson";
 
-import { binding } from "../../binding";
+import { binding } from "../binding";
 import { assert } from "../assert";
 import { ClientResetError, fromBindingSyncError } from "../errors";
 import { indirect } from "../indirect";

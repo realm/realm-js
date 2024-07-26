@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { binding } from "../../binding";
+import { binding } from "../binding";
 import { assert } from "../assert";
 import { createListAccessor } from "../collection-accessors/List";
 import { createResultsAccessor } from "../collection-accessors/Results";

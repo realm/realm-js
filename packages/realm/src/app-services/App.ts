@@ -18,7 +18,7 @@
 
 import type { AnyFetch } from "@realm/fetch";
 
-import { binding } from "../../binding";
+import { binding } from "../binding";
 import { assert } from "../assert";
 import { injectIndirect } from "../indirect";
 import type { BaseConfiguration } from "../Configuration";
