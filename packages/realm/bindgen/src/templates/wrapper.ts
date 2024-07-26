@@ -280,7 +280,7 @@ export function generate({ spec: boundSpec, rawSpec, file }: TemplateContext): v
   out(
     `
     Object.defineProperties(binding, {
-      ${spec.classes.map((cls) => `${cls.jsName}: { get: _throwOnAccess.bind(undefined, "cls.jsName") }`)}
+      ${spec.classes.map((cls) => `${cls.jsName}: { get: _throwOnAccess.bind(undefined, "${cls.jsName}"), configurable: true }`)}
     });
     `,
   );
@@ -307,14 +307,16 @@ export function generate({ spec: boundSpec, rawSpec, file }: TemplateContext): v
     `
     type Extras = {
       Int64: typeof binding.Int64;
+      WeakRef: typeof binding.WeakRef;
     };
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     export function injectNativeModule(nativeModule: any, extras: Extras) {
+      // eslint-disable-next-line no-console
+      console.log("injectNativeModule called");
       Object.assign(binding, extras);
     `,
   );
 
-  // TODO: Handle injection of WeakRef and Int64
   // TODO: Handle injectables
 
   const injectables = [
@@ -395,10 +397,8 @@ export function generate({ spec: boundSpec, rawSpec, file }: TemplateContext): v
 
   out(`
     Object.defineProperties(binding, {
-      ${spec.classes.map((cls) => `${cls.jsName}: { value: ${cls.jsName} }`)}
+      ${spec.classes.map((cls) => `${cls.jsName}: { value: ${cls.jsName}, writable: false, configurable: false }`)}
     });
-    // Freezing the binding ensures injection can happen only once
-    Object.freeze(binding);
   `);
 
   out(`nativeModule.injectInjectables({ ${injectables} });`);
