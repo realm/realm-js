@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import type { binding } from "../../binding";
+import type { binding } from "../binding";
 import { assert } from "../assert";
 import type { PropertyAccessor, PropertyOptions } from "./types";
 

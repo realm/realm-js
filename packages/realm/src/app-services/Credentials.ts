@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import type { App } from "./App";
-import { binding } from "../../binding";
+import { binding } from "../binding";
 import { assert } from "../assert";
 
 /**

@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import type { binding } from "../../binding";
+import type { binding } from "../binding";
 import type { ClassHelpers } from "../ClassHelpers";
 import type { PresentationPropertyTypeName } from "../schema";
 import type { ObjCreator, UpdateMode } from "../Object";

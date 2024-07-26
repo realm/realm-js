@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { binding } from "../../binding";
+import { binding } from "../binding";
 import { assert } from "../assert";
 import { type LogLevel, type Logger, fromBindingLoggerLevelToNumericLogLevel, toBindingLoggerLevel } from "../Logger";
 import type { Realm } from "../Realm";
