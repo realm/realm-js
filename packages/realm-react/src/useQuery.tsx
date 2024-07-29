@@ -25,31 +25,26 @@ import { AnyRealmObject, RealmClassType, getObjects, isClassModelConstructor } f
 type QueryCallback<T> = (collection: Realm.Results<T>) => Realm.Results<T>;
 type DependencyList = ReadonlyArray<unknown>;
 
-export type QueryHookOptions<T> = {
-  type: string;
-  query?: QueryCallback<T>;
+export type QueryHookPartialOptions<T> = {
+  type: string | RealmClassType<T>;
   keyPaths?: string | string[];
 };
 
-export type QuaryHookPartialOptions<T> = Omit<QueryHookOptions<T>, "query">;
-
-export type QueryHookClassBasedOptions<T> = {
-  type: RealmClassType<T>;
+export type QueryHookOptions<T> = QueryHookPartialOptions<T> & {
   query?: QueryCallback<T>;
-  keyPaths?: string | string[];
 };
 
 export type UseQueryHook = {
   <T>(options: QueryHookOptions<T>, deps?: DependencyList): Realm.Results<T & Realm.Object<T>>;
-  <T extends AnyRealmObject>(options: QueryHookClassBasedOptions<T>, deps?: DependencyList): Realm.Results<T>;
+  <T extends AnyRealmObject>(options: QueryHookPartialOptions<T>, deps?: DependencyList): Realm.Results<T>;
   <T>(type: string): Realm.Results<T & Realm.Object<T>>;
   <T extends AnyRealmObject>(type: RealmClassType<T>): Realm.Results<T>;
   <T extends AnyRealmObject>(
     query: QueryCallback<T>,
     deps: DependencyList,
-    options: QuaryHookPartialOptions<T>,
+    options: QueryHookPartialOptions<T>,
   ): Realm.Results<T>;
-  <T>(query: QueryCallback<T>, deps: DependencyList, options: QuaryHookPartialOptions<T>): Realm.Results<
+  <T>(query: QueryCallback<T>, deps: DependencyList, options: QueryHookPartialOptions<T>): Realm.Results<
     T & Realm.Object<T>
   >;
 
@@ -61,6 +56,12 @@ export type UseQueryHook = {
     query?: QueryCallback<T>,
     deps?: DependencyList,
   ): Realm.Results<T>;
+};
+
+type PossibleQueryArgs<T> = {
+  typeOrOptionsOrQuery: QueryHookOptions<T> | string | RealmClassType<T> | QueryCallback<T>;
+  queryOrDeps?: DependencyList | QueryCallback<T>;
+  depsOrPartialOptions?: DependencyList | QueryHookPartialOptions<T>;
 };
 
 /**
@@ -77,7 +78,7 @@ function identity<T>(value: T): T {
  */
 export function createUseQuery(useRealm: () => Realm): UseQueryHook {
   function useQuery<T extends AnyRealmObject>(
-    { type, query = identity, keyPaths }: QueryHookOptions<T> | QueryHookClassBasedOptions<T>,
+    { type, query = identity, keyPaths }: QueryHookOptions<T>,
     deps: DependencyList = [],
   ): Realm.Results<T> {
     const realm = useRealm();
@@ -142,49 +143,63 @@ export function createUseQuery(useRealm: () => Realm): UseQueryHook {
   }
 
   return function useQueryOverload<T extends AnyRealmObject>(
-    typeOrOptionsOrQuery:
-      | QueryHookOptions<T>
-      | QueryHookClassBasedOptions<T>
-      | string
-      | RealmClassType<T>
-      | QueryCallback<T>,
-    queryOrDeps: DependencyList | QueryCallback<T> = identity,
-    depsOrPartialOptions: DependencyList | QuaryHookPartialOptions<T> = [],
+    typeOrOptionsOrQuery: PossibleQueryArgs<T>["typeOrOptionsOrQuery"],
+    queryOrDeps: PossibleQueryArgs<T>["queryOrDeps"] = identity,
+    depsOrPartialOptions: PossibleQueryArgs<T>["depsOrPartialOptions"] = [],
   ): Realm.Results<T> {
-    if (
-      typeof typeOrOptionsOrQuery === "string" &&
-      typeof queryOrDeps === "function" &&
-      Array.isArray(depsOrPartialOptions)
-    ) {
-      /* eslint-disable-next-line react-hooks/rules-of-hooks -- We're calling `useQuery` once in any of the brances */
-      return useQuery({ type: typeOrOptionsOrQuery, query: queryOrDeps }, depsOrPartialOptions);
-    } else if (
-      isClassModelConstructor(typeOrOptionsOrQuery) &&
-      typeof queryOrDeps === "function" &&
-      Array.isArray(depsOrPartialOptions)
-    ) {
-      /* eslint-disable-next-line react-hooks/rules-of-hooks -- We're calling `useQuery` once in any of the brances */
-      return useQuery({ type: typeOrOptionsOrQuery as RealmClassType<T>, query: queryOrDeps }, depsOrPartialOptions);
-    } else if (
-      typeof typeOrOptionsOrQuery === "object" &&
-      typeOrOptionsOrQuery !== null &&
-      Array.isArray(depsOrPartialOptions)
-    ) {
-      /* eslint-disable-next-line react-hooks/rules-of-hooks -- We're calling `useQuery` once in any of the brances */
-      return useQuery(typeOrOptionsOrQuery, Array.isArray(queryOrDeps) ? queryOrDeps : depsOrPartialOptions);
-    } else if (
-      typeof typeOrOptionsOrQuery === "function" &&
-      Array.isArray(queryOrDeps) &&
-      typeof depsOrPartialOptions === "object" &&
-      depsOrPartialOptions !== null
-    ) {
-      /* eslint-disable-next-line react-hooks/rules-of-hooks -- We're calling `useQuery` once in any of the brances */
-      return useQuery(
-        { ...(depsOrPartialOptions as QuaryHookPartialOptions<T>), query: typeOrOptionsOrQuery as QueryCallback<T> },
-        queryOrDeps,
-      );
-    } else {
-      throw new Error("Unexpected arguments passed to useQuery");
+    const args = { typeOrOptionsOrQuery, queryOrDeps, depsOrPartialOptions };
+    /* eslint-disable react-hooks/rules-of-hooks -- We're calling `useQuery` once in any of the brances */
+    if (isTypeFunctionDeps(args)) {
+      return useQuery({ type: args.typeOrOptionsOrQuery, query: args.queryOrDeps }, args.depsOrPartialOptions);
     }
+    if (isOptionsDepsNone(args)) {
+      return useQuery(args.typeOrOptionsOrQuery, Array.isArray(args.queryOrDeps) ? args.queryOrDeps : []);
+    }
+    if (isFunctionDepsOptions(args)) {
+      return useQuery({ ...args.depsOrPartialOptions, query: args.typeOrOptionsOrQuery }, args.queryOrDeps);
+    }
+    /* eslint-enable react-hooks/rules-of-hooks */
+
+    throw new Error("Unexpected arguments passed to useQuery");
   };
+}
+
+function isTypeFunctionDeps<T>(args: PossibleQueryArgs<T>): args is {
+  typeOrOptionsOrQuery: string | RealmClassType<T>;
+  queryOrDeps: QueryCallback<T>;
+  depsOrPartialOptions: DependencyList;
+} {
+  const { typeOrOptionsOrQuery, queryOrDeps, depsOrPartialOptions } = args;
+  return (
+    (typeof typeOrOptionsOrQuery === "string" || isClassModelConstructor(typeOrOptionsOrQuery)) &&
+    typeof queryOrDeps === "function" &&
+    Array.isArray(depsOrPartialOptions)
+  );
+}
+
+function isOptionsDepsNone<T>(args: PossibleQueryArgs<T>): args is {
+  typeOrOptionsOrQuery: QueryHookOptions<T>;
+  queryOrDeps: DependencyList | typeof identity;
+  depsOrPartialOptions: never;
+} {
+  const { typeOrOptionsOrQuery, queryOrDeps } = args;
+  return (
+    typeof typeOrOptionsOrQuery === "object" &&
+    typeOrOptionsOrQuery !== null &&
+    (Array.isArray(queryOrDeps) || queryOrDeps === identity)
+  );
+}
+
+function isFunctionDepsOptions<T>(args: PossibleQueryArgs<T>): args is {
+  typeOrOptionsOrQuery: QueryCallback<T>;
+  queryOrDeps: DependencyList;
+  depsOrPartialOptions: QueryHookPartialOptions<T>;
+} {
+  const { typeOrOptionsOrQuery, queryOrDeps, depsOrPartialOptions } = args;
+  return (
+    typeof typeOrOptionsOrQuery === "function" &&
+    Array.isArray(queryOrDeps) &&
+    typeof depsOrPartialOptions === "object" &&
+    depsOrPartialOptions !== null
+  );
 }
