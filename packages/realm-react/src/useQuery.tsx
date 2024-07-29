@@ -36,7 +36,7 @@ export type QueryHookOptions<T> = QueryHookPartialOptions<T> & {
 
 export type UseQueryHook = {
   <T>(options: QueryHookOptions<T>, deps?: DependencyList): Realm.Results<T & Realm.Object<T>>;
-  <T extends AnyRealmObject>(options: QueryHookPartialOptions<T>, deps?: DependencyList): Realm.Results<T>;
+  <T extends AnyRealmObject>(options: QueryHookOptions<T>, deps?: DependencyList): Realm.Results<T>;
   <T>(type: string): Realm.Results<T & Realm.Object<T>>;
   <T extends AnyRealmObject>(type: RealmClassType<T>): Realm.Results<T>;
   <T extends AnyRealmObject>(
