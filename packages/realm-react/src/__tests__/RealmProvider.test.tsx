@@ -30,7 +30,7 @@ import {
 } from "../RealmProvider";
 import { randomRealmPath } from "./helpers";
 import { RealmContext } from "../RealmContext";
-import { mockRealmOpen } from "./mocks";
+import { MockedProgressRealmPromiseWithDelay, mockRealmOpen } from "./mocks";
 
 const dogSchema: Realm.ObjectSchema = {
   name: "dog",
@@ -286,8 +286,10 @@ describe("RealmProvider", () => {
 
       it("should receive progress information", async () => {
         const expectedProgressValues = [0, 0.25, 0.5, 0.75, 1];
-        const slowRealmOpen = mockRealmOpen({ progressValues: expectedProgressValues });
-        const renderedProgressValues: (number | null)[] = [];
+        const slowRealmOpen = mockRealmOpen(
+          new MockedProgressRealmPromiseWithDelay({ progressValues: expectedProgressValues }),
+        );
+        const renderedProgressValues: number[] = [];
 
         const Fallback: RealmProviderFallback = ({ progress }) => {
           renderedProgressValues.push(progress);
@@ -304,14 +306,14 @@ describe("RealmProvider", () => {
 
         expect(queryByTestId("fallbackContainer")).not.toBeNull();
         expect(queryByTestId("testContainer")).toBeNull();
-        expect(renderedProgressValues).toStrictEqual([null, expectedProgressValues[0]]);
+        expect(renderedProgressValues).toStrictEqual([expectedProgressValues[0]]);
 
         await act(async () => await slowRealmOpen);
 
         expect(queryByTestId("fallbackContainer")).toBeNull();
         expect(queryByTestId("testContainer")).not.toBeNull();
 
-        expect(renderedProgressValues).toStrictEqual([null, ...expectedProgressValues]);
+        expect(renderedProgressValues).toStrictEqual(expectedProgressValues);
       });
     });
   });

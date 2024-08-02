@@ -28,7 +28,7 @@ type PartialRealmConfiguration = Omit<Partial<Realm.Configuration>, "sync"> & {
 };
 
 export type RealmProviderFallback = React.ComponentType<{
-  progress: number | null;
+  progress: number;
 }>;
 
 /** Props used for a configuration-based Realm provider */
@@ -162,7 +162,7 @@ export function createRealmProviderFromConfig(
       }
     }, [realm]);
 
-    const [progress, setProgress] = useState<number | null>(null);
+    const [progress, setProgress] = useState<number>(0);
 
     useEffect(() => {
       const realmRef = currentRealm.current;
