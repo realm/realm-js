@@ -129,7 +129,7 @@ export function mockRealmOpen(
 }
 
 /** Mocks a {@link Realm} with a custom syncSession and returns it. */
-export function mockSyncRealm({ syncSession }: { syncSession: Partial<SyncSession> }) {
+export function mockSyncedRealm({ syncSession }: { syncSession: Partial<SyncSession> }) {
   const mockedSyncedRealm = new Realm();
 
   //@ts-expect-error  The mock currently supports supplying a subset of methods

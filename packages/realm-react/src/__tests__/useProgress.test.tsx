@@ -25,7 +25,7 @@ import {
 } from "realm";
 import { render } from "@testing-library/react-native";
 
-import { createMockedSyncedRealm, emitMockedProgressNotifications } from "./mocks";
+import { callMockedProgressNotifications, mockSyncedRealm } from "./mocks";
 import { RealmProvider, useProgress } from "..";
 import { sleep } from "./helpers";
 import { Text } from "react-native";
@@ -43,14 +43,14 @@ const expectedProgress = {
 
 const progressTestDuration = 100;
 
-const createMockedSyncedRealmWithProgress = () => {
+const mockSyncedRealmWithProgress = () => {
   const progressNotifiers: Map<ProgressNotificationCallback, NodeJS.Timeout> = new Map();
-  return createMockedSyncedRealm({
+  return mockSyncedRealm({
     syncSession: {
       addProgressNotification(direction, mode, callback) {
         progressNotifiers.set(
           callback,
-          emitMockedProgressNotifications(
+          callMockedProgressNotifications(
             callback as EstimateProgressNotificationCallback,
             // Make download progress "quicker" to compare different testing cases.
             direction == ProgressDirection.Download ? progressTestDuration - 10 : progressTestDuration,
@@ -81,7 +81,7 @@ describe("useProgress", () => {
       ] as [ProgressMode, ProgressDirection][]
     ).forEach(async ([mode, direction]) => {
       it(`should provide correct progress with ${mode} and ${direction}`, async () => {
-        const realm = createMockedSyncedRealmWithProgress();
+        const realm = mockSyncedRealmWithProgress();
 
         const renderedProgressValues: (number | null)[] = [];
 
@@ -106,7 +106,7 @@ describe("useProgress", () => {
     });
 
     it("should handle multiple useProgress hooks with different options", async () => {
-      const realm = createMockedSyncedRealmWithProgress();
+      const realm = mockSyncedRealmWithProgress();
 
       const renderedProgressValues: [number | null, number | null][] = [];
 
