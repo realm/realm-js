@@ -9,7 +9,7 @@
 import { RealmProvider, RealmProviderFallback } from "@realm/react";
 
 const Fallback: RealmProviderFallback = ({ progress }) => {
-	return <Text>Loading: {progress}/1.0</Text>;
+	return <Text>Loading:{(100 * progress).toFixed()}%</Text>;
 }
 
 const MyApp() = () => {

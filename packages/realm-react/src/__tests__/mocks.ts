@@ -25,69 +25,103 @@ import { EstimateProgressNotificationCallback, ProgressRealmPromise, Realm } fro
  */
 export class MockedProgressRealmPromise extends Promise<Realm> implements ProgressRealmPromise {
   private progressHandler?: (callback: EstimateProgressNotificationCallback) => void;
+  private cancelHandler?: () => void;
 
   constructor(
     callback: (resolve: (value: Realm) => void) => void,
     options?: {
       progress?: (callback: EstimateProgressNotificationCallback) => void;
+      cancel?: () => void;
     },
   ) {
     super(callback);
     this.progressHandler = options?.progress;
+    this.cancelHandler = options?.cancel;
   }
 
   get [Symbol.toStringTag]() {
     return "MockedProgressRealmPromise";
   }
 
-  cancel = () => this;
+  cancel = () => {
+    if (!this.cancelHandler) {
+      throw new Error("cancel handler not set");
+    }
+    this.cancelHandler();
+  };
 
   progress = (callback: EstimateProgressNotificationCallback) => {
-    this.progressHandler?.call(this, callback);
+    if (!this.progressHandler) {
+      throw new Error("progress handler not set");
+    }
+    this.progressHandler(callback);
     return this;
   };
 }
 
 /**
+ * Mocked {@link ProgressRealmPromise} which resolves after a set delay.
+ * If `options.progressValues` is specified, passes it through an
+ * equal interval to `Realm.open(...).progress(...)` callback.
+ */
+export class MockedProgressRealmPromiseWithDelay extends MockedProgressRealmPromise {
+  public currentProgressIndex = 0;
+  public progressValues: number[] | undefined;
+  private progressTimeout: NodeJS.Timeout | undefined;
+
+  constructor(
+    options: {
+      delay?: number;
+      /** Progress values which the `Realm.open(...).progress(...)` will receive in an equal interval. */
+      progressValues?: number[];
+    } = {},
+  ) {
+    const { progressValues, delay = 100 } = options;
+    super(
+      (resolve) => {
+        setTimeout(() => resolve(new Realm()), delay);
+      },
+      {
+        progress: (callback) => {
+          callMockedProgressNotifications(callback, delay, progressValues);
+        },
+        cancel: () => clearTimeout(this.progressTimeout),
+      },
+    );
+    this.progressValues = progressValues;
+  }
+}
+
+/** Calls given callbacks with progressValues in an equal interval */
+export function callMockedProgressNotifications(
+  callback: EstimateProgressNotificationCallback,
+  timeFrame: number,
+  progressValues: number[] = [0, 0.25, 0.5, 0.75, 1],
+): NodeJS.Timeout {
+  let progressIndex = 0;
+  let progressInterval: NodeJS.Timeout | undefined = undefined;
+  const sendProgress = () => {
+    // Uses act as this causes a component state update.
+    act(() => callback(progressValues[progressIndex]));
+    progressIndex++;
+
+    if (progressIndex >= progressValues.length) {
+      // Send the next progress update in equidistant time
+      clearInterval(progressInterval);
+    }
+  };
+  progressInterval = setInterval(sendProgress, timeFrame / (progressValues.length + 1));
+  sendProgress();
+  return progressInterval;
+}
+
+/**
  * Mocks the Realm.open operation with a delayed, predictable Realm creation.
- * If `options.progressValues` is specified, passes it through an equal interval to
- * `Realm.open(...).progress(...)` callback.
  * @returns Promise which resolves when the Realm is opened.
  */
 export function mockRealmOpen(
-  options: {
-    /** Progress values which the `Realm.open(...).progress(...)` will receive in an equal interval. */
-    progressValues?: number[];
-    /** Duration of the Realm.open in milliseconds */
-    delay?: number;
-  } = {},
+  progressRealmPromise: MockedProgressRealmPromise = new MockedProgressRealmPromiseWithDelay(),
 ): MockedProgressRealmPromise {
-  const { progressValues, delay = 100 } = options;
-  let progressIndex = 0;
-
-  const progressRealmPromise = new MockedProgressRealmPromise(
-    (resolve) => {
-      setTimeout(() => resolve(new Realm()), delay);
-    },
-    {
-      progress: (callback) => {
-        if (progressValues instanceof Array) {
-          const sendProgress = () => {
-            // Uses act as this causes a component state update.
-            act(() => callback(progressValues[progressIndex]));
-            progressIndex++;
-
-            if (progressIndex <= progressValues.length) {
-              // Send the next progress update in equidistant time
-              setTimeout(sendProgress, delay / progressValues.length);
-            }
-          };
-          sendProgress();
-        }
-      },
-    },
-  );
-
   const delayedRealmOpen = jest.spyOn(Realm, "open");
   delayedRealmOpen.mockImplementation(() => progressRealmPromise);
   return progressRealmPromise;

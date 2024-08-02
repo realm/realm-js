@@ -27,8 +27,8 @@ type PartialRealmConfiguration = Omit<Partial<Realm.Configuration>, "sync"> & {
   sync?: Partial<Realm.SyncConfiguration>;
 };
 
-export type RealmFallbackComponent = React.ComponentType<{
-  progress: number | null;
+export type RealmProviderFallback = React.ComponentType<{
+  progress: number;
 }>;
 
 /** Props used for a configuration-based Realm provider */
@@ -46,7 +46,7 @@ type RealmProviderConfigurationProps = {
   /**
    * The fallback component to render if the Realm is not open.
    */
-  fallback?: RealmFallbackComponent | React.ComponentType | React.ReactElement | null | undefined;
+  fallback?: RealmProviderFallback | React.ComponentType | React.ReactElement | null | undefined;
   children: React.ReactNode;
 } & PartialRealmConfiguration;
 
@@ -162,7 +162,7 @@ export function createRealmProviderFromConfig(
       }
     }, [realm]);
 
-    const [progress, setProgress] = useState<number | null>(null);
+    const [progress, setProgress] = useState<number>(0);
 
     useEffect(() => {
       const realmRef = currentRealm.current;
