@@ -11,7 +11,7 @@ import { RealmProvider, ProgressDirection, ProgressMode } from "@realm/react";
 const ProgressText = () => {
 	const progress = useProgress({ direction: ProgressDirection.Download, mode: ProgressMode.ReportIndefinitely });
 
-	return <Text>Loading: {progress}/1.0 Downloaded</Text>;
+    return <Text>Loading: {(100 * progress).toFixed()}%</Text>;  
 }
 
 const MyApp() = () => {

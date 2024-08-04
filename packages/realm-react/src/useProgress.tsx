@@ -17,35 +17,33 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { ProgressDirection, ProgressMode } from "realm";
-import { useRealm } from ".";
 import { useEffect, useState } from "react";
 import { EstimateProgressNotificationCallback } from "realm/dist/public-types/internal";
+import { UseRealmHook } from "./useRealm";
 
 type UserProgressHook = {
   direction: ProgressDirection;
   mode: ProgressMode;
 };
 
-/**
- *
- * @returns An object containing operations and state for authenticating with an Atlas App.
- */
-export function useProgress({ direction, mode }: UserProgressHook): number | null {
-  const realm = useRealm();
-  const [progress, setProgress] = useState<number | null>(null);
+export function createUseProgress(useRealm: UseRealmHook): ({ direction, mode }: UserProgressHook) => number | null {
+  return function useProgress({ direction, mode }: UserProgressHook): number | null {
+    const realm = useRealm();
+    const [progress, setProgress] = useState<number | null>(null);
 
-  useEffect(() => {
-    if (!realm.syncSession) {
-      throw new Error("No sync session found.");
-    }
-    const callback: EstimateProgressNotificationCallback = (estimate) => {
-      setProgress(estimate);
-    };
+    useEffect(() => {
+      if (!realm.syncSession) {
+        throw new Error("No sync session found.");
+      }
+      const callback: EstimateProgressNotificationCallback = (estimate) => {
+        setProgress(estimate);
+      };
 
-    realm.syncSession.addProgressNotification(direction, mode, callback);
+      realm.syncSession.addProgressNotification(direction, mode, callback);
 
-    return () => realm.syncSession?.removeProgressNotification(callback);
-  }, [realm, direction, mode]);
+      return () => realm.syncSession?.removeProgressNotification(callback);
+    }, [realm, direction, mode]);
 
-  return progress;
+    return progress;
+  };
 }

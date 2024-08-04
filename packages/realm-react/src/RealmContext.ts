@@ -27,6 +27,7 @@ import {
 } from "./RealmProvider";
 import { createContext } from "react";
 import Realm from "realm";
+import { createUseProgress } from "./useProgress";
 
 export type RealmContext<RealmProvider = DynamicRealmProvider> = {
   /**
@@ -112,6 +113,21 @@ export type RealmContext<RealmProvider = DynamicRealmProvider> = {
    * @returns either the desired {@link Realm.Object} or `null` in the case of it being deleted or not existing.
    */
   useObject: ReturnType<typeof createUseObject>;
+  /**
+   * Returns the value representing the progress for a given {@link Realm.ProgressDirection}
+   * and {@link Realm.ProgressMode}. The hook will register a progress notifier and update from
+   * any changes from it.
+   * @example
+   * ```
+   * const progress = useProgress({ direction: ProgressDirection.Download, mode: ProgressMode.ReportIndefinitely });
+   * return <Text>Loading: {(100 * progress).toFixed()}%</Text>;
+   * ```
+   * @param options
+   * @param options.direction - The {@link Realm.ProgressDirection} for the progress notifier.
+   * @param options.mode - The {@link Realm.ProgressMode} for the progress notifier.
+   * @returns a number between 0 and 1 representing the progress
+   */
+  useProgress: ReturnType<typeof createUseProgress>;
 };
 
 /**
@@ -186,11 +202,13 @@ export function createRealmContext(
   const useRealm = createUseRealm(RealmContext);
   const useQuery = createUseQuery(useRealm);
   const useObject = createUseObject(useRealm);
+  const useProgress = createUseProgress(useRealm);
 
   return {
     RealmProvider,
     useRealm,
     useQuery,
     useObject,
+    useProgress,
   };
 }
