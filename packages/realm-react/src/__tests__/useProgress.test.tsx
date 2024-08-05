@@ -69,7 +69,7 @@ const mockSyncedRealmWithProgress = () => {
 describe("useProgress", () => {
   describe("all methods are callable and report a state", () => {
     afterEach(() => {
-      jest.clearAllMocks();
+      jest.restoreAllMocks();
     });
 
     (
