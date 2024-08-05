@@ -239,7 +239,7 @@ describe("RealmProvider", () => {
     // We need to test synced realm in order to produce the fallback
     describe("initially renders a fallback, until realm exists", () => {
       afterEach(() => {
-        jest.clearAllMocks();
+        jest.restoreAllMocks();
       });
 
       it("as a component", async () => {
