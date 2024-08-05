@@ -18,6 +18,7 @@
 
 import { act } from "@testing-library/react-native";
 import { EstimateProgressNotificationCallback, ProgressRealmPromise, Realm } from "realm";
+import { sleep } from "../helpers";
 import { SyncSession } from "realm/dist/public-types/internal";
 
 /**
@@ -27,15 +28,22 @@ import { SyncSession } from "realm/dist/public-types/internal";
 export class MockedProgressRealmPromise extends Promise<Realm> implements ProgressRealmPromise {
   private progressHandler?: (callback: EstimateProgressNotificationCallback) => void;
   private cancelHandler?: () => void;
+  private realmPromise!: Promise<Realm>;
 
   constructor(
-    callback: (resolve: (value: Realm) => void) => void,
+    getRealm: () => Promise<Realm>,
     options?: {
       progress?: (callback: EstimateProgressNotificationCallback) => void;
       cancel?: () => void;
     },
   ) {
-    super(callback);
+    let realmPromise: Promise<Realm>;
+    super((resolve) => {
+      realmPromise = getRealm();
+      realmPromise.then((realm) => resolve(realm));
+    });
+    // @ts-expect-error realmPromise value will be assigned right away
+    this.realmPromise = realmPromise;
     this.progressHandler = options?.progress;
     this.cancelHandler = options?.cancel;
   }
@@ -50,6 +58,13 @@ export class MockedProgressRealmPromise extends Promise<Realm> implements Progre
     }
     this.cancelHandler();
   };
+
+  then<TResult1 = Realm, TResult2 = never>(
+    onfulfilled?: ((value: Realm) => TResult1 | PromiseLike<TResult1>) | null | undefined,
+    onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null | undefined,
+  ): Promise<TResult1 | TResult2> {
+    return this.realmPromise.then(onfulfilled, onrejected);
+  }
 
   progress = (callback: EstimateProgressNotificationCallback) => {
     if (!this.progressHandler) {
@@ -79,12 +94,13 @@ export class MockedProgressRealmPromiseWithDelay extends MockedProgressRealmProm
   ) {
     const { progressValues, delay = 100 } = options;
     super(
-      (resolve) => {
-        setTimeout(() => resolve(new Realm()), delay);
+      async () => {
+        await sleep(delay);
+        return new Realm();
       },
       {
         progress: (callback) => {
-          callMockedProgressNotifications(callback, delay, progressValues);
+          this.progressTimeout = callMockedProgressNotifications(callback, delay, progressValues);
         },
         cancel: () => clearTimeout(this.progressTimeout),
       },
