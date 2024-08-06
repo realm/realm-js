@@ -187,4 +187,27 @@ describe("Relaxed schema", () => {
     expect(Object.entries(joe).length).equal(4);
     expect(Object.values(joe).length).equal(4);
   });
+
+  it("spread operator", function () {
+    this.realm.write(() => {
+      this.realm.create(PersonSchema.name, {
+        name: "Joe",
+        age: 19,
+      });
+    });
+
+    const joe1 = this.realm.objectForPrimaryKey(PersonSchema.name, "Joe");
+    const plainJoe1 = {...joe1};
+    expect(plainJoe1 instanceof Object).to.be.true;
+    expect(Object.keys(plainJoe1)).to.have.deep.members(["age", "friends", "name"]);
+
+    this.realm.write(() => {
+      const joe = this.realm.objectForPrimaryKey(PersonSchema.name, "Joe");
+      joe.nickname = "Johannes";
+    });
+
+    const joe2 = this.realm.objectForPrimaryKey(PersonSchema.name, "Joe");
+    const plainJoe2 = {...joe2};
+    expect(Object.keys(plainJoe2)).to.have.deep.members(["age", "friends", "name", "nickname"]);
+  });
 });
