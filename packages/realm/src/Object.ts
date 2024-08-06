@@ -126,7 +126,7 @@ const PROXY_HANDLER_RELAXED: ProxyHandler<RealmObject<any>> = {
   set(target, prop, value) {
     const obj = target[INTERNAL];
     const propName = prop as string;
-    
+
     if (obj.hasSchemaProperty(propName)) {
       const colKey = obj.table.getColumnKey(propName);
       const options: TypeOptions = {
@@ -159,6 +159,14 @@ const PROXY_HANDLER_RELAXED: ProxyHandler<RealmObject<any>> = {
       obj.eraseAdditionalProp(propName);
     }
     return true;
+  },
+
+  ownKeys(target) {
+    const obj = target[INTERNAL];
+    const schema = (target as Realm.Object).objectSchema();
+    let keys = Object.keys(schema.properties);
+    let additionalProperties = obj.getAdditionalProperties();
+    return [...keys, ...additionalProperties];
   },
 
   getOwnPropertyDescriptor(_) {

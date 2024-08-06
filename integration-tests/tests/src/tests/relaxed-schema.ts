@@ -159,4 +159,32 @@ describe("Relaxed schema", () => {
       });
     });
   });
+
+  it("Object.keys(), Object.values(), and Object.entries()", function () {
+    this.realm.write(() => {
+      this.realm.create(PersonSchema.name, {
+        name: "Joe",
+        age: 19,
+      });
+    });
+
+    let joe = this.realm.objectForPrimaryKey(PersonSchema.name, "Joe");
+    let keys = Object.keys(joe);
+    expect(keys.length).equal(3); // 3 (from schema) + 0 (additional property)
+    expect(keys).to.have.deep.members(["age", "friends", "name"]);
+    expect(Object.entries(joe).length).equal(3);
+    expect(Object.values(joe).length).equal(3);
+
+    this.realm.write(() => {
+      const joe = this.realm.objectForPrimaryKey(PersonSchema.name, "Joe");
+      joe.nickname = "Johannes";
+    });
+
+    joe = this.realm.objectForPrimaryKey(PersonSchema.name, "Joe");
+    keys = Object.keys(joe);
+    expect(keys.length).equal(4); // 3 (from schema) + 1 (additional property)
+    expect(keys).to.have.deep.members(["age", "friends", "name", "nickname"]);
+    expect(Object.entries(joe).length).equal(4);
+    expect(Object.values(joe).length).equal(4);
+  });
 });

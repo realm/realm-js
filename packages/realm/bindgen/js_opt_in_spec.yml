@@ -317,7 +317,8 @@ classes:
       - get_backlink_view
       - create_and_set_linked_object
       - has_schema_property
-      - erase_additional_prop 
+      - erase_additional_prop
+      - get_additional_properties
 
   Timestamp:
     methods:
