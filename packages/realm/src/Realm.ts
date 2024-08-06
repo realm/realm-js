@@ -1220,6 +1220,7 @@ export namespace Realm {
   export import flags = ns.flags;
 
   export import Object = ns.RealmObject;
+  export import EmbeddedObject = ns.RealmEmbeddedObject;
   export import App = ns.App;
   export import Auth = ns.Auth;
   export import BSON = ns.BSON;

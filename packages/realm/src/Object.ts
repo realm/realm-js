@@ -319,7 +319,7 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
    * @param values - The values of the object's properties at creation.
    */
   public constructor(realm: Realm, values: Unmanaged<T, RequiredProperties>) {
-    return realm.create(this.constructor as RealmObjectConstructor, values) as unknown as this;
+    return realm.create(this.constructor as RealmObjectConstructor<AnyRealmObject>, values) as unknown as this;
   }
 
   /**

@@ -26,6 +26,7 @@ import type { RealmObject } from "./Object";
 import type { Collection } from "./Collection";
 import type { App } from "./app-services/App";
 import type { User } from "./app-services/User";
+import type { EmbeddedObject } from ".";
 
 type Indirects = {
   Realm: typeof Realm;
@@ -36,6 +37,7 @@ type Indirects = {
   Dictionary: typeof Dictionary;
   Set: typeof RealmSet;
   Object: typeof RealmObject;
+  EmbeddedObject: typeof EmbeddedObject;
   App: typeof App;
   User: typeof User;
 };

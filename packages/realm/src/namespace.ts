@@ -25,6 +25,7 @@ export * from "./PromiseHandle";
 
 export * from "./Object";
 export * from "./ObjectListeners";
+export * from "./EmbeddedObject";
 
 export * from "./Collection";
 export * from "./OrderedCollection";
