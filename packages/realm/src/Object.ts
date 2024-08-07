@@ -382,9 +382,9 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
    * and [flatted](https://www.npmjs.com/package/flatted) to stringify Realm entities that have circular structures.
    * @returns A plain object.
    */
-  toJSON(_?: string, cache?: unknown): DefaultObject;
+  toJSON(_?: string, cache?: unknown): OmittedRealmTypes<T>;
   /** @internal */
-  toJSON(_?: string, cache = new JSONCacheMap()): DefaultObject {
+  toJSON(_?: string, cache = new JSONCacheMap<T>()): OmittedRealmTypes<T> {
     // Construct a reference-id of table-name & primaryKey if it exists, or fall back to objectId.
 
     // Check if current objectId has already processed, to keep object references the same.
@@ -392,7 +392,7 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
     if (existing) {
       return existing;
     }
-    const result: DefaultObject = {};
+    const result = {} as T;
     cache.add(this, result);
     // Move all enumerable keys to result, triggering any specific toJSON implementation in the process.
     for (const key in this) {
