@@ -16,7 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { CanonicalObjectSchema, CanonicalPropertySchema, PropertyTypeName, assert, binding } from "../internal";
+import { assert } from "../assert";
+import { binding } from "../../binding";
+import type { CanonicalObjectSchema, CanonicalPropertySchema, PropertyTypeName } from "../schema";
 
 type BindingObjectSchema = binding.ObjectSchema_Relaxed;
 type BindingProperty = binding.Property_Relaxed;

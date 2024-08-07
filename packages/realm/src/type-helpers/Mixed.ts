@@ -16,29 +16,24 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import { binding } from "../../binding";
+import { assert } from "../assert";
+import { indirect } from "../indirect";
+import { createDictionaryAccessor } from "../collection-accessors/Dictionary";
+import { createListAccessor } from "../collection-accessors/List";
 import {
-  Collection,
-  Counter,
-  Dictionary,
-  INTERNAL,
-  List,
-  REALM,
-  RealmObject,
-  RealmSet,
-  assert,
-  binding,
   boxToBindingGeospatial,
   circleToBindingGeospatial,
-  createDictionaryAccessor,
-  createListAccessor,
-  getTypeHelpers,
   isGeoBox,
   isGeoCircle,
   isGeoPolygon,
   polygonToBindingGeospatial,
-} from "../internal";
+} from "../GeoSpatial";
+import { Counter } from "../Counter";
+import { getTypeHelpers } from "../TypeHelpers";
+import { OBJECT_INTERNAL, OBJECT_REALM } from "../symbols";
 import { TYPED_ARRAY_CONSTRUCTORS } from "./array-buffer";
-import { TypeHelpers, TypeOptions } from "./types";
+import type { TypeHelpers, TypeOptions } from "./types";
 
 // TODO: Consider testing for expected object instance types and throw something similar to the legacy SDK:
 // "Only Realm instances are supported." (which should probably have been "RealmObject")
@@ -66,14 +61,14 @@ export function mixedToBinding(
     return null;
   } else if (value instanceof Date) {
     return binding.Timestamp.fromDate(value);
-  } else if (value instanceof RealmObject) {
+  } else if (value instanceof indirect.Object) {
     if (value.objectSchema().embedded) {
       throw new Error(`Using an embedded object (${value.constructor.name}) as ${displayedType} is not supported.`);
     }
-    const otherRealm = value[REALM].internal;
+    const otherRealm = value[OBJECT_REALM].internal;
     assert.isSameRealm(realm, otherRealm, "Realm object is from another Realm");
-    return value[INTERNAL];
-  } else if (value instanceof RealmSet || value instanceof Set) {
+    return value[OBJECT_INTERNAL];
+  } else if (value instanceof indirect.Set || value instanceof Set) {
     throw new Error(`Using a ${value.constructor.name} as ${displayedType} is not supported.`);
   } else if (value instanceof Counter) {
     let errMessage = `Using a Counter as ${displayedType} is not supported.`;
@@ -81,7 +76,7 @@ export function mixedToBinding(
     throw new Error(errMessage);
   } else {
     if (isQueryArg) {
-      if (value instanceof Collection || Array.isArray(value)) {
+      if (value instanceof indirect.Collection || Array.isArray(value)) {
         throw new Error(`Using a ${value.constructor.name} as a query argument is not supported.`);
       }
       // Geospatial types can currently only be used when querying and
@@ -126,11 +121,16 @@ function mixedFromBinding(options: TypeOptions, value: binding.MixedArg): unknow
   } else if (value instanceof binding.List) {
     const mixedType = binding.PropertyType.Mixed;
     const typeHelpers = getTypeHelpers(mixedType, options);
-    return new List(realm, value, createListAccessor({ realm, typeHelpers, itemType: mixedType }), typeHelpers);
+    return new indirect.List(
+      realm,
+      value,
+      createListAccessor({ realm, typeHelpers, itemType: mixedType }),
+      typeHelpers,
+    );
   } else if (value instanceof binding.Dictionary) {
     const mixedType = binding.PropertyType.Mixed;
     const typeHelpers = getTypeHelpers(mixedType, options);
-    return new Dictionary(
+    return new indirect.Dictionary(
       realm,
       value,
       createDictionaryAccessor({ realm, typeHelpers, itemType: mixedType }),

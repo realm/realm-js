@@ -16,14 +16,15 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { assert, binding } from "../internal";
+import { binding } from "../../binding";
+import { assert } from "../assert";
 
 type BindingObjectSchema = binding.ObjectSchema;
 type BindingProperty = binding.Property;
 import TableType = binding.TableType;
 import BindingPropertyType = binding.PropertyType;
 
-import { CanonicalObjectSchema, CanonicalPropertySchema, PropertyTypeName } from "./types";
+import type { CanonicalObjectSchema, CanonicalPropertySchema, PropertyTypeName } from "./types";
 
 const TYPE_MAPPINGS: Record<BindingPropertyType, PropertyTypeName | null> = {
   [BindingPropertyType.Int]: "int",

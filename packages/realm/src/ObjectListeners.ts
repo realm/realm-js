@@ -16,7 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { INTERNAL, Listeners, PropertyMap, RealmObject, binding, getClassHelpers } from "./internal";
+import { binding } from "../binding";
+import type { RealmObject } from "./Object";
+import { Listeners } from "./Listeners";
+import type { PropertyMap } from "./PropertyMap";
+import { getClassHelpers } from "./ClassHelpers";
+import { OBJECT_INTERNAL } from "./symbols";
 
 export type ObjectChangeSet<T> = {
   /**
@@ -88,7 +93,7 @@ export class ObjectListeners<T> {
     if (notifier) {
       return notifier;
     } else {
-      notifier = binding.Helpers.makeObjectNotifier(this.realm, this.object[INTERNAL]);
+      notifier = binding.Helpers.makeObjectNotifier(this.realm, this.object[OBJECT_INTERNAL]);
       this.internal = notifier;
       return notifier;
     }

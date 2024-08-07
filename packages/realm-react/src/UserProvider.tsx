@@ -17,14 +17,14 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import React, { createContext, useContext, useEffect, useReducer, useState } from "react";
-import type Realm from "realm";
+import type { Realm, AnyUser, DefaultFunctionsFactory } from "realm";
 
 import { useApp } from "./AppProvider";
 
 /**
  * Create a context containing the Realm app.  Should be accessed with the useApp hook.
  */
-export const UserContext = createContext<Realm.User | null>(null);
+export const UserContext = createContext<AnyUser | null>(null);
 
 type UserProviderProps = {
   /**
@@ -35,7 +35,7 @@ type UserProviderProps = {
   children: React.ReactNode;
 };
 
-function userWasUpdated(userA: Realm.User | null, userB: Realm.User | null) {
+function userWasUpdated(userA: AnyUser | null, userB: AnyUser | null) {
   if (!userA && !userB) {
     return false;
   } else if (userA && userB) {
@@ -56,7 +56,7 @@ function userWasUpdated(userA: Realm.User | null, userB: Realm.User | null) {
  */
 export const UserProvider: React.FC<UserProviderProps> = ({ fallback: Fallback, children }) => {
   const app = useApp();
-  const [user, setUser] = useState<Realm.User | null>(() => app.currentUser);
+  const [user, setUser] = useState<AnyUser | null>(() => app.currentUser);
   const [, forceUpdate] = useReducer((x) => x + 1, 0);
 
   // Support for a possible change in configuration.
@@ -102,9 +102,9 @@ export const UserProvider: React.FC<UserProviderProps> = ({ fallback: Fallback, 
  *
  */
 export const useUser = <
-  FunctionsFactoryType extends Realm.DefaultFunctionsFactory,
-  CustomDataType extends Record<string, unknown>,
-  UserProfileDataType extends Realm.DefaultUserProfileData,
+  FunctionsFactoryType extends Realm.DefaultFunctionsFactory = DefaultFunctionsFactory,
+  CustomDataType extends Record<string, unknown> = Record<string, unknown>,
+  UserProfileDataType extends Realm.DefaultUserProfileData = Realm.DefaultUserProfileData,
 >(): Realm.User<FunctionsFactoryType, CustomDataType, UserProfileDataType> => {
   const user = useContext(UserContext);
 
@@ -112,5 +112,5 @@ export const useUser = <
     throw new Error("No user found. Did you forget to wrap your component in a <UserProvider>?");
   }
 
-  return user as Realm.User<FunctionsFactoryType, CustomDataType, UserProfileDataType>;
+  return user;
 };

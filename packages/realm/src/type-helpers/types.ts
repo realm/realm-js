@@ -16,7 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import type { ClassHelpers, ObjCreator, PresentationPropertyTypeName, Realm, UpdateMode, binding } from "../internal";
+import type { binding } from "../../binding";
+import type { ClassHelpers } from "../ClassHelpers";
+import type { PresentationPropertyTypeName } from "../schema";
+import type { ObjCreator, UpdateMode } from "../Object";
+import type { Realm } from "../Realm";
 
 /** @internal */
 export type TypeHelpers<T = unknown> = {

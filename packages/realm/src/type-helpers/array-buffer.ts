@@ -16,7 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { assert, binding, safeGlobalThis } from "../internal";
+import { binding } from "../../binding";
+import { assert } from "../assert";
+import { safeGlobalThis } from "../safeGlobalThis";
 
 /** @internal */
 export const TYPED_ARRAY_CONSTRUCTORS = new Set(

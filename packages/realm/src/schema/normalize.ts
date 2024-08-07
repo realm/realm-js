@@ -16,25 +16,23 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import {
+import { assert } from "../assert";
+import { flags } from "../flags";
+import { ObjectSchemaParseError, PropertySchemaParseError, SchemaParseError } from "../errors";
+import type {
   CanonicalObjectSchema,
   CanonicalPropertySchema,
   CollectionPropertyTypeName,
   ObjectSchema,
-  ObjectSchemaParseError,
   PresentationPropertyTypeName,
   PrimitivePropertyTypeName,
   PropertiesTypes,
   PropertySchema,
-  PropertySchemaParseError,
   PropertySchemaShorthand,
   PropertyTypeName,
   RealmObjectConstructor,
-  SchemaParseError,
   UserTypeName,
-  assert,
-  flags,
-} from "../internal";
+} from "../schema";
 
 type PropertyInfo = {
   readonly objectName: string;

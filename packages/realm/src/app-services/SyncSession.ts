@@ -18,25 +18,24 @@
 
 import { EJSON } from "bson";
 
+import { binding } from "../../binding";
+import { assert } from "../assert";
+import { ClientResetError, fromBindingSyncError } from "../errors";
+import { indirect } from "../indirect";
+import { Listeners } from "../Listeners";
+import { TimeoutPromise } from "../TimeoutPromise";
+import type { App } from "./App";
 import {
-  App,
-  ClientResetAfterCallback,
-  ClientResetBeforeCallback,
-  ClientResetError,
-  ClientResetFallbackCallback,
+  type ClientResetAfterCallback,
+  type ClientResetBeforeCallback,
+  type ClientResetFallbackCallback,
   ClientResetMode,
-  ErrorCallback,
-  Listeners,
-  PartitionValue,
-  Realm,
+  type ErrorCallback,
+  type PartitionValue,
   SessionStopPolicy,
-  SyncConfiguration,
-  TimeoutPromise,
-  User,
-  assert,
-  binding,
-  fromBindingSyncError,
-} from "../internal";
+  type SyncConfiguration,
+} from "./SyncConfiguration";
+import { User } from "./User";
 
 /**
  * The progress direction to register the progress notifier for.
@@ -206,7 +205,7 @@ export function toBindingErrorHandlerWithOnManual(
 /** @internal */
 export function toBindingNotifyBeforeClientReset(onBefore: ClientResetBeforeCallback) {
   return (internal: binding.Realm) => {
-    onBefore(new Realm(null, { internal }));
+    onBefore(new indirect.Realm(null, { internal }));
   };
 }
 
@@ -214,8 +213,8 @@ export function toBindingNotifyBeforeClientReset(onBefore: ClientResetBeforeCall
 export function toBindingNotifyAfterClientReset(onAfter: ClientResetAfterCallback) {
   return (internal: binding.Realm, tsr: binding.ThreadSafeReference) => {
     onAfter(
-      new Realm(null, { internal }),
-      new Realm(null, { internal: binding.Helpers.consumeThreadSafeReferenceToSharedRealm(tsr) }),
+      new indirect.Realm(null, { internal }),
+      new indirect.Realm(null, { internal: binding.Helpers.consumeThreadSafeReferenceToSharedRealm(tsr) }),
     );
   };
 }
@@ -228,11 +227,13 @@ export function toBindingNotifyAfterClientResetWithFallback(
   return (internal: binding.Realm, tsr: binding.ThreadSafeReference, didRecover: boolean) => {
     if (didRecover) {
       onAfter(
-        new Realm(null, { internal }),
-        new Realm(null, { internal: binding.Helpers.consumeThreadSafeReferenceToSharedRealm(tsr) }),
+        new indirect.Realm(null, { internal }),
+        new indirect.Realm(null, { internal: binding.Helpers.consumeThreadSafeReferenceToSharedRealm(tsr) }),
       );
     } else {
-      const realm = new Realm(null, { internal: binding.Helpers.consumeThreadSafeReferenceToSharedRealm(tsr) });
+      const realm = new indirect.Realm(null, {
+        internal: binding.Helpers.consumeThreadSafeReferenceToSharedRealm(tsr),
+      });
       if (onFallback) {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         onFallback(realm.syncSession!, realm.path);

@@ -16,7 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { AbortSignal, fetch } from "@realm/fetch";
+import type { fetch } from "@realm/fetch";
+import { AbortSignal } from "@realm/fetch";
 
 /** @internal */
 import type * as binding from "../../binding/generated/native";

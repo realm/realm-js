@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { binding } from "../internal";
+import type { binding } from "../../binding";
 /**
  * Authentication provider where users identify using an API-key.
  * @deprecated https://www.mongodb.com/docs/atlas/app-services/reference/push-notifications/

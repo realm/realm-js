@@ -16,8 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { assert, binding } from "../internal";
-import { PropertyAccessor, PropertyOptions } from "./types";
+import type { binding } from "../../binding";
+import { assert } from "../assert";
+import type { PropertyAccessor, PropertyOptions } from "./types";
 
 /** @internal */
 export function createDefaultPropertyAccessor({

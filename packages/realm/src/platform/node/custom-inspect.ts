@@ -15,9 +15,16 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-import { InspectOptionsStylized, inspect } from "node:util";
 
-import { Collection, Dictionary, List, RealmObject, RealmSet, Results } from "../../internal";
+import type { InspectOptionsStylized } from "node:util";
+import { inspect } from "node:util";
+
+import { Collection } from "../../Collection";
+import { Dictionary } from "../../Dictionary";
+import { List } from "../../List";
+import { RealmSet } from "../../Set";
+import { Results } from "../../Results";
+import { RealmObject } from "../../Object";
 
 type CustomInspectFunction<T> = (this: T, depth: number, options: InspectOptionsStylized) => void;
 

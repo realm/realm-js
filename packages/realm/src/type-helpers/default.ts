@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import type { binding } from "../internal";
+import type { binding } from "../../binding";
 
 /** @internal */
 export function defaultToBinding(value: unknown): binding.MixedArg {

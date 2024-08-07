@@ -104,5 +104,8 @@
     "typedoc": "^0.25.7",
     "typescript": "5.0.4",
     "wireit": "^0.14.4"
+  },
+  "devDependencies": {
+    "madge": "^7.0.0"
   }
 }

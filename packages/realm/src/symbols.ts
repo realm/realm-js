@@ -16,19 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { assert } from "../assert";
-import { BSON } from "../bson";
-import { defaultFromBinding } from "./default";
-import { nullPassthrough } from "./null-passthrough";
-import type { TypeHelpers, TypeOptions } from "./types";
-
-/** @internal */
-export function createDecimalTypeHelpers({ optional }: TypeOptions): TypeHelpers {
-  return {
-    toBinding: nullPassthrough((value) => {
-      assert.instanceOf(value, BSON.Decimal128);
-      return value;
-    }, optional),
-    fromBinding: defaultFromBinding,
-  };
-}
+export const OBJECT_INTERNAL = Symbol("Object#internal");
+export const OBJECT_REALM = Symbol("Object#realm");
+export const OBJECT_HELPERS = Symbol("Object#helpers");

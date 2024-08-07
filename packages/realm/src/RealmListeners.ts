@@ -16,7 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { CanonicalObjectSchema, Realm } from "./internal";
+import type { Realm } from "./Realm";
+import type { CanonicalObjectSchema } from "./schema";
 
 export enum RealmEvent {
   Change = "change",

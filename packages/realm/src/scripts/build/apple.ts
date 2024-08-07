@@ -26,7 +26,8 @@ import path from "node:path";
 
 import { globSync } from "glob";
 
-import { ARCHIVE_INSTALL_PATH, SUPPORTED_PLATFORMS, XcodeSDKName, xcode } from "./xcode";
+import type { XcodeSDKName } from "./xcode";
+import { ARCHIVE_INSTALL_PATH, SUPPORTED_PLATFORMS, xcode } from "./xcode";
 import {
   PACKAGE_PATH,
   REALM_CORE_LIBRARY_NAMES_ALLOWLIST,

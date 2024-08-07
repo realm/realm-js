@@ -16,17 +16,15 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import {
-  COLLECTION_ACCESSOR as ACCESSOR,
-  IllegalConstructorError,
-  OrderedCollection,
-  Realm,
-  COLLECTION_TYPE_HELPERS as TYPE_HELPERS,
-  TypeHelpers,
-  assert,
-  binding,
-  createDefaultGetter,
-} from "./internal";
+import { binding } from "../binding";
+import { assert } from "./assert";
+import { IllegalConstructorError } from "./errors";
+import { injectIndirect } from "./indirect";
+import { COLLECTION_ACCESSOR as ACCESSOR, COLLECTION_TYPE_HELPERS as TYPE_HELPERS } from "./Collection";
+import { OrderedCollection } from "./OrderedCollection";
+import type { Realm } from "./Realm";
+import type { TypeHelpers } from "./TypeHelpers";
+import type { SetAccessor } from "./collection-accessors/Set";
 
 /**
  * Instances of this class will be returned when accessing object properties whose type is `"Set"`
@@ -149,84 +147,7 @@ export class RealmSet<T = unknown> extends OrderedCollection<
   }
 }
 
-/**
- * Accessor for getting and setting items in the binding collection.
- * @internal
- */
-export type SetAccessor<T = unknown> = {
-  get: (set: binding.Set, index: number) => T;
-  set: (set: binding.Set, index: number, value: T) => void;
-  insert: (set: binding.Set, value: T) => void;
-};
+/* eslint-disable-next-line @typescript-eslint/no-explicit-any -- We define these once to avoid using "any" through the code */
+export type AnySet = RealmSet<any>;
 
-type SetAccessorFactoryOptions<T> = {
-  realm: Realm;
-  typeHelpers: TypeHelpers<T>;
-  itemType: binding.PropertyType;
-};
-
-/** @internal */
-export function createSetAccessor<T>(options: SetAccessorFactoryOptions<T>): SetAccessor<T> {
-  return options.itemType === binding.PropertyType.Mixed
-    ? createSetAccessorForMixed<T>(options)
-    : createSetAccessorForKnownType<T>(options);
-}
-
-function createSetAccessorForMixed<T>({
-  realm,
-  typeHelpers,
-}: Omit<SetAccessorFactoryOptions<T>, "itemType">): SetAccessor<T> {
-  const { fromBinding, toBinding } = typeHelpers;
-  return {
-    get(set, index) {
-      // Core will not return collections within a Set.
-      return fromBinding(set.getAny(index));
-    },
-    // Directly setting by "index" to a Set is a no-op.
-    set: () => {},
-    insert(set, value) {
-      assert.inTransaction(realm);
-
-      try {
-        set.insertAny(toBinding(value));
-      } catch (err) {
-        // Optimize for the valid cases by not guarding for the unsupported nested collections upfront.
-        throw transformError(err);
-      }
-    },
-  };
-}
-
-function createSetAccessorForKnownType<T>({
-  realm,
-  typeHelpers,
-  itemType,
-}: SetAccessorFactoryOptions<T>): SetAccessor<T> {
-  const { fromBinding, toBinding } = typeHelpers;
-  return {
-    get: createDefaultGetter({ fromBinding, itemType }),
-    // Directly setting by "index" to a Set is a no-op.
-    set: () => {},
-    insert(set, value) {
-      assert.inTransaction(realm);
-
-      try {
-        set.insertAny(toBinding(value));
-      } catch (err) {
-        // Optimize for the valid cases by not guarding for the unsupported nested collections upfront.
-        throw transformError(err);
-      }
-    },
-  };
-}
-
-function transformError(err: unknown) {
-  const message = err instanceof Error ? err.message : "";
-  if (message?.includes("'Array' to a Mixed") || message?.includes("'List' to a Mixed")) {
-    return new Error("Lists within a Set are not supported.");
-  }
-  if (message?.includes("'Object' to a Mixed") || message?.includes("'Dictionary' to a Mixed")) {
-    return new Error("Dictionaries within a Set are not supported.");
-  }
-  return err;
-}
+injectIndirect("Set", RealmSet);

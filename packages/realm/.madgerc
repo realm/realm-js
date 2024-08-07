@@ -1,0 +1,11 @@
+{
+	"detectiveOptions": {
+		"ts": {
+			"skipTypeImports": true
+		}
+	},
+	"excludeRegExp": [
+		"namespace\\.ts",
+		"deprecated-global\\.ts"
+	]
+}

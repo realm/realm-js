@@ -24,8 +24,8 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 import assert from "node:assert";
 
+import type { Configuration } from "./common";
 import {
-  Configuration,
   PACKAGE_PATH,
   REALM_CORE_LIBRARY_NAMES_ALLOWLIST,
   REALM_CORE_PATH,

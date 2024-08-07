@@ -16,7 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { type App, assert, binding } from "./internal";
+import { binding } from "../binding";
+import { assert } from "./assert";
+import type { App } from "./app-services/App";
 
 export type LogLevel = "all" | "trace" | "debug" | "detail" | "info" | "warn" | "error" | "fatal" | "off";
 

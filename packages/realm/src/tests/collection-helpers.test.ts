@@ -18,7 +18,7 @@
 
 import { expect } from "chai";
 
-import { isPOJO } from "../Dictionary";
+import { isPOJO } from "../collection-accessors/Dictionary";
 
 describe("Collection helpers", () => {
   describe("isPOJO()", () => {

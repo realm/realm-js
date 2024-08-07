@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Counter } from "../internal";
+import { Counter } from "../Counter";
 import { createDefaultPropertyAccessor } from "./default";
 import type { PropertyAccessor, PropertyOptions } from "./types";
 

@@ -18,8 +18,9 @@
 
 import { expect } from "chai";
 
-import { ObjectSchema, Realm } from "../index";
-import { RealmContext, closeRealm, generateTempRealmPath } from "./utils";
+import { Realm } from "../Realm";
+import type { ObjectSchema } from "../schema";
+import { type RealmContext, closeRealm, generateTempRealmPath } from "./utils";
 
 const oldSchema: ObjectSchema[] = [{ name: "Person", properties: { name: "string", age: "int" } }];
 const newSchema: ObjectSchema[] = [{ name: "Person2", properties: { title: "string", friends: "int" } }];

@@ -16,16 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import {
-  AnyResults,
-  BaseSubscriptionSet,
-  Realm,
-  Results,
-  Subscription,
-  SubscriptionSet,
-  assert,
-  binding,
-} from "../internal";
+import { binding } from "../../binding";
+import { assert } from "../assert";
+import { indirect } from "../indirect";
+import type { Realm } from "../Realm";
+import type { AnyResults, Results } from "../Results";
+import { BaseSubscriptionSet } from "./BaseSubscriptionSet";
+import { Subscription } from "./Subscription";
+import type { SubscriptionSet } from "./SubscriptionSet";
 
 /**
  * Behavior when waiting for subscribed objects to be synchronized/downloaded.
@@ -108,7 +106,7 @@ export class MutableSubscriptionSet extends BaseSubscriptionSet {
    * @returns A `Subscription` instance for the new subscription.
    */
   add(query: AnyResults, options?: SubscriptionOptions): Subscription {
-    assert.instanceOf(query, Results, "query");
+    assert.instanceOf(query, indirect.Results, "query");
     if (options) {
       validateSubscriptionOptions(options);
     }
@@ -147,7 +145,7 @@ export class MutableSubscriptionSet extends BaseSubscriptionSet {
    * @returns `true` if the subscription was removed, `false` if it was not found.
    */
   remove(query: AnyResults): boolean {
-    assert.instanceOf(query, Results, "query");
+    assert.instanceOf(query, indirect.Results, "query");
 
     return this.internal.eraseByQuery(query.internal.query);
   }

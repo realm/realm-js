@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { binding } from "../internal";
+import type { binding } from "../../binding";
 
 /**
  * Authentication provider where users identify using email and password.

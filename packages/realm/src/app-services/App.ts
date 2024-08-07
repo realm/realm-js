@@ -17,21 +17,19 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import type { AnyFetch } from "@realm/fetch";
-import {
-  AnyUser,
-  BaseConfiguration,
-  Credentials,
-  DefaultFunctionsFactory,
-  DefaultObject,
-  EmailPasswordAuth,
-  Listeners,
-  User,
-  assert,
-  binding,
-  createNetworkTransport,
-  deviceInfo,
-  fs,
-} from "../internal";
+
+import { binding } from "../../binding";
+import { assert } from "../assert";
+import { injectIndirect } from "../indirect";
+import type { BaseConfiguration } from "../Configuration";
+import type { DefaultObject } from "../schema";
+import { Listeners } from "../Listeners";
+import { deviceInfo, fs } from "../platform";
+import { type AnyUser, User } from "./User";
+import type { Credentials } from "./Credentials";
+import type { DefaultFunctionsFactory } from "./FunctionsFactory";
+import { EmailPasswordAuth } from "./EmailPasswordAuth";
+import { createNetworkTransport } from "./NetworkTransport";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type AnyApp = App<any, any>;
@@ -410,7 +408,10 @@ export class App<
   }
 }
 
-import * as internal from "../internal";
+injectIndirect("App", App);
+
+import type * as CredentialsNS from "./Credentials";
+import { Sync as SyncNS } from "./Sync";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace App {
@@ -418,6 +419,6 @@ export namespace App {
    * All credentials available for authentication.
    * @see https://www.mongodb.com/docs/atlas/app-services/authentication/
    */
-  export type Credentials = internal.Credentials;
-  export import Sync = internal.Sync;
+  export type Credentials = CredentialsNS.Credentials;
+  export import Sync = SyncNS;
 }
