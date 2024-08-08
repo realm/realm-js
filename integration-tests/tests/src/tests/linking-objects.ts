@@ -338,19 +338,19 @@ describe("Linking objects", () => {
       // Create a manufacturer with 2 cars.
       this.realm.write(() => {
         const sentra = this.realm.create(Car, {
-          _id: new Realm.BSON.ObjectID(),
+          _id: new Realm.BSON.ObjectId(),
           model: "Sentra",
           miles: 1000,
         });
 
         const pathfinder = this.realm.create(Car, {
-          _id: new Realm.BSON.ObjectID(),
+          _id: new Realm.BSON.ObjectId(),
           model: "Pathfinder",
           miles: 500,
         });
 
         this.realm.create(Manufacturer, {
-          _id: new Realm.BSON.ObjectID(),
+          _id: new Realm.BSON.ObjectId(),
           name: "Nissan",
           cars: [sentra, pathfinder],
         });
