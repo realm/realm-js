@@ -79,15 +79,36 @@ export function validateObjectSchema(
     // Schema is passed via a class based model (RealmObjectConstructor)
     if (typeof objectSchema === "function") {
       const clazz = objectSchema as unknown as DefaultObject;
-      // We assert this later, but want a custom error message
-      if (!(objectSchema.prototype instanceof indirect.Object)) {
-        const schemaName = clazz.schema && (clazz.schema as DefaultObject).name;
-        if (typeof schemaName === "string" && schemaName !== objectSchema.name) {
-          throw new TypeError(
-            `Class '${objectSchema.name}' (declaring '${schemaName}' schema) must extend Realm.Object`,
-          );
-        } else {
-          throw new TypeError(`Class '${objectSchema.name}' must extend Realm.Object`);
+      const isEmbedded = clazz.schema != null && (clazz.schema as DefaultObject).embedded;
+
+      if (!isEmbedded) {
+        // We assert this later, but want a custom error message
+        if (!(objectSchema.prototype instanceof indirect.Object)) {
+          const schemaName = clazz.schema && (clazz.schema as DefaultObject).name;
+          if (typeof schemaName === "string" && schemaName !== objectSchema.name) {
+            throw new TypeError(
+              `Class '${objectSchema.name}' (declaring '${schemaName}' schema) must extend Realm.Object`,
+            );
+          } else {
+            throw new TypeError(`Class '${objectSchema.name}' must extend Realm.Object`);
+          }
+        }
+      } else {
+        // We assert this later, but want a custom error message
+        if (
+          !(
+            objectSchema.prototype instanceof indirect.EmbeddedObject ||
+            objectSchema.prototype instanceof indirect.Object
+          )
+        ) {
+          const schemaName = clazz.schema && (clazz.schema as DefaultObject).name;
+          if (typeof schemaName === "string" && schemaName !== objectSchema.name) {
+            throw new TypeError(
+              `Class '${objectSchema.name}' (declaring '${schemaName}' schema) must extend Realm.EmbeddedObject or Realm.Object`,
+            );
+          } else {
+            throw new TypeError(`Class '${objectSchema.name}' must extend Realm.EmbeddedObject or Realm.Object`);
+          }
         }
       }
       assert.object(clazz.schema, "schema static");

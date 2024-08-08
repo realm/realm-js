@@ -16,7 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import type { AnyRealmObject } from "./Object";
 import type { AppConfiguration } from "./app-services/App";
 import type { User } from "./app-services/User";
 import type { ObjectSchema, RealmObjectConstructor } from "./schema";
@@ -66,7 +65,7 @@ export type BaseConfiguration = {
    * If omitted, the schema will be read from the existing Realm file.
    * @since 0.10.0
    */
-  schema?: (RealmObjectConstructor<AnyRealmObject> | ObjectSchema)[];
+  schema?: (RealmObjectConstructor | ObjectSchema)[];
   /**
    * If changing the `schema`, this field is **required** and must be incremented. This only
    * applies to local Realms.
