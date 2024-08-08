@@ -4,13 +4,29 @@
 * None
 
 ### Enhancements
-* None
+* Added the ability to get `progress` information in `fallback` component of `RealmProvider` when opening a synced Realm. ([#6785](https://github.com/realm/realm-js/issues/6785))
+```tsx
+import { RealmProvider, RealmProviderFallback } from "@realm/react";
+
+const Fallback: RealmProviderFallback = ({ progress }) => {
+	return <Text>Loading:{(100 * progress).toFixed()}%</Text>;
+}
+
+const MyApp() = () => {
+  return (
+    <RealmProvider sync={...} fallback={Fallback}> 
+      ...
+    </RealmProvider>
+  );
+}
+```
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
 * None
 
 ### Compatibility
+* Realm JavaScript >= v12.12.0
 * React Native >= v0.71.4
 * Realm Studio v15.0.0.
 * File format: generates Realms with format v24 (reads and upgrades file format v10).
