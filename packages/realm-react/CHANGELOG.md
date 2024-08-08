@@ -2,11 +2,8 @@
 
 ### Note: Compatibility with Realm has been bumped to [Realm 12.12.0](https://github.com/realm/realm-js/releases/tag/v12.12.0) to add support for progress notifications.
 
-### Deprecations
-* None
-
 ### Enhancements
-* Added `useProgress` hook which provides a convenient way to access Realm's progress information. It works in a similar way as `realm.addProgressNotification`. **Note: this feature is using the new estimate-based progress notifications introduced in [Realm 12.12.0](https://github.com/realm/realm-js/releases/tag/v12.12.0).** ([#6797](https://github.com/realm/realm-js/issues/6797))
+* Added `useProgress` hook which provides a convenient way to access Realm's progress information. It works in a similar way as `realm.addProgressNotification`. ([#6797](https://github.com/realm/realm-js/issues/6797))
 ```tsx
 import { RealmProvider, ProgressDirection, ProgressMode } from "@realm/react";
 
@@ -42,15 +39,11 @@ const MyApp() = () => {
 ```
 
 ### Compatibility
-* **Realm JavaScript >= v12.12.0**. *Note: bumped from 12.0.0*
+* **Realm JavaScript >= v12.12.0**.
 * React Native >= v0.71.4
 * Realm Studio v15.0.0.
 * File format: generates Realms with format v24 (reads and upgrades file format v10).
 
-### Internal
-<!-- * Either mention core version or upgrade -->
-<!-- * Using Realm Core vX.Y.Z -->
-<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
 
 ## 0.9.0 (2024-07-17)
 
