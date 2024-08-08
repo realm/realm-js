@@ -283,9 +283,13 @@
       ]
     },
     "prebuild-node": {
-      "command": "cross-env-shell prebuild --runtime napi --arch $PREBUILD_ARCH -- --directory binding/node",
+      "command": "cross-env-shell prebuild --runtime napi --arch $PREBUILD_ARCH --libc $REALM_LINUX_LIBC -- --directory binding/node",
       "env": {
         "PREBUILD_ARCH": {
+          "external": true,
+          "default": "undefined"
+        }, 
+        "REALM_LINUX_LIBC": {
           "external": true,
           "default": "undefined"
         }
