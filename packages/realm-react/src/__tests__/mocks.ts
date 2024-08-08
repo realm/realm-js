@@ -19,6 +19,7 @@
 import { act } from "@testing-library/react-native";
 import { EstimateProgressNotificationCallback, ProgressRealmPromise, Realm } from "realm";
 import { sleep } from "../helpers";
+import { SyncSession } from "../../../realm/dist/public-types/internal";
 
 /**
  * Mocks {@link Realm.ProgressRealmPromise} with a custom
@@ -141,4 +142,14 @@ export function mockRealmOpen(
   const delayedRealmOpen = jest.spyOn(Realm, "open");
   delayedRealmOpen.mockImplementation(() => progressRealmPromise);
   return progressRealmPromise;
+}
+
+/** Mocks a {@link Realm} with a custom syncSession and returns it. */
+export function mockSyncedRealm({ syncSession }: { syncSession: Partial<SyncSession> }) {
+  const mockedSyncedRealm = new Realm();
+
+  //@ts-expect-error The mock currently supports supplying a subset of methods
+  jest.replaceProperty(mockedSyncedRealm, "syncSession", syncSession);
+
+  return mockedSyncedRealm;
 }

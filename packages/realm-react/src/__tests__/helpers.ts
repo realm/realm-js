@@ -73,3 +73,12 @@ export function randomRealmPath() {
   const tempDirPath = fs.mkdtempSync(path.join(os.tmpdir(), "realm-react-tests-"));
   return path.join(tempDirPath, "test.realm");
 }
+
+/**
+ * Adapted from integration-tests
+ * @param ms For how long should the promise be pending?
+ * @returns A promise that returns after `ms` milliseconds.
+ */
+export function sleep(ms = 1000): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
