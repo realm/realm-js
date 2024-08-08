@@ -16,22 +16,13 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import {
-  CanonicalObjectSchema,
-  Constructor,
-  INTERNAL,
-  KEY_ARRAY,
-  KEY_SET,
-  PropertyMap,
-  REALM,
-  Realm,
-  RealmObject,
-  RealmObjectConstructor,
-  assert,
-  binding,
-  getClassHelpers,
-  setClassHelpers,
-} from "./internal";
+import type { CanonicalObjectSchema, Constructor, RealmObjectConstructor } from "./schema";
+import type { binding } from "../binding";
+import { PropertyMap } from "./PropertyMap";
+import { KEY_ARRAY, KEY_SET, RealmObject } from "./Object";
+import { assert } from "./assert";
+import { getClassHelpers, setClassHelpers } from "./ClassHelpers";
+import { OBJECT_INTERNAL, OBJECT_REALM } from "./symbols";
 
 /** @internal */
 export class ClassMap {
@@ -81,15 +72,15 @@ export class ClassMap {
       Object.defineProperty(constructor.prototype, propertyName, {
         enumerable: true,
         get(this: RealmObject) {
-          return get(this[INTERNAL]);
+          return get(this[OBJECT_INTERNAL]);
         },
         set(this: RealmObject, value: unknown) {
-          set(this[INTERNAL], value);
+          set(this[OBJECT_INTERNAL], value);
         },
       });
     }
 
-    Object.defineProperty(constructor.prototype, REALM, {
+    Object.defineProperty(constructor.prototype, OBJECT_REALM, {
       enumerable: false,
       configurable: false,
       writable: false,

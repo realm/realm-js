@@ -16,11 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import * as internal from "../internal";
+import * as EmailPasswordAuthNS from "./EmailPasswordAuth";
+import * as ApiKeyAuthNS from "./ApiKeyAuth";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace Auth {
-  export import EmailPasswordAuth = internal.EmailPasswordAuth;
-  export type ApiKey = internal.ApiKey;
-  export import ApiKeyAuth = internal.ApiKeyAuth;
+  export import EmailPasswordAuth = EmailPasswordAuthNS.EmailPasswordAuth;
+  export type ApiKey = ApiKeyAuthNS.ApiKey;
+  export import ApiKeyAuth = ApiKeyAuthNS.ApiKeyAuth;
 }

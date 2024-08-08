@@ -20,8 +20,13 @@ import { assert, expect } from "chai";
 import path from "path";
 import fs from "fs";
 
-import { CanonicalObjectSchema, Realm, Object as RealmObject, Results } from "../index";
-import { REALMS_DIR, RealmContext, closeRealm, generateRandomInteger, generateTempRealmPath } from "./utils";
+import { Realm } from "../Realm";
+import { RealmObject } from "../Object";
+import { Results } from "../Results";
+import type { CanonicalObjectSchema } from "../schema";
+
+import type { RealmContext } from "./utils";
+import { REALMS_DIR, closeRealm, generateRandomInteger, generateTempRealmPath } from "./utils";
 
 type Person = { name: string; age?: number };
 type PersonWithFriend = { name: string; age?: number; bestFriend: Person | null };

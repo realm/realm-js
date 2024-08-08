@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Response } from "@realm/fetch";
+import type { Response } from "@realm/fetch";
 
 // Falling back on a known string used in code transpiled by Babel
 const asyncIteratorSymbol: typeof Symbol.asyncIterator = Symbol.asyncIterator || "@@asyncIterator";

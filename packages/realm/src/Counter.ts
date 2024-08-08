@@ -16,7 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { IllegalConstructorError, Realm, UpdateMode, assert, binding } from "./internal";
+import { binding } from "../binding";
+import { assert } from "./assert";
+import { IllegalConstructorError } from "./errors";
+import type { Realm } from "./Realm";
+import type { UpdateMode } from "./Object";
 
 const REALM = Symbol("Counter#realm");
 const OBJ = Symbol("Counter#obj");
@@ -84,7 +88,7 @@ export class Counter {
 
   /** @internal */
   constructor(realm: Realm, obj: binding.Obj, columnKey: binding.ColKey) {
-    if (!(realm instanceof Realm) || !(obj instanceof binding.Obj)) {
+    if (!(obj instanceof binding.Obj)) {
       throw new IllegalConstructorError("Counter");
     }
 

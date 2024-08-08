@@ -16,51 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-/**
- * @module
- * We're following [the internal module pattern](https://medium.com/visual-development/how-to-fix-nasty-circular-dependency-issues-once-and-for-all-in-javascript-typescript-a04c987cf0de) to control of the order of code when bundled.
- */
-
-/** @internal */
-export * from "./debug";
-export * from "./safeGlobalThis";
-
-/** @internal */
-export * from "./platform";
-
 export * from "./flags";
 export * from "./bson";
 export * from "./errors";
 export * from "./decorators";
-/** @internal */
-export * from "./assert";
-/** @internal */
-export * from "./ranges";
-/** @internal */
-export * from "./async-iterator-from-response";
-/** @internal */
-export * from "./Listeners";
-/** @internal */
-export * from "./JSONCacheMap";
-/** @internal */
-export * from "./TimeoutPromise";
-
-/** @internal */
-export * from "./PropertyHelpers";
-/** @internal */
-export * from "./PropertyMap";
-/** @internal */
-export * from "./ClassHelpers";
-/** @internal */
-export * from "./ClassMap";
-/** @internal */
-export * from "./TypeHelpers";
-/** @internal */
-export { mixedToBinding } from "./type-helpers/Mixed";
-/** @internal */
-export { toArrayBuffer } from "./type-helpers/array-buffer";
-/** @internal */
-export type { TypeHelpers, TypeOptions } from "./type-helpers/types";
 
 export * from "./PromiseHandle";
 
@@ -108,5 +67,3 @@ export * from "./ProgressRealmPromise";
 
 export * from "./Unmanaged";
 export * from "./schema";
-
-import "./deprecated-global";

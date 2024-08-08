@@ -16,11 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { assert } from "./internal";
+import { assert } from "./assert";
 
 type ResolveType<T> = (value: T | PromiseLike<T>) => void;
 type RejectType<T = unknown> = (reason?: T) => void;
 
+/**
+ * Cross-platform alternative to `Promise.withResolvers()`.
+ */
 export class PromiseHandle<T> {
   resolve!: ResolveType<T>;
   reject!: RejectType;

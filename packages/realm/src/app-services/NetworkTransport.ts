@@ -16,8 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { binding, extendDebug, network } from "../internal";
 import type { Headers } from "@realm/fetch";
+
+import { binding } from "../../binding";
+import { extendDebug } from "../debug";
+import { network } from "../platform";
 
 const debug = extendDebug("network");
 

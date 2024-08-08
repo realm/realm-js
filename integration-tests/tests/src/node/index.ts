@@ -16,7 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-// NOTE: This file is only supposed to be imported from a Node.js environment
+if (typeof process.versions.node !== "string") {
+  throw new Error("This file is only supposed to be imported from a Node.js environment!");
+}
+
+// Import all the regular tests first
+import "./setup-globals";
+
+import "../index";
 
 import "./analytics";
 import "./clean-exit";

@@ -1,18 +1,10 @@
 ## vNext (TBD)
 
 ### Deprecations
-* The callback for `SyncSession.addProgressNotification` taking `transferred` and `transferable` arguments is deprecated and will be removed. See **Enhancements** below for the new callback supporting both Flexible Sync and Partition-Based Sync. ([#6743](https://github.com/realm/realm-js/pull/6743))
-* `AppConfiguration.app` is no longer used by Atlas Device Sync. It will be removed in future SDK releases and should not be used. ([#6785](https://github.com/realm/realm-js/issues/6785))
+* None
 
 ### Enhancements
-* Added progress notifications support for Flexible Sync using an `estimate` as the new callback argument. The `estimate` is roughly equivalent to an estimated value of `transferred / transferable` in the deprecated Partition-Based Sync callback. ([#6743](https://github.com/realm/realm-js/pull/6743))
-```typescript
-realm.syncSession?.addProgressNotification(
-  ProgressDirection.Upload,
-  ProgressMode.ReportIndefinitely,
-  (estimate) => console.log(`progress: ${estimate}/1.0`)
-);
-```
+* None
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
@@ -24,8 +16,67 @@ realm.syncSession?.addProgressNotification(
 * File format: generates Realms with format v24 (reads and upgrades file format v10).
 
 ### Internal
+<!-- * Either mention core version or upgrade -->
+<!-- * Using Realm Core vX.Y.Z -->
+<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
+
+## 12.12.1 (2024-07-25)
+
+### Fixed
+* Fixed compiler error when building binding for React Native iOS: "'React-featureflags/react/featureflags/ReactNativeFeatureFlags.h' file not found" ([#6808](https://github.com/realm/realm-js/issues/6808), since v12.12.0)
+
+### Compatibility
+* React Native >= v0.71.4
+* Realm Studio v15.0.0.
+* File format: generates Realms with format v24 (reads and upgrades file format v10).
+
+### Internal
+* Removed an unused import in the binding for React Native Android. ([#6808](https://github.com/realm/realm-js/issues/6808), since v12.12.0)
+
+## 12.12.0 (2024-07-23)
+
+### Deprecations
+* The callback for `SyncSession.addProgressNotification` taking `transferred` and `transferable` arguments is deprecated and will be removed. See **Enhancements** below for the new callback supporting both Flexible Sync and Partition-Based Sync. ([#6743](https://github.com/realm/realm-js/pull/6743))
+* `AppConfiguration.app` is no longer used by Atlas Device Sync. It will be removed in future SDK releases and should not be used. ([#6785](https://github.com/realm/realm-js/issues/6785))
+
+### Enhancements
+* Added support for "bridgeless" React Native on iOS and Android, a part of the "new architecture". ([#6737](https://github.com/realm/realm-js/pull/6737))
+* Added progress notifications support for Flexible Sync using an `estimate` as the new callback argument. The `estimate` is roughly equivalent to an estimated value of `transferred / transferable` in the deprecated Partition-Based Sync callback. ([#6743](https://github.com/realm/realm-js/pull/6743))
+```typescript
+realm.syncSession?.addProgressNotification(
+  ProgressDirection.Upload,
+  ProgressMode.ReportIndefinitely,
+  (estimate) => console.log(`progress: ${estimate}/1.0`)
+);
+```
+* It is no longer an error to set a base url for an App with a trailing slash - for example, `https://services.cloud.mongodb.com/` instead of `https://services.cloud.mongodb.com` - before this change that would result in a 404 error from the server. ([realm/realm-core#7791](https://github.com/realm/realm-core/pull/7791))
+* Performance has been improved for range queries on integers and timestamps when using the `BETWEEN` operator. ([realm/realm-core#7785](https://github.com/realm/realm-core/pull/7785))
+* On Windows devices Device Sync will additionally look up SSL certificates in the Windows Trusted Root Certification Authorities certificate store when establishing a connection. ([realm/realm-core#7882](https://github.com/realm/realm-core/pull/7882))
+* Role and permissions changes no longer require a client reset to update the Realm on-device. ([realm/realm-core#7440](https://github.com/realm/realm-core/pull/7440))
+
+### Fixed
+* Opening an Flexible Sync Realm asynchronously may not wait to download all data. ([realm/realm-core#7720](https://github.com/realm/realm-core/issues/7720), since v10.12.0)
+* Clearing a list of `mixed` in an upgraded file would lead to an assertion failing. ([realm/realm-core#7771](https://github.com/realm/realm-core/issues/7771), since 12.7.0-rc.0)
+* Sync client can crash if a session is resumed while the session is being suspended. ([realm/realm-core#7860](https://github.com/realm/realm-core/issues/7860), since v10.18.0)
+* If a sync session is interrupted by a disconnect or restart while downloading a bootstrap, stale data from the previous bootstrap may be included when the session reconnects and downloads the bootstrap. This can lead to objects stored in the database that do not match the actual state of the server and potentially leading to compensating writes. ([realm/realm-core#7827](https://github.com/realm/realm-core/issues/7827), since v10.18.0)
+* Fixed unnecessary server roundtrips when there is no download to acknowledge. ([realm/realm-core#2129](https://jira.mongodb.org/browse/RCORE-2129), since v12.10.0)
+* `Realm.App.Sync.SyncSession#uploadAllLocalChanges()` was inconsistent in how it handled commits which did not produce any changesets to upload. Previously it would sometimes complete immediately if all commits waiting to be uploaded were empty, and at other times it would wait for a server roundtrip. It will now always complete immediately. ([realm/realm-core#7796](https://github.com/realm/realm-core/pull/7796))
+* `Realm#writeCopyTo()` on an encrypted Realm without explicitly specifying a new encryption key would only work if the old key happened to be a valid nul-terminated string. ([realm/realm-core#7842](https://github.com/realm/realm-core/issues/7842), since v12.10.0).
+* You could get unexpected merge results when assigning to a nested collection. ([realm/realm-core#7809](https://github.com/realm/realm-core/issues/7809), since v12.7.0-rc.0)
+* When `mapTo` is used to have an alias for a property name, `Realm.Results#sorted()` doesn't recognize the alias leading to errors like `Cannot sort on key path 'NAME': property 'PersonObject.NAME' does not exist`. ([#6779](https://github.com/realm/realm-js/issues/6779), since v11.2.0)
+* A `mixed` property with a collection could sometimes end up with a combination of values assigned by different clients. ([realm/realm-core#7809](https://github.com/realm/realm-core/issues/7809), since v12.9.0)
+* Fixed removing backlinks from the wrong objects if the link came from a nested list, nested dictionary, top-level dictionary, or list of mixed, and the source table had more than 256 objects. This could manifest as `array_backlink.cpp:112: Assertion failed: int64_t(value >> 1) == key.value` when removing an object. ([realm/realm-core#7594](https://github.com/realm/realm-core/issues/7594), since v10.6.0)
+* Fixed a bug when removing an object from a nested collection could lead to an assert with the message `array.cpp:319: Array::move() Assertion failed: begin <= end [2, 1]`. ([realm/realm-core#7839](https://github.com/realm/realm-core/issues/7839), since v12.9.0)
+
+### Compatibility
+* React Native >= v0.71.4
+* Realm Studio v15.0.0.
+* File format: generates Realms with format v24 (reads and upgrades file format v10).
+
+### Internal
 * Adding a CallInvoker-based scheduler for Core on React Native and removing the "flush ui queue" workaround. ([#6791](https://github.com/realm/realm-js/pull/6791))
 * Refactors throwing uncaught exceptions from callbacks dispatched onto the event loop from C++ on React Native. ([#6772](https://github.com/realm/realm-js/issues/6772))
+* Upgraded Realm Core from v14.10.0 to v14.11.0. ([#6744](https://github.com/realm/realm-js/issues/6744)
 
 ## 12.11.1 (2024-06-25)
 

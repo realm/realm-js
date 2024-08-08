@@ -20,8 +20,10 @@ import "./binding";
 import "./fs";
 import "./device-info";
 import "./sync-proxy-config";
-import "./custom-inspect";
 import "./garbage-collection";
 
 import { Realm } from "../../Realm";
 export = Realm;
+
+import "./custom-inspect";
+import "../../deprecated-global";

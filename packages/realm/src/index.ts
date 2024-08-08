@@ -18,3 +18,5 @@
 
 import { Realm } from "./Realm";
 export = Realm;
+
+import "./deprecated-global";

@@ -73,7 +73,7 @@
   ],
   "dependencies": {
     "@react-native/eslint-config": "0.74.83",
-    "@react-native/eslint-plugin": "0.74.83",
+    "@react-native/eslint-plugin": "0.74.87",
     "@react-native/typescript-config": "0.74.83",
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-json": "^6.1.0",
@@ -104,5 +104,8 @@
     "typedoc": "^0.25.7",
     "typescript": "5.0.4",
     "wireit": "^0.14.4"
+  },
+  "devDependencies": {
+    "madge": "^7.0.0"
   }
 }

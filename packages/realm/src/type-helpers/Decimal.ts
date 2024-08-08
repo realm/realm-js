@@ -16,10 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { BSON, assert } from "../internal";
+import { assert } from "../assert";
+import { BSON } from "../bson";
 import { defaultFromBinding } from "./default";
 import { nullPassthrough } from "./null-passthrough";
-import { TypeHelpers, TypeOptions } from "./types";
+import type { TypeHelpers, TypeOptions } from "./types";
 
 /** @internal */
 export function createDecimalTypeHelpers({ optional }: TypeOptions): TypeHelpers {

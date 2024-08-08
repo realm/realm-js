@@ -16,7 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { ClientResetMode, Configuration, PrimaryKey, assert, binding } from "./internal";
+import type { binding } from "../binding";
+import type { PrimaryKey } from "./schema";
+import type { Configuration } from "./Configuration";
+import type { ClientResetMode } from "./app-services/SyncConfiguration";
 
 export class AssertionError extends Error {
   /** @internal */
@@ -227,8 +230,7 @@ export class CompensatingWriteError extends SyncError {
   constructor(error: binding.SyncError) {
     super(error);
     for (const { objectName, primaryKey, reason } of error.compensatingWritesInfo) {
-      assert.primaryKey(primaryKey);
-      this.writes.push({ objectName, reason, primaryKey });
+      this.writes.push({ objectName, reason, primaryKey: primaryKey as PrimaryKey });
     }
   }
 }

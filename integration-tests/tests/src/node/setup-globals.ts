@@ -16,23 +16,20 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-// Set the defult depth of objects logged with console.log to improve DX when debugging
+/* eslint-disable no-restricted-globals */
+
 import { inspect } from "node:util";
 import { existsSync } from "node:fs";
 import { dirname, resolve } from "node:path";
+import v8 from "node:v8";
+import vm from "node:vm";
 
+// Set the default depth of objects logged with console.log to improve DX when debugging
 inspect.defaultOptions.depth = null;
 
-if (typeof gc !== "function") {
-  throw new Error("Run with --expose_gc to allow garbage collection between tests");
-}
+v8.setFlagsFromString("--expose_gc");
 
-// Require this file to get the Realm constructor injected into the global.
-// This is only useful when we want to run the tests outside of any particular environment
-
-Object.assign(global, {
-  title: "Realm JS development-mode",
-  environment: { node: true },
+Object.assign(globalThis, {
   fs: {
     exists(path: string) {
       return existsSync(path);
@@ -46,24 +43,8 @@ Object.assign(global, {
       return resolve(...paths);
     },
   },
+  gc: vm.runInNewContext("gc"),
 });
 
-function parseValue(value: string | undefined) {
-  if (typeof value === "undefined" || value === "true") {
-    return true;
-  } else if (value === "false") {
-    return false;
-  } else {
-    return value;
-  }
-}
-
-const { CONTEXT } = process.env;
-if (CONTEXT) {
-  for (const pair of CONTEXT.split(",")) {
-    const [key, value] = pair.split("=");
-    if (key) {
-      environment[key] = parseValue(value);
-    }
-  }
-}
+// Indicate that the tests are running in Node
+environment.node = true;

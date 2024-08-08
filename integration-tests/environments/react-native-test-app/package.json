@@ -24,6 +24,7 @@
       "dependencies": [
         "../../../packages/realm:build:ts",
         "../../../packages/realm:bindgen:jsi",
+        "../../../packages/realm:prebuild-android",
         "../../../packages/mocha-reporter:bundle"
       ],
       "env": {

@@ -20,8 +20,12 @@ import { expect } from "chai";
 import { inspect } from "node:util";
 import { Decimal128, ObjectId, UUID } from "bson";
 
-import { List, PropertySchema, PropertyTypeName, Realm, Object as RealmObject } from "../index";
-import { RealmContext, closeRealm, generateTempRealmPath } from "./utils";
+import { Realm } from "../Realm";
+import { RealmObject } from "../Object";
+import { List } from "../List";
+import type { PropertySchema, PropertyTypeName } from "../schema";
+import type { RealmContext } from "./utils";
+import { closeRealm, generateTempRealmPath } from "./utils";
 
 type ValueFunction<T = unknown> = (realm: Realm) => T;
 type TestFunction<T = unknown> = (result: unknown, input: T) => boolean;

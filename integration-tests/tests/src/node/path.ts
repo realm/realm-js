@@ -20,7 +20,7 @@ import { expect } from "chai";
 import Realm, { BSON, SessionStopPolicy } from "realm";
 import path from "node:path";
 import os from "node:os";
-import { existsSync, rmSync } from "node:fs";
+import { existsSync } from "node:fs";
 
 import { importAppBefore, authenticateUserBefore } from "../hooks";
 import { buildAppConfig } from "../utils/build-app-config";

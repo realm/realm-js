@@ -16,8 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { ClassHelpers, ListAccessor, PresentationPropertyTypeName, Realm, binding } from "../internal";
-import type { TypeHelpers } from "../type-helpers/types";
+import type { binding } from "../../binding";
+import type { ClassHelpers } from "../ClassHelpers";
+import type { ListAccessor } from "../collection-accessors/List";
+import type { Realm } from "../Realm";
+import type { PresentationPropertyTypeName } from "../schema";
+import type { TypeHelpers } from "../TypeHelpers";
 
 /** @internal */
 export type PropertyContext = binding.Property & {

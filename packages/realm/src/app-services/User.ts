@@ -16,28 +16,23 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import {
-  AnyApp,
-  ApiKeyAuth,
-  App,
-  Credentials,
-  DefaultFunctionsFactory,
-  DefaultObject,
-  DefaultUserProfileData,
-  Document,
-  Listeners,
-  MongoDBCollection,
-  MongoDBService,
-  ProviderType,
-  PushClient,
-  assert,
-  asyncIteratorFromResponse,
-  binding,
-  cleanArguments,
-  createFactory,
-  isProviderType,
-  network,
-} from "../internal";
+import { binding } from "../../binding";
+import { assert } from "../assert";
+import { indirect, injectIndirect } from "../indirect";
+import { network } from "../platform";
+import type { DefaultObject } from "../schema";
+import { Listeners } from "../Listeners";
+import { asyncIteratorFromResponse } from "../async-iterator-from-response";
+import { cleanArguments } from "./utils";
+import type { App } from "./App";
+import type { AnyApp } from "./App";
+import { ApiKeyAuth } from "./ApiKeyAuth";
+import type { ProviderType } from "./Credentials";
+import { type Credentials, isProviderType } from "./Credentials";
+import { type DefaultFunctionsFactory, createFactory } from "./FunctionsFactory";
+import type { DefaultUserProfileData } from "./UserProfile";
+import { type Document, MongoDBCollection, type MongoDBService } from "./MongoDBCollection";
+import { PushClient } from "./PushClient";
 
 export type UserChangeCallback = () => void;
 
@@ -113,10 +108,13 @@ export class User<
   >(internal: binding.User, app?: AnyApp) {
     // Update the static user reference to the current app
     if (app) {
-      App.setAppByUser(internal, app);
+      indirect.App.setAppByUser(internal, app);
     }
     // TODO: Use a WeakRef to memoize the SDK object
-    return new User<FunctionsFactoryType, CustomDataType, UserProfileDataType>(internal, App.getAppByUser(internal));
+    return new User<FunctionsFactoryType, CustomDataType, UserProfileDataType>(
+      internal,
+      indirect.App.getAppByUser(internal),
+    );
   }
 
   /** @internal */
@@ -159,7 +157,7 @@ export class User<
    * The provider type used when authenticating the user. If multiple identities exist,
    * the provider type for the first identity found is return.
    * @returns The provider type as an enumerated string.
-   * @deprecated Use {@link identities} instead.
+   * @deprecated Use {@link User.identities} instead.
    */
   get providerType(): ProviderType {
     const [identity] = this.internal.identities;
@@ -262,7 +260,7 @@ export class User<
 
   /**
    * Use this to call functions defined by the Atlas App Services application, as this user.
-   * @returns A {@link UserFunctionsFactoryType} that can be used to call the app's functions.
+   * @returns A {@link User.UserFunctionsFactoryType} that can be used to call the app's functions.
    */
   get functions(): UserFunctionsFactoryType {
     return createFactory(this as User, undefined);
@@ -414,3 +412,5 @@ export class User<
     this.listeners.removeAll();
   }
 }
+
+injectIndirect("User", User);

@@ -16,7 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { assert, binding } from "./internal";
+import { binding } from "../binding";
+import { assert } from "./assert";
 
 import { createIntTypeHelpers } from "./type-helpers/Int";
 import { createBoolTypeHelpers } from "./type-helpers/Bool";
@@ -33,7 +34,11 @@ import { createDecimalTypeHelpers } from "./type-helpers/Decimal";
 import { createUuidTypeHelpers } from "./type-helpers/Uuid";
 import { createArrayTypeHelpers } from "./type-helpers/Array";
 
+/** @internal */
 import type { TypeHelpers, TypeOptions } from "./type-helpers/types";
+
+/** @internal */
+export type { TypeHelpers, TypeOptions };
 
 function createUnsupportedTypeHelpers(): TypeHelpers {
   return {

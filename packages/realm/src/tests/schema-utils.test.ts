@@ -28,7 +28,7 @@ import ColKey = binding.ColKey;
 import TableKey = binding.TableKey;
 import TableType = binding.TableType;
 
-import { CanonicalObjectSchema, CanonicalPropertySchema } from "../schema";
+import type { CanonicalObjectSchema, CanonicalPropertySchema } from "../schema";
 import { fromBindingObjectSchema, fromBindingPropertySchema } from "../schema/from-binding";
 
 const columnKey = { value: 0n } as unknown as ColKey;

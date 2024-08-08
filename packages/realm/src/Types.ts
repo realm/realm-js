@@ -16,7 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import * as internal from "./internal";
+import { BSON } from "./bson";
+import * as CounterNS from "./Counter";
+import * as ListNS from "./List";
+import * as SetNS from "./Set";
+import * as DictionaryNS from "./Dictionary";
+import * as ResultsNS from "./Results";
 
 const GlobalDate = Date;
 type GlobalDate = Date;
@@ -29,10 +34,10 @@ export namespace Types {
   export type Float = number;
   export type Double = number;
 
-  export import Decimal128 = internal.BSON.Decimal128;
-  export import ObjectId = internal.BSON.ObjectId;
-  export import UUID = internal.BSON.UUID;
-  export import Counter = internal.Counter;
+  export import Decimal128 = BSON.Decimal128;
+  export import ObjectId = BSON.ObjectId;
+  export import UUID = BSON.UUID;
+  export import Counter = CounterNS.Counter;
 
   export type Date = GlobalDate;
   export const Date = GlobalDate;
@@ -40,12 +45,12 @@ export namespace Types {
   export type Data = ArrayBuffer;
   export const Data = ArrayBuffer;
 
-  export import List = internal.List;
-  export import Set = internal.RealmSet;
-  export import Dictionary = internal.Dictionary;
+  export import List = ListNS.List;
+  export import Set = SetNS.RealmSet;
+  export import Dictionary = DictionaryNS.Dictionary;
 
   export type Mixed = unknown;
   /* eslint-disable-next-line @typescript-eslint/no-unused-vars -- We don't use the `LinkingPropertyName` at runtime */
-  export type LinkingObjects<ObjectTypeT, LinkingPropertyName> = internal.Results<ObjectTypeT>;
-  export const LinkingObjects = internal.Results;
+  export type LinkingObjects<ObjectTypeT, LinkingPropertyName> = ResultsNS.Results<ObjectTypeT>;
+  export const LinkingObjects = ResultsNS.Results;
 }

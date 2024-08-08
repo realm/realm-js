@@ -16,7 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { AssertionError, BSON, DefaultObject, PrimaryKey, Realm, TypeAssertionError, binding } from "./internal";
+import type { binding } from "../binding";
+import { AssertionError, TypeAssertionError } from "./errors";
+import type { DefaultObject } from "./schema";
+import type { Realm } from "./Realm";
 
 /**
  * Expects the condition to be truthy
@@ -137,17 +140,6 @@ assert.never = (value: never, target?: string): never => {
 };
 
 // SDK specific
-
-assert.primaryKey = (value: unknown, target?: string): asserts value is PrimaryKey => {
-  assert(
-    value === null ||
-      typeof value === "number" ||
-      typeof value === "string" ||
-      value instanceof BSON.UUID ||
-      value instanceof BSON.ObjectId,
-    () => new TypeAssertionError("a primary key", value, target),
-  );
-};
 
 assert.open = (realm: Realm) => {
   assert(!realm.isClosed, "Cannot access realm that has been closed.");

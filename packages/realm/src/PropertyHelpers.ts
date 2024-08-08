@@ -16,7 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { TypeOptions, binding, getTypeHelpers, toItemType } from "./internal";
+import { binding } from "../binding";
+import { type TypeOptions, getTypeHelpers, toItemType } from "./TypeHelpers";
 
 import { createArrayPropertyAccessor } from "./property-accessors/Array";
 import { createObjectPropertyAccessor } from "./property-accessors/Object";
@@ -25,7 +26,7 @@ import { createSetPropertyAccessor } from "./property-accessors/Set";
 import { createIntPropertyAccessor } from "./property-accessors/Int";
 import { createMixedPropertyAccessor } from "./property-accessors/Mixed";
 import { createDefaultPropertyAccessor } from "./property-accessors/default";
-import {
+import type {
   HelperOptions,
   PropertyAccessor,
   PropertyContext,

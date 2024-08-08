@@ -1,6 +1,6 @@
 {
   "name": "realm",
-  "version": "12.11.1",
+  "version": "12.12.1",
   "description": "Realm by MongoDB is an offline-first mobile database: an alternative to SQLite and key-value stores",
   "license": "apache-2.0",
   "homepage": "https://www.mongodb.com/docs/realm/",
@@ -90,6 +90,7 @@
     "build:node": "wireit",
     "bindgen:jsi": "wireit",
     "check-types": "wireit",
+    "check-circular-imports": "wireit",
     "install": "prebuild-install --runtime napi || echo 'Failed to download prebuild for Realm'",
     "docs": "wireit",
     "postinstall": "node ./scripts/submit-analytics.js"
@@ -294,6 +295,16 @@
       "command": "tsc --project tsconfig.public-types-check.json",
       "dependencies": [
         "build:ts"
+      ]
+    },
+    "check-circular-imports": {
+      "command": "madge --circular --extensions ts src",
+      "dependencies": [
+        "../fetch:build",
+        "bindgen:generate:typescript",
+        "bindgen:generate:node-wrapper",
+        "bindgen:generate:react-native-wrapper",
+        "bindgen:transpile"
       ]
     },
     "docs": {

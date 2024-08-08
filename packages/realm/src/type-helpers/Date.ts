@@ -16,9 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { assert, binding } from "../internal";
+import { binding } from "../../binding";
+import { assert } from "../assert";
 import { nullPassthrough } from "./null-passthrough";
-import { TypeOptions } from "./types";
+import type { TypeOptions } from "./types";
 
 /** @internal */
 export function createDateTypeHelpers({ optional }: TypeOptions) {
