@@ -1,6 +1,6 @@
 ## vNext (TBD)
 
-### Note: Compatibility with Realm has been bumped to [Realm 12.12.0](https://github.com/realm/realm-js/releases/tag/v12.12.0) to add better support for progress notifications.
+### Note: Compatibility with Realm has been bumped to [Realm 12.12.0](https://github.com/realm/realm-js/releases/tag/v12.12.0) to add support for progress notifications.
 
 ### Deprecations
 * None
@@ -41,12 +41,8 @@ const MyApp() = () => {
 }
 ```
 
-### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None
-
 ### Compatibility
-* Realm JavaScript >= v12.12.0
+* **Realm JavaScript >= v12.12.0**. *Note: bumped from 12.0.0*
 * React Native >= v0.71.4
 * Realm Studio v15.0.0.
 * File format: generates Realms with format v24 (reads and upgrades file format v10).
