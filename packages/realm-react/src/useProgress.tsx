@@ -16,9 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { ProgressDirection, ProgressMode } from "realm";
+import { EstimateProgressNotificationCallback, ProgressDirection, ProgressMode } from "realm";
 import { useEffect, useState } from "react";
-import { EstimateProgressNotificationCallback } from "realm/dist/public-types/internal";
 import { UseRealmHook } from "./useRealm";
 
 type UserProgressHook = {
