@@ -311,8 +311,6 @@ export function generate({ spec: boundSpec, rawSpec, file }: TemplateContext): v
     };
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     export function injectNativeModule(nativeModule: any, extras: Extras) {
-      // eslint-disable-next-line no-console
-      console.log("injectNativeModule called");
       Object.assign(binding, extras);
     `,
   );
