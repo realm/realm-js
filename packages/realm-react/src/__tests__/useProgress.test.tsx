@@ -72,14 +72,12 @@ describe("useProgress", () => {
       jest.restoreAllMocks();
     });
 
-    (
-      [
-        [ProgressMode.ReportIndefinitely, ProgressDirection.Download],
-        [ProgressMode.ReportIndefinitely, ProgressDirection.Upload],
-        [ProgressMode.ForCurrentlyOutstandingWork, ProgressDirection.Download],
-        [ProgressMode.ForCurrentlyOutstandingWork, ProgressDirection.Upload],
-      ] as [ProgressMode, ProgressDirection][]
-    ).forEach(async ([mode, direction]) => {
+    for (const [mode, direction] of [
+      [ProgressMode.ReportIndefinitely, ProgressDirection.Download],
+      [ProgressMode.ReportIndefinitely, ProgressDirection.Upload],
+      [ProgressMode.ForCurrentlyOutstandingWork, ProgressDirection.Download],
+      [ProgressMode.ForCurrentlyOutstandingWork, ProgressDirection.Upload],
+    ] as const) {
       it(`should provide correct progress with ${mode} and ${direction}`, async () => {
         const realm = mockSyncedRealmWithProgress();
 
@@ -103,7 +101,7 @@ describe("useProgress", () => {
 
         expect(renderedProgressValues).toStrictEqual([null, ...expectedProgress[mode][direction]]);
       });
-    });
+    }
 
     it("should handle multiple useProgress hooks with different options", async () => {
       const realm = mockSyncedRealmWithProgress();

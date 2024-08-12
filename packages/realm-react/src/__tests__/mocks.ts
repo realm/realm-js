@@ -18,8 +18,7 @@
 
 import { act } from "@testing-library/react-native";
 import { EstimateProgressNotificationCallback, ProgressRealmPromise, Realm } from "realm";
-import { sleep } from "../helpers";
-import { SyncSession } from "../../../realm/dist/public-types/internal";
+import { sleep } from "./helpers";
 
 /**
  * Mocks {@link Realm.ProgressRealmPromise} with a custom
@@ -145,7 +144,7 @@ export function mockRealmOpen(
 }
 
 /** Mocks a {@link Realm} with a custom syncSession and returns it. */
-export function mockSyncedRealm({ syncSession }: { syncSession: Partial<SyncSession> }) {
+export function mockSyncedRealm({ syncSession }: { syncSession: Partial<Realm["syncSession"]> }) {
   const mockedSyncedRealm = new Realm();
 
   //@ts-expect-error The mock currently supports supplying a subset of methods

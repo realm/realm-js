@@ -47,9 +47,14 @@ type Indirects = {
  */
 export const indirect = {} as Indirects;
 
+const IGNORED_PROPS = new Set([
+  // See https://github.com/realm/realm-js/issues/6522
+  "$$typeof",
+]);
+
 const THROW_ON_ACCESS_HANDLER: ProxyHandler<object> = {
   get(_target, prop) {
-    if (typeof prop === "string") {
+    if (typeof prop === "string" && !IGNORED_PROPS.has(prop)) {
       throw new AccessError(prop);
     }
   },
