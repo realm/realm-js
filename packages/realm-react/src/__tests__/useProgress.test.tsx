@@ -79,7 +79,7 @@ describe("useProgress", () => {
         [ProgressMode.ForCurrentlyOutstandingWork, ProgressDirection.Download],
         [ProgressMode.ForCurrentlyOutstandingWork, ProgressDirection.Upload],
       ] as [ProgressMode, ProgressDirection][]
-    ).forEach(async ([mode, direction]) => {
+    ).forEach(([mode, direction]) => {
       it(`should provide correct progress with ${mode} and ${direction}`, async () => {
         const realm = mockSyncedRealmWithProgress();
 
