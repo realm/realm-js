@@ -58,12 +58,3 @@ export type RestrictivePick<T, K extends keyof T> = Pick<T, K> & { [RestrictedKe
 export function isClassModelConstructor(value: unknown): value is RealmClassType<unknown> {
   return Object.getPrototypeOf(value) === Realm.Object;
 }
-
-/**
- * Adapted from integration-tests
- * @param ms For how long should the promise be pending?
- * @returns A promise that returns after `ms` milliseconds.
- */
-export function sleep(ms = 1000): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
