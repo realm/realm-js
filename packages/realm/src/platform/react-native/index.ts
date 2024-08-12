@@ -25,11 +25,9 @@ import "./sync-proxy-config";
 import { Realm } from "../../Realm";
 import { binding } from "../binding";
 
-console.log("runnnniinn");
 // Clear the internal state to prevent crashes when reloading the app
-binding.App.clearConnectionChangeCallbacks();
-binding.App.clearCachedApps();
 binding.RealmCoordinator.clearAllCaches();
+binding.App.clearCachedApps();
 
 export = Realm;
 
