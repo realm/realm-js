@@ -88,8 +88,8 @@ jobs:
       - name: Install dependencies
         # Ignoring scripts to prevent a prebuilt from getting fetched / built
         run: npm ci --ignore-scripts
-      - name: Bundle all packages
-        run: npm run bundle
+      - name: Build / bundle all packages
+        run: npm run build
       - name: Upload dist artifacts
         uses: actions/upload-artifact@v4
         with:
