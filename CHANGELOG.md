@@ -4,11 +4,19 @@
 * None
 
 ### Enhancements
-* None
+* Improved sync bootstrap performance. ([realm/realm-core#7945](https://github.com/realm/realm-core/issues/7945) and [realm/realm-core#7946](https://github.com/realm/realm-core/issues/7946))
+* Client reset cycle detection now checks if the previous recovery attempt was made by the same core version, and if not attempts recovery again. ([realm/realm-core#7944](https://github.com/realm/realm-core/pull/7944))
+* Updated bundled OpenSSL version to 3.3.1. ([realm/realm-core#7947](https://github.com/realm/realm-core/pull/7947))
+* Sync log statements now include the app services connection ID in their prefix (e.g `Connection[1:<connection id>] Session[1]: log message`). ([realm/realm-core#7849](https://github.com/realm/realm-core/pull/7849))
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None
+* Fixed an `Invalid column key` exception when using an RQL "BETWEEN" query on an int or timestamp property across links. ([realm/realm-core#7935](https://github.com/realm/realm-core/issues/7935), since v12.12.0)
+* Fixed conflict resolution bug which could sometimes cause an `Invalid prior_size` exception to prevent synchronization ([realm/realm-core#7893](https://github.com/realm/realm-core/issues/7893), since v12.10.0)
+* Fixed bug which would prevent eventual consistency during conflict resolution. Affected clients would experience data divergence and potentially consistency errors as a result. ([realm/realm-core#7955](https://github.com/realm/realm-core/pull/7955), since v12.10.0)
+* Fixed issues loading the native Realm libraries on Linux ARMv7 systems when they linked against our bundled OpenSSL resulting in errors like `unexpected reloc type 0x03`. ([realm/realm-core#7947](https://github.com/realm/realm-core/issues/7947), since v12.7.0)
+* Sync client may report duplicate compensating write errors. ([realm/realm-core#7708](https://github.com/realm/realm-core/issues/7708), since v12.10.0)
+* String serialization of timestamps with a sufficiently large timestamp value could overflow an int causing undefined behavior, causing potentially bad values for the month/day/year values in stringified dates. ([realm/realm-core#7934](https://github.com/realm/realm-core/pull/7934))
+* App subscription callback was getting fired before the user profile was retrieved on login, leading to an empty user profile when using the callback. ([realm/realm-core#7889](https://github.com/realm/realm-core/issues/7889), since v12.9.0)
 
 ### Compatibility
 * React Native >= v0.71.4
@@ -16,9 +24,7 @@
 * File format: generates Realms with format v24 (reads and upgrades file format v10).
 
 ### Internal
-<!-- * Either mention core version or upgrade -->
-<!-- * Using Realm Core vX.Y.Z -->
-<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
+* Upgraded Realm Core from v14.11.0 to v14.12.0.
 
 ## 12.12.1 (2024-07-25)
 
@@ -76,7 +82,7 @@ realm.syncSession?.addProgressNotification(
 ### Internal
 * Adding a CallInvoker-based scheduler for Core on React Native and removing the "flush ui queue" workaround. ([#6791](https://github.com/realm/realm-js/pull/6791))
 * Refactors throwing uncaught exceptions from callbacks dispatched onto the event loop from C++ on React Native. ([#6772](https://github.com/realm/realm-js/issues/6772))
-* Upgraded Realm Core from v14.10.0 to v14.11.0. ([#6744](https://github.com/realm/realm-js/issues/6744)
+* Upgraded Realm Core from v14.10.0 to v14.11.0. ([#6744](https://github.com/realm/realm-js/issues/6744))
 
 ## 12.11.1 (2024-06-25)
 
