@@ -147,8 +147,8 @@ export function applyPatch(binding: Binding) {
     }
   }
 
-  function fromBindingTimeoutSignal(timeoutMs: binding.Int64Type): AbortSignal | undefined {
-    const timeout = Number(timeoutMs);
+  function fromBindingTimeoutSignal(timeoutMs: binding.Int64): AbortSignal | undefined {
+    const timeout = binding.Int64.intToNum(timeoutMs);
     return timeout > 0 ? AbortSignal.timeout(timeout) : undefined;
   }
 

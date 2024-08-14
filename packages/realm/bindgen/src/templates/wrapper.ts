@@ -243,15 +243,14 @@ export function generate({ spec: boundSpec, rawSpec, file }: TemplateContext): v
       deref(): T | undefined;
     }
 
-    export const enum Int64Type {} // This shouldn't need to be exported, but rollup complains if it isn't.
-    export type Int64 = Int64Type;
-    export declare const Int64: {
-      add(a: Int64, b: Int64): Int64;
-      equals(a: Int64, b: Int64 | number | string): boolean;
-      isInt(a: unknown): a is Int64;
-      numToInt(a: number): Int64;
-      strToInt(a: string): Int64;
-      intToNum(a: Int64): number;
+    export declare class Int64 {
+      private brandForInt64;
+      static add(a: Int64, b: Int64): Int64;
+      static equals(a: Int64, b: Int64 | number | string): boolean;
+      static isInt(a: unknown): a is Int64;
+      static numToInt(a: number): Int64;
+      static strToInt(a: string): Int64;
+      static intToNum(a: Int64): number;
     }
     `,
   );

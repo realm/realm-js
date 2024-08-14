@@ -21,31 +21,36 @@ import { Long } from "bson";
 import type { binding } from "./wrapper.generated";
 import { assert } from "../assert";
 
-export const PolyfilledBigInt: typeof binding.Int64 = Object.freeze({
-  add(a: binding.Int64, b: binding.Int64) {
+export class PolyfilledBigInt {
+  static add(a: binding.Int64, b: binding.Int64) {
     assert.instanceOf(a, Long);
     assert.instanceOf(b, Long);
     return a.add(b) as unknown as binding.Int64;
-  },
-  equals(a: binding.Int64, b: binding.Int64 | number | string) {
+  }
+
+  static equals(a: binding.Int64, b: binding.Int64 | number | string) {
     assert.instanceOf(a, Long);
     assert(
-      a instanceof Long || typeof a === "number" || typeof a === "string",
+      typeof b === "number" || typeof b === "string" || (typeof b === "object" && b instanceof Long),
       "Expected a 'BSON.Long', or number, or string.",
     );
     return a.equals(b);
-  },
-  isInt(a: unknown): a is binding.Int64 {
+  }
+
+  static isInt(a: unknown): a is binding.Int64 {
     return a instanceof Long;
-  },
-  numToInt(a: number) {
+  }
+
+  static numToInt(a: number) {
     return Long.fromNumber(a) as unknown as binding.Int64;
-  },
-  strToInt(a: string) {
+  }
+
+  static strToInt(a: string) {
     return Long.fromString(a) as unknown as binding.Int64;
-  },
-  intToNum(a: binding.Int64) {
+  }
+
+  static intToNum(a: binding.Int64) {
     assert.instanceOf(a, Long);
     return a.toNumber();
-  },
-});
+  }
+}

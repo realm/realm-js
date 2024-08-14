@@ -19,7 +19,7 @@
 declare const global: Record<string, unknown>;
 
 import { NativeModules } from "react-native";
-import { NativeBigInt, PolyfilledBigInt, injectNativeModule } from "../binding";
+import { NativeBigInt, PolyfilledBigInt, type binding, injectNativeModule } from "../binding";
 import { assert } from "../../assert";
 
 try {
@@ -32,7 +32,7 @@ try {
   // Inject the native module into the binding
   assert.object(nativeModule, "nativeModule");
   injectNativeModule(nativeModule, {
-    Int64: global.HermesInternal ? NativeBigInt : PolyfilledBigInt,
+    Int64: (global.HermesInternal ? NativeBigInt : PolyfilledBigInt) as typeof binding.Int64,
     WeakRef: class WeakRef {
       private native: unknown;
       constructor(obj: unknown) {

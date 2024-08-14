@@ -16,25 +16,35 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import { assert } from "../assert";
 import type { binding } from "./wrapper.generated";
 
-export const NativeBigInt: typeof binding.Int64 = Object.freeze({
-  add(a: binding.Int64, b: binding.Int64) {
-    return a + b;
-  },
-  equals(a: binding.Int64, b: binding.Int64 | number | string) {
-    return a == b;
-  }, // using == rather than === to support number and string RHS!
-  isInt(a: unknown): a is binding.Int64 {
+export class NativeBigInt {
+  static add(a: binding.Int64, b: binding.Int64): binding.Int64 {
+    assert(typeof a === "bigint");
+    assert(typeof b === "bigint");
+    return (a + b) as unknown as binding.Int64;
+  }
+
+  static equals(a: binding.Int64, b: binding.Int64 | number | string) {
+    assert(typeof a === "bigint");
+    assert(typeof b === "bigint" || typeof b === "number" || typeof b === "string");
+    return a == b; // using == rather than === to support number and string RHS!
+  }
+
+  static isInt(a: unknown): a is binding.Int64 {
     return typeof a === "bigint";
-  },
-  numToInt(a: number) {
+  }
+
+  static numToInt(a: number) {
     return BigInt(a) as unknown as binding.Int64;
-  },
-  strToInt(a: string) {
+  }
+
+  static strToInt(a: string) {
     return BigInt(a) as unknown as binding.Int64;
-  },
-  intToNum(a: binding.Int64) {
+  }
+
+  static intToNum(a: binding.Int64) {
     return Number(a);
-  },
-});
+  }
+}

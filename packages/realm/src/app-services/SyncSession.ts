@@ -133,7 +133,7 @@ function toBindingProgressNotificationCallback(callback: ProgressNotificationCal
   } else {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     return (transferredBytes: binding.Int64, transferrableBytes: binding.Int64, _: number) =>
-      callback(transferredBytes, transferrableBytes);
+      callback(binding.Int64.intToNum(transferredBytes), binding.Int64.intToNum(transferrableBytes));
   }
 }
 
