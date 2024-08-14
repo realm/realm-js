@@ -34,7 +34,7 @@ export function _promisify<Args extends unknown[]>(nullAllowed: boolean, func: (
         const error = args[args.length - 1];
         if (error) {
           reject(error);
-        } else if (args.length == 2) {
+        } else if (args.length === 2) {
           const result = args[0];
           resolve(result);
         } else {

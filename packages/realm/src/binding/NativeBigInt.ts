@@ -22,7 +22,7 @@ export const NativeBigInt: typeof binding.Int64 = Object.freeze({
   add(a: binding.Int64, b: binding.Int64) {
     return a + b;
   },
-  equals(a: binding.Int64, b: binding.Int64) {
+  equals(a: binding.Int64, b: binding.Int64 | number | string) {
     return a == b;
   }, // using == rather than === to support number and string RHS!
   isInt(a: unknown): a is binding.Int64 {

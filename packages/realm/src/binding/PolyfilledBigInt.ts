@@ -27,9 +27,12 @@ export const PolyfilledBigInt: typeof binding.Int64 = Object.freeze({
     assert.instanceOf(b, Long);
     return a.add(b) as unknown as binding.Int64;
   },
-  equals(a: binding.Int64, b: binding.Int64) {
+  equals(a: binding.Int64, b: binding.Int64 | number | string) {
     assert.instanceOf(a, Long);
-    assert.instanceOf(b, Long);
+    assert(
+      a instanceof Long || typeof a === "number" || typeof a === "string",
+      "Expected a 'BSON.Long', or number, or string.",
+    );
     return a.equals(b);
   },
   isInt(a: unknown): a is binding.Int64 {
