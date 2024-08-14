@@ -57,7 +57,7 @@ function getTypeFromPrimitive(name: string) {
 }
 
 // Be Careful! These need to apply to the *whole* type, so arg[] would be problematic if arg is A|B.
-const TEMPLATE_MAPPING: Record<string, (...args: string[]) => string> = {
+const TEMPLATE_MAPPING: Record<string, ((...args: string[]) => string) | undefined> = {
   "std::vector": (arg) => `Array<${arg}>`,
   "std::optional": (arg) => `undefined | ${arg}`,
   Nullable: (t) => `null | ${t}`,
