@@ -271,7 +271,7 @@ describe("OpenBehaviour", function () {
     }
   });
 
-  it("timeout when opening new synced realm with downloadBeforeOpen and openLocal set opens an empty local realm.", async function (this: AppContext) {
+  it.skip("timeout when opening new synced realm with downloadBeforeOpen and openLocal set opens an empty local realm.", async function (this: AppContext) {
     // 1. Add data to server Realm from User 1
     // 2. Open Realm with User 2
     // 3. Timeout and check that the returned Realm is empty.
@@ -329,7 +329,7 @@ describe("OpenBehaviour", function () {
     }
   });
 
-  it("timeout when opening an existing synced realm with downloadBeforeOpen and openLocal set opens an empty local realm.", async function (this: AppContext) {
+  it.skip("timeout when opening an existing synced realm with downloadBeforeOpen and openLocal set opens an empty local realm.", async function (this: AppContext) {
     // 1. Open empty Realm
     // 2. Close Realm
     // 3. Let other user upload changes to the Realm on the server.

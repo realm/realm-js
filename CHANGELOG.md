@@ -1,7 +1,4 @@
-## vNext (TBD)
-
-### Deprecations
-* None
+## 12.13.0 (2024-08-14)
 
 ### Enhancements
 * Improved sync bootstrap performance. ([realm/realm-core#7945](https://github.com/realm/realm-core/issues/7945) and [realm/realm-core#7946](https://github.com/realm/realm-core/issues/7946))
