@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { binding } from "../binding";
+import { binding } from "./binding";
 
 /**
  * Represents the coordinates of a point. The first two required elements of the array are longitude (index 0) and latitude (index 1).

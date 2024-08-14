@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { binding } from "../binding";
+import { binding } from "./binding";
 import { assert } from "./assert";
 import type { CanonicalObjectSchema } from "./schema";
 import { createPropertyHelpers } from "./PropertyHelpers";

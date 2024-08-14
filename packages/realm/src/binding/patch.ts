@@ -20,44 +20,46 @@ import type { fetch } from "@realm/fetch";
 import { AbortSignal } from "@realm/fetch";
 
 /** @internal */
-import type * as binding from "../../binding/generated/native";
-
+import type { binding } from "./wrapper.generated";
 type Binding = typeof binding;
 
 /** @internal */
-declare module "../../binding/generated/native" {
-  /** @internal */
-  export interface IndexSet {
-    asIndexes(): Iterator<number>;
-  }
-  export interface Timestamp {
-    toDate(): Date;
-  }
+declare module "./wrapper.generated" {
   // eslint-disable-next-line @typescript-eslint/no-namespace
-  export namespace Timestamp {
-    function fromDate(d: Date): binding.Timestamp;
-  }
-  export interface SyncSession {
-    /** Returns a WeakSyncSession and releases the strong reference held by this SyncSession */
-    weaken(): WeakSyncSession;
-  }
+  namespace binding {
+    /** @internal */
+    export interface IndexSet {
+      asIndexes(): Iterator<number>;
+    }
+    export interface Timestamp {
+      toDate(): Date;
+    }
+    // eslint-disable-next-line @typescript-eslint/no-namespace
+    export namespace Timestamp {
+      function fromDate(d: Date): binding.Timestamp;
+    }
+    export interface SyncSession {
+      /** Returns a WeakSyncSession and releases the strong reference held by this SyncSession */
+      weaken(): WeakSyncSession;
+    }
 
-  export interface WeakSyncSession {
-    /**
-     * Similar to WeakRef.deref(), but takes a callback so that the strong reference can be
-     * automatically released when the callback exists (either by returning or throwing).
-     * It is not legal to hold on to the SyncSession after this returns because its
-     * strong reference will have been deleted.
-     */
-    withDeref<Ret = void>(callback: (shared: SyncSession | null) => Ret): Ret;
-  }
+    export interface WeakSyncSession {
+      /**
+       * Similar to WeakRef.deref(), but takes a callback so that the strong reference can be
+       * automatically released when the callback exists (either by returning or throwing).
+       * It is not legal to hold on to the SyncSession after this returns because its
+       * strong reference will have been deleted.
+       */
+      withDeref<Ret = void>(callback: (shared: SyncSession | null) => Ret): Ret;
+    }
 
-  export class InvalidObjKey extends TypeError {
-    constructor(input: string);
+    export class InvalidObjKey extends TypeError {
+      constructor(input: string);
+    }
+    export function stringToObjKey(input: string): binding.ObjKey;
+    export function isEmptyObjKey(objKey: binding.ObjKey): boolean;
+    export function toFetchArgs(request: binding.Request): Parameters<typeof fetch>;
   }
-  export function stringToObjKey(input: string): binding.ObjKey;
-  export function isEmptyObjKey(objKey: binding.ObjKey): boolean;
-  export function toFetchArgs(request: binding.Request): Parameters<typeof fetch>;
 }
 
 /**
@@ -145,8 +147,8 @@ export function applyPatch(binding: Binding) {
     }
   }
 
-  function fromBindingTimeoutSignal(timeoutMs: binding.Int64Type): AbortSignal | undefined {
-    const timeout = Number(timeoutMs);
+  function fromBindingTimeoutSignal(timeoutMs: binding.Int64): AbortSignal | undefined {
+    const timeout = binding.Int64.intToNum(timeoutMs);
     return timeout > 0 ? AbortSignal.timeout(timeout) : undefined;
   }
 

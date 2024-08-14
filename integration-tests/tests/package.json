@@ -18,15 +18,12 @@
   },
   "wireit": {
     "lint": {
-      "command": "eslint --ext .js,.ts . && tsc --noEmit",
-      "dependencies": [
-        "build-dependencies"
-      ]
+      "command": "eslint --ext .js,.ts ."
     },
     "build": {
       "command": "tsc --build .",
       "dependencies": [
-        "build-dependencies"
+        "../../packages/realm:build:ts"
       ]
     },
     "start": {

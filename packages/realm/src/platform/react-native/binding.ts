@@ -16,7 +16,37 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { injectAndPatch } from "../binding";
-import * as binding from "../../../binding/generated/native.react-native.cjs";
+declare const global: Record<string, unknown>;
 
-injectAndPatch(binding);
+import { NativeModules } from "react-native";
+import { NativeBigInt, PolyfilledBigInt, type binding, injectNativeModule } from "../binding";
+import { assert } from "../../assert";
+
+try {
+  const RealmNativeModule = NativeModules.Realm;
+  RealmNativeModule.injectModuleIntoJSGlobal();
+  // Read the global into the local scope
+  const { __injectedRealmBinding: nativeModule } = global;
+  // Delete the global again
+  delete global.__injectedRealmBinding;
+  // Inject the native module into the binding
+  assert.object(nativeModule, "nativeModule");
+  injectNativeModule(nativeModule, {
+    Int64: (global.HermesInternal ? NativeBigInt : PolyfilledBigInt) as typeof binding.Int64,
+    WeakRef: class WeakRef {
+      private native: unknown;
+      constructor(obj: unknown) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- See "createWeakRef" protocol in the jsi bindgen template
+        this.native = (nativeModule as any).createWeakRef(obj);
+      }
+      deref() {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- See "createWeakRef" protocol in the jsi bindgen template
+        return (nativeModule as any).lockWeakRef(this.native);
+      }
+    },
+  });
+} catch (err) {
+  throw new Error(
+    "Could not find the Realm binary. Please consult our troubleshooting guide: https://www.mongodb.com/docs/realm-sdks/js/latest/#md:troubleshooting-missing-binary",
+  );
+}

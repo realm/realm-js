@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { binding } from "../../binding";
+import { binding } from "../binding";
 import { assert } from "../assert";
 import { RealmSet } from "../Set";
 import type { PropertyAccessor, PropertyOptions } from "./types";

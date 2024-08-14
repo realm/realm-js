@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import type { binding } from "../binding";
+import type { binding } from "./binding";
 import { AssertionError, TypeAssertionError } from "./errors";
 import type { DefaultObject } from "./schema";
 import type { Realm } from "./Realm";

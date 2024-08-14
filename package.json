@@ -6,7 +6,6 @@
   "homepage": "https://www.mongodb.com/docs/realm/",
   "scripts": {
     "build": "wireit",
-    "bundle": "wireit",
     "lint": "wireit",
     "lint:fix": "wireit",
     "clean": "git clean -fdx -e node_modules -e .env",
@@ -16,18 +15,13 @@
   "wireit": {
     "build": {
       "dependencies": [
-        "bundle",
-        "./packages/realm:build:ts"
-      ]
-    },
-    "bundle": {
-      "dependencies": [
         "./packages/realm:build:ts",
         "./packages/babel-plugin:bundle",
         "./packages/mocha-reporter:bundle",
         "./packages/realm-react:bundle",
         "./packages/realm-web:bundle",
-        "./packages/realm-tools:build"
+        "./packages/realm-tools:build",
+        "./integration-tests/tests:build"
       ]
     },
     "lint": {

@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { binding } from "../../binding";
+import { binding } from "../binding";
 import { assert } from "../assert";
 import { defaultToBinding } from "./default";
 import type { TypeHelpers, TypeOptions } from "./types";

@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { binding } from "../binding";
+import { binding } from "./binding";
 import { assert } from "./assert";
 import { IllegalConstructorError } from "./errors";
 import type { Realm } from "./Realm";

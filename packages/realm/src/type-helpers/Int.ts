@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { binding } from "../../binding";
+import { binding } from "../binding";
 import { TypeAssertionError } from "../errors";
 import { Counter } from "../Counter";
 import { nullPassthrough } from "./null-passthrough";

@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import type { CanonicalObjectSchema, Constructor, RealmObjectConstructor } from "./schema";
-import type { binding } from "../binding";
+import type { binding } from "./binding";
 import { PropertyMap } from "./PropertyMap";
 import { KEY_ARRAY, KEY_SET, RealmObject } from "./Object";
 import { assert } from "./assert";

@@ -23,8 +23,7 @@
     "test": {
       "command": "jest",
       "dependencies": [
-        "../realm:build:ts",
-        "../realm:bindgen:build:typescript"
+        "../realm:build:ts"
       ]
     }
   },

@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { binding } from "../../binding";
+import { binding } from "../binding";
 import { assert } from "../assert";
 import { nullPassthrough } from "./null-passthrough";
 import type { TypeOptions } from "./types";

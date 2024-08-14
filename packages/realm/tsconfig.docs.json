@@ -12,8 +12,5 @@
   },
   "include": [
     "dist/public-types"
-  ],
-  "exclude": [
-    "./binding/generated/native.d.ts"
   ]
 }

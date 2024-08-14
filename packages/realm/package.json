@@ -57,12 +57,6 @@
     "scripts",
     "dist",
     "!dist/scripts/build/",
-    "binding/index.js",
-    "binding/index.d.ts",
-    "binding/dist",
-    "binding/generated/*.cjs",
-    "binding/generated/*.d.cts",
-    "binding/generated/*.d.ts",
     "binding/android",
     "binding/apple",
     "binding/jsi",
@@ -89,6 +83,7 @@
     "build:ts": "wireit",
     "build:node": "wireit",
     "bindgen:jsi": "wireit",
+    "bindgen:wrapper": "wireit",
     "check-types": "wireit",
     "check-circular-imports": "wireit",
     "install": "prebuild-install --runtime napi || echo 'Failed to download prebuild for Realm'",
@@ -101,10 +96,7 @@
       "dependencies": [
         "../fetch:build",
         "build:node",
-        "bindgen:build:typescript",
-        "bindgen:generate:node-wrapper",
-        "bindgen:generate:react-native-wrapper",
-        "bindgen:transpile"
+        "bindgen:wrapper"
       ],
       "env": {
         "TSX_TSCONFIG_PATH": "tsconfig.tests.json"
@@ -144,23 +136,7 @@
       "command": "tsc --build",
       "dependencies": [
         "../fetch:build",
-        "bindgen:generate:typescript",
-        "bindgen:generate:node-wrapper",
-        "bindgen:generate:react-native-wrapper",
-        "bindgen:transpile"
-      ]
-    },
-    "bindgen:transpile": {
-      "command": "babel binding/generated --out-dir binding/generated --extensions .mjs --out-file-extension .cjs --plugins @babel/plugin-transform-modules-commonjs",
-      "dependencies": [
-        "bindgen:generate:node-wrapper",
-        "bindgen:generate:react-native-wrapper"
-      ],
-      "files": [
-        "binding/generated/*.mjs"
-      ],
-      "output": [
-        "binding/generated/*.cjs"
+        "bindgen:wrapper"
       ]
     },
     "bindgen:configure": {
@@ -170,19 +146,6 @@
       "command": "cmake --build binding/node/build --target realm-js-node",
       "dependencies": [
         "bindgen:configure"
-      ]
-    },
-    "bindgen:build:typescript": {
-      "command": "tsc --project tsconfig.binding.json",
-      "dependencies": [
-        "bindgen:generate:typescript"
-      ],
-      "files": [
-        "binding/generated/core.ts"
-      ],
-      "output": [
-        "binding/dist/core.js",
-        "binding/dist/core.d.ts"
       ]
     },
     "bindgen:jsi": {
@@ -203,8 +166,8 @@
         "binding/jsi/jsi_init.cpp"
       ]
     },
-    "bindgen:generate:typescript": {
-      "command": "realm-bindgen --template bindgen/src/templates/typescript.ts --spec bindgen/vendor/realm-core/bindgen/spec.yml --spec bindgen/js_spec.yml --opt-in bindgen/js_opt_in_spec.yml --output binding/generated",
+    "bindgen:wrapper": {
+      "command": "realm-bindgen --template bindgen/src/templates/wrapper.ts --spec bindgen/vendor/realm-core/bindgen/spec.yml --spec bindgen/js_spec.yml --opt-in bindgen/js_opt_in_spec.yml --output ./src/binding",
       "dependencies": [
         "bindgen:generate:spec-schema"
       ],
@@ -215,53 +178,10 @@
         "bindgen/js_opt_in_spec.yml",
         "bindgen/src",
         "!bindgen/src/templates",
-        "bindgen/src/templates/typescript.ts"
+        "bindgen/src/templates/wrapper.ts"
       ],
       "output": [
-        "binding/generated/core.ts",
-        "binding/generated/native.d.ts"
-      ]
-    },
-    "bindgen:generate:node-wrapper": {
-      "command": "realm-bindgen --template bindgen/src/templates/node-wrapper.ts --spec bindgen/vendor/realm-core/bindgen/spec.yml --spec bindgen/js_spec.yml --opt-in bindgen/js_opt_in_spec.yml --output binding/generated",
-      "dependencies": [
-        "bindgen:generate:spec-schema"
-      ],
-      "files": [
-        "bindgen/vendor/realm-core/bindgen/spec.yml",
-        "bindgen/vendor/realm-core/bindgen/src",
-        "bindgen/js_spec.yml",
-        "bindgen/js_opt_in_spec.yml",
-        "bindgen/src",
-        "!bindgen/src/templates",
-        "bindgen/src/templates/base-wrapper.ts",
-        "bindgen/src/templates/node-wrapper.ts"
-      ],
-      "output": [
-        "binding/generated/native.node.mjs",
-        "binding/generated/native.node.d.mts",
-        "binding/generated/native.node.d.cts"
-      ]
-    },
-    "bindgen:generate:react-native-wrapper": {
-      "command": "realm-bindgen --template bindgen/src/templates/react-native-wrapper.ts --spec bindgen/vendor/realm-core/bindgen/spec.yml --spec bindgen/js_spec.yml --opt-in bindgen/js_opt_in_spec.yml --output binding/generated",
-      "dependencies": [
-        "bindgen:generate:spec-schema"
-      ],
-      "files": [
-        "bindgen/vendor/realm-core/bindgen/spec.yml",
-        "bindgen/vendor/realm-core/bindgen/src",
-        "bindgen/js_spec.yml",
-        "bindgen/js_opt_in_spec.yml",
-        "bindgen/src",
-        "!bindgen/src/templates",
-        "bindgen/src/templates/base-wrapper.ts",
-        "bindgen/src/templates/react-native-wrapper.ts"
-      ],
-      "output": [
-        "binding/generated/native.react-native.mjs",
-        "binding/generated/native.react-native.d.mts",
-        "binding/generated/native.react-native.d.cts"
+        "src/binding/wrapper.generated.ts"
       ]
     },
     "bindgen:generate:spec-schema": {
