@@ -1,6 +1,4 @@
-## vNext (TBD)
-
-### Note: Compatibility with Realm has been bumped to [Realm 12.12.0](https://github.com/realm/realm-js/releases/tag/v12.12.0) to add support for progress notifications.
+## 0.10.0 (2024-08-15)
 
 ### Enhancements
 * Added `useProgress` hook which provides a convenient way to access Realm's progress information. It works in a similar way as `realm.addProgressNotification`. ([#6797](https://github.com/realm/realm-js/issues/6797))
