@@ -17,4 +17,4 @@
 ////////////////////////////////////////////////////////////////////////////
 
 /** @internal */
-export { binding, injectNativeModule } from "../binding/wrapper.generated";
+export { binding, injectNativeModule, ready } from "../binding/wrapper.generated";
