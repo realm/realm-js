@@ -31,7 +31,7 @@ export class RealmInExpoGoError extends Error {
   constructor() {
     const runCommand = `npx expo run:${Platform.OS}`;
     super(
-      `'realm' was imported from the Expo Go app, but unfortunately Expo Go doesn't contain the native module for the 'realm' package - consider using an Expo development build instead:\n\nnpm install expo-dev-client\n${runCommand}\n\nRead more: https://docs.expo.dev/develop/development-builds/introduction/`,
+      `'realm' was imported from the Expo Go app, but unfortunately Expo Go doesn't contain the native module for the 'realm' package - consider using an Expo development build instead:\n\nnpx expo install expo-dev-client\n${runCommand}\n\nRead more: https://docs.expo.dev/develop/development-builds/introduction/`,
     );
   }
 }
