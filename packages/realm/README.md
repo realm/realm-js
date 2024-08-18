@@ -134,7 +134,7 @@ If you are using Expo, a common pitfall is not installing the `expo-dev-client` 
 
 - install the `expo-dev-client`:
   ```
-  npm install expo-dev-client
+  npx expo install expo-dev-client
   ```
 - build the dev client for iOS
   ```
