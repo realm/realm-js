@@ -24,7 +24,7 @@ const cp = require("child_process");
 const filteredEnv = Object.fromEntries(Object.entries(process.env).filter(([k]) => !k.startsWith("npm_")));
 
 function sync(...args) {
-  const process = cp.spawnSync("node", [require.resolve("react-native/local-cli/cli.js"), ...args], {
+  const process = cp.spawnSync("node", [require.resolve("@react-native-community/cli/build/bin.js"), ...args], {
     stdio: ["inherit", "inherit", "inherit"],
     env: filteredEnv,
   });
