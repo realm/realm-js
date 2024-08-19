@@ -31,7 +31,8 @@ import { Option, program } from "@commander-js/extra-typings";
 import * as apple from "./apple";
 import * as android from "./android";
 import * as xcode from "./xcode";
-import { REALM_CORE_PATH, SUPPORTED_CONFIGURATIONS } from "./common";
+import * as wasm from "./wasm";
+import { PACKAGE_PATH, REALM_CORE_PATH, SUPPORTED_CONFIGURATIONS, ensureDirectory } from "./common";
 
 export { program };
 
@@ -57,9 +58,9 @@ function actionWrapper<Args extends unknown[]>(action: (...args: Args) => Promis
     } catch (err) {
       process.exitCode = 1;
       if (err instanceof Error) {
-        console.error(`ERROR: ${err.stack}`);
+        console.error(err.stack);
         if (err.cause instanceof Error) {
-          console.error(`CAUSE: ${err.cause.message}`);
+          console.error(`(cause): ${err.cause.stack}`);
         }
       } else {
         throw err;
@@ -176,6 +177,26 @@ program
     }),
   );
 
+program
+  .command("build-wasm")
+  .description("Build native code for WASM")
+  .option("--clean", "Delete any build directory first", false)
+  .addOption(configurationOption)
+  .action(
+    actionWrapper(({ configuration, clean }) => {
+      assert(fs.existsSync(REALM_CORE_PATH), `Expected Realm Core at '${REALM_CORE_PATH}'`);
+      const { CMAKE_PATH: cmakePath = execSync("which cmake", { encoding: "utf8" }).trim() } = env;
+
+      wasm.check();
+      const sourcePath = path.relative(PACKAGE_PATH, "binding/wasm");
+      const buildPath = path.relative(PACKAGE_PATH, "binding/wasm/build");
+      ensureDirectory(buildPath, clean);
+      wasm.configure({ cmakePath, sourcePath, buildPath, configuration });
+      wasm.build({ cmakePath, buildPath });
+
+      console.log("Great success! 🥳");
+    }),
+  );
 if (require.main === module) {
   program.parse();
 }

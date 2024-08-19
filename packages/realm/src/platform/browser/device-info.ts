@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2022 Realm Inc.
+// Copyright 2024 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,15 +16,30 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-/** @internal */
-export { binding, ready } from "./platform/binding";
-/** @internal */
-export { deviceInfo } from "./platform/device-info";
-/** @internal */
-export { fs } from "./platform/file-system";
-/** @internal */
-export { network } from "./platform/network";
-/** @internal */
-export { syncProxyConfig } from "./platform/sync-proxy-config";
-/** @internal */
-export { garbageCollection } from "./platform/garbage-collection";
+import { config, version } from "realm/package.json";
+
+import { inject } from "../device-info";
+
+const userAgent = window.navigator.userAgent;
+
+inject({
+  create() {
+    return {
+      sdk: "JS",
+      sdkVersion: version,
+
+      platform: userAgent,
+      platformVersion: userAgent,
+
+      deviceName: "unknown",
+      deviceVersion: "unknown",
+
+      cpuArch: "unknown",
+
+      frameworkName: "WebAssembly",
+      frameworkVersion: "unknown",
+
+      bundleId: config?.anonymizedBundleId || "unknown",
+    };
+  },
+});

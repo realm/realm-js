@@ -17,8 +17,4 @@
 ////////////////////////////////////////////////////////////////////////////
 
 /** @internal */
-export { binding, injectNativeModule } from "../binding/wrapper.generated";
-/** @internal */
-export { NativeBigInt } from "../binding/NativeBigInt";
-/** @internal */
-export { PolyfilledBigInt } from "../binding/PolyfilledBigInt";
+export { binding, injectNativeModule, ready } from "../binding/wrapper.generated";

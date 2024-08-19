@@ -1,0 +1,19 @@
+#connection-text {
+    margin: 1rem;
+    justify-self: flex-start;
+}
+
+#container {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+/*
+#status-emoji {
+}
+
+#status-text {
+}
+*/

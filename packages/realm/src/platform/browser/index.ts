@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2022 Realm Inc.
+// Copyright 2024 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,15 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-/** @internal */
-export { binding, ready } from "./platform/binding";
-/** @internal */
-export { deviceInfo } from "./platform/device-info";
-/** @internal */
-export { fs } from "./platform/file-system";
-/** @internal */
-export { network } from "./platform/network";
-/** @internal */
-export { syncProxyConfig } from "./platform/sync-proxy-config";
-/** @internal */
-export { garbageCollection } from "./platform/garbage-collection";
+import "./binding";
+import "./fs";
+import "./device-info";
+// import "./sync-proxy-config";
+
+import { Realm } from "../../Realm";
+export = Realm;
