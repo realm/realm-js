@@ -7,8 +7,7 @@
 * None
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None
+* Fixed a build error on React Native iOS and Android from a change in the `CallInvoker`'s `invokeAsync` call signature. ([#6851](https://github.com/realm/realm-js/pull/6851) since v12.12.0 in combination with React Native >= v0.75.0).
 
 ### Compatibility
 * React Native >= v0.71.4
