@@ -157,6 +157,6 @@
     "concurrently": "^8.2.2",
     "mocha-remote-cli": "^1.12.3",
     "pod-install": "^0.2.2",
-    "react-native-test-app": "^3.9.2"
+    "react-native-test-app": "^3.9.5"
   }
 }
