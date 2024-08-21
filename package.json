@@ -19,7 +19,6 @@
         "./packages/babel-plugin:bundle",
         "./packages/mocha-reporter:bundle",
         "./packages/realm-react:bundle",
-        "./packages/realm-web:bundle",
         "./packages/realm-tools:build",
         "./integration-tests/tests:build"
       ]
@@ -52,18 +51,14 @@
     "packages/babel-plugin",
     "packages/fetch",
     "packages/realm",
-    "packages/realm-web",
     "packages/realm-common",
-    "packages/realm-app-importer",
     "packages/realm-react",
     "packages/realm-tools",
     "packages/mocha-reporter",
-    "packages/realm-web-integration-tests",
     "integration-tests/tests",
     "integration-tests/environments/node",
     "integration-tests/environments/electron",
-    "integration-tests/environments/react-native-test-app",
-    "integration-tests/baas-test-server"
+    "integration-tests/environments/react-native-test-app"
   ],
   "dependencies": {
     "@react-native/eslint-config": "0.74.83",
