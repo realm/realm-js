@@ -56,11 +56,12 @@ public:
 
     void invoke(realm::util::UniqueFunction<void()>&& func) override
     {
-        m_js_call_invoker->invokeAsync(
-            // Using normal priority to avoid blocking rendering, user-input and other higher priority tasks
-            facebook::react::SchedulerPriority::NormalPriority, [ptr = func.release()] {
-                (realm::util::UniqueFunction<void()>(ptr))();
-            });
+        // TODO: We could pass `facebook::react::SchedulerPriority::NormalPriority` as first argument
+        // TODO: We could pass a callback taking a `jsi::Runtime` as first argument
+        // Doing either would require our peer dependency on `react-native` to be >= 0.75.0
+        m_js_call_invoker->invokeAsync([ptr = func.release()] {
+            (realm::util::UniqueFunction<void()>(ptr))();
+        });
     }
 
 private:
