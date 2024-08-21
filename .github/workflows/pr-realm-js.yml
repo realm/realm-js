@@ -8,8 +8,6 @@ on:
     paths-ignore:
       - "**.md"
       - "**.png"
-      - "packages/realm-web/**"
-      - "packages/realm-web-integration-tests/**"
       - "packages/realm-react/**"
       - "packages/realm-tools/**"
   pull_request:
@@ -19,8 +17,6 @@ on:
     paths-ignore:
       - "**.md"
       - "**.png"
-      - "packages/realm-web/**"
-      - "packages/realm-web-integration-tests/**"
       - "packages/realm-react/**"
       - "packages/realm-tools/**"
   workflow_dispatch:
