@@ -518,8 +518,6 @@ jobs:
         with:
           path: integration-tests/environments/react-native-test-app/ios/Pods
           key: ${{ github.job }}-pods-${{ hashFiles('integration-tests/environments/react-native-test-app/ios/Podfile.lock') }}
-          restore-keys: |
-            ${{ github.job }}-pods-
 
       - name: MSVC Setup
         if: ${{ runner.os == 'Windows' }}
