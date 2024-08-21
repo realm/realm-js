@@ -1,7 +1,0 @@
-{
-  "import": "tsx",
-  "enable-source-maps": true,
-  "no-warnings": true,
-  "spec": "src/**/*.test.ts",
-  "slow": 1000
-}
