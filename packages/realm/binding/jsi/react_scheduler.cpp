@@ -58,7 +58,8 @@ public:
     {
         m_js_call_invoker->invokeAsync(
             // Using normal priority to avoid blocking rendering, user-input and other higher priority tasks
-            facebook::react::SchedulerPriority::NormalPriority, [ptr = func.release()] {
+            facebook::react::SchedulerPriority::NormalPriority, [ptr = func.release()]
+            (facebook::jsi::Runtime& runtime) {
                 (realm::util::UniqueFunction<void()>(ptr))();
             });
     }
