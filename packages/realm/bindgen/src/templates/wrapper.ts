@@ -216,7 +216,7 @@ export function generate({ spec: boundSpec, rawSpec, file }: TemplateContext): v
 
   out.lines(
     'import { Long, ObjectId, UUID, Decimal128, EJSON } from "bson";',
-    'import { _promisify, _throwOnAccess } from "./utils";',
+    'import { _throwOnAccess } from "./utils";',
     'import * as utils from "./utils";',
     'import { applyPatch } from "./patch";',
     "// eslint-disable-next-line @typescript-eslint/no-namespace",

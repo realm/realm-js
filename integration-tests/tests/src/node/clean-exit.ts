@@ -50,15 +50,4 @@ describe("clean exits in Node.js", function () {
       Math.min(this.timeout(), 5000),
     );
   });
-
-  it("exits when creating Realm.App", function (this: RealmContext) {
-    expectCleanExit(
-      `
-        const Realm = require(process.env.REALM_PACKAGE_PATH);
-        new Realm.App({ id: "myapp-abcde" });
-        Realm.shutdown();
-      `,
-      Math.min(this.timeout(), 5000),
-    );
-  });
 });

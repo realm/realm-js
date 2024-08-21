@@ -38,20 +38,6 @@ declare module "./wrapper.generated" {
     export namespace Timestamp {
       function fromDate(d: Date): binding.Timestamp;
     }
-    export interface SyncSession {
-      /** Returns a WeakSyncSession and releases the strong reference held by this SyncSession */
-      weaken(): WeakSyncSession;
-    }
-
-    export interface WeakSyncSession {
-      /**
-       * Similar to WeakRef.deref(), but takes a callback so that the strong reference can be
-       * automatically released when the callback exists (either by returning or throwing).
-       * It is not legal to hold on to the SyncSession after this returns because its
-       * strong reference will have been deleted.
-       */
-      withDeref<Ret = void>(callback: (shared: SyncSession | null) => Ret): Ret;
-    }
 
     export class InvalidObjKey extends TypeError {
       constructor(input: string);
@@ -83,25 +69,6 @@ export function applyPatch(binding: Binding) {
 
   binding.Timestamp.prototype.toDate = function () {
     return new Date(Number(this.seconds) * 1000 + this.nanoseconds / 1000_000);
-  };
-
-  binding.SyncSession.prototype.weaken = function () {
-    try {
-      return binding.WeakSyncSession.weakCopyOf(this);
-    } finally {
-      this.$resetSharedPtr();
-    }
-  };
-
-  binding.WeakSyncSession.prototype.withDeref = function <Ret = void>(
-    callback: (shared: binding.SyncSession | null) => Ret,
-  ) {
-    const shared = this.rawDereference();
-    try {
-      return callback(shared);
-    } finally {
-      shared?.$resetSharedPtr();
-    }
   };
 
   binding.InvalidObjKey = class InvalidObjKey extends TypeError {

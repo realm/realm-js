@@ -24,8 +24,6 @@ import type { RealmSet } from "./Set";
 import type { OrderedCollection } from "./OrderedCollection";
 import type { RealmObject } from "./Object";
 import type { Collection } from "./Collection";
-import type { App } from "./app-services/App";
-import type { User } from "./app-services/User";
 
 type Indirects = {
   Realm: typeof Realm;
@@ -36,8 +34,6 @@ type Indirects = {
   Dictionary: typeof Dictionary;
   Set: typeof RealmSet;
   Object: typeof RealmObject;
-  App: typeof App;
-  User: typeof User;
 };
 
 /**

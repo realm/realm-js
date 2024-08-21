@@ -20,34 +20,6 @@
 // It might be slightly faster to make dedicated wrapper for 1 and 2 argument forms, but unlikely to be worth it.
 
 /**
- * Calls a function with a completion callback and turns it into a Promise.
- * @internal
- */
-export function _promisify<Args extends unknown[]>(nullAllowed: boolean, func: (cb: (...args: Args) => void) => void) {
-  return new Promise((resolve, reject) => {
-    func((...args: Args) => {
-      // Any errors in this function should flow into the Promise chain, rather than out to the caller,
-      // since callers of async callbacks aren't expecting exceptions.
-      try {
-        if (args.length < 1 || args.length > 2) throw Error("invalid args length " + args.length);
-        // The last argument is always an error
-        const error = args[args.length - 1];
-        if (error) {
-          reject(error);
-        } else if (args.length === 2) {
-          const result = args[0];
-          resolve(result);
-        } else {
-          resolve(undefined);
-        }
-      } catch (err) {
-        reject(err);
-      }
-    });
-  });
-}
-
-/**
  * Throws an error when a property is accessed before the native module has been injected.
  * @internal
  */

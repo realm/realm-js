@@ -43,7 +43,6 @@ import {
 import type { ClassHelpers } from "./ClassHelpers";
 import { ClassMap } from "./ClassMap";
 import { type Configuration, type MigrationCallback, validateConfiguration } from "./Configuration";
-import { type InitialSubscriptions, toBindingSyncConfig } from "./app-services/SyncConfiguration";
 import {
   LOG_CATEGORIES,
   type LogCategory,
@@ -60,8 +59,6 @@ import { type AnyList, List } from "./List";
 import { ProgressRealmPromise } from "./ProgressRealmPromise";
 import { UpdateMode } from "./Object";
 import { RealmEvent, type RealmListenerCallback, RealmListeners } from "./RealmListeners";
-import { SubscriptionSet } from "./app-services/SubscriptionSet";
-import { SyncSession } from "./app-services/SyncSession";
 import type { TypeHelpers } from "./TypeHelpers";
 import { toArrayBuffer } from "./type-helpers/array-buffer";
 import { OBJECT_INTERNAL, OBJECT_REALM } from "./symbols";
@@ -167,7 +164,6 @@ export class Realm {
     }
     Realm.internals.clear();
     binding.RealmCoordinator.clearAllCaches();
-    binding.App.clearCachedApps();
     ProgressRealmPromise.cancelAll();
 
     binding.Logger.setDefaultLogger(null);
@@ -373,16 +369,8 @@ export class Realm {
    * or add the ".realm" suffix.
    */
   private static determinePath(config: Configuration): string {
-    if (config.sync && !config.openSyncedRealmLocally) {
-      if (config.path && fs.isAbsolutePath(config.path)) {
-        return Realm.normalizePath(config.path);
-      } else {
-        const bindingSyncConfig = toBindingSyncConfig(config.sync);
-        return config.sync.user.internal.pathForRealm(bindingSyncConfig, config.path);
-      }
-    } else {
-      return Realm.normalizePath(config.path);
-    }
+    assert.undefined(config.sync, "config.sync");
+    return Realm.normalizePath(config.path);
   }
 
   private static determineEncryptionKey(encryptionKey: Configuration["encryptionKey"]): ArrayBuffer | undefined {
@@ -445,7 +433,6 @@ export class Realm {
           : undefined,
         disableFormatUpgrade: config.disableFormatUpgrade,
         encryptionKey: Realm.determineEncryptionKey(config.encryptionKey),
-        syncConfig: config.sync ? toBindingSyncConfig(config.sync) : undefined,
         forceSyncHistory: config.openSyncedRealmLocally,
         automaticallyHandleBacklinksInMigrations: config.migrationOptions?.resolveEmbeddedConstraints ?? false,
       },
@@ -496,11 +483,6 @@ export class Realm {
    */
   public readonly internal: binding.Realm;
 
-  /**
-   * The sync session if this is a synced Realm
-   */
-  public readonly syncSession: SyncSession | null;
-
   private schemaExtras: RealmSchemaExtra = {};
   private classes: ClassMap;
   private changeListeners = new RealmListeners(this, RealmEvent.Change);
@@ -540,10 +522,6 @@ export class Realm {
   constructor(config: Configuration | null, internalConfig: InternalConfig);
   constructor(arg?: Configuration | string | null, internalConfig: InternalConfig = {}) {
     const config = typeof arg === "string" ? { path: arg } : arg || {};
-    // Calling `Realm.exists()` before `binding.Realm.getSharedRealm()` is necessary to capture
-    // the correct value when this constructor was called since `binding.Realm.getSharedRealm()`
-    // will open the realm. This is needed when deciding whether to update initial subscriptions.
-    const realmExists = internalConfig.realmExists ?? Realm.exists(config);
     if (arg !== null) {
       assert(!internalConfig.schemaExtras, "Expected either a configuration or schemaExtras");
       validateConfiguration(config);
@@ -591,15 +569,6 @@ export class Realm {
     });
 
     this.classes = new ClassMap(this, this.internal.schema, this.schema);
-
-    const syncSession = this.internal.syncSession;
-    this.syncSession = syncSession ? new SyncSession(syncSession) : null;
-
-    const initialSubscriptions = config.sync?.initialSubscriptions;
-    if (initialSubscriptions && !config.openSyncedRealmLocally) {
-      // Do not call `Realm.exists()` here in case the realm has been opened by this point in time.
-      this.handleInitialSubscriptions(initialSubscriptions, realmExists);
-    }
   }
 
   /**
@@ -704,29 +673,6 @@ export class Realm {
   get isClosed(): boolean {
     // TODO: Consider keeping a local state in JS for this
     return this.internal.isClosed;
-  }
-
-  /**
-   * The latest set of flexible sync subscriptions.
-   * @returns A {@link SubscriptionSet} object.
-   * @throws An {@link Error} if flexible sync is not enabled for this app.
-   */
-  get subscriptions(): SubscriptionSet {
-    const { syncConfig } = this.internal.config;
-    assert(
-      syncConfig,
-      "`subscriptions` can only be accessed if flexible sync is enabled, but sync is " +
-        "currently disabled for your app. Add a flexible sync config when opening the " +
-        "Realm, for example: { sync: { user, flexible: true } }.",
-    );
-    assert(
-      syncConfig.flxSyncRequested,
-      "`subscriptions` can only be accessed if flexible sync is enabled, but partition " +
-        "based sync is currently enabled for your Realm. Modify your sync config to remove any `partitionValue` " +
-        "and enable flexible sync, for example: { sync: { user, flexible: true } }",
-    );
-
-    return new SubscriptionSet(this, this.internal.latestSubscriptionSet);
   }
 
   /**
@@ -1172,19 +1118,6 @@ export class Realm {
   ): ClassHelpers {
     return this.classes.getHelpers<T>(arg);
   }
-
-  /**
-   * Update subscriptions with the initial subscriptions if needed.
-   * @param initialSubscriptions The initial subscriptions.
-   * @param realmExists Whether the realm already exists.
-   */
-  private handleInitialSubscriptions(initialSubscriptions: InitialSubscriptions, realmExists: boolean): void {
-    const shouldUpdateSubscriptions = initialSubscriptions.rerunOnOpen || !realmExists;
-    if (shouldUpdateSubscriptions) {
-      debug("handling initial subscriptions, %O", { rerunOnOpen: initialSubscriptions.rerunOnOpen, realmExists });
-      this.subscriptions.updateNoWait(initialSubscriptions.update);
-    }
-  }
 }
 
 injectIndirect("Realm", Realm);
@@ -1220,11 +1153,8 @@ export namespace Realm {
   export import flags = ns.flags;
 
   export import Object = ns.RealmObject;
-  export import App = ns.App;
-  export import Auth = ns.Auth;
   export import BSON = ns.BSON;
   export import Types = ns.Types;
-  export import Services = ns.Services;
 
   export import index = ns.index;
   export import mapTo = ns.mapTo;
@@ -1237,50 +1167,22 @@ export namespace Realm {
   export import AnyRealmObject = ns.AnyRealmObject;
   export import AnyResults = ns.AnyResults;
   export import AnySet = ns.AnySet;
-  export import AnyUser = ns.AnyUser;
-  export import ApiKey = ns.ApiKey;
-  export import AppChangeCallback = ns.AppChangeCallback;
   export import AssertionError = ns.AssertionError;
-  export import AppConfiguration = ns.AppConfiguration;
-  export import AppServicesFunction = ns.AppServicesFunction;
-  export import BaseConfiguration = ns.BaseConfiguration;
   export import BaseObjectSchema = ns.BaseObjectSchema;
-  export import BaseSyncConfiguration = ns.BaseSyncConfiguration;
   export import CanonicalGeoPoint = ns.CanonicalGeoPoint;
   export import CanonicalGeoPolygon = ns.CanonicalGeoPolygon;
   export import CanonicalObjectSchema = ns.CanonicalObjectSchema;
   export import CanonicalPropertiesTypes = ns.CanonicalPropertiesTypes;
   export import CanonicalPropertySchema = ns.CanonicalPropertySchema;
-  export import ClientResetAfterCallback = ns.ClientResetAfterCallback;
-  export import ClientResetBeforeCallback = ns.ClientResetBeforeCallback;
-  export import ClientResetConfig = ns.ClientResetConfig;
-  export import ClientResetDiscardUnsyncedChangesConfiguration = ns.ClientResetDiscardUnsyncedChangesConfiguration;
-  export import ClientResetFallbackCallback = ns.ClientResetFallbackCallback;
-  export import ClientResetManualConfiguration = ns.ClientResetManualConfiguration;
-  export import ClientResetMode = ns.ClientResetMode;
-  export import ClientResetRecoverOrDiscardUnsyncedChangesConfiguration = ns.ClientResetRecoverOrDiscardUnsyncedChangesConfiguration;
-  export import ClientResetRecoverUnsyncedChangesConfiguration = ns.ClientResetRecoverUnsyncedChangesConfiguration;
   export import Collection = ns.Collection;
   export import CollectionChangeCallback = ns.CollectionChangeCallback;
   export import CollectionChangeSet = ns.CollectionChangeSet;
   export import CollectionPropertyTypeName = ns.CollectionPropertyTypeName;
-  export import CompensatingWriteError = ns.CompensatingWriteError;
-  export import CompensatingWriteInfo = ns.CompensatingWriteInfo;
   export import Configuration = ns.Configuration;
-  export import ConfigurationWithoutSync = ns.ConfigurationWithoutSync;
-  export import ConfigurationWithSync = ns.ConfigurationWithSync;
-  export import ConnectionNotificationCallback = ns.ConnectionNotificationCallback;
-  export import ConnectionState = ns.ConnectionState;
   export import Counter = ns.Counter;
-  export import Credentials = ns.Credentials;
-  export import DefaultFunctionsFactory = ns.DefaultFunctionsFactory;
-  export import DefaultUserProfileData = ns.DefaultUserProfileData;
   export import Dictionary = ns.Dictionary;
   export import DictionaryChangeCallback = ns.DictionaryChangeCallback;
   export import DictionaryChangeSet = ns.DictionaryChangeSet;
-  export import ErrorCallback = ns.ErrorCallback;
-  export import EstimateProgressNotificationCallback = ns.EstimateProgressNotificationCallback;
-  export import FlexibleSyncConfiguration = ns.FlexibleSyncConfiguration;
   export import GeoBox = ns.GeoBox;
   export import GeoCircle = ns.GeoCircle;
   export import GeoPoint = ns.GeoPoint;
@@ -1288,9 +1190,7 @@ export namespace Realm {
   export import GeoPosition = ns.GeoPosition;
   export import IndexDecorator = ns.IndexDecorator;
   export import IndexedType = ns.IndexedType;
-  export import InitialSubscriptions = ns.InitialSubscriptions;
   export import List = ns.List;
-  export import LocalAppConfiguration = ns.LocalAppConfiguration;
   export import LogCategory = ns.LogCategory;
   export import LogEntry = ns.LogEntry;
   export import Logger = ns.Logger;
@@ -1298,29 +1198,18 @@ export namespace Realm {
   export import LoggerCallback1 = ns.LoggerCallback1;
   export import LoggerCallback2 = ns.LoggerCallback2;
   export import MapToDecorator = ns.MapToDecorator;
-  export import Metadata = ns.Metadata;
-  export import MetadataMode = ns.MetadataMode;
   export import MigrationCallback = ns.MigrationCallback;
   export import MigrationOptions = ns.MigrationOptions;
   export import Mixed = ns.Types.Mixed;
-  export import MongoDB = ns.MongoDB;
-  export import MongoDBService = ns.MongoDBService;
   export import NumericLogLevel = ns.NumericLogLevel;
   export import ObjectChangeCallback = ns.ObjectChangeCallback;
   export import ObjectChangeSet = ns.ObjectChangeSet;
   export import ObjectSchema = ns.ObjectSchema;
   export import ObjectType = ns.ObjectType;
-  export import OpenRealmBehaviorConfiguration = ns.OpenRealmBehaviorConfiguration;
-  export import OpenRealmBehaviorType = ns.OpenRealmBehaviorType;
-  export import OpenRealmTimeOutBehavior = ns.OpenRealmTimeOutBehavior;
   export import OrderedCollection = ns.OrderedCollection;
-  export import PartitionSyncConfiguration = ns.PartitionSyncConfiguration;
   export import PresentationPropertyTypeName = ns.PresentationPropertyTypeName;
   export import PrimaryKey = ns.PrimaryKey;
   export import PrimitivePropertyTypeName = ns.PrimitivePropertyTypeName;
-  export import ProgressDirection = ns.ProgressDirection;
-  export import ProgressMode = ns.ProgressMode;
-  export import ProgressNotificationCallback = ns.ProgressNotificationCallback;
   export import ProgressRealmPromise = ns.ProgressRealmPromise;
   export import PropertiesTypes = ns.PropertiesTypes;
   export import PropertySchema = ns.PropertySchema;
@@ -1329,8 +1218,6 @@ export namespace Realm {
   export import PropertySchemaShorthand = ns.PropertySchemaShorthand;
   export import PropertySchemaStrict = ns.PropertySchemaStrict;
   export import PropertyTypeName = ns.PropertyTypeName;
-  export import ProviderType = ns.ProviderType;
-  export import ProxyType = ns.ProxyType;
   export import RealmEvent = ns.RealmEvent;
   export import RealmEventName = ns.RealmEventName;
   export import RealmListenerCallback = ns.RealmListenerCallback;
@@ -1338,50 +1225,22 @@ export namespace Realm {
   export import RelationshipPropertyTypeName = ns.RelationshipPropertyTypeName;
   export import Results = ns.Results;
   export import SchemaParseError = ns.SchemaParseError;
-  export import SecretApiKey = ns.SecretApiKey;
-  export import SessionState = ns.SessionState;
-  export import SessionStopPolicy = ns.SessionStopPolicy;
   export import Set = ns.RealmSet;
   export import ShorthandPrimitivePropertyTypeName = ns.ShorthandPrimitivePropertyTypeName;
   export import SortDescriptor = ns.SortDescriptor;
-  export import SSLConfiguration = ns.SSLConfiguration;
-  export import SSLVerifyCallback = ns.SSLVerifyCallback;
-  export import SSLVerifyObject = ns.SSLVerifyObject;
-  export import SubscriptionSetState = ns.SubscriptionSetState;
-  export import SyncConfiguration = ns.SyncConfiguration;
-  export import SyncError = ns.SyncError;
-  export import SyncProxyConfig = ns.SyncProxyConfig;
   export import TypeAssertionError = ns.TypeAssertionError;
   export import Unmanaged = ns.Unmanaged;
   export import UpdateMode = ns.UpdateMode;
-  export import User = ns.User;
-  export import UserChangeCallback = ns.UserChangeCallback;
-  export import UserIdentity = ns.UserIdentity;
-  export import UserState = ns.UserState;
   export import UserTypeName = ns.UserTypeName;
-  export import WaitForSync = ns.WaitForSync;
-  export import WatchOptionsFilter = ns.WatchOptionsFilter;
-  export import WatchOptionsIds = ns.WatchOptionsIds;
 
-  // Deprecated exports below
-  /** @deprecated Will be removed in v13.0.0. Please use {@link ns.AppServicesFunction | AppServicesFunction} */
-  export import RealmFunction = ns.AppServicesFunction;
   /** @deprecated Will be removed in v13.0.0. Please use {@link ns.CanonicalPropertySchema | CanonicalPropertySchema} */
   export import CanonicalObjectSchemaProperty = ns.CanonicalPropertySchema;
-  /** @deprecated Will be removed in v13.0.0. Please use {@link ns.ClientResetRecoverUnsyncedChangesConfiguration | ClientResetRecoverUnsyncedChangesConfiguration} */
-  export import ClientResetRecoveryConfiguration = ns.ClientResetRecoverUnsyncedChangesConfiguration;
   /** @deprecated Will be removed in v13.0.0. Please use {@link ns.PropertySchema | PropertySchema} */
   export import ObjectSchemaProperty = ns.PropertySchema;
   /** @deprecated Will be removed in v13.0.0. Please use {@link ns.RealmObjectConstructor | RealmObjectConstructor} */
   export import ObjectClass = ns.RealmObjectConstructor;
-  /** @deprecated Will be removed in a future major version. Please use {@link ns.EstimateProgressNotificationCallback | EstimateProgressNotificationCallback} */
-  export import PartitionBasedSyncProgressNotificationCallback = ns.PartitionBasedSyncProgressNotificationCallback;
   /** @deprecated Will be removed in v13.0.0. Please use {@link ns.PropertyTypeName | PropertyTypeName} */
   export import PropertyType = ns.PropertyTypeName;
-  /** @deprecated Use another {@link ns.ClientResetMode | ClientResetMode} than {@link ns.ClientResetMode.Manual | ClientResetMode.Manual}. */
-  export import ClientResetError = ns.ClientResetError;
-  /** @deprecated See https://www.mongodb.com/docs/atlas/app-services/reference/push-notifications/ */
-  export import PushClient = ns.PushClient;
 }
 
 // Set default logger and log level.
