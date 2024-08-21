@@ -135,7 +135,7 @@
     "base-64": "^1.0.0",
     "mocha-remote-react-native": "^1.12.3",
     "path-browserify": "^1.0.1",
-    "react": "18.2.0",
+    "react": "18.3.1",
     "react-native": "0.75.1",
     "react-native-fetch-api": "^3.0.0",
     "react-native-fs": "^2.20.0",
