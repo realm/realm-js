@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import React, { useRef, useState } from "react";
-import Realm, { User } from "realm";
+import Realm from "realm";
 import { Button, Text, View } from "react-native";
 import { act, fireEvent, render, renderHook, waitFor } from "@testing-library/react-native";
 
@@ -233,88 +233,6 @@ describe("RealmProvider", () => {
       const realmRefPathText = await waitFor(() => queryByTestId("realmRefPath"));
 
       expect(realmRefPathText).toHaveTextContent("testPath.realm", { exact: false });
-    });
-
-    // TODO: Now that local realm is immediately set, the fallback never renders.
-    // We need to test synced realm in order to produce the fallback
-    describe("initially renders a fallback, until realm exists", () => {
-      afterEach(() => {
-        jest.restoreAllMocks();
-      });
-
-      it("as a component", async () => {
-        const slowRealmOpen = mockRealmOpen();
-        const App = () => {
-          return (
-            <RealmProvider sync={{}} fallback={() => <View testID="fallbackContainer" />}>
-              <View testID="testContainer" />
-            </RealmProvider>
-          );
-        };
-        const { queryByTestId } = render(<App />);
-
-        expect(queryByTestId("fallbackContainer")).not.toBeNull();
-        expect(queryByTestId("testContainer")).toBeNull();
-
-        await act(async () => await slowRealmOpen);
-
-        expect(queryByTestId("fallbackContainer")).toBeNull();
-        expect(queryByTestId("testContainer")).not.toBeNull();
-      });
-
-      it("as an element", async () => {
-        const slowRealmOpen = mockRealmOpen();
-
-        const Fallback = <View testID="fallbackContainer" />;
-        const App = () => {
-          return (
-            <RealmProvider sync={{}} fallback={Fallback}>
-              <View testID="testContainer" />
-            </RealmProvider>
-          );
-        };
-        const { queryByTestId } = render(<App />);
-
-        expect(queryByTestId("fallbackContainer")).not.toBeNull();
-        expect(queryByTestId("testContainer")).toBeNull();
-
-        await act(async () => await slowRealmOpen);
-
-        expect(queryByTestId("fallbackContainer")).toBeNull();
-        expect(queryByTestId("testContainer")).not.toBeNull();
-      });
-
-      it("should receive progress information", async () => {
-        const expectedProgressValues = [0, 0.25, 0.5, 0.75, 1];
-        const slowRealmOpen = mockRealmOpen(
-          new MockedProgressRealmPromiseWithDelay({ progressValues: expectedProgressValues }),
-        );
-        const renderedProgressValues: number[] = [];
-
-        const Fallback: RealmProviderFallback = ({ progress }) => {
-          renderedProgressValues.push(progress);
-          return <View testID="fallbackContainer">{progress}</View>;
-        };
-        const App = () => {
-          return (
-            <RealmProvider sync={{}} fallback={Fallback}>
-              <View testID="testContainer" />
-            </RealmProvider>
-          );
-        };
-        const { queryByTestId } = render(<App />);
-
-        expect(queryByTestId("fallbackContainer")).not.toBeNull();
-        expect(queryByTestId("testContainer")).toBeNull();
-        expect(renderedProgressValues).toStrictEqual([expectedProgressValues[0]]);
-
-        await act(async () => await slowRealmOpen);
-
-        expect(queryByTestId("fallbackContainer")).toBeNull();
-        expect(queryByTestId("testContainer")).not.toBeNull();
-
-        expect(renderedProgressValues).toStrictEqual(expectedProgressValues);
-      });
     });
   });
 
@@ -580,12 +498,12 @@ describe("RealmProvider", () => {
   describe("mergeRealmConfiguration", () => {
     it("merges two realm configurations", () => {
       const configA: Realm.Configuration = { schema: [catSchema], deleteRealmIfMigrationNeeded: true };
-      const configB: Realm.Configuration = { sync: { user: {} as User, partitionValue: "someValue" } };
+      const configB: Realm.Configuration = { path: "some.realm" };
 
       const expectedResult = {
         schema: [catSchema],
         deleteRealmIfMigrationNeeded: true,
-        sync: { user: {} as User, partitionValue: "someValue" },
+        path: "some.realm",
       };
 
       const result = mergeRealmConfiguration(configA, configB);
@@ -615,25 +533,24 @@ describe("RealmProvider", () => {
 
   describe("areConfigurationsIdentical", () => {
     it("returns false if changes detected", () => {
-      let configA: Realm.Configuration = { schema: [catSchema], deleteRealmIfMigrationNeeded: true };
-      let configB: Realm.Configuration = { sync: { user: {} as User, partitionValue: "someValue" } };
+      let configA: Realm.Configuration = {};
+      let configB: Realm.Configuration = { path: "other.realm" };
 
       expect(areConfigurationsIdentical(configA, configB)).toBeFalsy();
 
       configA = {
+        path: "a.realm",
         schema: [dogSchema, catSchema],
-        sync: { user: {} as User, partitionValue: "otherValue" },
       };
       configB = {
+        path: "b.realm",
         schema: [dogSchema, catSchema],
-        sync: { user: {} as User, partitionValue: "someValue" },
       };
 
       expect(areConfigurationsIdentical(configA, configB)).toBeFalsy();
       configA = { schema: [catSchema], deleteRealmIfMigrationNeeded: true };
       configB = {
         schema: [dogSchema, catSchema],
-        sync: { user: {} as User, partitionValue: "someValue" },
       };
 
       expect(areConfigurationsIdentical(configA, configB)).toBeFalsy();
