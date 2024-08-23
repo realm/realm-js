@@ -16,9 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import Realm, { User } from "realm";
+import Realm, { Configuration } from "realm";
 
-import { openRealm, OpenRealmConfiguration } from "../utils/open-realm";
+import { openRealm } from "../utils/open-realm";
 
 /**
  * Hook for use in before/beforeEach which opens a Realm with the specified config
@@ -28,13 +28,13 @@ import { openRealm, OpenRealmConfiguration } from "../utils/open-realm";
  * @param config Realm config
  * @returns Promise which resolves when complete
  */
-export function openRealmHook(config: OpenRealmConfiguration = {}) {
-  return async function openRealmHandler(this: Partial<RealmContext> & UserContext & Mocha.Context): Promise<void> {
+export function openRealmHook(config: Configuration = {}) {
+  return async function openRealmHandler(this: Partial<RealmContext> & Mocha.Context): Promise<void> {
     this.longTimeout();
     if (this.realm) {
       throw new Error("Unexpected realm on context, use only one openRealmBefore per test");
     } else {
-      const { realm, config: actualConfig } = await openRealm(config, this.user as unknown as User);
+      const { realm, config: actualConfig } = await openRealm(config);
       this.realm = realm;
       this.closeRealm = async ({
         clearTestState = true,
@@ -53,7 +53,7 @@ export function openRealmHook(config: OpenRealmConfiguration = {}) {
           Realm.clearTestState();
         }
         if (reopen) {
-          const { realm } = await openRealm(actualConfig, this.user as unknown as User);
+          const { realm } = await openRealm(actualConfig);
           this.realm = realm;
         }
       };
@@ -75,12 +75,12 @@ export function closeThisRealm(this: RealmContext & Mocha.Context): void {
   }
 }
 
-export function openRealmBeforeEach(config: OpenRealmConfiguration = {}): void {
+export function openRealmBeforeEach(config: Configuration = {}): void {
   beforeEach(openRealmBeforeEach.name, openRealmHook(config));
   afterEach("closeRealmAfterEach", closeThisRealm);
 }
 
-export function openRealmBefore(config: OpenRealmConfiguration = {}): void {
+export function openRealmBefore(config: Configuration = {}): void {
   before(openRealmBefore.name, openRealmHook(config));
   after("closeRealmAfter", closeThisRealm);
 }

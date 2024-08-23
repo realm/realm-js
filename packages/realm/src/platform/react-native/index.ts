@@ -19,8 +19,6 @@
 import "./expo-go-detection";
 import "./binding";
 import "./fs";
-import "./device-info";
-import "./sync-proxy-config";
 
 import { Realm } from "../../Realm";
 import { binding } from "../binding";

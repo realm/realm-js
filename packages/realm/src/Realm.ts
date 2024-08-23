@@ -433,7 +433,6 @@ export class Realm {
           : undefined,
         disableFormatUpgrade: config.disableFormatUpgrade,
         encryptionKey: Realm.determineEncryptionKey(config.encryptionKey),
-        forceSyncHistory: config.openSyncedRealmLocally,
         automaticallyHandleBacklinksInMigrations: config.migrationOptions?.resolveEmbeddedConstraints ?? false,
       },
     };
@@ -1193,6 +1192,7 @@ export namespace Realm {
   export import List = ns.List;
   export import LogCategory = ns.LogCategory;
   export import LogEntry = ns.LogEntry;
+  export import LogLevel = ns.LogLevel;
   export import Logger = ns.Logger;
   export import LoggerCallback = ns.LoggerCallback;
   export import LoggerCallback1 = ns.LoggerCallback1;

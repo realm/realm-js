@@ -18,8 +18,6 @@
 
 import "./binding";
 import "./fs";
-import "./device-info";
-import "./sync-proxy-config";
 import "./garbage-collection";
 
 import { Realm } from "../../Realm";

@@ -38,8 +38,6 @@ export class ProgressRealmPromise implements Promise<Realm> {
     ProgressRealmPromise.instances.clear();
   }
   /** @internal */
-  private task: binding.AsyncOpenTask | null = null;
-  /** @internal */
   private handle = new PromiseHandle<Realm>();
   /** @internal */
   private timeoutPromise: TimeoutPromise<Realm> | null = null;
@@ -72,7 +70,6 @@ export class ProgressRealmPromise implements Promise<Realm> {
    * will cancel all of them.
    */
   cancel(): void {
-    this.cancelAndResetTask();
     this.timeoutPromise?.cancel();
     if (this.notifierToken !== null) {
       this.notifierToken = null;
@@ -84,13 +81,6 @@ export class ProgressRealmPromise implements Promise<Realm> {
   then = this.handle.promise.then.bind(this.handle.promise);
   catch = this.handle.promise.catch.bind(this.handle.promise);
   finally = this.handle.promise.finally.bind(this.handle.promise);
-
-  /** @internal */
-  private cancelAndResetTask() {
-    if (this.task) {
-      this.task = null;
-    }
-  }
 
   /** @internal */
   private rejectAsCanceled() {

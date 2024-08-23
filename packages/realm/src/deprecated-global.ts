@@ -99,6 +99,7 @@ declare global {
     export import IndexedType = ns.IndexedType;
     export import List = ns.List;
     export import Logger = ns.Logger;
+    export import LogLevel = ns.LogLevel;
     export import LoggerCallback = ns.LoggerCallback;
     export import MapToDecorator = ns.MapToDecorator;
     export import MigrationCallback = ns.MigrationCallback;

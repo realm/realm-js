@@ -45,8 +45,6 @@ records:
       - schema_version
       - schema_mode
       - disable_format_upgrade
-      - sync_config
-      - force_sync_history
       - migration_function
       - initialization_function
       - should_compact_on_launch_function
@@ -76,39 +74,6 @@ records:
       - before_notify
       - schema_did_change
 
-  ResumptionDelayInfo:
-    fields:
-      - max_resumption_delay_interval
-      - resumption_delay_interval
-      - resumption_delay_backoff_multiplier
-      - delay_jitter_divisor
-
-  Request:
-    fields:
-      - method
-      - url
-      - timeout_ms
-      - headers
-      - body
-
-  Response:
-    fields:
-      - http_status_code
-      - custom_status_code
-      - headers
-      - body
-
-  DeviceInfo:
-    fields:
-      - platform_version
-      - sdk_version
-      - sdk
-      - device_name
-      - device_version
-      - framework_name
-      - framework_version
-      - bundle_id
-
   GeoBox:
     fields:
      - lo
@@ -128,11 +93,6 @@ records:
      - latitude
      - longitude
      - altitude
-
-  SaltedFileIdent:
-    fields:
-      - ident
-      - salt
 
 classes:
   ######################
@@ -163,21 +123,14 @@ classes:
       - make_object_notifier
       - set_binding_context
       - get_or_create_object_with_primary_key
-      - make_network_transport
       - delete_data_for_object
       - base64_decode
       - make_logger_factory
       - make_logger
-      - simulate_sync_error
       - consume_thread_safe_reference_to_shared_realm
       - file_exists
-      - erase_subscription
       - get_results_description
-      - feed_buffer
-      - make_ssl_verify_callback
       - needs_file_format_upgrade
-      - sync_user_as_app_user
-      - app_user_as_sync_user
 
   LogCategoryRef:
     methods:
@@ -263,7 +216,6 @@ classes:
   Realm:
     methods:
       - get_shared_realm
-      - get_synchronized_realm
       - get_schema_version
       - config
       - schema
@@ -272,8 +224,6 @@ classes:
       - is_in_migration
       - is_closed
       - is_empty
-      - sync_session
-      - get_latest_subscription_set
       - begin_transaction
       - commit_transaction
       - cancel_transaction

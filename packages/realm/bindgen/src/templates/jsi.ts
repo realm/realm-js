@@ -487,13 +487,10 @@ function convertToJsi(addon: JsiAddon, type: Type, expr: string): string {
                 }
                 return out;
             }(${expr})`;
-        case "AsyncCallback":
         case "util::UniqueFunction":
         case "std::function":
           assert.equal(inner.kind, "Func");
           return c(inner, `FWD(${expr})`);
-        case "AsyncResult":
-          assert.fail("Should never see AsyncResult here");
       }
       return assert.fail(`unknown template ${type.name}`);
 
@@ -621,7 +618,6 @@ function convertFromJsi(addon: JsiAddon, type: Type, expr: string): string {
                 }
                 return out;
             }((${expr}).getObject(_env))`;
-        case "AsyncCallback":
         case "util::UniqueFunction":
         case "std::function":
           return `${type.toCpp()}(${c(inner, expr)})`;
