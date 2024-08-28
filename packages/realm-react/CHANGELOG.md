@@ -8,11 +8,6 @@
 * Realm Studio v15.0.0.
 * File format: generates Realms with format v24 (reads and upgrades file format v10).
 
-### Internal
-<!-- * Either mention core version or upgrade -->
-<!-- * Using Realm Core vX.Y.Z -->
-<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
-
 ## 0.10.0 (2024-08-15)
 
 ### Enhancements
