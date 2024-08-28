@@ -1,10 +1,4 @@
-## vNext (TBD)
-
-### Deprecations
-* None
-
-### Enhancements
-* None
+## 0.10.1 (2024-08-28)
 
 ### Fixed
 * Fixing the `RealmProvider` component when context is created without passing neither a `Realm` instance nor a `Realm.Configuration` to avoid unnecessary recreation of the provider, which was causing "Cannot access realm that has been closed" errors. ([#6842](https://github.com/realm/realm-js/issues/6842), since v0.8.0)
@@ -13,11 +7,6 @@
 * React Native >= v0.71.4
 * Realm Studio v15.0.0.
 * File format: generates Realms with format v24 (reads and upgrades file format v10).
-
-### Internal
-<!-- * Either mention core version or upgrade -->
-<!-- * Using Realm Core vX.Y.Z -->
-<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
 
 ## 0.10.0 (2024-08-15)
 
