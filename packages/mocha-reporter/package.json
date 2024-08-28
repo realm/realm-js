@@ -36,10 +36,6 @@
   },
   "license": "SEE LICENSE IN LICENSE",
   "dependencies": {
-    "mocha": "^8",
     "mocha-github-actions-reporter": "^0.3.1"
-  },
-  "devDependencies": {
-    "@types/mocha": "^8"
   }
 }
