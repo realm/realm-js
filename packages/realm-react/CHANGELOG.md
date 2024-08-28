@@ -7,8 +7,7 @@
 * None
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None
+* Fixing the `RealmProvider` component when context is created without passing neither a `Realm` instance nor a `Realm.Configuration` to avoid unnecessary recreation of the provider, which was causing "Cannot access realm that has been closed" errors. ([#6842](https://github.com/realm/realm-js/issues/6842), since v0.8.0)
 
 ### Compatibility
 * React Native >= v0.71.4
