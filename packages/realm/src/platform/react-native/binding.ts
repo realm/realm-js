@@ -21,6 +21,7 @@ declare const global: Record<string, unknown>;
 import { NativeModules } from "react-native";
 import { NativeBigInt, PolyfilledBigInt, type binding, injectNativeModule } from "../binding";
 import { assert } from "../../assert";
+import { RealmInExpoGoError, isExpoGo } from "./expo-go-detection";
 
 try {
   const RealmNativeModule = NativeModules.Realm;
@@ -46,7 +47,11 @@ try {
     },
   });
 } catch (err) {
-  throw new Error(
-    "Could not find the Realm binary. Please consult our troubleshooting guide: https://www.mongodb.com/docs/realm-sdks/js/latest/#md:troubleshooting-missing-binary",
-  );
+  if (isExpoGo()) {
+    throw new RealmInExpoGoError();
+  } else {
+    throw new Error(
+      "Could not find the Realm binary. Please consult our troubleshooting guide: https://www.mongodb.com/docs/realm-sdks/js/latest/#md:troubleshooting-missing-binary",
+    );
+  }
 }

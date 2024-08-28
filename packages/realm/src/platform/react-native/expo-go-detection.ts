@@ -35,7 +35,3 @@ export class RealmInExpoGoError extends Error {
     );
   }
 }
-
-if (isExpoGo()) {
-  throw new RealmInExpoGoError();
-}
