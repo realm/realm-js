@@ -1,10 +1,4 @@
-## vNext (TBD)
-
-### Deprecations
-* None
-
-### Enhancements
-* None
+## 0.10.1 (2024-08-28)
 
 ### Fixed
 * Fixing the `RealmProvider` component when context is created without passing neither a `Realm` instance nor a `Realm.Configuration` to avoid unnecessary recreation of the provider, which was causing "Cannot access realm that has been closed" errors. ([#6842](https://github.com/realm/realm-js/issues/6842), since v0.8.0)
