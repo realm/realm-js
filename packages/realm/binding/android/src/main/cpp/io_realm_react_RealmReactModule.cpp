@@ -150,10 +150,5 @@ extern "C" JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_invalidat
     // Reset the scheduler to prevent invocations using an old runtime
     realm::js::react_scheduler::reset_scheduler();
     __android_log_print(ANDROID_LOG_VERBOSE, "Realm", "Invalidating caches");
-#if DEBUG
-    // Immediately close any open sync sessions to prevent race condition with new
-    // JS thread when hot reloading
-    realm_jsi_close_sync_sessions();
-#endif
     realm_jsi_invalidate_caches();
 }

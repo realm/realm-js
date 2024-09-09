@@ -1115,12 +1115,6 @@ export function generate({ rawSpec, spec, file: makeFile }: TemplateContext): vo
             realm_jsi_invalidate_caches();
             RealmAddon::self = std::make_unique<RealmAddon>(rt, exports);
         }
-        void realm_jsi_close_sync_sessions() {
-            // Force all sync sessions to close immediately. This prevents the new JS thread
-            // from opening a new sync session while the old one is still active when reloading
-            // in dev mode.
-            realm::app::App::close_all_sync_sessions();
-        }
         } // extern "C"
 
         } // namespace realm::js::JSI
