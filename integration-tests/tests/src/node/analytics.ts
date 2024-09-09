@@ -16,15 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import * as os from "os";
-import * as process from "process";
-import * as path from "path";
-import { fileURLToPath } from "url";
+import os from "node:os";
+import process from "node:process";
+import path from "node:path";
+import fs from "node:fs";
+import { fileURLToPath } from "node:url";
 
 import { expect } from "chai";
 import { collectPlatformData } from "realm/scripts/submit-analytics";
-
-import fse from "fs-extra";
 
 // emulate old __dirname: https://flaviocopes.com/fix-dirname-not-defined-es-module-scope/
 const __filename = fileURLToPath(import.meta.url);
@@ -39,7 +38,7 @@ describe("Analytics", () => {
 
   function getRealmVersion() {
     const packageJsonPath = path.resolve(__dirname, "../../../../packages/realm/package.json");
-    const packageJson = fse.readJsonSync(packageJsonPath);
+    const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));
     return packageJson["version"];
   }
 
