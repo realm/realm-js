@@ -487,13 +487,10 @@ function convertToJsi(addon: JsiAddon, type: Type, expr: string): string {
                 }
                 return out;
             }(${expr})`;
-        case "AsyncCallback":
         case "util::UniqueFunction":
         case "std::function":
           assert.equal(inner.kind, "Func");
           return c(inner, `FWD(${expr})`);
-        case "AsyncResult":
-          assert.fail("Should never see AsyncResult here");
       }
       return assert.fail(`unknown template ${type.name}`);
 
@@ -621,7 +618,6 @@ function convertFromJsi(addon: JsiAddon, type: Type, expr: string): string {
                 }
                 return out;
             }((${expr}).getObject(_env))`;
-        case "AsyncCallback":
         case "util::UniqueFunction":
         case "std::function":
           return `${type.toCpp()}(${c(inner, expr)})`;
@@ -1110,20 +1106,12 @@ export function generate({ rawSpec, spec, file: makeFile }: TemplateContext): vo
             realm::util::Logger::set_default_logger(nullptr);
             // Close all cached Realms
             realm::_impl::RealmCoordinator::clear_all_caches();
-            // Clear the Object Store App cache, to prevent instances from using a context that was released
-            realm::app::App::clear_cached_apps();
             // Blow away the addon state.
             RealmAddon::self.reset();
         }
         void realm_jsi_init(jsi::Runtime& rt, jsi::Object& exports) {
             realm_jsi_invalidate_caches();
             RealmAddon::self = std::make_unique<RealmAddon>(rt, exports);
-        }
-        void realm_jsi_close_sync_sessions() {
-            // Force all sync sessions to close immediately. This prevents the new JS thread
-            // from opening a new sync session while the old one is still active when reloading
-            // in dev mode.
-            realm::app::App::close_all_sync_sessions();
         }
         } // extern "C"
 

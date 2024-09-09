@@ -84,6 +84,9 @@ integration-tests/tests/src/bench/rolledup.js
 # TODO: Solve .lock files are produced in "throws when called with an empty string"
 integration-tests/**/.lock
 
+# Credentials for the BaaS test server
+integration-tests/baas-test-server/.env
+
 # Test coverage artifacts
 coverage/
 .nyc_output/

@@ -119,29 +119,10 @@ export const useQuery = defaultContext.useQuery;
  * @returns either the desired {@link Realm.Object} or `null` in the case of it being deleted or not existing.
  */
 export const useObject = defaultContext.useObject;
-/**
- * Returns the value representing the progress for a given {@link Realm.ProgressDirection}
- * and {@link Realm.ProgressMode}. The hook will register a progress notifier and update from
- * any changes from it.
- * @example
- * ```
- * const progress = useProgress({ direction: ProgressDirection.Download, mode: ProgressMode.ReportIndefinitely });
- * return <Text>Loading: {(100 * progress).toFixed()}%</Text>;
- * ```
- * @param options
- * @param options.direction - The {@link Realm.ProgressDirection} for the progress notifier.
- * @param options.mode - The {@link Realm.ProgressMode} for the progress notifier.
- * @returns a number between 0 and 1 representing the progress
- */
-export const useProgress = defaultContext.useProgress;
 
 /*
  * @ignore This will end up documenting all of Realm, which is documented elsewhere
  */
 export { Realm };
 export { createRealmContext } from "./RealmContext";
-export * from "./AppProvider";
-export { useUser, UserProvider } from "./UserProvider";
-export * from "./useAuth";
-export * from "./useEmailPasswordAuth";
 export * from "./types";

@@ -1,6 +1,0 @@
-dist/
-
-# These types are generated when building the package.
-types/generated/
-# Package
-realm-web-*.tgz

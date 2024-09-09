@@ -19,10 +19,8 @@
 import Realm, { Configuration } from "realm";
 
 function deriveConfig(realm: Realm): Configuration {
-  const { path, syncSession } = realm;
-  if (syncSession) {
-    return { path, sync: syncSession.config };
-  } else if (path) {
+  const { path } = realm;
+  if (path) {
     return { path };
   } else {
     return {};

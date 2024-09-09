@@ -35,8 +35,7 @@
       "dependencies": [
         "../realm:build:ts",
         "../realm:build:node",
-        "../realm-common:bundle",
-        "../realm-app-importer:type-check"
+        "../realm-common:bundle"
       ]
     },
     "docs": {

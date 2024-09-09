@@ -68,8 +68,6 @@ const TEMPLATE_MAPPING: Record<string, ((...args: string[]) => string) | undefin
   "std::unordered_map": (k, v) => `Record<${k}, ${v}>`,
   "util::UniqueFunction": (f) => f,
   "std::function": (f) => f,
-  AsyncResult: (t) => `Promise<${t}>`,
-  AsyncCallback: (sig) => assert.fail(`async transform not applied to function taking AsyncCallback<${sig}>`),
   IgnoreArgument: () => assert.fail("Attempting to use an IgnoreArgument<>"),
 };
 
@@ -164,7 +162,7 @@ function generateMethodDeclaration(spec: BoundSpec, method: Method) {
   if (method instanceof Property) {
     return `get ${method.jsName}(): ${generateType(spec, method.type, Kind.Return)}`;
   } else {
-    const transformedSignature = method.sig.asyncTransformOrSelf();
+    const transformedSignature = method.sig;
     const returnType = generateType(spec, transformedSignature.ret, Kind.Return);
     const argumentDeclarations = transformedSignature.args.map(
       (arg) => `${arg.name}: ${generateType(spec, arg.type, Kind.Argument)}`,
@@ -216,7 +214,7 @@ export function generate({ spec: boundSpec, rawSpec, file }: TemplateContext): v
 
   out.lines(
     'import { Long, ObjectId, UUID, Decimal128, EJSON } from "bson";',
-    'import { _promisify, _throwOnAccess } from "./utils";',
+    'import { _throwOnAccess } from "./utils";',
     'import * as utils from "./utils";',
     'import { applyPatch } from "./patch";',
     "// eslint-disable-next-line @typescript-eslint/no-namespace",
@@ -361,21 +359,9 @@ export function generate({ spec: boundSpec, rawSpec, file }: TemplateContext): v
       const nativeFreeFunctionName = `_native_${method.id}`;
       out(`const ${nativeFreeFunctionName} = nativeModule.${method.id};`);
       // TODO consider pre-extracting class-typed arguments while still in JIT VM.
-      const asyncSig = method.sig.asyncTransform();
-      const params = (asyncSig ?? method.sig).args.map((arg) => arg.name);
-      const args = [method.isStatic ? [] : `this[${symbolName}]`, ...params, asyncSig ? "_cb" : []].flat();
-      let call = `${nativeFreeFunctionName}(${args})`;
-      if (asyncSig) {
-        // JS can't distinguish between a `const EJson*` that is nullptr (which can't happen), and
-        // one that points to the string "null" because both become null by the time they reach JS.
-        // In order to allow the latter (which does happen! E.g. the promise from `response.text()`
-        // can resolve to `"null"`) we need a special case here.
-        // TODO see if there is a better approach.
-        assert(asyncSig.ret.isTemplate("AsyncResult"));
-        const ret = asyncSig.ret.args[0];
-        const nullAllowed = !!(ret.is("Pointer") && ret.type.kind == "Const" && ret.type.type.isPrimitive("EJson"));
-        call = `_promisify(${nullAllowed}, _cb => ${call})`;
-      }
+      const params = method.sig.args.map((arg) => arg.name);
+      const args = [method.isStatic ? [] : `this[${symbolName}]`, ...params, []].flat();
+      const call = `${nativeFreeFunctionName}(${args})`;
       bodyLines.push(
         method.isStatic ? "static" : "",
         method instanceof Property ? "get" : "",

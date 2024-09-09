@@ -22,8 +22,7 @@
 #include <queue>
 
 #include <realm/util/logger.hpp>
-#include <realm/object-store/sync/sync_manager.hpp> // SyncLoggerFactory
-#include <realm/object-store/util/scheduler.hpp>    // realm::util::Scheduler
+#include <realm/object-store/util/scheduler.hpp> // realm::util::Scheduler
 
 #if REALM_ANDROID
 #include <android/log.h>
@@ -135,16 +134,6 @@ public:
         }
 
         throw std::runtime_error("Bad log level");
-    }
-
-    static SyncClientConfig::LoggerFactory build_sync_logger(Delegated&& log_fn)
-    {
-        return [captured_logger = std::move(log_fn)](realm::util::Logger::Level level) mutable {
-            auto logger = std::make_unique<SyncLoggerDelegator>(std::move(captured_logger));
-            logger->set_level_threshold(level);
-            logger->delegate();
-            return logger;
-        };
     }
 };
 

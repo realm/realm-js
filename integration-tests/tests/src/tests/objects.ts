@@ -925,16 +925,6 @@ describe("Realm.Object", () => {
 
       expectArraysEqual(new Uint8Array(object.dataCol as ArrayBuffer), RANDOM_DATA);
 
-      if (Realm.App.Sync) {
-        // Should be able to also set a data property to base64-encoded string.
-        this.realm.write(function () {
-          const hex = jsrsasign.ArrayBuffertohex(RANDOM_DATA.buffer);
-          const b64string = jsrsasign.hextob64(hex);
-          object.dataCol = b64string;
-        });
-        expectArraysEqual(new Uint8Array(object.dataCol as ArrayBuffer), RANDOM_DATA);
-      }
-
       // Should be to set a data property to a DataView.
       this.realm.write(function () {
         object.dataCol = new DataView(RANDOM_DATA.buffer);

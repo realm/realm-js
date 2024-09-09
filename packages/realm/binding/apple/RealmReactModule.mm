@@ -53,14 +53,8 @@ RCT_EXPORT_MODULE(Realm)
 }
 
 - (void)invalidate {
-    // Reset the scheduler to prevent invocations using an old runtime
-    realm::js::react_scheduler::reset_scheduler();
-#if DEBUG
-  // Immediately close any open sync sessions to prevent race condition with new
-  // JS thread when hot reloading
-  realm_jsi_close_sync_sessions();
-#endif
-
+  // Reset the scheduler to prevent invocations using an old runtime
+  realm::js::react_scheduler::reset_scheduler();
   realm_jsi_invalidate_caches();
 }
 

@@ -409,13 +409,10 @@ function convertToNode(addon: NodeAddon, type: Type, expr: string): string {
                 }
                 return out;
             }(${expr})`;
-        case "AsyncCallback":
         case "util::UniqueFunction":
         case "std::function":
           assert.equal(inner.kind, "Func");
           return c(inner, `FWD(${expr})`);
-        case "AsyncResult":
-          assert.fail("Should never see AsyncResult here");
       }
       return assert.fail(`unknown template ${type.name}`);
 
@@ -531,7 +528,6 @@ function convertFromNode(addon: NodeAddon, type: Type, expr: string): string {
                 }
                 return out;
             }((${expr}).As<Napi::Object>())`;
-        case "AsyncCallback":
         case "util::UniqueFunction":
         case "std::function":
           return `${type.toCpp()}(${c(inner, expr)})`;

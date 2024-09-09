@@ -52,8 +52,6 @@ export const REALM_CORE_LIBRARY_NAMES_ALLOWLIST = [
   "librealm-object-store-dbg.a",
   "librealm-parser.a",
   "librealm-parser-dbg.a",
-  "librealm-sync.a",
-  "librealm-sync-dbg.a",
 ];
 
 export function copyFiles(basePath: string, relativeFilePaths: string[], destinationPath: string) {

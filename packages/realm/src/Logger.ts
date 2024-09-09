@@ -18,7 +18,7 @@
 
 import { binding } from "./binding";
 import { assert } from "./assert";
-import type { App } from "./app-services/App";
+import type { Realm } from "./Realm";
 
 export type LogLevel = "all" | "trace" | "debug" | "detail" | "info" | "warn" | "error" | "fatal" | "off";
 
@@ -142,7 +142,7 @@ export const LOG_CATEGORIES = [
 export type LogCategory = (typeof LOG_CATEGORIES)[number];
 
 /**
- * A callback passed to {@link App.Sync.setLogger} when instrumenting the Atlas Device Sync client with a custom logger.
+ * A callback passed to {@link Realm.setLogger} when instrumenting the Atlas Device Sync client with a custom logger.
  * @param level - The level of the log entry between 0 and 8 inclusively.
  * Use this as an index into `['all', 'trace', 'debug', 'detail', 'info', 'warn', 'error', 'fatal', 'off']` to get the name of the level.
  * @param message - The message of the log entry.

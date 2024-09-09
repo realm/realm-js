@@ -88,7 +88,6 @@ if(CMAKE_GENERATOR MATCHES "^Ninja")
 endif()
 
 set(REALM_BUILD_LIB_ONLY ON)
-set(REALM_ENABLE_SYNC ON)
 
 add_subdirectory(${BINDGEN_DIR}/vendor/realm-core realm-core EXCLUDE_FROM_ALL)
 

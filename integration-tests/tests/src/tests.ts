@@ -16,36 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import "./tests/credentials/anonymous";
-import "./tests/credentials/api-key";
-import "./tests/credentials/email-password";
-import "./tests/credentials/function";
-import "./tests/credentials/jwt";
-
-import "./tests/experimental/base-url";
-
-import "./tests/sync/app";
-import "./tests/sync/asymmetric";
-import "./tests/sync/client-reset";
-import "./tests/sync/dictionary";
-import "./tests/sync/encryption";
-import "./tests/sync/flexible";
-import "./tests/sync/geospatial";
-import "./tests/sync/logging";
-import "./tests/sync/mixed";
-import "./tests/sync/mongo-db-client";
-import "./tests/sync/open-behavior";
-import "./tests/sync/open";
-import "./tests/sync/partition-values";
-import "./tests/sync/realm-conversions";
-import "./tests/sync/realm";
-import "./tests/sync/set";
-import "./tests/sync/sync-as-local";
-import "./tests/sync/sync-session";
-import "./tests/sync/upload-delete-download";
-import "./tests/sync/user";
-import "./tests/sync/uuid";
-
 import "./tests/alias";
 import "./tests/array-buffer";
 import "./tests/bson";

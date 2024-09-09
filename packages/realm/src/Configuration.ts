@@ -17,14 +17,11 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import type { AnyRealmObject } from "./Object";
-import type { AppConfiguration } from "./app-services/App";
-import type { User } from "./app-services/User";
 import type { ObjectSchema, RealmObjectConstructor } from "./schema";
 import type { Realm } from "./Realm";
 import { TypeAssertionError } from "./errors";
 import { assert } from "./assert";
 import { validateRealmSchema } from "./schema";
-import { type SyncConfiguration, validateSyncConfiguration } from "./app-services/SyncConfiguration";
 
 /**
  * A function which can be called to migrate a Realm from one version of the schema to another.
@@ -50,7 +47,7 @@ export type MigrationOptions = {
 /**
  * The options used to create a {@link Realm} instance.
  */
-export type BaseConfiguration = {
+export type Configuration = {
   /**
    * The path to the file where the Realm database should be stored. For synced Realms, a relative path
    * is used together with the {@link AppConfiguration} and {@link User.id} in order
@@ -99,7 +96,7 @@ export type BaseConfiguration = {
    * @since 2.23.0
    */
   fifoFilesFallbackPath?: string;
-  sync?: SyncConfiguration;
+  sync?: never;
   /** @internal */
   openSyncedRealmLocally?: true;
   /**
@@ -162,16 +159,6 @@ export type BaseConfiguration = {
   migrationOptions?: MigrationOptions;
 };
 
-export type ConfigurationWithSync = BaseConfiguration & {
-  sync: SyncConfiguration;
-};
-
-export type ConfigurationWithoutSync = BaseConfiguration & {
-  sync?: never;
-};
-
-export type Configuration = ConfigurationWithSync | ConfigurationWithoutSync;
-
 /**
  * Validate the fields of a user-provided Realm configuration.
  * @internal
@@ -194,6 +181,8 @@ export function validateConfiguration(config: unknown): asserts config is Config
     onMigration,
     migrationOptions,
   } = config;
+
+  assert.undefined(sync, "sync");
 
   if (path !== undefined) {
     assert.string(path, "'path' on realm configuration");
@@ -220,16 +209,6 @@ export function validateConfiguration(config: unknown): asserts config is Config
   }
   if (onMigration !== undefined) {
     assert.function(onMigration, "'onMigration' on realm configuration");
-  }
-  if (sync !== undefined) {
-    assert(!onMigration, "The realm configuration options 'onMigration' and 'sync' cannot both be defined.");
-    assert(!migrationOptions, "The realm configuration options 'migrationOptions' and 'sync' cannot both be defined.");
-    assert(inMemory === undefined, "The realm configuration options 'inMemory' and 'sync' cannot both be defined.");
-    assert(
-      deleteRealmIfMigrationNeeded === undefined,
-      "The realm configuration options 'deleteRealmIfMigrationNeeded' and 'sync' cannot both be defined.",
-    );
-    validateSyncConfiguration(sync);
   }
   if (openSyncedRealmLocally !== undefined) {
     // Internal use

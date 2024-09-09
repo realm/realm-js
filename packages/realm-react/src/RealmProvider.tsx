@@ -20,16 +20,11 @@ import React, { useContext, useEffect, useRef, useState } from "react";
 import Realm from "realm";
 import isEqual from "lodash.isequal";
 
-import { UserContext } from "./UserProvider";
 import { RestrictivePick } from "./helpers";
 
-type PartialRealmConfiguration = Omit<Partial<Realm.Configuration>, "sync"> & {
-  sync?: Partial<Realm.SyncConfiguration>;
-};
+type PartialRealmConfiguration = Partial<Realm.Configuration>;
 
-export type RealmProviderFallback = React.ComponentType<{
-  progress: number;
-}>;
+export type RealmProviderFallback = React.ComponentType;
 
 /** Props used for a configuration-based Realm provider */
 type RealmProviderConfigurationProps = {
@@ -121,10 +116,6 @@ export function createRealmProviderFromConfig(
         : null,
     );
 
-    // Automatically set the user in the configuration if its been set.
-    // Grabbing directly from the context to avoid throwing an error if the user is not set.
-    const user = useContext(UserContext);
-
     // We increment `configVersion` when a config override passed as a prop
     // changes, which triggers a `useEffect` to re-open the Realm with the
     // new config
@@ -142,18 +133,14 @@ export function createRealmProviderFromConfig(
     useEffect(() => {
       const combinedConfig = mergeRealmConfiguration(realmConfig, restProps);
 
-      // If there is a user in the current context and not one set by the props, then use the one from context
-      const combinedConfigWithUser =
-        combinedConfig?.sync && user ? mergeRealmConfiguration({ sync: { user } }, combinedConfig) : combinedConfig;
-
-      if (!areConfigurationsIdentical(configuration.current, combinedConfigWithUser)) {
-        configuration.current = combinedConfigWithUser;
+      if (!areConfigurationsIdentical(configuration.current, combinedConfig)) {
+        configuration.current = combinedConfig;
         // Only rerender if realm has already been configured
         if (currentRealm.current != null) {
           setConfigVersion((x) => x + 1);
         }
       }
-    }, [restProps, user]);
+    }, [restProps]);
 
     useEffect(() => {
       currentRealm.current = realm;
@@ -162,8 +149,6 @@ export function createRealmProviderFromConfig(
       }
     }, [realm]);
 
-    const [progress, setProgress] = useState<number>(0);
-
     useEffect(() => {
       const realmRef = currentRealm.current;
       // Check if we currently have an open Realm. If we do not (i.e. it is the first
@@ -171,9 +156,7 @@ export function createRealmProviderFromConfig(
       // need to open a new Realm.
       const shouldInitRealm = realmRef === null;
       const initRealm = async () => {
-        const openRealm = await Realm.open(configuration.current).progress((estimate: number) => {
-          setProgress(estimate);
-        });
+        const openRealm = await Realm.open(configuration.current);
         setRealm(openRealm);
       };
       if (shouldInitRealm) {
@@ -192,7 +175,7 @@ export function createRealmProviderFromConfig(
 
     if (!realm) {
       if (typeof Fallback === "function") {
-        return <Fallback progress={progress} />;
+        return <Fallback />;
       }
       return <>{Fallback}</>;
     }
@@ -251,18 +234,10 @@ export function mergeRealmConfiguration(
   configA: PartialRealmConfiguration,
   configB: PartialRealmConfiguration,
 ): Realm.Configuration {
-  // In order to granularly update sync properties on the RealmProvider, sync must be
-  // seperately applied to the configuration.  This allows for dynamic updates to the
-  // partition field.
-  const sync = { ...configA.sync, ...configB.sync };
-
   return {
     ...configA,
     ...configB,
-    //TODO: When Realm >= 10.9.0 is a peer dependency, we can simply spread sync here
-    //See issue #4012
-    ...(Object.keys(sync).length > 0 ? { sync } : undefined),
-  } as Realm.Configuration;
+  };
 }
 
 /**

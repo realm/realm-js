@@ -19,10 +19,6 @@ if(WIN32)
         # see https://docs.microsoft.com/en-us/cpp/build/reference/bigobj-increase-number-of-sections-in-dot-obj-file?view=msvc-160#remarks
         COMPILE_FLAGS "/bigobj"
     )
-
-    find_package(OpenSSL REQUIRED)
-    target_link_libraries(realm-js-node OpenSSL::SSL)
-    target_link_options(realm-js-node PRIVATE "/WHOLEARCHIVE:libssl.lib")
     target_compile_definitions(realm-js PRIVATE WIN32_LEAN_AND_MEAN)
 endif()
 

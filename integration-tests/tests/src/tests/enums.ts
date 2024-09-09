@@ -17,50 +17,9 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
-import {
-  ConnectionState,
-  NumericLogLevel,
-  OpenRealmBehaviorType,
-  OpenRealmTimeOutBehavior,
-  SessionStopPolicy,
-  WaitForSync,
-} from "realm";
+import { NumericLogLevel } from "realm";
 
 describe("Enums", function () {
-  describe("ConnectionState", function () {
-    it("is accessible", function () {
-      expect(ConnectionState).deep.equals({
-        Disconnected: "disconnected",
-        Connecting: "connecting",
-        Connected: "connected",
-      });
-    });
-  });
-  describe("SessionStopPolicy", function () {
-    it("is accessible", function () {
-      expect(SessionStopPolicy).deep.equals({
-        AfterUpload: "after-upload",
-        Immediately: "immediately",
-        Never: "never",
-      });
-    });
-  });
-  describe("OpenRealmBehaviorType", function () {
-    it("is accessible", function () {
-      expect(OpenRealmBehaviorType).deep.equals({
-        DownloadBeforeOpen: "downloadBeforeOpen",
-        OpenImmediately: "openImmediately",
-      });
-    });
-  });
-  describe("OpenRealmTimeOutBehavior", function () {
-    it("is accessible", function () {
-      expect(OpenRealmTimeOutBehavior).deep.equals({
-        OpenLocalRealm: "openLocalRealm",
-        ThrowException: "throwException",
-      });
-    });
-  });
   describe("NumericLogLevel", function () {
     it("is accessible", function () {
       expect(NumericLogLevel).deep.equals({
@@ -82,15 +41,6 @@ describe("Enums", function () {
         Error: 6,
         Fatal: 7,
         Off: 8,
-      });
-    });
-  });
-  describe("WaitForSync", function () {
-    it("is accessible", function () {
-      expect(WaitForSync).deep.equals({
-        Always: "always",
-        FirstTime: "first-time",
-        Never: "never",
       });
     });
   });

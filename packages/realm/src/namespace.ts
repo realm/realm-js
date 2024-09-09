@@ -38,28 +38,6 @@ export * from "./Types";
 export * from "./GeoSpatial";
 export * from "./Logger";
 
-export * from "./app-services/utils";
-export * from "./app-services/SyncConfiguration";
-export * from "./app-services/Credentials";
-export * from "./app-services/User";
-export * from "./app-services/MongoDB";
-export * from "./app-services/NetworkTransport";
-export * from "./app-services/SyncSession";
-export * from "./app-services/ApiKeyAuth";
-export * from "./app-services/EmailPasswordAuth";
-export * from "./app-services/PushClient";
-export * from "./app-services/MongoDBCollection";
-export * from "./app-services/FunctionsFactory";
-export * from "./app-services/UserProfile";
-export * from "./app-services/BaseSubscriptionSet";
-export * from "./app-services/MutableSubscriptionSet";
-export * from "./app-services/Services";
-export * from "./app-services/SubscriptionSet";
-export * from "./app-services/Subscription";
-export * from "./app-services/Sync";
-export * from "./app-services/App";
-export * from "./app-services/Auth";
-
 export * from "./Realm";
 export * from "./RealmListeners";
 export * from "./Configuration";
