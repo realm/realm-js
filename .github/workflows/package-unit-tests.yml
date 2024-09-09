@@ -28,9 +28,6 @@ jobs:
           - realm
           - '@realm/babel-plugin'
           - '@realm/react'
-        include:
-          - workspace: '@realm/react'
-            use-baas: true
     name: ${{ matrix.workspace }} unit tests
     runs-on: ubuntu-latest
     steps:
@@ -53,15 +50,4 @@ jobs:
       # (--ignore-scripts to avoid downloading or building the native module)
       - run: npm ci --ignore-scripts
 
-      - name: Start BaaS test server
-        id: baas
-        if: ${{matrix.use-baas}}
-        uses: ./.github/actions/baas-test-server
-        with:
-          branch: ${{ env.BAAS_BRANCH }}
-        env:
-          BAASAAS_KEY: ${{ secrets.BAASAAS_KEY }}
-
       - run: npm test --workspace ${{ matrix.workspace }}
-        env:
-          REALM_BASE_URL: ${{ steps.baas.outputs.baas-url }}
