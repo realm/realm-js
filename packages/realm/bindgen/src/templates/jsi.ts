@@ -1106,8 +1106,6 @@ export function generate({ rawSpec, spec, file: makeFile }: TemplateContext): vo
             realm::util::Logger::set_default_logger(nullptr);
             // Close all cached Realms
             realm::_impl::RealmCoordinator::clear_all_caches();
-            // Clear the Object Store App cache, to prevent instances from using a context that was released
-            realm::app::App::clear_cached_apps();
             // Blow away the addon state.
             RealmAddon::self.reset();
         }
