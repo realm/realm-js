@@ -1,5 +1,8 @@
-> [!NOTE]
-> Realm is now Atlas Device SDK - [Learn More](https://www.mongodb.com/blog/post/realm-now-part-atlas-platform?utm_medium=github_atlas_CTA&utm_source=realm_js_github)
+> [!WARNING]
+> We announced the deprecation of Atlas Device Sync + Realm SDKs in September 2024. For more information please see:
+> [SDK Deprecation](https://www.mongodb.com/docs/atlas/device-sdks/device-sdk-deprecation)
+> [Device Sync Deprecation](https://www.mongodb.com/docs/atlas/app-services/sync/device-sync-deprecation)
+> For a version of RealmJS without sync features, install from [community on npm](https://www.npmjs.com/package/realm/v/community) or see the `community` git branch.
 
 <picture>
     <source srcset="https://raw.githubusercontent.com/realm/realm-js/main/media/logo-dark.svg" media="(prefers-color-scheme: dark)" alt="realm by MongoDB">
