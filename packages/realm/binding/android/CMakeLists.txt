@@ -58,7 +58,6 @@ target_link_libraries(realm-js-android-binding
     Realm::Storage
     Realm::QueryParser
     Realm::ObjectStore
-    Realm::Sync
     ReactAndroid::jsi
     ReactAndroid::reactnativejni
     ReactAndroid::turbomodulejsijni
