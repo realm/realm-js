@@ -1,7 +1,7 @@
 ## 20.0.0 (2024-09-09)
 
 ### Breaking Changes
-* Removed a functionality related to Atlas Device Services / Device Sync.
+* Removed all functionality related to Atlas Device Services / Device Sync.
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
