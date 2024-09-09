@@ -228,6 +228,12 @@ export function createDynamicRealmProvider(RealmContext: React.Context<Realm | n
  * @returns a RealmProvider component that provides context to all context hooks
  */
 export function createRealmProvider(
+  config: Realm.Configuration,
+  RealmContext: React.Context<Realm | null>,
+): RealmProviderFromConfiguration;
+export function createRealmProvider(realm: Realm, RealmContext: React.Context<Realm | null>): RealmProviderFromRealm;
+export function createRealmProvider(_: undefined, RealmContext: React.Context<Realm | null>): DynamicRealmProvider;
+export function createRealmProvider(
   realmOrConfig: Realm.Configuration | Realm | undefined,
   RealmContext: React.Context<Realm | null>,
 ): RealmProviderFromConfiguration | RealmProviderFromRealm | DynamicRealmProvider {
