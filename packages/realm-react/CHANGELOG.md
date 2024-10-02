@@ -4,7 +4,7 @@
 * None
 
 ### Enhancements
-* None
+* Add more additional overload to `useQuery` to allow the [react-hooks/exhaustive-deps](https://www.npmjs.com/package/eslint-plugin-react-hooks) eslint rule to work (#6819)
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
