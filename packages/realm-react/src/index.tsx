@@ -126,3 +126,5 @@ export const useObject = defaultContext.useObject;
 export { Realm };
 export { createRealmContext } from "./RealmContext";
 export * from "./types";
+export { createUseObject } from "./useObject";
+export { createUseQuery } from "./useQuery";
