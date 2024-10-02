@@ -142,7 +142,7 @@ jobs:
           cache: npm
 
       - name: Setup Wireit cache
-        uses: google/wireit@setup-github-actions-caching/v1
+        uses: google/wireit@setup-github-actions-caching/v2
 
       - name: MSVC Setup
         if: ${{ runner.os == 'Windows' }}
