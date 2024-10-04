@@ -1,7 +1,4 @@
-## vNext (TBD)
-
-### Deprecations
-* None
+## 0.11.0 (2024-10-02)
 
 ### Enhancements
 * Add more additional overload to `useQuery` to allow the [react-hooks/exhaustive-deps](https://www.npmjs.com/package/eslint-plugin-react-hooks) eslint rule to work (#6819)
