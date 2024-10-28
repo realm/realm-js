@@ -494,7 +494,7 @@ jobs:
       # See https://guides.cocoapods.org/using/faq.html#can-i-change-the-default-cocoapods-repositories-folder
       CP_HOME_DIR: ${{ github.workspace }}/.cocoapods
     runs-on: macos-latest-large
-    timeout-minutes: 60
+    timeout-minutes: 120
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
