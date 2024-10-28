@@ -489,7 +489,7 @@ jobs:
       - generate-jsi
       - prebuild-apple
     env:
-      DEVELOPER_DIR: /Applications/Xcode_14.3.1.app
+      DEVELOPER_DIR: /Applications/Xcode_15.4.app
       IOS_DEVICE_NAME: iPhone 14
       # See https://guides.cocoapods.org/using/faq.html#can-i-change-the-default-cocoapods-repositories-folder
       CP_HOME_DIR: ${{ github.workspace }}/.cocoapods
