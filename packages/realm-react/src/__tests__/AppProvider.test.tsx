@@ -23,7 +23,7 @@ import { act, fireEvent, render, renderHook, waitFor } from "@testing-library/re
 import { AppProvider, useApp } from "../AppProvider";
 import { Realm } from "realm";
 
-jest.mock("react-native/Libraries/Animated/NativeAnimatedHelper");
+// jest.mock("react-native/Libraries/Animated/NativeAnimatedHelper");
 
 describe("AppProvider", () => {
   it("returns the configured app with useApp", async () => {

@@ -489,12 +489,12 @@ jobs:
       - generate-jsi
       - prebuild-apple
     env:
-      DEVELOPER_DIR: /Applications/Xcode_14.3.1.app
+      DEVELOPER_DIR: /Applications/Xcode_15.4.app
       IOS_DEVICE_NAME: iPhone 14
       # See https://guides.cocoapods.org/using/faq.html#can-i-change-the-default-cocoapods-repositories-folder
       CP_HOME_DIR: ${{ github.workspace }}/.cocoapods
     runs-on: macos-latest-large
-    timeout-minutes: 60
+    timeout-minutes: 120
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -605,7 +605,11 @@ jobs:
         working-directory: integration-tests/environments/react-native-test-app/ios
         timeout-minutes: 15
         run: pod install --verbose
-    
+
+      - name: Patch test app's Info.plist to allow insecure connections to BaaSaaS server
+        working-directory: integration-tests/environments/react-native-test-app
+        run: sed -i '' 's/NSAllowsLocalNetworking/NSAllowsArbitraryLoads/g' node_modules/.generated/ios/Info.plist
+
       - name: Build test app
         working-directory: integration-tests/environments/react-native-test-app/ios
         run: xcodebuild archive -workspace RealmTests.xcworkspace -configuration Release -scheme RealmTests -destination generic/platform="iOS Simulator" -archivePath ./build/realmtests.xcarchive | xcbeautify
