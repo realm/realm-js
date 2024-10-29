@@ -59,10 +59,24 @@ target_link_libraries(realm-js-android-binding
     Realm::QueryParser
     Realm::ObjectStore
     ReactAndroid::jsi
-    ReactAndroid::reactnativejni
-    ReactAndroid::turbomodulejsijni
     fbjni::fbjni
 )
+
+# This if-then-else can be removed once this library does not support version below 0.76
+# Ideally we would just depend on `REACTNATIVE_MERGED_SO`
+# See https://github.com/react-native-community/discussions-and-proposals/discussions/816
+# For some reason (yet to be determined) we don't have REACTNATIVE_MERGED_SO set here.
+# See https://github.com/react-native-community/discussions-and-proposals/discussions/816#discussioncomment-10659654
+if (REACTNATIVE_MERGED_SO OR ReactAndroid_VERSION_MINOR GREATER_EQUAL 76)
+    target_link_libraries(realm-js-android-binding
+        ReactAndroid::reactnative
+    )
+else()
+    target_link_libraries(realm-js-android-binding
+        ReactAndroid::reactnativejni
+        ReactAndroid::turbomodulejsijni
+    )
+endif()
 
 if (CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "MinSizeRel")
     add_custom_command(TARGET realm-js-android-binding
