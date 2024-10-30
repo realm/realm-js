@@ -405,11 +405,16 @@ function visitRealmClass(path: NodePath<types.ClassDeclaration>) {
     .map(visitRealmClassStatic)
     .filter((property) => property) as types.ObjectProperty[];
 
-  const schema = types.objectExpression([
-    types.objectProperty(types.identifier("name"), types.stringLiteral(className)),
-    types.objectProperty(types.identifier("properties"), types.objectExpression(schemaProperties)),
+  const hasStaticName = schemaStatics.some(p => p.key.name === "name");
+  const properties = [
+    types.objectProperty(types.identifier("properties"),
+    types.objectExpression(schemaProperties)),
     ...schemaStatics,
-  ]);
+  ];
+  if (!hasStaticName) {
+    properties.unshift(types.objectProperty(types.identifier("name"), types.stringLiteral(className)))
+  }
+  const schema = types.objectExpression(properties);
 
   // Add the schema as a static
   const schemaStatic = types.classProperty(types.identifier("schema"), schema, undefined, undefined, undefined, true);
