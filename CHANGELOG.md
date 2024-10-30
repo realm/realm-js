@@ -8,6 +8,12 @@
 
 ### Fixed
 * Fixed build error on React Native Android when used with React Native 0.76, due to the merge of dynamic libraries. ([#6908](https://github.com/realm/realm-js/issues/6908) since React Native v0.76.0).
+* Filtering notifications with backlink columns as last element could sometimes give wrong results ([realm/realm-core#7530](https://github.com/realm/realm-core/issues/7530), since Realm JS v10.6.2-beta.1)
+* Fix crash during client app shutdown when Logger log level is set higher than Info. ([realm/realm-core#7969](https://github.com/realm/realm-core/issues/7969), since Realm JS v12.3.1)
+* If File::rw_lock() fails to open a file the exception message does not contain the filename ([realm/realm-core#7999](https://github.com/realm/realm-core/issues/7999), since Realm JS v6.1.0)
+* Fallback to hashed filename will fail if length of basename is between 240 and 250 ([realm/realm-core#8007](https://github.com/realm/realm-core/issues/8007), since Realm JS v10.0.0)
+* Having a query with a number of predicates ORed together may result in a crash on some platforms (strict weak ordering check failing on iphone) ([realm/realm-core#8028](https://github.com/realm/realm-core/issues/8028), since Realm JS v12.8.0)
+* The events library would attempt to upload backup files created as part of file format upgrades, causing backup copies of those backups to be made, looping until the maximum file name size was reached ([realm/realm-core#8040](https://github.com/realm/realm-core/issues/8040), since Realm JS v10.18.0).
 
 ### Compatibility
 * React Native >= v0.71.4
@@ -15,9 +21,7 @@
 * File format: generates Realms with format v24 (reads and upgrades file format v10).
 
 ### Internal
-<!-- * Either mention core version or upgrade -->
-<!-- * Using Realm Core vX.Y.Z -->
-<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
+* Upgraded Realm Core from v14.12.0 to v14.13.1.
 
 ## 12.13.1 (2024-08-21)
 
