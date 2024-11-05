@@ -15,6 +15,7 @@ classes:
       remove_file: '(path: const std::string&)'
       remove_directory: '(path: const std::string&)'
       get_cpu_arch: () -> std::string
+      after_realm_open: '(sharedRealm: std::shared_ptr<Realm>)'
       # print: (const char* fmt, ...) # can't expose varargs directly. Could expose a fixed overload.
 
   WeakSyncSession:

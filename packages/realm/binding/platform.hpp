@@ -19,6 +19,7 @@
 #pragma once
 
 #include <string>
+#include "realm/object-store/shared_realm.hpp"
 
 namespace realm {
 //
@@ -54,5 +55,8 @@ public:
 
     // print something
     static void print(const char* fmt, ...);
+
+    // runs after the realm has been opened
+    static void after_realm_open(const std::shared_ptr<Realm> sharedRealm);
 };
 } // namespace realm

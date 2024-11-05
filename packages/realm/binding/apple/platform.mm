@@ -18,6 +18,7 @@
 
 #include "../platform.hpp"
 
+#include <memory>
 #include <realm/util/to_string.hpp>
 
 #include <stdarg.h>
@@ -33,6 +34,10 @@ static NSString *error_description(NSError *error) {
     return underlyingError.localizedDescription;
   }
   return error.localizedDescription;
+}
+
+static void RLMAddSkipBackupAttributeToItemAtPath(std::string_view path) {
+    [[NSURL fileURLWithPath:@(path.data())] setResourceValue:@YES forKey:NSURLIsExcludedFromBackupKey error:nil];
 }
 
 static std::string s_default_realm_directory;
@@ -156,6 +161,18 @@ void JsPlatformHelpers::remove_file(const std::string &path)
                                                       filePath.UTF8String, error_description(error).UTF8String));
         }
     }
+}
+
+void JsPlatformHelpers::after_realm_open(const std::shared_ptr<Realm> sharedRealm) {
+     if(sharedRealm->config().exclude_from_icloud_backup) {
+       RLMAddSkipBackupAttributeToItemAtPath(sharedRealm->config().path);
+       RLMAddSkipBackupAttributeToItemAtPath(sharedRealm->config().path +
+                                             ".lock");
+       RLMAddSkipBackupAttributeToItemAtPath(sharedRealm->config().path +
+                                             ".note");
+       RLMAddSkipBackupAttributeToItemAtPath(sharedRealm->config().path +
+                                                ".management");
+     }
 }
 
 void JsPlatformHelpers::remove_directory(const std::string &path)

@@ -219,6 +219,11 @@ void JsPlatformHelpers::print(const char* fmt, ...)
     va_end(vl);
 }
 
+void JsPlatformHelpers::after_realm_open(const std::shared_ptr<Realm>)
+{
+    // no-op
+}
+
 // this should never be called
 std::string JsPlatformHelpers::get_cpu_arch()
 {

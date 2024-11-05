@@ -51,6 +51,7 @@ records:
       - initialization_function
       - should_compact_on_launch_function
       - automatically_handle_backlinks_in_migrations
+      - exclude_from_icloud_backup
 
   UserIdentity:
     fields:
@@ -238,6 +239,7 @@ classes:
       - remove_file
       - remove_directory
       - get_cpu_arch
+      - after_realm_open
 
   WeakSyncSession:
     methods:
