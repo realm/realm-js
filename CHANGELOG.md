@@ -4,7 +4,7 @@
 * None
 
 ### Enhancements
-* None
+* Added option to exclude realm files from iCloud backup ([#4139](https://github.com/realm/realm-js/issues/4139))
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
