@@ -384,9 +384,8 @@ export NVM_DIR="$HOME/.nvm"
 
 ## Testing against real apps
 
-There are a couple of suggested workflows for testing your changes to Realm JS against real apps:
+Here's the suggested workflow for testing your changes to Realm JS against real apps:
 
-- [Guide: Setting up watchman to copy changes from this package to an app](guide-watchman.md)
 - [Guide: Testing your changes against sample apps using a script](guide-testing-with-sample-apps.md)
 
 ## Debugging
