@@ -7,8 +7,7 @@
 * None
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None
+* Fix build failure from duplicate libreactnative.so files. I.e. "2 files found with path 'lib/arm64-v8a/libreactnative.so' from inputs" ([#6918](https://github.com/realm/realm-js/issues/6918), since v12.13.2)
 
 ### Compatibility
 * React Native >= v0.71.4
