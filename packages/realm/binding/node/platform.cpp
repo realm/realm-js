@@ -219,7 +219,7 @@ void JsPlatformHelpers::print(const char* fmt, ...)
     va_end(vl);
 }
 
-void JsPlatformHelpers::after_realm_open(const SharedRealm)
+void JsPlatformHelpers::after_realm_open(SharedRealm, bool)
 {
     // no-op
 }

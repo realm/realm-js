@@ -423,14 +423,13 @@ export class Realm {
     const normalizedSchema = config.schema && normalizeRealmSchema(config.schema);
     const schemaExtras = Realm.extractRealmSchemaExtras(normalizedSchema || []);
     const path = Realm.determinePath(config);
-    const { fifoFilesFallbackPath, shouldCompact, inMemory, excludeFromIcloudBackup } = config;
+    const { fifoFilesFallbackPath, shouldCompact, inMemory } = config;
     const bindingSchema = normalizedSchema && toBindingSchema(normalizedSchema);
     return {
       schemaExtras,
       bindingConfig: {
         path,
         cache: true,
-        excludeFromIcloudBackup,
         fifoFilesFallbackPath,
         schema: bindingSchema,
         inMemory: inMemory === true,
@@ -580,7 +579,7 @@ export class Realm {
       this.schemaExtras = schemaExtras || {};
     }
 
-    binding.JsPlatformHelpers.afterRealmOpen(this.internal);
+    binding.JsPlatformHelpers.afterRealmOpen(this.internal, config.excludeFromIcloudBackup ?? false);
 
     Object.defineProperty(this, "classes", {
       enumerable: false,

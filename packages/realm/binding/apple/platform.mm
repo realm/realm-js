@@ -163,10 +163,10 @@ void JsPlatformHelpers::remove_file(const std::string &path)
     }
 }
 
-void JsPlatformHelpers::after_realm_open(const SharedRealm realm) {
+void JsPlatformHelpers::after_realm_open(const SharedRealm realm, bool exclude_from_icloud_backup) {
   const auto path = realm->config().path;
                         
-     if(realm->config().exclude_from_icloud_backup) {
+     if(exclude_from_icloud_backup) {
        RLMAddSkipBackupAttributeToItemAtPath(path);
        RLMAddSkipBackupAttributeToItemAtPath(path +
                                              ".lock");

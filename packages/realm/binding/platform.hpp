@@ -57,6 +57,6 @@ public:
     static void print(const char* fmt, ...);
 
     // runs after the realm has been opened
-    static void after_realm_open(const SharedRealm realm);
+    static void after_realm_open(const SharedRealm realm, const bool exclude_from_icloud_backup = false);
 };
 } // namespace realm
