@@ -115,7 +115,7 @@ void JsPlatformHelpers::print(const char* fmt, ...)
     va_end(vl);
 }
 
-void JsPlatformHelpers::after_realm_open(const std::shared_ptr<Realm>) {}
+void JsPlatformHelpers::after_realm_open(const SharedRealm) {}
 
 std::string JsPlatformHelpers::get_cpu_arch()
 {

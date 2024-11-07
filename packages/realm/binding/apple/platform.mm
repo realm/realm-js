@@ -163,14 +163,16 @@ void JsPlatformHelpers::remove_file(const std::string &path)
     }
 }
 
-void JsPlatformHelpers::after_realm_open(const std::shared_ptr<Realm> sharedRealm) {
-     if(sharedRealm->config().exclude_from_icloud_backup) {
-       RLMAddSkipBackupAttributeToItemAtPath(sharedRealm->config().path);
-       RLMAddSkipBackupAttributeToItemAtPath(sharedRealm->config().path +
+void JsPlatformHelpers::after_realm_open(const SharedRealm realm) {
+  const auto path = realm->config().path;
+                        
+     if(realm->config().exclude_from_icloud_backup) {
+       RLMAddSkipBackupAttributeToItemAtPath(path);
+       RLMAddSkipBackupAttributeToItemAtPath(path +
                                              ".lock");
-       RLMAddSkipBackupAttributeToItemAtPath(sharedRealm->config().path +
+       RLMAddSkipBackupAttributeToItemAtPath(path +
                                              ".note");
-       RLMAddSkipBackupAttributeToItemAtPath(sharedRealm->config().path +
+       RLMAddSkipBackupAttributeToItemAtPath(path +
                                                 ".management");
      }
 }
