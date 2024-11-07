@@ -52,6 +52,7 @@ The following dependencies are required. All except Xcode can be installed by fo
 - [Android NDK 23](https://developer.android.com/ndk/downloads/index.html)
 - [Android CMake](https://developer.android.com/ndk/guides/cmake)
 - [Docker](https://www.docker.com/) is used for testing. You can install it [as a desktop app](https://www.docker.com/products/docker-desktop/) or through Homebrew: `brew install --cask docker`.
+- [Ninja](https://ninja-build.org/) `brew install ninja`
 
 Moreover, in order to avoid introducing false positives in our analytics dataset, it is highly recommended to disable analytics by adding the following to your shell configuration:
 
@@ -83,9 +84,10 @@ brew install cmake
 
 #### Android
 
-First, install OpenJDK:
+First, install OpenJDK and Ninja:
 
 ```sh
+brew install ninja
 brew install --cask temurin
 
 # Check this returns: openjdk version "18.0.1" 2022-04-19

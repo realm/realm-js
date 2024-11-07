@@ -18,7 +18,6 @@
 
 #include "../platform.hpp"
 
-#include <memory>
 #include <realm/util/to_string.hpp>
 
 #include <stdarg.h>
