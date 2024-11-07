@@ -36,8 +36,30 @@ static NSString *error_description(NSError *error) {
   return error.localizedDescription;
 }
 
-static void RLMAddSkipBackupAttributeToItemAtPath(std::string_view path) {
-    [[NSURL fileURLWithPath:@(path.data())] setResourceValue:@YES forKey:NSURLIsExcludedFromBackupKey error:nil];
+static void RLMCheckSkipBackupAttributeToItemAtPath(std::string_view path, bool exclude_from_icloud_backup) {
+  NSNumber *current;
+  
+    [[NSURL fileURLWithPath:@(path.data())]
+        getResourceValue:&current
+                  forKey:NSURLIsExcludedFromBackupKey
+                   error:nil];
+    
+    if (current.boolValue != exclude_from_icloud_backup) {
+      [[NSURL fileURLWithPath:@(path.data())]
+          setResourceValue:@(exclude_from_icloud_backup)
+                    forKey:NSURLIsExcludedFromBackupKey
+                     error:nil];
+      
+    }
+}
+
+static void RLMCheckSkipBackupAttributeToRealmFilesAtPath(std::string path, bool exclude_from_icloud_backup) {
+  const std::vector<std::string> extensions = {"", ".lock", ".note",
+                                               ".management"};
+  
+    for (const auto& ext : extensions) {
+        RLMCheckSkipBackupAttributeToItemAtPath(path + ext, exclude_from_icloud_backup);
+    }
 }
 
 static std::string s_default_realm_directory;
@@ -163,18 +185,8 @@ void JsPlatformHelpers::remove_file(const std::string &path)
     }
 }
 
-void JsPlatformHelpers::after_realm_open(const SharedRealm realm, bool exclude_from_icloud_backup) {
-  const auto path = realm->config().path;
-                        
-     if(exclude_from_icloud_backup) {
-       RLMAddSkipBackupAttributeToItemAtPath(path);
-       RLMAddSkipBackupAttributeToItemAtPath(path +
-                                             ".lock");
-       RLMAddSkipBackupAttributeToItemAtPath(path +
-                                             ".note");
-       RLMAddSkipBackupAttributeToItemAtPath(path +
-                                                ".management");
-     }
+void JsPlatformHelpers::after_realm_open(const SharedRealm realm, bool exclude_from_icloud_backup) {               
+   RLMCheckSkipBackupAttributeToRealmFilesAtPath(realm->config().path, exclude_from_icloud_backup);
 }
 
 void JsPlatformHelpers::remove_directory(const std::string &path)
