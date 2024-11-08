@@ -4,7 +4,16 @@
 * None
 
 ### Enhancements
-* Added option to exclude realm files from iCloud backup ([#4139](https://github.com/realm/realm-js/issues/4139))
+* Added `excludeFromIcloudBackup` option to the `Realm` constructor to exclude the realm files from iCloud backup. ([#4139](https://github.com/realm/realm-js/issues/4139))
+```typescript
+const realm = new Realm({
+  schema: [
+    /* your schema */
+  ],
+  // Set to true to exclude from iCloud backup, false to include, defaults to false
+  excludeFromIcloudBackup: true,
+});
+```
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
