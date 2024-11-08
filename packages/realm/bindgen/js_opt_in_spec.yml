@@ -110,6 +110,7 @@ classes:
       - remove_file
       - remove_directory
       - get_cpu_arch
+      - after_realm_open
 
   #####################
   # FROM GENERAL SPEC #

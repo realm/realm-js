@@ -4,7 +4,16 @@
 * None
 
 ### Enhancements
-* None
+* Added `excludeFromIcloudBackup` option to the `Realm` constructor to exclude the realm files from iCloud backup. ([#4139](https://github.com/realm/realm-js/issues/4139))
+```typescript
+const realm = new Realm({
+  schema: [
+    /* your schema */
+  ],
+  // Set to true to exclude from iCloud backup, false to include, defaults to false
+  excludeFromIcloudBackup: true,
+});
+```
 
 ### Fixed
 * Fixed build error on React Native Android when used with React Native 0.76, due to the merge of dynamic libraries. ([#6908](https://github.com/realm/realm-js/issues/6908) since React Native v0.76.0).

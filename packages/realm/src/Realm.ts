@@ -556,6 +556,8 @@ export class Realm {
       this.schemaExtras = schemaExtras || {};
     }
 
+    binding.JsPlatformHelpers.afterRealmOpen(this.internal, config.excludeFromIcloudBackup ?? false);
+
     Object.defineProperty(this, "classes", {
       enumerable: false,
       configurable: false,
