@@ -115,6 +115,8 @@ void JsPlatformHelpers::print(const char* fmt, ...)
     va_end(vl);
 }
 
+void JsPlatformHelpers::after_realm_open(SharedRealm, bool) {}
+
 std::string JsPlatformHelpers::get_cpu_arch()
 {
 #if defined(__arm__)

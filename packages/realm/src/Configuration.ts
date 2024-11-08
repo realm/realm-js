@@ -160,6 +160,12 @@ export type BaseConfiguration = {
    */
   onFirstOpen?: (realm: Realm) => void;
   migrationOptions?: MigrationOptions;
+  /**
+   * Specifies if this Realm should be excluded from iCloud backup.
+   * @default false
+   * @since 12.13.3
+   */
+  excludeFromIcloudBackup?: boolean;
 };
 
 export type ConfigurationWithSync = BaseConfiguration & {
