@@ -169,7 +169,7 @@ export function createCachedCollection<T extends Realm.Object<any>>({
 
       // Item(s) were modified, just clear them from the cache so that we return new instances for them
       changes.newModifications.forEach((index) => {
-        const objectId = listenerCollection[index]._objectKey();
+        const objectId = listenerCollection[index]?._objectKey();
         if (objectId) {
           const cacheKey = getCacheKey(objectId);
           if (objectCache.has(cacheKey)) {
