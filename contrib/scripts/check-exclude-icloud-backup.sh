@@ -1,12 +1,6 @@
 #!/bin/bash
 
-# Check if appbundle parameter is provided
-if [ -z "$1" ]; then
-    echo "Usage: $0 <com.app.bundle.id>"
-    exit 1
-fi
-
-appbundle=$1
+TEST_APP_BUNDLE_ID=com.microsoft.ReactTestApp
 
 # Check if a simulator is booted
 booted_simulators=$(xcrun simctl list | grep "Booted")
@@ -25,15 +19,15 @@ if [ "$booted_count" -gt 1 ]; then
 fi
 
 # Extract the name of the booted simulator
-booted_simulator=$(echo "$booted_simulator" | xargs)
+booted_simulator=$(echo "$booted_simulators" | xargs)
 echo -e "Running script on simulator: $booted_simulator\n"
 
 # Get the app container path
-app_container_path=$(xcrun simctl get_app_container booted "$appbundle" data 2>/dev/null)
+app_container_path=$(xcrun simctl get_app_container booted "$TEST_APP_BUNDLE_ID" data 2>/dev/null)
 
 # Check if the command was successful
 if [ $? -ne 0 ] || [ -z "$app_container_path" ]; then
-    echo "Failed to get app container path for $appbundle"
+    echo "Failed to get app container path for $TEST_APP_BUNDLE_ID"
     exit 1
 fi
 
@@ -47,7 +41,7 @@ if [ ! -d "$documents_path" ]; then
 fi
 
 # Run xattr on all files in the directory
-for file in "$documents_path"/*; do
+for file in "$documents_path"/icloud-backup-tests/*.realm; do
     if [ -e "$file" ]; then
         filename=$(basename "$file")
         attrs=$(xattr "$file" 2>/dev/null)
