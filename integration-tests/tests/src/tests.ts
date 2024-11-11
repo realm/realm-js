@@ -54,6 +54,7 @@ import "./tests/counter";
 import "./tests/dictionary";
 import "./tests/dynamic-schema-updates";
 import "./tests/enums";
+import "./tests/exclude-from-icloud-backup";
 import "./tests/iterators";
 import "./tests/linking-objects";
 import "./tests/list";
