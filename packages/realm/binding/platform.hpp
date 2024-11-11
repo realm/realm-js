@@ -19,7 +19,6 @@
 #pragma once
 
 #include <string>
-#include <realm/object-store/shared_realm.hpp>
 
 namespace realm {
 //
@@ -56,7 +55,7 @@ public:
     // print something
     static void print(const char* fmt, ...);
 
-    // runs after the realm has been opened
-    static void after_realm_open(const SharedRealm realm, const bool exclude_from_icloud_backup = false);
+    // excludes the path from icloud backup on iOS and no-op on other platforms
+    static void exclude_from_icloud_backup(const std::string& path, bool value);
 };
 } // namespace realm

@@ -123,6 +123,11 @@ void JsPlatformHelpers::remove_file(const std::string& path)
     fs::remove(path);
 }
 
+void JsPlatformHelpers::exclude_from_icloud_backup(const std::string&, bool)
+{
+    // no-op
+}
+
 void JsPlatformHelpers::print(const char* fmt, ...)
 {
     va_list vl;
@@ -130,8 +135,6 @@ void JsPlatformHelpers::print(const char* fmt, ...)
     __android_log_vprint(ANDROID_LOG_INFO, "RealmJS", fmt, vl);
     va_end(vl);
 }
-
-void JsPlatformHelpers::after_realm_open(SharedRealm, bool) {}
 
 std::string JsPlatformHelpers::get_cpu_arch()
 {
