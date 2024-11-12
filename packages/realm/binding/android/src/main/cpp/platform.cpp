@@ -21,6 +21,8 @@
 #include <stdarg.h>
 #include <unistd.h>
 #include <cstdio>
+#include <vector>
+#include <filesystem>
 #include <android/asset_manager.h>
 #include <android/log.h>
 
@@ -28,6 +30,8 @@
 
 #define REALM_FILE_FILTER ".realm"
 #define REALM_FILE_FILTER_LEN 6
+
+namespace fs = std::filesystem;
 
 static inline bool is_realm_file(const char* str)
 {
@@ -57,7 +61,11 @@ std::string JsPlatformHelpers::default_realm_file_directory()
     return s_default_realm_directory;
 }
 
-void JsPlatformHelpers::ensure_directory_exists_for_file(const std::string& file) {}
+void JsPlatformHelpers::ensure_directory_exists_for_file(const std::string& file)
+{
+    auto parent_path = fs::path(file).parent_path();
+    fs::create_directories(parent_path);
+}
 
 void JsPlatformHelpers::copy_bundled_realm_files()
 {
@@ -88,23 +96,31 @@ void JsPlatformHelpers::copy_bundled_realm_files()
 
 void JsPlatformHelpers::remove_realm_files_from_directory(const std::string& directory)
 {
-    std::string cmd = "rm " + s_default_realm_directory + "/*.realm " + s_default_realm_directory + "/*.realm.lock";
-    system(cmd.c_str());
+    std::vector<fs::path> files_to_delete;
+    // Collect the files to delete (as deleting while iterating gives undefined behaviour)
+    for (const auto& entry : fs::directory_iterator(directory)) {
+        if (entry.is_regular_file()) {
+            const auto& path = entry.path();
+            if (path.extension() == ".realm" || path.extension() == ".realm.lock") {
+                files_to_delete.push_back(path);
+            }
+        }
+    }
+
+    // Delete the files
+    for (const auto& path : files_to_delete) {
+        fs::remove(path);
+    }
 }
 
 void JsPlatformHelpers::remove_directory(const std::string& path)
 {
-    std::string cmd_clear_dir = "rm " + path + "/*";
-    system(cmd_clear_dir.c_str());
-
-    std::string cmd_rmdir = "rmdir " + path;
-    system(cmd_rmdir.c_str());
+    fs::remove_all(path);
 }
 
 void JsPlatformHelpers::remove_file(const std::string& path)
 {
-    std::string cmd = "rm " + path;
-    system(cmd.c_str());
+    fs::remove(path);
 }
 
 void JsPlatformHelpers::print(const char* fmt, ...)
