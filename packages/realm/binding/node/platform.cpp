@@ -209,6 +209,11 @@ void JsPlatformHelpers::remove_file(const std::string& path)
     }
 }
 
+void JsPlatformHelpers::exclude_from_icloud_backup(const std::string&, bool)
+{
+    // no-op
+}
+
 void JsPlatformHelpers::print(const char* fmt, ...)
 {
     va_list vl;
@@ -217,11 +222,6 @@ void JsPlatformHelpers::print(const char* fmt, ...)
     format.append("\n");
     vprintf(format.c_str(), vl);
     va_end(vl);
-}
-
-void JsPlatformHelpers::after_realm_open(SharedRealm, bool)
-{
-    // no-op
 }
 
 // this should never be called

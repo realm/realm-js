@@ -1,5 +1,29 @@
 # Guide: Testing Exclude iCloud Backup
 
+## Prerequisites
+
+- macOS
+- iOS Simulator
+
+## Testing
+
+Ensure you have booted a simulator and execute the integration tests on iOS:
+
+```sh
+MOCHA_REMOTE_GREP='icloud' npm run test:ios --workspace @realm/react-native-test-app-tests
+```
+
+In the command above, we're explicitly grepping for the icloud backup tests.
+
+To verify if a file has been successfully excluded from iCloud backup, you need to check the file's attributes.
+We provide an easy script to do so:
+
+```sh
+./contrib/scripts/check-exclude-icloud-backup.sh
+```
+
+## Testing in your own app
+
 Before starting the testing process, you need to configure your Realm database to either include or exclude files from iCloud backup. This is done by setting the `excludeFromIcloudBackup` property in your Realm configuration. Here is an example of how to set this property:
 
 ```javascript
@@ -16,20 +40,7 @@ const realm = new Realm(realmConfig);
 
 Make sure to replace the schema and path with your actual Realm schema and desired file path. Once you have configured this property, you can proceed with the following steps to test if the exclusion from iCloud backup is working correctly.
 
-## Prerequisites
-
-- macOS
-- iOS Simulator
-
-## Testing
-
-To verify if a file has been successfully excluded from iCloud backup, you need to check the file's attributes. We provide an easy script to do so. Ensure you have booted a simulator with an app using Realm. From the root of the project, run:
-
-```sh
-contrib/scripts/check-exclude-icloud-backup.sh <com.your.app.bundle>
-```
-
-If the script doesn't work, you can also check it manually. First, get the path of the Realm files from the simulator's Documents folder by running:
+First, get the path of the Realm files from the simulator's Documents folder by running:
 
 ```sh
 open `xcrun simctl get_app_container booted com.your.app.bundleId data`/Documents

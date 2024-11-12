@@ -579,7 +579,15 @@ export class Realm {
       this.schemaExtras = schemaExtras || {};
     }
 
-    binding.JsPlatformHelpers.afterRealmOpen(this.internal, config.excludeFromIcloudBackup ?? false);
+    // Optionally: Exclude or include Realm files from iCloud backup
+    const { excludeFromIcloudBackup } = config;
+    if (typeof excludeFromIcloudBackup === "boolean") {
+      const realmPath = this.internal.config.path;
+      for (const fileNameSuffix of ["", ".lock", ".note", ".management"]) {
+        const filePath = realmPath + fileNameSuffix;
+        binding.JsPlatformHelpers.excludeFromIcloudBackup(filePath, excludeFromIcloudBackup);
+      }
+    }
 
     Object.defineProperty(this, "classes", {
       enumerable: false,
