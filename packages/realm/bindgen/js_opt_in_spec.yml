@@ -109,8 +109,8 @@ classes:
       - remove_realm_files_from_directory
       - remove_file
       - remove_directory
+      - exclude_from_icloud_backup
       - get_cpu_arch
-      - after_realm_open
 
   #####################
   # FROM GENERAL SPEC #

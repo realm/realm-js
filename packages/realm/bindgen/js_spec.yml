@@ -14,6 +14,6 @@ classes:
       remove_realm_files_from_directory: '(directory: const std::string&)'
       remove_file: '(path: const std::string&)'
       remove_directory: '(path: const std::string&)'
+      exclude_from_icloud_backup: '(path: const std::string&, value: bool)'
       get_cpu_arch: () -> std::string
-      after_realm_open: '(realm: SharedRealm, exclude_from_icloud_backup: bool)'
       # print: (const char* fmt, ...) # can't expose varargs directly. Could expose a fixed overload.
