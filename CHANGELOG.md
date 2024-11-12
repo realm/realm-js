@@ -25,9 +25,7 @@ const realm = new Realm({
 * File format: generates Realms with format v24 (reads and upgrades file format v10).
 
 ### Internal
-<!-- * Either mention core version or upgrade -->
-<!-- * Using Realm Core vX.Y.Z -->
-<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
+* Refactored Android filesystem platform helpers. ([#5296](https://github.com/realm/realm-js/issues/5296) and [realm/realm-js-private#507](https://github.com/realm/realm-js-private/issues/507))
 
 ## 20.0.0 (2024-09-09)
 
