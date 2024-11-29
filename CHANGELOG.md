@@ -18,6 +18,7 @@ const realm = new Realm({
 ### Fixed
 * Fixed build error on React Native Android when used with React Native 0.76, due to the merge of dynamic libraries. ([#6908](https://github.com/realm/realm-js/issues/6908) since React Native v0.76.0).
 * Fix build failure from duplicate libreactnative.so files. I.e. "2 files found with path 'lib/arm64-v8a/libreactnative.so' from inputs" ([#6918](https://github.com/realm/realm-js/issues/6918), since v12.13.2)
+* Having a query with a number of predicates ORed together may result in a crash on some platforms (strict weak ordering check failing on iphone) ([realm/realm-core#8028](https://github.com/realm/realm-core/issues/8028), since Realm JS v20.0.0)
 
 ### Compatibility
 * React Native >= v0.71.4
@@ -26,6 +27,7 @@ const realm = new Realm({
 
 ### Internal
 * Refactored Android filesystem platform helpers. ([#5296](https://github.com/realm/realm-js/issues/5296) and [realm/realm-js-private#507](https://github.com/realm/realm-js-private/issues/507))
+* Upgraded Realm Core from v20.0.1 to v20.1.0
 
 ## 20.0.0 (2024-09-09)
 
