@@ -63,7 +63,7 @@ jobs:
       - uses: futureware-tech/simulator-action@v2
         if: ${{ matrix.platform == 'ios' }}
         with:
-          model: "iPhone 14"
+          model: "iPhone 15"
 
       - name: Install dependencies of the CLI
         run: npm ci
