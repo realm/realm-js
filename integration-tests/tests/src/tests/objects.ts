@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 import { expect } from "chai";
-import Realm, { BSON, UpdateMode } from "realm";
+import Realm, { BSON, ClientResetMode, UpdateMode } from "realm";
 
 import { IPerson, Person, PersonSchema } from "../schemas/person-and-dogs";
 import {
@@ -366,6 +366,45 @@ interface IAllTypes {
   optDateArrayCol: (Date | undefined)[];
   optDataArrayCol: (ArrayBuffer | undefined)[];
   linkingObjectsCol: IAllTypes[];
+}
+
+class TrackingData extends Realm.Object {
+  id!: number;
+  progress!: number;
+
+  static schema: Realm.ObjectSchema = {
+	name: 'TrackingData',
+	primaryKey: 'id',
+	properties: {
+	  id: 'int',
+	  progress: 'int',
+	},
+  };
+}
+
+class Profile extends Realm.Object {
+  id!: string;
+  attemptID!: number;
+  lastAccessDate!: Date | null;
+  trackingDataList!: TrackingData[];
+  sortOrder!: number;
+  from!: Date;
+  userId!: string;
+
+  static schema: Realm.ObjectSchema = {
+	name: 'Profile',
+	primaryKey: 'id',
+
+	properties: {
+	  id: 'string',
+	  attemptID: 'int',
+	  lastAccessDate: {type: 'date', optional: true},
+	  trackingDataList: 'TrackingData[]',
+	  sortOrder: 'int',
+	  from: 'date',
+	  userId: 'string',
+	},
+  };
 }
 
 describe("Realm.Object", () => {
@@ -1519,5 +1558,47 @@ describe("Realm.Object", () => {
         expect(obj?.fieldTwo).equals("NOT_DEFAULT_VALUE");
       });
     }
+  });
+
+  // from https://github.com/realm/realm-js/issues/6758
+  describe("spread operator", () => {
+    openRealmBeforeEach({ schema: [Profile, TrackingData] });
+
+    it("nested objects", function (this: RealmContext) {
+      const trackingData = {
+        "id": 1,
+        "progress": 50,
+      } as TrackingData;
+
+      const currentProfile = {
+        "id": "12345_2_2",
+        "attemptID": 2,
+        "lastAccessDate": null,
+        "trackingDataList": [trackingData],
+        "sortOrder": 1,
+        "from": new Date("2024-06-10T10:27:02.909Z"),
+        "userId": "12345"
+      } as Profile;
+
+      this.realm.write(() => {
+        this.realm.create<Profile>(Profile, currentProfile);
+      });
+
+      const currentObjects = this.realm.objects<Profile>(Profile);
+      expect(currentObjects.length).equals(1);
+      expect(currentObjects[0].trackingDataList.length).equals(1);
+      expect(currentObjects[0].trackingDataList[0].progress).equals(50);
+
+      const updatedProfile = { ...currentProfile, lastAccessDate: new Date() };
+
+      this.realm.write(() => {
+        this.realm.create<Profile>(Profile, updatedProfile, Realm.UpdateMode.Modified);
+      });
+
+      const updatedObjects = this.realm.objects<Profile>(Profile);
+      expect(updatedObjects.length).equals(1);
+      expect(updatedObjects[0].trackingDataList.length).equals(1);
+      expect(updatedObjects[0].trackingDataList[0].progress).equals(50);
+    });
   });
 });
