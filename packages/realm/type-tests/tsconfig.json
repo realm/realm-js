@@ -1,21 +1,14 @@
 {
-  "extends": "../tsconfig.json",
+  "extends": "../tsconfig.public-types-check.json",
   "compilerOptions": {
-    "noEmit": true,
-    "noResolve": true,
     "esModuleInterop": true,
-    "lib": [
-      "ES2022",
-    ],
-    "baseUrl": ".",
     "paths": {
-      "realm": ["../../.."],
-      "next-realm": [".."],
+      "realm": [
+        "../dist/public-types"
+      ]
     }
   },
-  "exclude": [],
   "include": [
-    "../src/**/*.ts",
-    "type-tests.ts"
+    "*.ts"
   ]
 }
