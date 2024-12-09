@@ -20,6 +20,7 @@
 
 // This file checks that the Unmanaged type re-mappings work correctly for Realm types, especially when there are nested classes
 
+import * as BSON from "bson";
 import Realm from "realm";
 
 class RealmClassWithRequiredParams extends Realm.Object<
@@ -32,6 +33,7 @@ class RealmClassWithRequiredParams extends Realm.Object<
   | "aMandatoryDouble"
   | "aMandatoryDecimal128"
   | "aMandatoryObjectId"
+  | "aMandatoryData"
 > {
   public aMandatoryString!: Realm.Types.String;
   public anOptionalString?: Realm.Types.String;
@@ -41,6 +43,7 @@ class RealmClassWithRequiredParams extends Realm.Object<
   public aMandatoryDouble!: Realm.Types.Double;
   public aMandatoryDecimal128!: Realm.Types.Decimal128;
   public aMandatoryObjectId!: Realm.Types.ObjectId;
+  public aMandatoryData!: Realm.Types.Data;
 
   static schema: Realm.ObjectSchema = {
     name: "RealmClassWithRequiredParams",
@@ -53,6 +56,7 @@ class RealmClassWithRequiredParams extends Realm.Object<
       aMandatoryDouble: "double",
       aMandatoryDecimal128: "decimal128",
       aMandatoryObjectId: "objectId",
+      aMandatoryData: "data",
     },
   };
 
@@ -70,6 +74,7 @@ class RealmClassWithoutRequiredParams extends Realm.Object<RealmClassWithoutRequ
   public aMandatoryDouble!: Realm.Types.Double;
   public aMandatoryDecimal128!: Realm.Types.Decimal128;
   public aMandatoryObjectId!: Realm.Types.ObjectId;
+  public aMandatoryData!: Realm.Types.Data;
 
   static schema: Realm.ObjectSchema = {
     name: "RealmClassWithoutRequiredParams",
@@ -82,6 +87,7 @@ class RealmClassWithoutRequiredParams extends Realm.Object<RealmClassWithoutRequ
       aMandatoryDouble: "double",
       aMandatoryDecimal128: "decimal128",
       aMandatoryObjectId: "objectId",
+      aMandatoryData: "data",
     },
   };
 
@@ -113,8 +119,9 @@ realm.write(() => {
       aMandatoryInt: 1,
       aMandatoryFloat: 1.2,
       aMandatoryDouble: 1.3,
-      aMandatoryDecimal128: new Realm.BSON.Decimal128("123"),
-      aMandatoryObjectId: new Realm.Types.ObjectId(123),
+      aMandatoryDecimal128: new BSON.Decimal128("123"),
+      aMandatoryObjectId: new BSON.ObjectId(123),
+      aMandatoryData: new ArrayBuffer(123),
     }),
   );
 
@@ -132,8 +139,9 @@ realm.write(() => {
     aMandatoryInt: 1,
     aMandatoryFloat: 1.2,
     aMandatoryDouble: 1.3,
-    aMandatoryDecimal128: new Realm.BSON.Decimal128("123"),
-    aMandatoryObjectId: new Realm.Types.ObjectId(123),
+    aMandatoryDecimal128: new BSON.Decimal128("123"),
+    aMandatoryObjectId: new BSON.ObjectId(123),
+    aMandatoryData: new ArrayBuffer(123),
   });
 
   realm.create(RealmClassWithoutRequiredParams, {});
@@ -152,12 +160,14 @@ const realmObjectPropertiesOmitted2: Realm.Unmanaged<
   | "aMandatoryDouble"
   | "aMandatoryDecimal128"
   | "aMandatoryObjectId"
+  | "aMandatoryData"
 > = {
   aMandatoryString: "string",
   aMandatoryBool: true,
   aMandatoryInt: 1,
   aMandatoryFloat: 1.2,
   aMandatoryDouble: 1.3,
-  aMandatoryDecimal128: new Realm.BSON.Decimal128("123"),
-  aMandatoryObjectId: new Realm.Types.ObjectId(123),
+  aMandatoryDecimal128: new BSON.Decimal128("123"),
+  aMandatoryObjectId: new BSON.ObjectId(123),
+  aMandatoryData: new ArrayBuffer(123),
 };
