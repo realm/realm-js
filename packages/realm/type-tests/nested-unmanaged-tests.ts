@@ -35,6 +35,7 @@ class RealmClassWithRequiredParams extends Realm.Object<
   | "aMandatoryObjectId"
   | "aMandatoryData"
   | "aMandatoryDate"
+  | "aMandatoryMixed"
 > {
   public aMandatoryString!: Realm.Types.String;
   public anOptionalString?: Realm.Types.String;
@@ -46,6 +47,7 @@ class RealmClassWithRequiredParams extends Realm.Object<
   public aMandatoryObjectId!: Realm.Types.ObjectId;
   public aMandatoryData!: Realm.Types.Data;
   public aMandatoryDate!: Realm.Types.Date;
+  public aMandatoryMixed!: Realm.Types.Mixed;
 
   static schema: Realm.ObjectSchema = {
     name: "RealmClassWithRequiredParams",
@@ -60,6 +62,11 @@ class RealmClassWithRequiredParams extends Realm.Object<
       aMandatoryObjectId: "objectId",
       aMandatoryData: "data",
       aMandatoryDate: "date",
+      // TODO list
+      // TODO linkingObjects?
+      // TODO dictionary
+      // TODO set
+      aMandatoryMixed: "mixed",
     },
   };
 
@@ -79,6 +86,7 @@ class RealmClassWithoutRequiredParams extends Realm.Object<RealmClassWithoutRequ
   public aMandatoryObjectId!: Realm.Types.ObjectId;
   public aMandatoryData!: Realm.Types.Data;
   public aMandatoryDate!: Realm.Types.Date;
+  public aMandatoryMixed!: Realm.Types.Mixed;
 
   static schema: Realm.ObjectSchema = {
     name: "RealmClassWithoutRequiredParams",
@@ -93,6 +101,7 @@ class RealmClassWithoutRequiredParams extends Realm.Object<RealmClassWithoutRequ
       aMandatoryObjectId: "objectId",
       aMandatoryData: "data",
       aMandatoryDate: "date",
+      aMandatoryMixed: "mixed",
     },
   };
 
@@ -128,6 +137,7 @@ realm.write(() => {
       aMandatoryObjectId: new BSON.ObjectId(123),
       aMandatoryData: new ArrayBuffer(123),
       aMandatoryDate: new Date(),
+      aMandatoryMixed: "a",
     }),
   );
 
@@ -149,6 +159,7 @@ realm.write(() => {
     aMandatoryObjectId: new BSON.ObjectId(123),
     aMandatoryData: new ArrayBuffer(123),
     aMandatoryDate: new Date(),
+    aMandatoryMixed: 1,
   });
 
   realm.create(RealmClassWithoutRequiredParams, {});
@@ -169,6 +180,7 @@ const realmObjectPropertiesOmitted2: Realm.Unmanaged<
   | "aMandatoryObjectId"
   | "aMandatoryData"
   | "aMandatoryDate"
+  | "aMandatoryMixed"
 > = {
   aMandatoryString: "string",
   aMandatoryBool: true,
@@ -179,4 +191,5 @@ const realmObjectPropertiesOmitted2: Realm.Unmanaged<
   aMandatoryObjectId: new BSON.ObjectId(123),
   aMandatoryData: new ArrayBuffer(123),
   aMandatoryDate: new Date(),
+  aMandatoryMixed: true,
 };
