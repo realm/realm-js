@@ -24,16 +24,18 @@ import Realm from "realm";
 
 class RealmClassWithRequiredParams extends Realm.Object<
   RealmClassWithRequiredParams,
-  "aMandatoryString" | "anOptionalString"
+  "aMandatoryString" | "anOptionalString" | "aMandatoryBool"
 > {
   public aMandatoryString!: Realm.Types.String;
   public anOptionalString?: Realm.Types.String;
+  public aMandatoryBool!: Realm.Types.Bool;
 
   static schema: Realm.ObjectSchema = {
     name: "RealmClassWithRequiredParams",
     properties: {
       aMandatoryString: "string",
       anOptionalString: "string?",
+      aMandatoryBool: "bool",
     },
   };
 
@@ -45,12 +47,14 @@ class RealmClassWithRequiredParams extends Realm.Object<
 class RealmClassWithoutRequiredParams extends Realm.Object<RealmClassWithoutRequiredParams> {
   public aMandatoryString!: Realm.Types.String;
   public anOptionalString?: Realm.Types.String;
+  public aMandatoryBool!: Realm.Types.Bool;
 
   static schema: Realm.ObjectSchema = {
     name: "RealmClassWithoutRequiredParams",
     properties: {
       aMandatoryString: "string",
       anOptionalString: "string?",
+      aMandatoryBool: "bool",
     },
   };
 
@@ -78,6 +82,7 @@ realm.write(() => {
     new RealmClassWithRequiredParams(realm, {
       aMandatoryString: "string",
       // anOptionalString is a required param, but it's of type "string?" so doesn't need to be specified
+      aMandatoryBool: true,
     }),
   );
 
@@ -91,6 +96,7 @@ realm.write(() => {
   realm.create(RealmClassWithRequiredParams, {
     aMandatoryString: "string",
     // anOptionalString is a required param, but it's of type "string?" so doesn't need to be specified
+    aMandatoryBool: true,
   });
 
   realm.create(RealmClassWithoutRequiredParams, {});
@@ -101,7 +107,8 @@ const realmObjectPropertiesOmitted1: Realm.Unmanaged<RealmClassWithRequiredParam
 
 const realmObjectPropertiesOmitted2: Realm.Unmanaged<
   RealmClassWithRequiredParams,
-  "aMandatoryString" | "anOptionalString"
+  "aMandatoryString" | "anOptionalString" | "aMandatoryBool"
 > = {
   aMandatoryString: "string",
+  aMandatoryBool: true,
 };
