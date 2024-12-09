@@ -24,12 +24,13 @@ import Realm from "realm";
 
 class RealmClassWithRequiredParams extends Realm.Object<
   RealmClassWithRequiredParams,
-  "aMandatoryString" | "anOptionalString" | "aMandatoryBool" | "aMandatoryInt"
+  "aMandatoryString" | "anOptionalString" | "aMandatoryBool" | "aMandatoryInt" | "aMandatoryFloat"
 > {
   public aMandatoryString!: Realm.Types.String;
   public anOptionalString?: Realm.Types.String;
   public aMandatoryBool!: Realm.Types.Bool;
   public aMandatoryInt!: Realm.Types.Int;
+  public aMandatoryFloat!: Realm.Types.Float;
 
   static schema: Realm.ObjectSchema = {
     name: "RealmClassWithRequiredParams",
@@ -38,6 +39,7 @@ class RealmClassWithRequiredParams extends Realm.Object<
       anOptionalString: "string?",
       aMandatoryBool: "bool",
       aMandatoryInt: "int",
+      aMandatoryFloat: "float",
     },
   };
 
@@ -51,6 +53,7 @@ class RealmClassWithoutRequiredParams extends Realm.Object<RealmClassWithoutRequ
   public anOptionalString?: Realm.Types.String;
   public aMandatoryBool!: Realm.Types.Bool;
   public aMandatoryInt!: Realm.Types.Int;
+  public aMandatoryFloat!: Realm.Types.Float;
 
   static schema: Realm.ObjectSchema = {
     name: "RealmClassWithoutRequiredParams",
@@ -59,6 +62,7 @@ class RealmClassWithoutRequiredParams extends Realm.Object<RealmClassWithoutRequ
       anOptionalString: "string?",
       aMandatoryBool: "bool",
       aMandatoryInt: "int",
+      aMandatoryFloat: "float",
     },
   };
 
@@ -88,6 +92,7 @@ realm.write(() => {
       // anOptionalString is a required param, but it's of type "string?" so doesn't need to be specified
       aMandatoryBool: true,
       aMandatoryInt: 1,
+      aMandatoryFloat: 1.2,
     }),
   );
 
@@ -103,6 +108,7 @@ realm.write(() => {
     // anOptionalString is a required param, but it's of type "string?" so doesn't need to be specified
     aMandatoryBool: true,
     aMandatoryInt: 1,
+    aMandatoryFloat: 1.2,
   });
 
   realm.create(RealmClassWithoutRequiredParams, {});
@@ -113,9 +119,10 @@ const realmObjectPropertiesOmitted1: Realm.Unmanaged<RealmClassWithRequiredParam
 
 const realmObjectPropertiesOmitted2: Realm.Unmanaged<
   RealmClassWithRequiredParams,
-  "aMandatoryString" | "anOptionalString" | "aMandatoryBool" | "aMandatoryInt"
+  "aMandatoryString" | "anOptionalString" | "aMandatoryBool" | "aMandatoryInt" | "aMandatoryFloat",
 > = {
   aMandatoryString: "string",
   aMandatoryBool: true,
   aMandatoryInt: 1,
+  aMandatoryFloat: 1.2,
 };
