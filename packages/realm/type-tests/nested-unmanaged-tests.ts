@@ -24,7 +24,13 @@ import Realm from "realm";
 
 class RealmClassWithRequiredParams extends Realm.Object<
   RealmClassWithRequiredParams,
-  "aMandatoryString" | "anOptionalString" | "aMandatoryBool" | "aMandatoryInt" | "aMandatoryFloat" | "aMandatoryDouble"
+  | "aMandatoryString"
+  | "anOptionalString"
+  | "aMandatoryBool"
+  | "aMandatoryInt"
+  | "aMandatoryFloat"
+  | "aMandatoryDouble"
+  | "aMandatoryDecimal128"
 > {
   public aMandatoryString!: Realm.Types.String;
   public anOptionalString?: Realm.Types.String;
@@ -32,6 +38,7 @@ class RealmClassWithRequiredParams extends Realm.Object<
   public aMandatoryInt!: Realm.Types.Int;
   public aMandatoryFloat!: Realm.Types.Float;
   public aMandatoryDouble!: Realm.Types.Double;
+  public aMandatoryDecimal128!: Realm.Types.Decimal128;
 
   static schema: Realm.ObjectSchema = {
     name: "RealmClassWithRequiredParams",
@@ -42,6 +49,7 @@ class RealmClassWithRequiredParams extends Realm.Object<
       aMandatoryInt: "int",
       aMandatoryFloat: "float",
       aMandatoryDouble: "double",
+      aMandatoryDecimal128: "decimal128",
     },
   };
 
@@ -57,6 +65,7 @@ class RealmClassWithoutRequiredParams extends Realm.Object<RealmClassWithoutRequ
   public aMandatoryInt!: Realm.Types.Int;
   public aMandatoryFloat!: Realm.Types.Float;
   public aMandatoryDouble!: Realm.Types.Double;
+  public aMandatoryDecimal128!: Realm.Types.Decimal128;
 
   static schema: Realm.ObjectSchema = {
     name: "RealmClassWithoutRequiredParams",
@@ -67,6 +76,7 @@ class RealmClassWithoutRequiredParams extends Realm.Object<RealmClassWithoutRequ
       aMandatoryInt: "int",
       aMandatoryFloat: "float",
       aMandatoryDouble: "double",
+      aMandatoryDecimal128: "decimal128",
     },
   };
 
@@ -98,6 +108,7 @@ realm.write(() => {
       aMandatoryInt: 1,
       aMandatoryFloat: 1.2,
       aMandatoryDouble: 1.3,
+      aMandatoryDecimal128: new Realm.BSON.Decimal128("123"),
     }),
   );
 
@@ -115,6 +126,7 @@ realm.write(() => {
     aMandatoryInt: 1,
     aMandatoryFloat: 1.2,
     aMandatoryDouble: 1.3,
+    aMandatoryDecimal128: new Realm.BSON.Decimal128("123"),
   });
 
   realm.create(RealmClassWithoutRequiredParams, {});
@@ -125,11 +137,18 @@ const realmObjectPropertiesOmitted1: Realm.Unmanaged<RealmClassWithRequiredParam
 
 const realmObjectPropertiesOmitted2: Realm.Unmanaged<
   RealmClassWithRequiredParams,
-  "aMandatoryString" | "anOptionalString" | "aMandatoryBool" | "aMandatoryInt" | "aMandatoryFloat" | "aMandatoryDouble"
+  | "aMandatoryString"
+  | "anOptionalString"
+  | "aMandatoryBool"
+  | "aMandatoryInt"
+  | "aMandatoryFloat"
+  | "aMandatoryDouble"
+  | "aMandatoryDecimal128"
 > = {
   aMandatoryString: "string",
   aMandatoryBool: true,
   aMandatoryInt: 1,
   aMandatoryFloat: 1.2,
   aMandatoryDouble: 1.3,
+  aMandatoryDecimal128: new Realm.BSON.Decimal128("123"),
 };
