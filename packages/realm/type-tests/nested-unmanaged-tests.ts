@@ -34,6 +34,7 @@ class RealmClassWithRequiredParams extends Realm.Object<
   | "aMandatoryDecimal128"
   | "aMandatoryObjectId"
   | "aMandatoryData"
+  | "aMandatoryDate"
 > {
   public aMandatoryString!: Realm.Types.String;
   public anOptionalString?: Realm.Types.String;
@@ -44,6 +45,7 @@ class RealmClassWithRequiredParams extends Realm.Object<
   public aMandatoryDecimal128!: Realm.Types.Decimal128;
   public aMandatoryObjectId!: Realm.Types.ObjectId;
   public aMandatoryData!: Realm.Types.Data;
+  public aMandatoryDate!: Realm.Types.Date;
 
   static schema: Realm.ObjectSchema = {
     name: "RealmClassWithRequiredParams",
@@ -57,6 +59,7 @@ class RealmClassWithRequiredParams extends Realm.Object<
       aMandatoryDecimal128: "decimal128",
       aMandatoryObjectId: "objectId",
       aMandatoryData: "data",
+      aMandatoryDate: "date",
     },
   };
 
@@ -75,6 +78,7 @@ class RealmClassWithoutRequiredParams extends Realm.Object<RealmClassWithoutRequ
   public aMandatoryDecimal128!: Realm.Types.Decimal128;
   public aMandatoryObjectId!: Realm.Types.ObjectId;
   public aMandatoryData!: Realm.Types.Data;
+  public aMandatoryDate!: Realm.Types.Date;
 
   static schema: Realm.ObjectSchema = {
     name: "RealmClassWithoutRequiredParams",
@@ -88,6 +92,7 @@ class RealmClassWithoutRequiredParams extends Realm.Object<RealmClassWithoutRequ
       aMandatoryDecimal128: "decimal128",
       aMandatoryObjectId: "objectId",
       aMandatoryData: "data",
+      aMandatoryDate: "date",
     },
   };
 
@@ -122,6 +127,7 @@ realm.write(() => {
       aMandatoryDecimal128: new BSON.Decimal128("123"),
       aMandatoryObjectId: new BSON.ObjectId(123),
       aMandatoryData: new ArrayBuffer(123),
+      aMandatoryDate: new Date(),
     }),
   );
 
@@ -142,6 +148,7 @@ realm.write(() => {
     aMandatoryDecimal128: new BSON.Decimal128("123"),
     aMandatoryObjectId: new BSON.ObjectId(123),
     aMandatoryData: new ArrayBuffer(123),
+    aMandatoryDate: new Date(),
   });
 
   realm.create(RealmClassWithoutRequiredParams, {});
@@ -161,6 +168,7 @@ const realmObjectPropertiesOmitted2: Realm.Unmanaged<
   | "aMandatoryDecimal128"
   | "aMandatoryObjectId"
   | "aMandatoryData"
+  | "aMandatoryDate"
 > = {
   aMandatoryString: "string",
   aMandatoryBool: true,
@@ -170,4 +178,5 @@ const realmObjectPropertiesOmitted2: Realm.Unmanaged<
   aMandatoryDecimal128: new BSON.Decimal128("123"),
   aMandatoryObjectId: new BSON.ObjectId(123),
   aMandatoryData: new ArrayBuffer(123),
+  aMandatoryDate: new Date(),
 };
