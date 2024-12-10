@@ -23,6 +23,53 @@
 import * as BSON from "bson";
 import Realm from "realm";
 
+// Simple Unmanaged remapping tests
+type MyObj = {
+  stringProp1: Realm.Types.String;
+  stringProp2: Realm.Types.String;
+  nullableStringProp1: Realm.Types.String | null;
+  nullableStringProp2: Realm.Types.String | null;
+  stringOrUndefined1?: Realm.Types.String;
+  stringOrUndefined2?: Realm.Types.String;
+
+  listStringProp1: Realm.Types.List<Realm.Types.String>;
+  listStringProp2: Realm.Types.List<Realm.Types.String>;
+  listStringProp3: Realm.Types.List<Realm.Types.String>;
+  nullableListStringProp1: Realm.Types.List<Realm.Types.String> | null;
+  nullableListStringProp2: Realm.Types.List<Realm.Types.String> | null;
+  nullableListStringProp3: Realm.Types.List<Realm.Types.String> | null;
+  listStringOrUndefinedProp1?: Realm.Types.List<Realm.Types.String>;
+  listStringOrUndefinedProp2?: Realm.Types.List<Realm.Types.String>;
+  listStringOrUndefinedProp3?: Realm.Types.List<Realm.Types.String>;
+};
+const test: Realm.Unmanaged<MyObj> = {
+  stringProp1: "test",
+  // @ts-expect-error - Expected: invalid
+  stringProp2: null,
+  nullableStringProp1: null,
+  nullableStringProp2: "blah",
+  stringOrUndefined1: undefined,
+  stringOrUndefined2: "sad",
+
+  someExtraPropertyNotSpecifiedOnMyObj: "string",
+
+  listStringProp1: ["test"],
+  // @ts-expect-error - Expected: invalid
+  listStringProp2: [1],
+  // @ts-expect-error - Expected: invalid
+  listStringProp3: null,
+  nullableListStringProp1: null,
+  nullableListStringProp2: ["test"],
+  // @ts-expect-error - Expected: invalid
+  nullableListStringProp3: [1],
+  listStringOrUndefinedProp1: undefined,
+  listStringOrUndefinedProp2: ["test"],
+  // @ts-expect-error - Expected: invalid
+  listStringOrUndefinedProp3: [1],
+};
+test;
+
+// Extended functionality tests (ensure RequiredProperties work)
 class RealmClassWithRequiredParams extends Realm.Object<
   RealmClassWithRequiredParams,
   | "aMandatoryString"
@@ -120,9 +167,11 @@ const realm = new Realm({ schema: [RealmClassWithRequiredParams, RealmClassWitho
 // @ts-expect-error - a String shouldn't be accepted as 'values'
 new RealmClassWithRequiredParams(realm, "this shouldn't be accepted");
 
-// FIXME - this doesn't error and it should
-// @xxxts-expect-error - a String shouldn't be accepted as 'values'
+// TODO - this doesn't error and it should
+// should-be-@ts-expect-error - a String shouldn't be accepted as 'values'
 new RealmClassWithoutRequiredParams(realm, "this shouldn't be accepted");
+
+// Realm.create() tests
 
 realm.write(() => {
   // === Realm.Object classes ===
@@ -150,8 +199,8 @@ realm.write(() => {
   realm.create(RealmClassWithoutRequiredParams, new RealmClassWithoutRequiredParams(realm, {}));
 
   // === Unmanaged objects ===
-  // FIXME - Should this be erroring? The class has required types so shouldn't they be automatically required in the Unmanaged version too? Is this possible
-  // @xxxts-expect-error - Empty object not allowed due to being required params
+  // TODO - Should this be erroring? The class has required types so shouldn't they be automatically required in the Unmanaged version too? Is this possible
+  // should-be-@ts-expect-error - Empty object not allowed due to being required params
   realm.create(RealmClassWithRequiredParams, {});
 
   realm.create(RealmClassWithRequiredParams, {
