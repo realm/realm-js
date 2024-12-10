@@ -36,6 +36,7 @@ class RealmClassWithRequiredParams extends Realm.Object<
   | "aMandatoryData"
   | "aMandatoryDate"
   | "aMandatoryMixed"
+  | "aMandatoryUuid"
 > {
   public aMandatoryString!: Realm.Types.String;
   public anOptionalString?: Realm.Types.String;
@@ -48,6 +49,7 @@ class RealmClassWithRequiredParams extends Realm.Object<
   public aMandatoryData!: Realm.Types.Data;
   public aMandatoryDate!: Realm.Types.Date;
   public aMandatoryMixed!: Realm.Types.Mixed;
+  public aMandatoryUuid!: Realm.Types.UUID;
 
   static schema: Realm.ObjectSchema = {
     name: "RealmClassWithRequiredParams",
@@ -67,6 +69,7 @@ class RealmClassWithRequiredParams extends Realm.Object<
       // TODO dictionary
       // TODO set
       aMandatoryMixed: "mixed",
+      aMandatoryUuid: "uuid",
     },
   };
 
@@ -87,6 +90,7 @@ class RealmClassWithoutRequiredParams extends Realm.Object<RealmClassWithoutRequ
   public aMandatoryData!: Realm.Types.Data;
   public aMandatoryDate!: Realm.Types.Date;
   public aMandatoryMixed!: Realm.Types.Mixed;
+  public aMandatoryUuid!: Realm.Types.UUID;
 
   static schema: Realm.ObjectSchema = {
     name: "RealmClassWithoutRequiredParams",
@@ -102,6 +106,7 @@ class RealmClassWithoutRequiredParams extends Realm.Object<RealmClassWithoutRequ
       aMandatoryData: "data",
       aMandatoryDate: "date",
       aMandatoryMixed: "mixed",
+      aMandatoryUuid: "uuid",
     },
   };
 
@@ -138,6 +143,7 @@ realm.write(() => {
       aMandatoryData: new ArrayBuffer(123),
       aMandatoryDate: new Date(),
       aMandatoryMixed: "a",
+      aMandatoryUuid: new BSON.UUID(),
     }),
   );
 
@@ -160,6 +166,7 @@ realm.write(() => {
     aMandatoryData: new ArrayBuffer(123),
     aMandatoryDate: new Date(),
     aMandatoryMixed: 1,
+    aMandatoryUuid: new BSON.UUID(),
   });
 
   realm.create(RealmClassWithoutRequiredParams, {});
@@ -181,6 +188,7 @@ const realmObjectPropertiesOmitted2: Realm.Unmanaged<
   | "aMandatoryData"
   | "aMandatoryDate"
   | "aMandatoryMixed"
+  | "aMandatoryUuid"
 > = {
   aMandatoryString: "string",
   aMandatoryBool: true,
@@ -192,4 +200,5 @@ const realmObjectPropertiesOmitted2: Realm.Unmanaged<
   aMandatoryData: new ArrayBuffer(123),
   aMandatoryDate: new Date(),
   aMandatoryMixed: true,
+  aMandatoryUuid: new BSON.UUID(),
 };
