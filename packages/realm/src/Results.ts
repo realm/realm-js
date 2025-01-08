@@ -92,8 +92,8 @@ export class Results<T = unknown> extends OrderedCollection<
     throw new Error("Modifying a Results collection is not supported.");
   }
 
-  get length(): number {
-    return this.internal.size();
+  get length() {
+    return this.internal ? this.internal.size() : 0;
   }
 
   set length(value: number) {
