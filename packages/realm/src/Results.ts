@@ -93,7 +93,7 @@ export class Results<T = unknown> extends OrderedCollection<
   }
 
   get length() {
-    return this.internal ? this.internal.size() : 0;
+    return this.internal?.size() ?? 0;
   }
 
   set length(value: number) {
