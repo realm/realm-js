@@ -7,8 +7,8 @@
 * None
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None
+* Closing and opening a realm before a token refresh is completed, would result in two sync sessions both try to start synchronizing the realm when the refreshes do complete, leading to a crash with a MultipleSyncAgents exception. ([realm/realm-core#8064](https://github.com/realm/realm-core/issues/8064))
+* Migrating primary key to a new type without migration function would cause an assertion to fail. ([realm/realm-core#8045](https://github.com/realm/realm-core/issues/8045), since Realm JS v10.0.0)
 
 ### Compatibility
 * React Native >= v0.71.4
@@ -16,9 +16,7 @@
 * File format: generates Realms with format v24 (reads and upgrades file format v10).
 
 ### Internal
-<!-- * Either mention core version or upgrade -->
-<!-- * Using Realm Core vX.Y.Z -->
-<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
+* Upgraded Realm Core from v14.13.1 to v14.13.4.
 
 ## 12.14.0 (2024-11-12)
 
