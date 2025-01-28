@@ -1,6 +1,6 @@
 {
   "name": "realm",
-  "version": "12.14.0",
+  "version": "12.14.0-pvt",
   "description": "Realm by MongoDB is an offline-first mobile database: an alternative to SQLite and key-value stores",
   "license": "apache-2.0",
   "homepage": "https://www.mongodb.com/docs/realm/",
@@ -31,7 +31,7 @@
     "url": "https://www.mongodb.com/docs/realm/"
   },
   "config": {
-    "anonymizedBundleId": "tkgif/+3l1e9wStGJp2TOngAK3UcQ2u7OM8ZYJU5JYo="
+    "anonymizedBundleId": "+fi/ZH3IUn12Du2GbPodQAzpLgOy+bdAngTfTcDT+Fg="
   },
   "types": "./dist/public-types/index.d.ts",
   "main": "./dist/platform/node/index.js",
