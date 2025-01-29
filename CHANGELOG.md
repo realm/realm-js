@@ -1,10 +1,4 @@
-## vNext (TBD)
-
-### Deprecations
-* None
-
-### Enhancements
-* None
+## 12.14.1 (2025-01-28)
 
 ### Fixed
 * Closing and opening a realm before a token refresh is completed, would result in two sync sessions both try to start synchronizing the realm when the refreshes do complete, leading to a crash with a MultipleSyncAgents exception. ([realm/realm-core#8064](https://github.com/realm/realm-core/issues/8064))
