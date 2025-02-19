@@ -634,6 +634,45 @@ describe("Realm.Object", () => {
         expect(persons.length).equals(1);
       });
 
+      describe("with collection", () => {
+        it("can be created, fetched, updated and refetched without affecting collection", function (this: Mocha.Context &
+          RealmContext) {
+          const _id = new Realm.BSON.ObjectId();
+
+          const friend = {
+            age: 18,
+            name: "Friend's Name",
+            _id: new Realm.BSON.ObjectId(),
+          };
+
+          this.realm.write(() => {
+            this.realm.create(
+              PersonWithId,
+              {
+                _id,
+                name: "John Doe",
+                age: 42,
+                friends: [friend],
+              },
+              UpdateMode.All,
+            );
+          });
+
+          const john = this.realm.objectForPrimaryKey(PersonWithId, _id);
+          if (!john) throw new Error("Object not found");
+
+          this.realm.write(() => {
+            this.realm.create(PersonWithId, john, UpdateMode.All);
+          });
+
+          const johnAfterUpdate = this.realm.objectForPrimaryKey(PersonWithId, _id);
+          if (!johnAfterUpdate) throw new Error("Object not found");
+
+          expect(john.friends.length).equals(1);
+          expect(johnAfterUpdate.friends.length).equals(1);
+        });
+      });
+
       describe("applying 'UpdateMode' recursively", () => {
         let aliceId: Realm.BSON.ObjectId;
         let bobId: Realm.BSON.ObjectId;
