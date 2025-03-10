@@ -87,11 +87,12 @@ export function createArrayPropertyAccessor({
         assert.inTransaction(realm);
         assert.iterable(values);
 
+        const valuesCopiedRef = Array.from(values);
         const internal = binding.List.make(realm.internal, obj, columnKey);
         internal.removeAll();
         let index = 0;
         try {
-          for (const value of values) {
+          for (const value of valuesCopiedRef) {
             listAccessor.insert(internal, index++, value);
           }
         } catch (err) {
