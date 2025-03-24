@@ -638,22 +638,18 @@ describe("Realm.Object", () => {
         it("can be created, fetched, updated and refetched without affecting collection", function (this: Mocha.Context &
           RealmContext) {
           const john = this.realm.write(() =>
-            this.realm.create(
-              PersonWithId,
-              {
-                _id: new Realm.BSON.ObjectId(),
-                name: "John Doe",
-                age: 42,
-                friends: [
-                  {
-                    age: 18,
-                    name: "Friend's Name",
-                    _id: new Realm.BSON.ObjectId(),
-                  },
-                ],
-              },
-              UpdateMode.All,
-            ),
+            this.realm.create(PersonWithId, {
+              _id: new Realm.BSON.ObjectId(),
+              name: "John Doe",
+              age: 42,
+              friends: [
+                {
+                  _id: new Realm.BSON.ObjectId(),
+                  name: "Friend's Name",
+                  age: 18,
+                },
+              ],
+            }),
           );
 
           // Update john from itself
