@@ -39,7 +39,7 @@ type StartContainerOptions =
 export async function startContainer(options: StartContainerOptions) {
   const url = new URL("startContainer", BAASAAS_BASE_URL);
   if ("githash" in options) {
-    url.searchParams.append("branch", options.githash);
+    url.searchParams.append("githash", options.githash);
   } else if ("branch" in options) {
     url.searchParams.append("branch", options.branch);
   }
