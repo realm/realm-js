@@ -38,6 +38,8 @@ env:
   MOCHA_REMOTE_EXIT_ON_ERROR: true
   # Git branch of the BaaS repo to use when testing
   BAAS_BRANCH: master
+  # TODO: Remove this once BaaS is fixed
+  BAAS_GITHASH: 17043576a561db29447777800e48759a10318146
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -468,6 +470,7 @@ jobs:
         uses: ./.github/actions/baas-test-server
         with:
           branch: ${{ env.BAAS_BRANCH }}
+          githash: ${{ env.BAAS_GITHASH }}
         env:
           BAASAAS_KEY: ${{ secrets.BAASAAS_KEY }}
 
@@ -575,6 +578,7 @@ jobs:
         uses: ./.github/actions/baas-test-server
         with:
           branch: ${{ env.BAAS_BRANCH }}
+          githash: ${{ env.BAAS_GITHASH }}
         env:
           BAASAAS_KEY: ${{ secrets.BAASAAS_KEY }}
 
@@ -690,6 +694,7 @@ jobs:
         uses: ./.github/actions/baas-test-server
         with:
           branch: ${{ env.BAAS_BRANCH }}
+          githash: ${{ env.BAAS_GITHASH }}
         env:
           BAASAAS_KEY: ${{ secrets.BAASAAS_KEY }}
 
