@@ -7,8 +7,7 @@
 * None
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None
+* Fix setting `List` values from themselves (either through assignment or the `Realm#create` method). Before this fix, the list would be emptied before being iterated, resulting in elements being removed from the list. ([#6977](https://github.com/realm/realm-js/pull/6977), since v12.12.0)
 
 ### Compatibility
 * React Native >= v0.71.4
