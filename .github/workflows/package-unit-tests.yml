@@ -8,6 +8,17 @@ env:
   BAAS_GITHASH: 17043576a561db29447777800e48759a10318146
 
 on:
+  push:
+    # The workflow will run only when both `branches` and `paths-ignore` are satisfied.
+    branches:
+      - main
+    paths:
+      # Source code
+      - "packages/**"
+      # No need to run when updating documentation
+      - "!**.md"
+      # Run this on updates to the workflow
+      - ".github/workflows/package-unit-tests.yml"
   pull_request:
     paths:
       # Source code
