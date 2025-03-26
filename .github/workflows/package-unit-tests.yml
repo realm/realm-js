@@ -4,6 +4,8 @@ env:
   REALM_DISABLE_ANALYTICS: 1
   MOCHA_REMOTE_TIMEOUT: 10000
   BAAS_BRANCH: master
+  # TODO: Remove this once BaaS is fixed
+  BAAS_GITHASH: 17043576a561db29447777800e48759a10318146
 
 on:
   pull_request:
@@ -59,6 +61,7 @@ jobs:
         uses: ./.github/actions/baas-test-server
         with:
           branch: ${{ env.BAAS_BRANCH }}
+          githash: ${{ env.BAAS_GITHASH }}
         env:
           BAASAAS_KEY: ${{ secrets.BAASAAS_KEY }}
 
