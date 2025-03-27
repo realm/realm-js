@@ -634,6 +634,32 @@ describe("Realm.Object", () => {
         expect(persons.length).equals(1);
       });
 
+      describe("with collection", () => {
+        it("can be created, fetched, updated and refetched without affecting collection", function (this: Mocha.Context &
+          RealmContext) {
+          const john = this.realm.write(() =>
+            this.realm.create(PersonWithId, {
+              _id: new Realm.BSON.ObjectId(),
+              name: "John Doe",
+              age: 42,
+              friends: [
+                {
+                  _id: new Realm.BSON.ObjectId(),
+                  name: "Friend's Name",
+                  age: 18,
+                },
+              ],
+            }),
+          );
+
+          // Update john from itself
+          const johnAfterUpdate = this.realm.write(() => this.realm.create(PersonWithId, john, UpdateMode.All));
+
+          expect(john.friends.length).equals(1);
+          expect(johnAfterUpdate.friends.length).equals(1);
+        });
+      });
+
       describe("applying 'UpdateMode' recursively", () => {
         let aliceId: Realm.BSON.ObjectId;
         let bobId: Realm.BSON.ObjectId;
