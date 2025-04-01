@@ -1,5 +1,15 @@
 name: Test Coverage
 on:
+  push:
+    # The workflow will run only when both `branches` and `paths-ignore` are satisfied.
+    branches:
+      - main
+    paths:
+      # Trigger only when files affecting coverage has changed
+      - "**.ts"
+      - "**.js"
+      # Or the workflow itself
+      - ".github/workflows/pr-coverage.yml"
   pull_request:
     paths:
       # Trigger only when files affecting coverage has changed
