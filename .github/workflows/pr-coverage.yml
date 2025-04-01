@@ -17,6 +17,8 @@ env:
   MOCHA_TIMEOUT: 60000 # 1 minute
   LONG_TIMEOUT: 300000 # 5 minutes
   BAAS_BRANCH: master
+  # TODO: Remove this once BaaS is fixed
+  BAAS_GITHASH: 17043576a561db29447777800e48759a10318146
 
 jobs:
   run:
@@ -55,6 +57,7 @@ jobs:
         uses: ./.github/actions/baas-test-server
         with:
           branch: ${{ env.BAAS_BRANCH }}
+          githash: ${{ env.BAAS_GITHASH }}
         env:
           BAASAAS_KEY: ${{ secrets.BAASAAS_KEY }}
 
