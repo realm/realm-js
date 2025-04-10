@@ -1,10 +1,4 @@
-## vNext (TBD)
-
-### Deprecations
-* None
-
-### Enhancements
-* None
+## 12.14.2 (2025-04-09)
 
 ### Fixed
 * Fix setting `List` values from themselves (either through assignment or the `Realm#create` method). Before this fix, the list would be emptied before being iterated, resulting in elements being removed from the list. ([#6977](https://github.com/realm/realm-js/pull/6977), since v12.12.0)
