@@ -26,6 +26,7 @@ import { Realm } from "../../Realm";
 import { binding } from "../binding";
 
 // Clear the internal state to prevent crashes when reloading the app
+binding.App.closeAllSyncSessions();
 binding.RealmCoordinator.clearAllCaches();
 binding.App.clearCachedApps();
 
