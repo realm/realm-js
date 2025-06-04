@@ -39,7 +39,7 @@
     "puppeteer": "^22.4.1",
     "realm-web": "*",
     "webpack": "^5.91.0",
-    "webpack-dev-server": "^5.0.4"
+    "webpack-dev-server": "^5.2.2"
   },
   "peerDependencies": {
     "mocha-remote-client": "^1.12.3"
