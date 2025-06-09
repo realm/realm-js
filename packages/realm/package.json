@@ -73,7 +73,7 @@
   ],
   "scripts": {
     "test": "wireit",
-    "test:types": "tsc --project type-tests/tsconfig.json",
+    "test:types": "wireit",
     "lint": "eslint --ext .js,.mjs,.ts .",
     "prebuild": "tsx ./src/scripts/build/cli.ts",
     "prebuild-apple": "wireit",
@@ -101,6 +101,12 @@
       "env": {
         "TSX_TSCONFIG_PATH": "tsconfig.tests.json"
       }
+    },
+    "test:types": {
+      "command": "tsc --project type-tests/tsconfig.json",
+      "dependencies": [
+        "build:ts"
+      ]
     },
     "prebuild-apple": {
       "command": "tsx ./src/scripts/build/cli.ts build-apple",
