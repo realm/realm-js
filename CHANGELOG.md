@@ -4,7 +4,7 @@
 * None
 
 ### Enhancements
-* None
+* 16KB page size support for Android 15+ ([#7019](https://github.com/realm/realm-js/pull/7019)).
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
