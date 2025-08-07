@@ -76,6 +76,14 @@ export const xcode = {
   get env() {
     return { ...env, DEVELOPER_DIR: this.developerDir, SDKROOT: undefined };
   },
+  get version() {
+    const output = execSync("xcodebuild -version", { encoding: "utf8", env: this.env }).trim();
+    const xcodeVersionMatch = output.match(/Xcode ([^\s]+)/);
+    if (!xcodeVersionMatch) {
+      throw new Error("Failed to parse Xcode version from output: " + output);
+    }
+    return xcodeVersionMatch[1];
+  },
   archive({ cwd, scheme, targets = [], configuration, sdkName, destinations = [], archivePath }: XcodeArchiveOptions) {
     const { status } = spawnSync(
       "xcodebuild",
