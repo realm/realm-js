@@ -18,11 +18,12 @@
 
 #include <jni.h>
 #include <fbjni/fbjni.h>
-#include <ReactCommon/CallInvokerHolder.h>
+#include <ReactCommon/CxxTurboModuleUtils.h>
 #include <android/log.h>
 #include <android/asset_manager_jni.h>
 #include <jsi/jsi.h>
 
+#include "CxxRealmModule.hpp"
 #include "jsi_init.h"
 #include "react_scheduler.h"
 #include "platform.hpp"
@@ -54,6 +55,11 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void*)
     // when issued from the sync client thread
     ssl_helper_class = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("io/realm/react/util/SSLHelper")));
 
+    facebook::react::registerCxxModuleToGlobalModuleMap(
+        realm::js::CxxRealmModule::kModuleName, [](std::shared_ptr<facebook::react::CallInvoker> jsInvoker) {
+            return std::make_shared<realm::js::CxxRealmModule>(jsInvoker);
+        });
+
     return JNI_VERSION_1_6;
 }
 
@@ -69,6 +75,7 @@ JNIEXPORT void JNI_OnUnload(JavaVM* vm, void*)
     }
 }
 
+/*
 extern "C" JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_injectModuleIntoJSGlobal(JNIEnv* env,
                                                                                                 jobject thiz,
                                                                                                 jlong runtime_pointer)
@@ -108,6 +115,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_setDefaul
                         realm::JsPlatformHelpers::default_realm_file_directory().c_str());
 }
 
+
 extern "C" JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_createScheduler(JNIEnv* env, jobject thiz,
                                                                                        jobject call_invoker)
 {
@@ -144,6 +152,8 @@ extern "C" JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_createSch
     realm::js::react_scheduler::create_scheduler(nativePointer->getCallInvoker());
 }
 
+// TODO: Call this in the destructor of the turbo module
+
 extern "C" JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_invalidateCaches(JNIEnv* env, jobject thiz)
 {
     __android_log_print(ANDROID_LOG_VERBOSE, "Realm", "Resetting scheduler");
@@ -156,4 +166,28 @@ extern "C" JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_invalidat
     realm_jsi_close_sync_sessions();
 #endif
     realm_jsi_invalidate_caches();
+}
+*/
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_io_realm_react_RealmReactPackage_setDefaultRealmFileDirectoryImpl(JNIEnv *env, jobject thiz,
+                                                                       jstring file_dir,
+                                                                       jobject asset_manager) {
+    __android_log_print(ANDROID_LOG_VERBOSE, "Realm", "setDefaultRealmFileDirectory");
+
+    // Get the assetManager in case we want to copy files from the APK (assets)
+    AAssetManager* assetManager = AAssetManager_fromJava(env, asset_manager);
+    if (assetManager == NULL) {
+        __android_log_print(ANDROID_LOG_ERROR, "Realm", "Error loading the AssetManager");
+    }
+    realm::set_asset_manager(assetManager);
+
+    // Setting the internal storage path for the application
+    const char* file_dir_utf = env->GetStringUTFChars(file_dir, NULL);
+    realm::JsPlatformHelpers::set_default_realm_file_directory(file_dir_utf);
+    env->ReleaseStringUTFChars(file_dir, file_dir_utf);
+
+    __android_log_print(ANDROID_LOG_DEBUG, "Realm", "Absolute path: %s",
+                        realm::JsPlatformHelpers::default_realm_file_directory().c_str());
 }
