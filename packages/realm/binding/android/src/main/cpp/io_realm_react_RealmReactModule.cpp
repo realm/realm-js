@@ -108,40 +108,57 @@ extern "C" JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_setDefaul
                         realm::JsPlatformHelpers::default_realm_file_directory().c_str());
 }
 
-extern "C" JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_createScheduler(JNIEnv* env, jobject thiz,
-                                                                                       jobject call_invoker)
-{
-    // React Native uses the fbjni library for handling JNI, which has the concept of "hybrid objects",
-    // which are Java objects containing a pointer to a C++ object. The CallInvokerHolder, which has the
-    // invokeAsync method we want access to, is one such hybrid object.
-    // Rather than reworking our code to use fbjni throughout, this code unpacks the C++ object from the Java
-    // object `callInvokerHolderJavaObj` manually, based on reverse engineering the fbjni code.
+//! extern "C" JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_createScheduler(JNIEnv* env, jobject thiz,
+//!                                                                                        jobject call_invoker)
+//! {
+//!     // React Native uses the fbjni library for handling JNI, which has the concept of "hybrid objects",
+//!     // which are Java objects containing a pointer to a C++ object. The CallInvokerHolder, which has the
+//!     // invokeAsync method we want access to, is one such hybrid object.
+//!     // Rather than reworking our code to use fbjni throughout, this code unpacks the C++ object from the Java
+//!     // object `callInvokerHolderJavaObj` manually, based on reverse engineering the fbjni code.
 
-    // 1. Get the Java object referred to by the mHybridData field of the Java holder object
-    auto callInvokerHolderClass = env->FindClass("com/facebook/react/turbomodule/core/CallInvokerHolderImpl");
-    if (!env->IsInstanceOf(call_invoker, callInvokerHolderClass)) {
-        throw std::invalid_argument("Expected call_invoker to be CallInvokerHolderImpl");
-    }
-    auto hybridDataField = env->GetFieldID(callInvokerHolderClass, "mHybridData", "Lcom/facebook/jni/HybridData;");
-    auto hybridDataObj = env->GetObjectField(call_invoker, hybridDataField);
+//!     // 1. Get the Java object referred to by the mHybridData field of the Java holder object
+//!     auto callInvokerHolderClass = env->FindClass("com/facebook/react/turbomodule/core/CallInvokerHolderImpl");
+//!     if (!env->IsInstanceOf(call_invoker, callInvokerHolderClass)) {
+//!         throw std::invalid_argument("Expected call_invoker to be CallInvokerHolderImpl");
+//!     }
+//!     auto hybridDataField = env->GetFieldID(callInvokerHolderClass, "mHybridData", "Lcom/facebook/jni/HybridData;");
+//!     auto hybridDataObj = env->GetObjectField(call_invoker, hybridDataField);
 
-    // 2. Get the destructor Java object referred to by the mDestructor field from the myHybridData Java object
-    auto hybridDataClass = env->FindClass("com/facebook/jni/HybridData");
-    auto destructorField =
-        env->GetFieldID(hybridDataClass, "mDestructor", "Lcom/facebook/jni/HybridData$Destructor;");
-    auto destructorObj = env->GetObjectField(hybridDataObj, destructorField);
+//!     // 2. Get the destructor Java object referred to by the mDestructor field from the myHybridData Java object
+//!     auto hybridDataClass = env->FindClass("com/facebook/jni/HybridData");
+//!     auto destructorField =
+//!         env->GetFieldID(hybridDataClass, "mDestructor", "Lcom/facebook/jni/HybridData$Destructor;");
+//!     auto destructorObj = env->GetObjectField(hybridDataObj, destructorField);
 
-    // 3. Get the mNativePointer field from the mDestructor Java object
-    auto destructorClass = env->FindClass("com/facebook/jni/HybridData$Destructor");
-    auto nativePointerField = env->GetFieldID(destructorClass, "mNativePointer", "J");
-    auto nativePointerValue = env->GetLongField(destructorObj, nativePointerField);
+//!     // 3. Get the mNativePointer field from the mDestructor Java object
+//!     auto destructorClass = env->FindClass("com/facebook/jni/HybridData$Destructor");
+//!     auto nativePointerField = env->GetFieldID(destructorClass, "mNativePointer", "J");
+//!     auto nativePointerValue = env->GetLongField(destructorObj, nativePointerField);
 
-    // 4. Cast the mNativePointer back to its C++ type
-    auto nativePointer = reinterpret_cast<facebook::react::CallInvokerHolder*>(nativePointerValue);
+//!     // 4. Cast the mNativePointer back to its C++ type
+//!     auto nativePointer = reinterpret_cast<facebook::react::CallInvokerHolder*>(nativePointerValue);
 
-    // 5. Create the scheduler from the JS call invoker
-    __android_log_print(ANDROID_LOG_VERBOSE, "Realm", "Creating scheduler");
-    realm::js::react_scheduler::create_scheduler(nativePointer->getCallInvoker());
+//!     // 5. Create the scheduler from the JS call invoker
+//!     __android_log_print(ANDROID_LOG_VERBOSE, "Realm", "Creating scheduler");
+//!     realm::js::react_scheduler::create_scheduler(nativePointer->getCallInvoker());
+//! }
+
+extern "C" JNIEXPORT void JNICALL
+Java_io_realm_react_RealmReactModule_createScheduler(JNIEnv* env, jobject thiz, jobject call_invoker) {
+  using JCallInvokerHolder = facebook::react::CallInvokerHolder;
+
+  // wrap raw jobject -> fbjni local_ref<JObject>
+  auto holderLocal = facebook::jni::make_local(call_invoker);
+  // cast to CallInvokerHolder::javaobject
+  auto holderRef = facebook::jni::static_ref_cast<JCallInvokerHolder::javaobject>(holderLocal);
+  // get C++ CallInvokerHolder*
+  auto* holderCxx = holderRef->cthis();
+  // get CallInvoker
+  auto invoker = holderCxx->getCallInvoker();
+
+  __android_log_print(ANDROID_LOG_VERBOSE, "Realm", "Creating scheduler (fbjni cthis)");
+  realm::js::react_scheduler::create_scheduler(invoker);
 }
 
 extern "C" JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_invalidateCaches(JNIEnv* env, jobject thiz)
