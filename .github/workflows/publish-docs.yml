@@ -49,7 +49,7 @@ jobs:
           submodules: "recursive"
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           registry-url: https://registry.npmjs.org/
       # Install the root package (--ignore-scripts to avoid downloading or building the native module)
       - name: Install root package dependencies
