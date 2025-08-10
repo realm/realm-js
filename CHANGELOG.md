@@ -4,7 +4,7 @@
 * None
 
 ### Enhancements
-* None
+* Add support for React Native 0.80.0, by migrating to a pure C++ TurboModule. ([#7029](https://github.com/realm/realm-js/pull/7027))
 
 ### Fixed
 * Fix numerous crashes on Android, by explicitly setting C++ standard (C++20) when building pre-builds. ([#7027](https://github.com/realm/realm-js/pull/7027), since v12.11.0)
@@ -15,6 +15,8 @@
 * File format: generates Realms with format v24 (reads and upgrades file format v10).
 
 ### Internal
+* Upgrade React Native version in the test app to 0.80.0.
+* Upgrade NDK to 27.1.12297006 and Android API level 24, to match React Native latest.
 <!-- * Either mention core version or upgrade -->
 <!-- * Using Realm Core vX.Y.Z -->
 <!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
