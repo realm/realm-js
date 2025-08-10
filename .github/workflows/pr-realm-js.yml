@@ -117,7 +117,7 @@ jobs:
             runner: windows-latest
             arch: x64
           - os: windows
-            runner: windows-2019
+            runner: windows-latest
             arch: ia32
           - os: darwin
             runner: macos-latest
