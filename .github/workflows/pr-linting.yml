@@ -15,7 +15,7 @@ jobs:
           submodules: "recursive"
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
       - name: Install root package dependencies
         run: npm ci
       - name: Check types
