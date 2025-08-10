@@ -97,6 +97,8 @@ export function generateXcodeProject({ cmakePath, clean }: GenerateXcodeProjectO
       "--toolchain",
       REALM_CORE_CMAKE_TOOLCHAIN_PATH,
       "-D",
+      "CMAKE_CXX_STANDARD=20",
+      "-D",
       `REALM_VERSION=${REALM_CORE_VERSION}`,
       "-D",
       "REALM_BUILD_LIB_ONLY=ON",
