@@ -7,8 +7,7 @@
 * None
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None
+* Fix numerous crashes on Android, by explicitly setting C++ standard (C++20) when building pre-builds. ([#7027](https://github.com/realm/realm-js/pull/7027), since v12.11.0)
 
 ### Compatibility
 * React Native >= v0.71.4
