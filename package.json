@@ -66,9 +66,9 @@
     "integration-tests/baas-test-server"
   ],
   "dependencies": {
-    "@react-native/eslint-config": "0.76.0",
-    "@react-native/eslint-plugin": "0.76.0",
-    "@react-native/typescript-config": "0.76.0",
+    "@react-native/eslint-config": "0.80.2",
+    "@react-native/eslint-plugin": "0.80.2",
+    "@react-native/typescript-config": "0.80.2",
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^15.2.3",
