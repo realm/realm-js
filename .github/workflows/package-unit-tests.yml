@@ -53,7 +53,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
       # ninja-build is used by default if available and results in faster build times
       - name: Install ninja
