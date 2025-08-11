@@ -611,7 +611,6 @@ jobs:
         run: pod install --verbose
 
       - name: Patch test app's Info.plist to allow insecure connections to BaaSaaS server
-        working-directory: integration-tests/environments/react-native-test-app
         run: sed -i '' 's/NSAllowsLocalNetworking/NSAllowsArbitraryLoads/g' node_modules/.generated/ios/Info.plist
 
       - name: Build test app
