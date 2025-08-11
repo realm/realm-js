@@ -44,11 +44,10 @@ Pod::Spec.new do |s|
   s.source_files           = 'binding/jsi/*.cpp',
                              'binding/apple/*.mm',
                              # Headers
-                             'binding/*.h',
                              'binding/*.hpp',
-                             'binding/apple/*.h',
-                             'bindgen/src/*.h',
                              'binding/jsi/*.h',
+                             'binding/jsi/*.hpp',
+                             'bindgen/src/*.h',
                              'bindgen/vendor/realm-core/bindgen/src/*.h'
 
   s.public_header_files    = 'binding/apple/*.h'
@@ -71,12 +70,6 @@ Pod::Spec.new do |s|
                                 'GCC_PREPROCESSOR_DEFINITIONS' => '$(inherited) REALM_ENABLE_SYNC=1',
                                 # Header search paths are prefixes to the path specified in #include macros
                                 'HEADER_SEARCH_PATHS' => [
-                                  # Bootstrapper for React Native
-                                  '"${PODS_TARGET_SRCROOT}/binding/apple/"',
-                                  # Logger and JS-SDK specific helpers
-                                  '"${PODS_TARGET_SRCROOT}/binding/"',
-                                  # Platform specific helpers used by the generated binding code
-                                  '"${PODS_TARGET_SRCROOT}/bindgen/src/"',
                                   # Platform independent helpers
                                   '"${PODS_TARGET_SRCROOT}/bindgen/vendor/realm-core/bindgen/src/"',
                                 ]

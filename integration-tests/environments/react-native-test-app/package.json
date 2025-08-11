@@ -135,8 +135,8 @@
     "base-64": "^1.0.0",
     "mocha-remote-react-native": "^1.12.3",
     "path-browserify": "^1.0.1",
-    "react": "18.3.1",
-    "react-native": "0.76.0",
+    "react": "19.1.1",
+    "react-native": "0.80.2",
     "react-native-fetch-api": "^3.0.0",
     "react-native-fs": "^2.20.0",
     "react-native-get-random-values": "^1.11.0",
@@ -146,17 +146,17 @@
     "web-streams-polyfill": "^3.3.3"
   },
   "devDependencies": {
-    "@babel/core": "^7.26.0",
-    "@babel/preset-env": "^7.26.0",
-    "@react-native-community/cli": "^15.0.0",
-    "@react-native/babel-preset": "0.76.0",
-    "@react-native/metro-config": "0.76.0",
-    "@react-native/typescript-config": "0.76.0",
-    "@rnx-kit/metro-config": "^2.0.1",
-    "@types/react": "^18.3.3",
+    "@babel/core": "^7.28.0",
+    "@babel/preset-env": "^7.28.0",
+    "@react-native-community/cli": "^19.1.1",
+    "@react-native/babel-preset": "0.80.2",
+    "@react-native/metro-config": "0.80.2",
+    "@react-native/typescript-config": "0.80.2",
+    "@rnx-kit/metro-config": "^2.1.0",
+    "@types/react": "^19.1.9",
     "concurrently": "^8.2.2",
     "mocha-remote-cli": "^1.12.3",
-    "pod-install": "^0.2.2",
-    "react-native-test-app": "^3.10.18"
+    "pod-install": "^0.3.10",
+    "react-native-test-app": "^4.4.5"
   }
 }

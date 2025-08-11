@@ -24,7 +24,7 @@ on:
 env:
   REALM_DISABLE_ANALYTICS: 1
   CMAKE_VERSION: 3.29.2
-  NDK_VERSION: 25.1.8937393
+  NDK_VERSION: 27.1.12297006
   JAVA_VERSION: 17
   WIREIT_LOGGER: simple
   # Globally Mocha remote settings
@@ -587,7 +587,6 @@ jobs:
         run: pod install --verbose
 
       - name: Patch test app's Info.plist to allow insecure connections to BaaSaaS server
-        working-directory: integration-tests/environments/react-native-test-app
         run: sed -i '' 's/NSAllowsLocalNetworking/NSAllowsArbitraryLoads/g' node_modules/.generated/ios/Info.plist
 
       - name: Build test app

@@ -9,6 +9,7 @@
 		"strictFunctionTypes": false,
 		"esModuleInterop": true,
 		"resolveJsonModule": true,
+		"skipLibCheck": true,
 		"outDir": "dist",
 		"lib": [
 			"es2022"

@@ -16,17 +16,22 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#import <Foundation/Foundation.h>
-#import <React/RCTBridgeModule.h>
-#import <React/RCTInvalidating.h>
+#import <ReactCommon/CxxTurboModuleUtils.h>
+#import <jsi/jsi.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <RealmJS/CxxRealmModule.hpp>
 
-@interface RealmReactModule : NSObject <RCTBridgeModule, RCTInvalidating>
+@interface RealmModule : NSObject
 @end
 
-#ifdef __cplusplus
+@implementation RealmModule
+
++ (void)load {
+  facebook::react::registerCxxModuleToGlobalModuleMap(
+      realm::js::CxxRealmModule::kModuleName,
+      [](std::shared_ptr<facebook::react::CallInvoker> jsInvoker) {
+        return std::make_shared<realm::js::CxxRealmModule>(jsInvoker);
+      });
 }
-#endif
+
+@end

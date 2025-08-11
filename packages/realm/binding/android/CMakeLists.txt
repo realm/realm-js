@@ -12,11 +12,12 @@ if(NOT REACT_NATIVE_ROOT_DIR)
 endif()
 
 add_library(realm-js-android-binding SHARED
+    ../jsi/CxxRealmModule.cpp
     ../jsi/jsi_init.cpp
     ../jsi/react_scheduler.cpp
     src/main/cpp/platform.cpp
     src/main/cpp/jni_utils.cpp
-    src/main/cpp/io_realm_react_RealmReactModule.cpp
+    src/main/cpp/io_realm_react_RealmReactPackage.cpp
 )
 
 set_target_properties(realm-js-android-binding PROPERTIES
@@ -30,7 +31,7 @@ set(CMAKE_INTERPROCEDURAL_OPTIMIZATION OFF)
 set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG -Oz")
 set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-z,max-page-size=16384")
 
-target_link_options(realm-js-android-binding PUBLIC -fvisibility=hidden)
+# target_link_options(realm-js-android-binding PUBLIC -fvisibility=hidden)
 
 target_include_directories(realm-js-android-binding PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/.."
