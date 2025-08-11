@@ -1,7 +1,4 @@
-## vNext (TBD)
-
-### Deprecations
-* None
+## 20.2.0 (2025-08-11)
 
 ### Enhancements
 * 16KB page size support for Android 15+ ([#7019](https://github.com/realm/realm-js/pull/7019)). If you are using Android Gradle Plugin (AGP) 8.5 or lower, you will need to [enable legacy packaging](https://developer.android.com/guide/practices/page-sizes#update-packaging). 
