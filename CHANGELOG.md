@@ -1,7 +1,4 @@
-## vNext (TBD)
-
-### Deprecations
-* None
+## 12.15.0 (2025-08-11)
 
 ### Enhancements
 * Add support for React Native 0.80.0, by migrating to a pure C++ TurboModule. ([#7029](https://github.com/realm/realm-js/pull/7027))
