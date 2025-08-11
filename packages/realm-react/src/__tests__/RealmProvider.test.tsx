@@ -287,7 +287,7 @@ describe("RealmProvider", () => {
       it("should receive progress information", async () => {
         const expectedProgressValues = [0, 0.25, 0.5, 0.75, 1];
         const slowRealmOpen = mockRealmOpen(
-          new MockedProgressRealmPromiseWithDelay({ progressValues: expectedProgressValues }),
+          new MockedProgressRealmPromiseWithDelay({ progressValues: expectedProgressValues, delay: 100 }),
         );
         const renderedProgressValues: number[] = [];
 

@@ -18,7 +18,6 @@
 
 import { act } from "@testing-library/react-native";
 import { EstimateProgressNotificationCallback, ProgressRealmPromise, Realm } from "realm";
-import { sleep } from "./helpers";
 
 /**
  * Mocks {@link Realm.ProgressRealmPromise} with a custom
@@ -81,27 +80,26 @@ export class MockedProgressRealmPromise extends Promise<Realm> implements Progre
  */
 export class MockedProgressRealmPromiseWithDelay extends MockedProgressRealmPromise {
   public currentProgressIndex = 0;
-  public progressValues: number[] | undefined;
-  private progressTimeout: NodeJS.Timeout | undefined;
+  public progressValues: number[];
 
-  constructor(
-    options: {
-      delay?: number;
-      /** Progress values which the `Realm.open(...).progress(...)` will receive in an equal interval. */
-      progressValues?: number[];
-    } = {},
-  ) {
-    const { progressValues, delay = 100 } = options;
+  constructor(options: {
+    delay: number;
+    /** Progress values which the `Realm.open(...).progress(...)` will receive in an equal interval. */
+    progressValues: number[];
+  }) {
+    const progress = Promise.withResolvers<void>();
+    const abortController = new AbortController();
+    const { progressValues, delay } = options;
     super(
       async () => {
-        await sleep(delay);
+        await progress.promise;
         return new Realm();
       },
       {
         progress: (callback) => {
-          this.progressTimeout = callMockedProgressNotifications(callback, delay, progressValues);
+          callMockedProgressNotifications(callback, delay, progressValues, progress.resolve, abortController.signal);
         },
-        cancel: () => clearTimeout(this.progressTimeout),
+        cancel: () => abortController.abort(),
       },
     );
     this.progressValues = progressValues;
@@ -112,23 +110,37 @@ export class MockedProgressRealmPromiseWithDelay extends MockedProgressRealmProm
 export function callMockedProgressNotifications(
   callback: EstimateProgressNotificationCallback,
   timeFrame: number,
-  progressValues: number[] = [0, 0.25, 0.5, 0.75, 1],
-): NodeJS.Timeout {
-  let progressIndex = 0;
-  let progressInterval: NodeJS.Timeout | undefined = undefined;
-  const sendProgress = () => {
-    // Uses act as this causes a component state update.
-    act(() => callback(progressValues[progressIndex]));
-    progressIndex++;
+  progressValues: number[],
+  done: () => void,
+  abortSignal: AbortSignal,
+): void {
+  const delayBetweenTicks = timeFrame / (progressValues.length + 1);
+  let chain = Promise.resolve();
 
-    if (progressIndex >= progressValues.length) {
-      // Send the next progress update in equidistant time
-      clearInterval(progressInterval);
-    }
+  let progressTimeout: NodeJS.Timeout | undefined = undefined;
+  abortSignal.addEventListener("abort", () => {
+    clearTimeout(progressTimeout);
+  });
+
+  let progressIndex = 0;
+  const sendProgress = () => {
+    chain = chain.then(async () => {
+      // Uses act as this causes a component state update
+      // Uses async because this might cause component suspension
+      await act(async () => {
+        callback(progressValues[progressIndex]);
+      });
+      progressIndex++;
+
+      if (progressIndex >= progressValues.length) {
+        done();
+      } else {
+        progressTimeout = setTimeout(sendProgress, delayBetweenTicks);
+      }
+    });
   };
-  progressInterval = setInterval(sendProgress, timeFrame / (progressValues.length + 1));
+
   sendProgress();
-  return progressInterval;
 }
 
 /**
@@ -136,7 +148,10 @@ export function callMockedProgressNotifications(
  * @returns Promise which resolves when the Realm is opened.
  */
 export function mockRealmOpen(
-  progressRealmPromise: MockedProgressRealmPromise = new MockedProgressRealmPromiseWithDelay(),
+  progressRealmPromise: MockedProgressRealmPromise = new MockedProgressRealmPromiseWithDelay({
+    delay: 100,
+    progressValues: [0, 0.25, 0.5, 0.75, 1],
+  }),
 ): MockedProgressRealmPromise {
   const delayedRealmOpen = jest.spyOn(Realm, "open");
   delayedRealmOpen.mockImplementation(() => progressRealmPromise);
