@@ -90,7 +90,7 @@ export function createUseQuery(useRealm: () => Realm): UseQueryHook {
     // Create a forceRerender function for the cachedCollection to use as its updateCallback, so that
     // the cachedCollection can force the component using this hook to re-render when a change occurs.
     const [, forceRerender] = useReducer((x) => x + 1, 0);
-    const collectionRef = useRef<Realm.Results<T>>();
+    const collectionRef = useRef<Realm.Results<T>>(null);
     const updatedRef = useRef(true);
     const queryCallbackRef = useRef<QueryCallback<T> | null>(null);
 

@@ -33,8 +33,8 @@ import {
   ensureDirectory,
 } from "./common";
 
-export const DEFAULT_NDK_VERSION = "25.1.8937393";
-export const ANDROID_API_LEVEL = "16";
+export const DEFAULT_NDK_VERSION = "27.1.12297006";
+export const ANDROID_API_LEVEL = "24";
 
 const INSTALL_PATH = path.resolve(PACKAGE_PATH, "prebuilds/android");
 

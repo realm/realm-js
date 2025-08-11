@@ -77,7 +77,7 @@ export function createUseObject(useRealm: UseRealmHook): UseObjectHook {
 
     const collectionRef = useRef(getObjects(realm, type));
 
-    const objectRef = useRef<T & Realm.Object<T>>();
+    const objectRef = useRef<T & Realm.Object<T>>(null);
     const updatedRef = useRef(true);
 
     // Initializing references with a function call or class constructor will

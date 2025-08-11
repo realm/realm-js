@@ -37,6 +37,8 @@ import {
   ensureDirectory,
 } from "./common";
 
+const EXPECTED_XCODE_VERSION = "15.4";
+
 const REALM_CORE_BUILD_PATH = path.resolve(REALM_CORE_PATH, "build-xcode");
 const REALM_CORE_CMAKE_TOOLCHAIN_PATH = path.resolve(REALM_CORE_PATH, "tools/cmake/xcode.toolchain.cmake");
 const REALM_CORE_COMBINED_LIBRARY_NAME = "librealm-combined.a";
@@ -77,6 +79,12 @@ function ensureBuildDirectory(clean: boolean) {
   ensureDirectory(REALM_CORE_BUILD_PATH, clean);
 }
 
+function checkXCodeVersion() {
+  if (xcode.version !== EXPECTED_XCODE_VERSION) {
+    console.warn(`⚠️ Expected Xcode version ${EXPECTED_XCODE_VERSION} but found ${xcode.version} ⚠️`);
+  }
+}
+
 type GenerateXcodeProjectOptions = {
   cmakePath: string;
   clean: boolean;
@@ -84,6 +92,7 @@ type GenerateXcodeProjectOptions = {
 
 export function generateXcodeProject({ cmakePath, clean }: GenerateXcodeProjectOptions) {
   ensureBuildDirectory(clean);
+  checkXCodeVersion();
   // Generate Xcode project
   const { status } = spawnSync(
     cmakePath,

@@ -18,18 +18,18 @@
 
 declare const global: Record<string, unknown>;
 
-import { NativeModules } from "react-native";
+import { type TurboModule, TurboModuleRegistry } from "react-native";
 import { NativeBigInt, PolyfilledBigInt, type binding, injectNativeModule } from "../binding";
 import { assert } from "../../assert";
 import { RealmInExpoGoError, isExpoGo } from "./expo-go-detection";
 
+export interface RealmModule extends TurboModule {
+  initialize(): unknown;
+}
+
 try {
-  const RealmNativeModule = NativeModules.Realm;
-  RealmNativeModule.injectModuleIntoJSGlobal();
-  // Read the global into the local scope
-  const { __injectedRealmBinding: nativeModule } = global;
-  // Delete the global again
-  delete global.__injectedRealmBinding;
+  const RealmNativeModule = TurboModuleRegistry.getEnforcing<RealmModule>("Realm");
+  const nativeModule = RealmNativeModule.initialize();
   // Inject the native module into the binding
   assert.object(nativeModule, "nativeModule");
   injectNativeModule(nativeModule, {
