@@ -256,7 +256,7 @@
     "@babel/plugin-transform-modules-commonjs": "^7.23.3",
     "@commander-js/extra-typings": "^12",
     "@realm/bindgen": "^0.1.0",
-    "@types/node": "^18.19.8",
+    "@types/node": "^22",
     "@types/path-browserify": "^1.0.0",
     "cmake-js": "6.3.2",
     "command-line-args": "^5.2.1",
