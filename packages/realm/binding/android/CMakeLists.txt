@@ -29,6 +29,7 @@ set_target_properties(realm-js-android-binding PROPERTIES
 
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION OFF)
 set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG -Oz")
+set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-z,max-page-size=16384")
 
 # target_link_options(realm-js-android-binding PUBLIC -fvisibility=hidden)
 
