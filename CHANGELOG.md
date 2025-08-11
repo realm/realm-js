@@ -18,6 +18,7 @@
 ### Internal
 * Upgrade React Native version in the test app to 0.80.0.
 * Upgrade NDK to 27.1.12297006 and Android API level 24, to match React Native latest.
+* Upgraded Realm Core from v14.13.5 to v14.14.0
 <!-- * Either mention core version or upgrade -->
 <!-- * Using Realm Core vX.Y.Z -->
 <!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
