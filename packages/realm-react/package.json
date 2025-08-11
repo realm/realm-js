@@ -53,7 +53,7 @@
     "@babel/runtime": "^7.24.6",
     "@react-native/babel-preset": "0.80.2",
     "@realm/app-importer": "*",
-    "@testing-library/react-native": "^12.8.0",
+    "@testing-library/react-native": "^13.2.2",
     "@types/jest": "^29.5.12",
     "@types/react": "^19.1.9",
     "@types/lodash.isequal": "^4.5.8",

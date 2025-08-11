@@ -5,7 +5,7 @@
     "<rootDir>/src"
   ],
   "setupFilesAfterEnv": [
-    "@testing-library/react-native/extend-expect",
+    "@testing-library/react-native",
     "<rootDir>/src/__tests__/setup.ts"
   ],
   "transform": {
