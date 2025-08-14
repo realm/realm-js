@@ -136,7 +136,7 @@ cd android
 ./gradlew clean
 ```
 
-Afterwards, try and rebuild for Android.  If you are still encountering problems, ensure that `node_modules/realm/react-native/android/src/main/jniLibs` contains a realm binary for your architecture.  If this is missing, try reinstalling the `realm` npm package.
+Afterwards, try and rebuild for Android.  If you are still encountering problems, ensure that `node_modules/realm/prebuilds/android` contains a realm binary for your architecture.  If this is missing, try reinstalling the `realm` npm package.
 
 ### Expo
 If you are using Expo, a common pitfall is not installing the `expo-dev-client` and using the Development Client specific scripts to build and run your React Native project in Expo.  The Development Client allows you to create a local version of Expo Go which includes 3rd party libraries such as Realm.  If you would like to use `realm` in an Expo project, the following steps can help.
