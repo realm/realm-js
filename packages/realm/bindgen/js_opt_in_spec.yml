@@ -522,6 +522,7 @@ classes:
       - update_base_url
       - get_base_url
       - immediately_run_file_actions
+      - close_all_sync_sessions
 
   WatchStream:
     methods:
