@@ -6,8 +6,8 @@
 > For a version of RealmJS without sync features, install from [community on npm](https://www.npmjs.com/package/realm/v/community) or see the `community` git branch.
 
 <picture>
-    <source srcset="https://raw.githubusercontent.com/realm/realm-js/main/media/logo-dark.svg" media="(prefers-color-scheme: dark)" alt="realm by MongoDB">
-    <img src="https://raw.githubusercontent.com/realm/realm-js/main/media/logo.svg" alt="realm by MongoDB">
+    <source srcset="https://raw.githubusercontent.com/realm/realm-js/main/media/logo-dark.svg" media="(prefers-color-scheme: dark)" alt="realm">
+    <img src="https://raw.githubusercontent.com/realm/realm-js/main/media/logo.svg" alt="realm">
 </picture>
 
 # The Realm Database
@@ -18,7 +18,7 @@ Realm is a mobile database that runs directly inside phones, tablets or wearable
 
 <img align="right" style="min-width:150px;width:20%;" src="https://raw.githubusercontent.com/realm/realm-js/main/media/atlas-device-sync.svg" alt="Atlas Device Sync">
 
-The [Atlas Device SDKs](https://www.mongodb.com/docs/atlas/device-sdks/) are a collection of language and platform specific SDKs, each with a suite of app development tools optimized for data access and persistence on mobile and edge devices. Use the SDKs to build data-driven mobile, edge, web, desktop, and IoT apps.
+The Realm SDKs are a collection of language and platform specific SDKs, each with a suite of app development tools optimized for data access and persistence on mobile and edge devices. Use the SDKs to build data-driven mobile, edge, web, desktop, and IoT apps.
 
 It might help to think of the Realm database as the persistance layer of the Atlas Device SDKs.
 
@@ -38,9 +38,12 @@ Please see the detailed instructions in our docs to use [Atlas Device SDK for No
 
 ### Atlas Device SDKs for React Native and Node.js
 
-The documentation for the Atlas Device SDK for React Native can be found at [mongodb.com/docs/atlas/device-sdks/sdk/react-native/](https://www.mongodb.com/docs/atlas/device-sdks/sdk/react-native/). The documentation for the Atlas Device SDK for Node.js can be found at [mongodb.com/docs/atlas/device-sdks/sdk/node/](https://www.mongodb.com/docs/atlas/device-sdks/sdk/node/).
+The documentation for the Atlas Device SDK for React Native can be
+found at [docs/react-native](docs/react-native/README.md).
+The documentation for the Node.js SDK can be found at
+[docs/node/](docs/node/README.md).
 
-The API reference is located at [docs.mongodb.com/realm-sdks/js/latest/](https://docs.mongodb.com/realm-sdks/js/latest/).
+The API reference docs can be generated locally.
 
 If you are using React Native, please also take a look the README for [`@realm/react`](https://github.com/realm/realm-js/tree/main/packages/realm-react#readme), which provides React hooks to make working with Realm easier.
 

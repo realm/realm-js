@@ -7,10 +7,19 @@
 </h1>
 
 Build better apps, faster.
+
+> [!WARNING]
+> We announced the deprecation of Atlas Device Sync + Realm SDKs in September 2024. For more information please see:
+> - [SDK Deprecation](https://www.mongodb.com/docs/atlas/device-sdks/deprecation/)
+> - [Device Sync Deprecation](https://www.mongodb.com/docs/atlas/app-services/sync/device-sync-deprecation/)
+>
+> For a version of RealmJS without sync features, install from [community on npm](https://www.npmjs.com/package/realm/v/community) or see the `community` git branch.
+
+
 ## Introduction
 Setting up Realm in a React Native application has historically been complex. Re-rendering of components when objects in the database change requires manually adding and removing listeners, which produce a lot of boilerplate code and is error-prone (if listeners properly removed on unmount). This library alleviates that by providing [React hooks](https://reactjs.org/docs/hooks-intro.html) which return Realm data that is state aware. As a consequence, any change to the Realm data will cause components using the hook to re-render.
 
-Documentation for `@realm/react` and Realm can be found at [docs.mongodb.org](https://www.mongodb.com/docs/realm/sdk/react-native).
+Documentation for `@realm/react` and Realm can be found at [docs/react-native](../../docs/react-native/README.md).
 ## Installation
 
 This library requires `react-native` >= 0.59 and `realm` >= 11
