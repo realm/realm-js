@@ -1,5 +1,12 @@
 # An MBnB Listing Search Demo with Searchable Results when Offline Using Atlas Device SDK for React Native
 
+> [!WARNING]
+> We announced the deprecation of Atlas Device Sync + Realm SDKs in September 2024. For more information please see:
+> - [SDK Deprecation](https://www.mongodb.com/docs/atlas/device-sdks/deprecation/)
+> - [Device Sync Deprecation](https://www.mongodb.com/docs/atlas/app-services/sync/device-sync-deprecation/)
+>
+> For a version of RealmJS without sync features, install from [community on npm](https://www.npmjs.com/package/realm/v/community) or see the `community` git branch.
+
 A demo application showcasing how to use [MongoDB's Atlas Device SDK for React Native](https://www.mongodb.com/docs/realm/sdk/react-native/) in order to cache viewed collection items and view them offline. It uses [anonymous authentication](https://www.mongodb.com/docs/atlas/app-services/authentication/anonymous/) to create a session which allows the demo user to search for MBnB listings from the [Sample AirBnB Listings dataset](https://www.mongodb.com/docs/atlas/sample-data/sample-airbnb/).
 
 ## Demo Video

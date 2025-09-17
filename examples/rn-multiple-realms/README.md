@@ -1,5 +1,12 @@
 # A Netflix-Like App with Multiple Realms Using Atlas Device SDK for React Native
 
+> [!WARNING]
+> We announced the deprecation of Atlas Device Sync + Realm SDKs in September 2024. For more information please see:
+> - [SDK Deprecation](https://www.mongodb.com/docs/atlas/device-sdks/deprecation/)
+> - [Device Sync Deprecation](https://www.mongodb.com/docs/atlas/app-services/sync/device-sync-deprecation/)
+>
+> For a version of RealmJS without sync features, install from [community on npm](https://www.npmjs.com/package/realm/v/community) or see the `community` git branch.
+
 A Netflix-like example app showcasing how to use different Realms in [MongoDB's Atlas Device SDK for React Native](https://www.mongodb.com/docs/realm/sdk/react-native/). All users can browse (not play) movies from MongoDB's [Mflix sample dataset](https://www.mongodb.com/docs/atlas/sample-data/sample-mflix/#std-label-mflix-movies), but only users who register with email and password are able to sync, read, add, and remove movies saved to "My List".
 
 > This example app does not support playing any movies.

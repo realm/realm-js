@@ -1,5 +1,12 @@
 # Connection State Change & Error Handling Using Atlas Device SDK for Node.js
 
+> [!WARNING]
+> We announced the deprecation of Atlas Device Sync + Realm SDKs in September 2024. For more information please see:
+> - [SDK Deprecation](https://www.mongodb.com/docs/atlas/device-sdks/deprecation/)
+> - [Device Sync Deprecation](https://www.mongodb.com/docs/atlas/app-services/sync/device-sync-deprecation/)
+>
+> For a version of RealmJS without sync features, install from [community on npm](https://www.npmjs.com/package/realm/v/community) or see the `community` git branch.
+
 An example app showcasing how to detect various changes in connection state, user state, sync errors, and product inventory in [MongoDB's Atlas Device SDK for React Native](https://www.mongodb.com/docs/realm/sdk/node/) (fka Realm).
 
 ## Project Structure
