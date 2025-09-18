@@ -4,7 +4,7 @@ The Realm team is here to help you with your Realm-related issues!
 
 ## Documentation
 
-Before asking questions, please familiarize yourself with our [Node.js](https://www.mongodb.com/docs/realm/sdk/node/) and [React Native](https://www.mongodb.com/docs/realm/sdk/react-native/) documentation.
+Before asking questions, please familiarize yourself with our [Node.js](docs/node/README.md) and [React Native](docs/react-native/README.md) documentation.
 
 ## Tiers
 

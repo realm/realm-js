@@ -1,5 +1,12 @@
 # An Offline-First Todo List App Using Atlas Device SDK for Electron
 
+> [!WARNING]
+> We announced the deprecation of Atlas Device Sync + Realm SDKs in September 2024. For more information please see:
+> - [SDK Deprecation](https://www.mongodb.com/docs/atlas/device-sdks/deprecation/)
+> - [Device Sync Deprecation](https://www.mongodb.com/docs/atlas/app-services/sync/device-sync-deprecation/)
+>
+> For a version of RealmJS without sync features, install from [community on npm](https://www.npmjs.com/package/realm/v/community) or see the `community` git branch.
+
 A todo list (task manager) app showcasing how to create, read, update, and delete data while offline using [MongoDB's Atlas Device SDK for Electron](https://www.mongodb.com/docs/realm/sdk/node/integrations/electron-cra/) (fka Realm).
 
 > **TIP:** This app can be run together with the corresponding [React Native example app](../rn-todo-list/) using the same [App Services App](./backend/).

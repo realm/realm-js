@@ -6,21 +6,19 @@
 > For a version of RealmJS without sync features, install from [community on npm](https://www.npmjs.com/package/realm/v/community) or see the `community` git branch.
 
 <picture>
-    <source srcset="https://raw.githubusercontent.com/realm/realm-js/main/media/logo-dark.svg" media="(prefers-color-scheme: dark)" alt="realm by MongoDB">
-    <img src="https://raw.githubusercontent.com/realm/realm-js/main/media/logo.svg" alt="realm by MongoDB">
+    <source srcset="https://raw.githubusercontent.com/realm/realm-js/main/media/logo-dark.svg" media="(prefers-color-scheme: dark)" alt="realm">
+    <img src="https://raw.githubusercontent.com/realm/realm-js/main/media/logo.svg" alt="realm">
 </picture>
 
 # The Realm Database
 
 Realm is a mobile database that runs directly inside phones, tablets or wearables. This project hosts the JavaScript & TypeScript implementation of Realm. Currently, we support React Native (JSC & Hermes on iOS & Android), Node.js and Electron (on Windows, MacOS and Linux).
 
-## What are the Atlas Device SDKs?
+## What are the Realm SDKs?
 
-<img align="right" style="min-width:150px;width:20%;" src="https://raw.githubusercontent.com/realm/realm-js/main/media/atlas-device-sync.svg" alt="Atlas Device Sync">
+The Realm SDKs are a collection of language and platform specific SDKs, each with a suite of app development tools optimized for data access and persistence on mobile and edge devices. Use the SDKs to build data-driven mobile, edge, web, desktop, and IoT apps.
 
-The [Atlas Device SDKs](https://www.mongodb.com/docs/atlas/device-sdks/) are a collection of language and platform specific SDKs, each with a suite of app development tools optimized for data access and persistence on mobile and edge devices. Use the SDKs to build data-driven mobile, edge, web, desktop, and IoT apps.
-
-It might help to think of the Realm database as the persistance layer of the Atlas Device SDKs.
+It might help to think of the Realm database as the persistence layer of the Realm SDKs.
 
 ## Features
 
@@ -28,19 +26,26 @@ It might help to think of the Realm database as the persistance layer of the Atl
 * **Simple:** Data is directly [exposed as objects](https://www.mongodb.com/docs/atlas/device-sdks/sdk/node/realm-files/) and [queryable by code](https://www.mongodb.com/docs/atlas/device-sdks/sdk/node/crud/query-data/), removing the need for ORM's riddled with performance & maintenance issues.
 * **Modern:** The database supports relationships, generics, and vectorization.
 * **Fast:** It is faster than even raw SQLite on common operations, while maintaining an extremely rich feature set.
-* **[MongoDB Atlas Device Sync](https://www.mongodb.com/atlas/app-services/device-sync)**: Makes it simple to keep data in sync across users, devices, and your backend in real time. Get started for free with [a template application](https://github.com/mongodb/template-app-react-native-todo) and [create the cloud backend](http://mongodb.com/realm/register?utm_medium=github_atlas_CTA&utm_source=realm_js_github).
 
 ## Getting Started
 
-Please see the detailed instructions in our docs to use [Atlas Device SDK for Node.js](https://www.mongodb.com/docs/atlas/device-sdks/sdk/node/) and [Atlas Device SDK for React Native](https://www.mongodb.com/docs/atlas/device-sdks/sdk/react-native/). Please notice that currently only Node.js version 18 or later is supported. For React Native users, we have a [compatibility matrix](https://github.com/realm/realm-js/blob/HEAD/COMPATIBILITY.md) showing which versions are supported.
+See the following instructions in our docs to get started:
+- [Quick Start - Node.js SDK](../../docs/node/quick-start.md). Currently only Node.js version 18 or later is supported.
+- [Quick Start - React Native SDK](../../docs/react-native/quick-start.md). See the
+  [compatibility matrix](https://github.com/realm/realm-js/blob/HEAD/COMPATIBILITY.md)
+  showing which React Native versions are supported.
 
 ## Documentation
 
-### Atlas Device SDKs for React Native and Node.js
+### Realm SDKs for React Native and Node.js
 
-The documentation for the Atlas Device SDK for React Native can be found at [mongodb.com/docs/atlas/device-sdks/sdk/react-native/](https://www.mongodb.com/docs/atlas/device-sdks/sdk/react-native/). The documentation for the Atlas Device SDK for Node.js can be found at [mongodb.com/docs/atlas/device-sdks/sdk/node/](https://www.mongodb.com/docs/atlas/device-sdks/sdk/node/).
+The documentation for the Realm SDKs can be found in the following
+`docs/` directories:
+- [docs/node/](../../docs/node/README.md)
+- [docs/react-native/](../../docs/react-native/README.md)
 
-The API reference is located at [docs.mongodb.com/realm-sdks/js/latest/](https://docs.mongodb.com/realm-sdks/js/latest/).
+
+The API reference docs can be generated locally.
 
 If you are using React Native, please also take a look the README for [`@realm/react`](https://github.com/realm/realm-js/tree/main/packages/realm-react#readme), which provides React hooks to make working with Realm easier.
 
@@ -68,7 +73,7 @@ class Task extends Realm.Object<Task, "description"> {
 
 ### Integration with React Native
 
-The Atlas Device SDK for React Native provides persistence of objects and advanced queries for persisted objects. You can have easier integration with React Native by using [`@realm/react`](https://www.npmjs.com/package/@realm/react).
+The React Native SDK provides persistence of objects and advanced queries for persisted objects. You can have easier integration with React Native by using [`@realm/react`](https://www.npmjs.com/package/@realm/react).
 
 ## Template apps
 
@@ -131,7 +136,7 @@ cd android
 ./gradlew clean
 ```
 
-Afterwards, try and rebuild for Android.  If you are still encountering problems, ensure that `node_moduels/realm/react-native/android/src/main/jniLibs` contains a realm binary for your architecture.  If this is missing, try reinstalling the `realm` npm package.
+Afterwards, try and rebuild for Android.  If you are still encountering problems, ensure that `node_modules/realm/react-native/android/src/main/jniLibs` contains a realm binary for your architecture.  If this is missing, try reinstalling the `realm` npm package.
 
 ### Expo
 If you are using Expo, a common pitfall is not installing the `expo-dev-client` and using the Development Client specific scripts to build and run your React Native project in Expo.  The Development Client allows you to create a local version of Expo Go which includes 3rd party libraries such as Realm.  If you would like to use `realm` in an Expo project, the following steps can help.
