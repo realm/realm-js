@@ -478,7 +478,7 @@ jobs:
       - prebuild-apple
     env:
       DEVELOPER_DIR: /Applications/Xcode_16.4.app
-      IOS_DEVICE_NAME: iPhone 15
+      IOS_DEVICE_NAME: iPhone 16
       # See https://guides.cocoapods.org/using/faq.html#can-i-change-the-default-cocoapods-repositories-folder
       CP_HOME_DIR: ${{ github.workspace }}/.cocoapods
     runs-on: macos-latest-large
