@@ -1,16 +1,10 @@
 ## vNext (TBD)
 
-### Deprecations
-* None
-
-### Enhancements
-* None
-
-### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None
+### Breaking changes
+* With [the deprecation of Atlas Device Sync](https://github.com/realm/realm-js/blob/main/DEPRECATION.md) all sync related features got removed and this package now requires Realm JS v20 or above. [#6879](https://github.com/realm/realm-js/pull/6879)
 
 ### Compatibility
+* Realm JS >= v20
 * React Native >= v0.71.4
 * Realm Studio v15.0.0.
 * File format: generates Realms with format v24 (reads and upgrades file format v10).

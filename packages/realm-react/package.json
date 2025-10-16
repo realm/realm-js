@@ -69,7 +69,7 @@
   },
   "peerDependencies": {
     "react": ">=17.0.2",
-    "realm": ">=12.12.0"
+    "realm": ">=20.0.0"
   },
   "optionalDependencies": {
     "@babel/runtime": ">=7",
