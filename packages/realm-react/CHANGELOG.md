@@ -1,4 +1,4 @@
-## vNext (TBD)
+## 0.20.0 (2025-10-16)
 
 ### Breaking changes
 * With [the deprecation of Atlas Device Sync](https://github.com/realm/realm-js/blob/main/DEPRECATION.md) all sync related features got removed and this package now requires Realm JS v20 or above. [#6879](https://github.com/realm/realm-js/pull/6879)
