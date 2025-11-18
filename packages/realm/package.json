@@ -262,7 +262,7 @@
     "command-line-args": "^5.2.1",
     "commander": "^12",
     "cross-env": "^7.0.3",
-    "glob": "^10.3.12",
+    "glob": "^10.5.0",
     "prebuild": "^13.0.1",
     "react-native": "0.80.2",
     "typedoc-plugin-rename-defaults": "^0.7.0"
