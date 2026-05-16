@@ -307,6 +307,11 @@ export async function collectPlatformData(packagePath = getProjectRoot()) {
  * If `REALM_DISABLE_ANALYTICS` is set, no data is submitted to MongoDB
  */
 export async function submitAnalytics() {
+  if (isAnalyticsDisabled()) {
+    debug("Analytics is disabled");
+    return;
+  }
+
   const data = await collectPlatformData();
   const payload = {
     event: "install",
@@ -316,11 +321,6 @@ export async function submitAnalytics() {
 
   if ("REALM_PRINT_ANALYTICS" in process.env) {
     console.log("REALM ANALYTICS", JSON.stringify(data, null, 2));
-  }
-
-  if (isAnalyticsDisabled()) {
-    debug("Analytics is disabled");
-    return;
   }
 
   saveBundleId(data["Anonymized Bundle Id"]);
