@@ -47,9 +47,9 @@
     }
   },
   "devDependencies": {
-    "@babel/core": "^7.24.6",
-    "@babel/preset-env": "^7.24.6",
-    "@babel/preset-typescript": "^7.24.6",
+    "@babel/core": "^8.0.1",
+    "@babel/preset-env": "^8.0.1",
+    "@babel/preset-typescript": "^8.0.1",
     "@babel/runtime": "^7.24.6",
     "@react-native/babel-preset": "0.80.2",
     "@realm/app-importer": "*",
