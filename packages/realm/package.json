@@ -251,8 +251,8 @@
     }
   },
   "devDependencies": {
-    "@babel/cli": "^7.23.9",
-    "@babel/core": "^7.23.9",
+    "@babel/cli": "^8.0.5",
+    "@babel/core": "^8.0.5",
     "@babel/plugin-transform-modules-commonjs": "^7.23.3",
     "@commander-js/extra-typings": "^12",
     "@realm/bindgen": "^0.1.0",
