@@ -8,7 +8,7 @@
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None
+* Fixed iOS linking against React Native >= 0.86 when pods are built as frameworks: `RealmJS` failed with undefined `jsi::Value::as*` / `TurboModule` symbols because the podspec only depended on the umbrella `React` pod. It now uses React Native's `install_modules_dependencies` helper, which links `React-jsi`, `ReactCommon/turbomodule/core` and the JS engine (`hermes-engine`).
 
 ### Compatibility
 * React Native >= v0.71.4

@@ -77,5 +77,14 @@ Pod::Spec.new do |s|
 
   s.vendored_frameworks = 'prebuilds/apple/realm-core.xcframework'
 
-  s.dependency 'React'
+  if respond_to?(:install_modules_dependencies, true)
+    # React Native >= 0.71: pulls in React-Core, React-jsi, ReactCommon/turbomodule/core
+    # and the JS engine (hermes-engine). Depending on the umbrella 'React' pod alone no
+    # longer links these when pods are built as frameworks (JSI's implementation lives in
+    # the Hermes dylib since jsi.cpp is excluded from React-jsi when Hermes is enabled),
+    # which surfaced as undefined jsi::Value::as*/TurboModule symbols on RN >= 0.86.
+    install_modules_dependencies(s)
+  else
+    s.dependency 'React'
+  end
 end
